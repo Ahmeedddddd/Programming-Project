@@ -180,6 +180,29 @@ footer {
   font-size: 1.1rem;
 }
 
+/* Programma */
+ .voormiddagBtn, .namiddagBtn {
+  display: block;              
+  width: 240px;
+  margin: 1.2rem auto;
+  padding: 1.2rem 0;
+  font-size: 1.15rem;
+  background: #686868;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;      
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.voormiddagBtn:hover, .namiddagBtn:hover {
+  background: #444;
+}
+
+
+
 .footerContent {
   margin-left: 2.5rem;
 }
