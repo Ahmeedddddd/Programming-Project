@@ -8,60 +8,52 @@ img {
   height: auto;
 }
 
-/* Algemene body-instellingen */
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Inter', Arial, sans-serif;
   background: #fff;
   color: #1e1e1e;
 }
 
-/* Header met logo links en een afgeronde balk rechts */
-.header {
-  display: flex;
-  align-items: flex-start;
-  background: white;
-  border: 1px solid #222;
-  padding: 1.5rem 2rem;
-  box-sizing: border-box;
-  width: 98vw;
-  max-width: 1200px;
-  margin: 1rem auto 0 auto;
-  gap: 2rem; /* ruimte tussen logo en nav-bar */
-}
+/* Navigatie balk */
 
-/* Logo styling */
-.logo {
-  height: 80px;
-  display: block;
-}
-
-/* Navigatiebalk + profiel in één grijze afgeronde balk */
-.headerBar {
+.logo{
+  height: 120px;
   display: flex;
   align-items: center;
-  background: #dedede;
-  border: 1px solid #222;
-  border-radius: 12px;
-  padding: 0.6rem 1.2rem;
-  min-width: 480px;
-  max-width: 670px;
+  margin-right: 280px;
+}
+
+.nav{
+  display: flex;
+  padding-bottom: 2px;
+  padding-top: 0px;
+  align-items: center;
+  height: 125px;
+}
+
+.navBar{
+  margin-top: 0px;
+  padding: 25px 476px 25px 25px;
+  background-color: #d9d9d9;
+  border-radius: 10px;
+  border: black solid 2px;
   width: 100%;
-  box-shadow: none;
-  margin-top: 0.2rem;
-  gap: 2rem;
 }
 
-/* Navigatie zelf */
-.headerNav {
-  display: flex;
-  gap: 1.2rem;
-  align-items: center;
+.pfpContainer{
+  width: 68px;
+  height: 68px;
+  position: absolute;
+  top: 28px;
+  right: 5px;
+  z-index: 600;
 }
 
 /* Navigatieknoppen */
 .navItem {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #222;
   text-decoration: none;
@@ -78,22 +70,6 @@ body {
 .navItem:hover {
   background: #444;
   color: #fff;
-}
-
-/* Profiel-foto rechts in de header-bar */
-.profilePicContainer {
-  margin-left: 1.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.profilePic {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1.5px solid #222;
-  background: #dedede;
-  object-fit: cover;
 }
 
 .searchSection {
@@ -136,15 +112,15 @@ body {
   background: #bababa;
 }
 
-.sectionBedrijven, .sectionStudenten, .sectionProjecten {
+.bedrijven, .studenten, .projecten {
   padding: 2rem 0;
   margin: 0 auto;
   max-width: 900px;
 }
 
-.sectionBedrijven h2,
-.sectionStudenten h2,
-.sectionProjecten h2 {
+.bedrijven h2,
+.studenten h2,
+.projecten h2 {
   font-size: 2rem;
   margin-bottom: 1.2rem;
   font-weight: 700;
@@ -223,7 +199,7 @@ footer {
     height: 48px;
     width: 48px;
   }
-  .sectionBedrijven, .sectionStudenten, .sectionProjecten {
+  .bedrijven, .studenten, .projecten {
     padding: 1rem 0.5rem;
     max-width: 98vw;
   }
