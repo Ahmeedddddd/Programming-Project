@@ -35,7 +35,7 @@ body {
 
 .navBar{
   margin-top: 0px;
-  padding: 25px 476px 25px 25px;
+  padding: 25px 25px 25px 25px;
   background-color: #d9d9d9;
   border-radius: 10px;
   border: black solid 2px;
@@ -126,6 +126,22 @@ body {
   font-weight: 700;
 }
 
+.cardList .card {
+  background: #d9d9d9;
+  border-radius: 18px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  /* Breedte wordt nu door grid bepaald! */
+  width: auto;
+  min-height: unset;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+
 .cardList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -171,6 +187,30 @@ body {
   color: #222;
 }
 
+/* Programma */
+#prgrmoverzicht{
+  text-align: center;
+}
+.voormiddagBtn, .namiddagBtn {
+  display: block;              
+  width: 240px;
+  margin: 1.2rem auto;
+  padding: 1.2rem 0;
+  font-size: 1.15rem;
+  background: #686868;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;      
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.voormiddagBtn:hover, .namiddagBtn:hover {
+  background: #444;
+}
+
 footer {
   background: #d9d9d9;
   border-radius: 40px 40px 0 0;
@@ -179,11 +219,6 @@ footer {
   text-align: left;
   font-size: 1.1rem;
 }
-
-<<<<<<< Updated upstream
-=======
-
-/* Planning namiddag */
 
 .sideBar {
   grid-area: sidebar;
@@ -258,7 +293,7 @@ footer {
   height: auto;
   display: block;
 }
->>>>>>> Stashed changes
+
 .footerContent {
   margin-left: 2.5rem;
 }
@@ -286,10 +321,6 @@ footer {
     margin-left: 1rem;
   }
 }
-<<<<<<< Updated upstream
-=======
-
-
 
 /* STUDENT*/
 
@@ -411,9 +442,6 @@ footer {
   background: #0d8fd8;
   color: #f8f8f8;
 }
-
-
-
 
 /* MIJN PROJECTEN */
 .profielMain {
@@ -616,8 +644,9 @@ body {
 }
 
 
+
 /* CSS LOADING OVERLAY */
-      #loadingOverlay {
+#loadingOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -643,4 +672,3 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
->>>>>>> Stashed changes
