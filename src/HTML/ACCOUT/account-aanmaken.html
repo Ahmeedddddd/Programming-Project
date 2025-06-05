@@ -3,9 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Account</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">
 </head>
 <body>
+
+    <div class="nav">
+        <div class="Logo">
+          <img src="/public/images/image.png" alt="Logo" class="logo" />
+        </div>
+
+    </div>
+    
+        <div class="rolSwitch">
+          <button class="rolBtn selected">Student</button>
+          <button class="rolBtn">Bedrijf</button>
+          <button class="rolBtn">Organisator</button>
+        </div>
+        <form class="aanmeldForm">
+          <div class="formGroup">
+            <label for="voornaam">Voornaam</label>
+            <input type="text" id="voornaam" name="voornaam" required>
+          </div>
+          <div class="formGroup">
+            <label for="achternaam">Achternaam</label>
+            <input type="text" id="achternaam" name="achternaam" required>
+          </div>
+          <div class="formGroup">
+            <label for="email">Email-adres</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="formGroup">
+            <label for="wachtwoord">Maak wachtwoord</label>
+            <input type="password" id="wachtwoord" name="wachtwoord" required>
+          </div>
+          <div class="formGroup">
+            <label for="herhaalWachtwoord">Herhaal wachtwoord</label>
+            <input type="password" id="herhaalWachtwoord" name="herhaalWachtwoord" required>
+          </div>
+          <button type="submit" class="formSubmit">Meld aan</button>
+        </form>
+      
+      
     
 </body>
 </html>
