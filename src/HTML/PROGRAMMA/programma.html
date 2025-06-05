@@ -3,30 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-<link rel="stylesheet" href="/src/CSS/style.css"></head>
-<!-- <style>
-    .voormiddagBtn, .namiddagBtn {
-  display: block;              
-  width: 240px;
-  margin: 1.2rem auto;
-  padding: 1.2rem 0;
-  font-size: 1.15rem;
-  background: #686868;
-  color: #fff;
-  border: none;
-  border-radius: 30px;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;      
-  cursor: pointer;
-  transition: background 0.2s;
-}
+    <title>CareerLaunch</title>
+<link rel="stylesheet" href="/src/CSS/style.css">
+</head>
+</head>
 
-.voormiddagBtn:hover, .namiddagBtn:hover {
-  background: #444;
-} -->
-<!-- </style> -->
+<body>
+    <div class="nav">
+      <div class="logo">
+        <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+      </div>
+      <div class="navBar">
+        <a href="/index.html" class="navItem">Home</a>
+        <a href="#" class="navItem active"
+
 <body>
     <div class="nav">
       <div class="logo">
@@ -34,24 +24,15 @@
       </div>
       <div class="navBar">
         <a href="/index.html" class="navItem active">Home</a>
-        <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem"
-          >Programma</a
-        >
+        <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
         <a href="#" class="navItem">Mijn gesprekken</a>
         <div class="pfpContainer">
-          <img
-            src="/public/images/mystery man avatar.webp"
-            alt="Profiel"
-            class="profile-pic"
-          />
+          <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
         </div>
       </div>
     </div>
-
 </head>
-<style>
-    /*  */
-</style>
+      
 <body>
 
     <main class="mainContent">
@@ -59,11 +40,25 @@
             <h2 id="prgrmoverzicht">Programma overzicht</h2>
             <a href="/src/HTML/PROGRAMMA/programma-voormidag.html" class="voormiddagBtn">Voormiddag</a> 
             <a href="/src/HTML/PROGRAMMA/programma-namidag.html" class="namiddagBtn">Namiddag</a>
-
+    <main class="mainContent">
+        <section class="planningBox">
+            <h2>Programma overzicht</h2>
+            <a href="/programmaVoormidag" class="voormiddagBtn">Voormiddag</a> 
+            <a href="/programmaNamidag" class="namiddagBtn">Namiddag</a>
         </section>
     </main>
     
+<div id="loadingOverlay">
+    <div class="loader"></div>
 
+<script type="module">
+  import {hideLoading} from '/src/JS/main.js'
+
+  document.addEventListener('DOMContentLoaded', () => {
+      hideLoading();
+  });
+
+</script>
 
 </body>
 </html>
