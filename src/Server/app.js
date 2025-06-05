@@ -4,7 +4,7 @@ const path = require('path');
 const app = express();
 
 // Serveer statische frontendbestanden
-app.use(express.static(path.join(__dirname, '../CareerLaunch')));
+app.use(express.static(path.join(__dirname, '../')));
 
 // Voorbeeld API endpoint
 app.get('/api/hello', (req, res) => {

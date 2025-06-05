@@ -205,6 +205,86 @@ footer {
 }
 
 
+/* Planning namiddag */
+
+* { box-sizing: border-box; }
+
+
+
+.sideBar {
+  grid-area: sidebar;
+  padding: 2.2rem 1.1rem 1.1rem 1.1rem;
+  background: #fff;
+  border-right: 2px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+
+
+.sidebarTitle {
+  background: #887979;
+  color: #222;
+  padding: 0.35em 1em;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-size: 1.12rem;
+  font-weight: 600;
+}
+
+.sidebarZoekbalk {
+  width: 100%;
+  padding: 0.6em 1em;
+  background: #cecece;
+  border-radius: 6px;
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.sidebarTafels {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.sidebarTafels li {
+  background: #cecece;
+  border-radius: 5px;
+  margin-bottom: 0.9em;
+  padding: 0.75em 1em;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.sidebarTafels li:hover,
+.sidebarTafels li.selected {
+  background: #a08c8c;
+  color: #fff;
+}
+
+.overzichtContainer{
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+.sideBar{
+  width: 300px;
+  min-width: 220px;
+  max-width: 350px;
+  flex-shrink: 0;
+}
+.plattegrond{
+  width: 800px;
+}
+
+#plattegrondImg{
+  width: 50%;
+  max-width: 700px;
+  height: auto;
+  display: block;
+}
+
 .footerContent {
   margin-left: 2.5rem;
 }
