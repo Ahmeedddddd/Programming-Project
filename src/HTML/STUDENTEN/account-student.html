@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Student</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Student</title>
+  <link rel="stylesheet" href="/src/CSS/style.css">
 </head>
+
 <body>
-    <div class="container">
-        <header class="header">
-          <img class="logo-left" src="/public/images/image.png" alt="Logo Links" />
-          <nav class="nav">
-            <a class="nav-btn active" href="#">Home</a>
-            <a class="nav-btn" href="#">Programma</a>
-            <a class="nav-btn" href="#">Mijn gesprekken</a>
-          </nav>
-          <div class="user-info">
-            <span class="user-name">John Doe</span>
-            <img class="profile-img" src="/public/images/mystery man avatar.webp" alt="Profielfoto" />
-          </div>
-        </header>
-        <main class="main">
-          <section class="card">
-            <div class="card-btn">Mijn gegevens</div>
-            <div class="card-btn">Mijn project</div>
-            <div class="card-btn">Uitloggen</div>
-          </section>
-        </main>
+  <div class="container">
+    <div class="nav">
+      <div class="logo">
+        <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
       </div>
-      
+      <div class="navBar">
+        <a href="/index.html" class="navItem active">Home</a>
+        <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
+        <a href="#" class="navItem">Mijn gesprekken</a>
+        <div class="pfpContainer">
+          <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic"/>
+        </div>
+      </div>
+    </div>
+    <main class="main">
+      <section class="card">
+        <a href="/src/HTML/STUDENTEN/gegevens-student.html" class="gegevensBtn"> Mijn gegevens </a>
+        <a href="/src/HTML/STUDENTEN/mijn-project.html" class="projectBtn">Mijn project</a>
+        <a href="/index.html" class="uitloggenBtn">Uitloggen</a>
+
+      </section>
+    </main>
+  </div>
+
 </body>
+
 </html>
