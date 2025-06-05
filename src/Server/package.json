@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-<<<<<<< Updated upstream
-=======
     "dev": "nodemon app.js",
->>>>>>> Stashed changes
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,7 +12,8 @@
   "description": "",
   "dependencies": {
     "expres": "^0.0.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "server": "file:"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
