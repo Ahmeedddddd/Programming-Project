@@ -5,7 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programma Voormiddag</title>
 </head>
+
 <body>
+<<<<<<< Updated upstream
     
+=======
+    <!-- Navigatiebalk -->
+     <div class="nav">
+      <div class="logo">
+        <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+      </div>
+      <div class="navBar">
+        <a href="/index.html" class="navItem">Home</a>
+        <a href="/programma" class="navItem active"
+          >Programma</a
+        >
+        <a href="#" class="navItem">Mijn gesprekken</a>
+        <div class="pfpContainer">
+          <img
+            src="/images/mystery man avatar.webp"
+            alt="Profiel"
+            class="profile-pic"
+          />
+        </div>
+      </div>
+    </div>
+
+    
+<div class="overzichtContainer">
+  <aside class="sideBar">
+    <h2 class="sidebarTitle">Overzicht tafels</h2>
+    <div class="sidebarZoekbalk">Zoekbalk</div>
+    <ul class="sidebarTafels">
+      <li>Tafel 1: Kokende AI robot</li>
+      <li>Tafel 2: Smartline Inspector</li>
+      <li>Tafel 3: NeuroTrack</li>
+      <li>Tafel 4: Architect Viewer</li>
+      <li>Tafel 5: Embedded Iot-Sensornode met Rust</li>
+      <li>Tafel 6: Geïntegreerd campus-beheer via Cisco DNA Center</li>
+      <li>Tafel 7: High-Performance Web-Api in Rust</li>
+    </ul>
+  </aside>
+
+<div class="plattegrond">
+    <h3>Plattegrond</h3>
+    <img src="/public/plattegrondTafels.png" id="plattegrondImg" alt="Plattegrond" style="max-width: 100%; height: auto;">
+
+</div>
+</div>
+
+<div id="loadingOverlay">
+    <div class="loader"></div>
+
+<script type="module">
+  import {hideLoading} from '/src/JS/main.js'
+
+  document.addEventListener('DOMContentLoaded', () => {
+      hideLoading();
+  });
+
+</script>
+>>>>>>> Stashed changes
 </body>
 </html>
