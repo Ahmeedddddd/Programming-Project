@@ -10,3 +10,20 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 * Versiebeheer: Git & GitHub
 * Samenwerking: Trello (voor taakverdeling en planning)
 * Icons: svgrepo.com
+
+## Instalatie/gebruik guide
+
+# Packages gebruikt
+* Express
+* Nodemon
+
+# Instaleer de packages
+`npm install express`
+`npm install --save-dev nodemon`
+
+# Start server
+`cd src`
+`cd Server`
+`npm run dev`
+
+* Klik nu op de gegeven link in de terminal
