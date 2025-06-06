@@ -441,6 +441,15 @@ footer {
       color: #13c032;
       text-decoration: underline;
     }
+
+    .homeButton{
+      text-decoration: none;
+      cursor: pointer;
+      width: 50px;
+      position: fixed;
+      top: 5px;
+      left: 5px;
+    }
  
 /* STUDENT*/
  
