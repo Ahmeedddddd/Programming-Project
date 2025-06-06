@@ -121,6 +121,11 @@ h2{
   margin: 0 auto;
   max-width: 900px;
 }
+
+#bedrijfLink{
+  color: #090909;
+  text-decoration: none;
+}
  
 .bedrijven h2,
 .studenten h2,
