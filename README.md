@@ -14,8 +14,8 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 ## Instalatie/gebruik guide
 
 # Packages gebruikt
-* Express[https://expressjs.com/]
-* Nodemon[https://www.npmjs.com/package/nodemon]
+* [Express](https://expressjs.com/)
+* [Nodemon](https://www.npmjs.com/package/nodemon)
 
 # Instaleer de packages
 * `npm install express`
