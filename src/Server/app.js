@@ -26,4 +26,8 @@ app.get('/programmaNamidag', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma-namidag.html'));
 });
 
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ACCOUNT/login.html'));
+});
+
 app.listen(port, () => console.log(`Server has started on: http://localhost:${port}`))
