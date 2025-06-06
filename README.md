@@ -18,12 +18,12 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 * Nodemon
 
 # Instaleer de packages
-`npm install express`
-`npm install --save-dev nodemon`
+* `npm install express`
+* `npm install --save-dev nodemon`
 
 # Start server
-`cd src`
-`cd Server`
-`npm run dev`
+* `cd src`
+* `cd Server`
+* `npm run dev`
 
 * Klik nu op de gegeven link in de terminal
