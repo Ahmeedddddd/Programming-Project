@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 export function hideLoading(){
 <<<<<<< Updated upstream
     const hideLoading = () => loadingOverlay && (loadingOverlay.style.display = 'none');
@@ -6,3 +7,5 @@ export function hideLoading(){
     loadingOverlay.style.display = 'none';
 >>>>>>> Stashed changes
 }
+=======
+>>>>>>> Stashed changes
