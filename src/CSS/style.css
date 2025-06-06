@@ -16,6 +16,10 @@ body {
   color: #1e1e1e;
 }
 
+h2{
+  text-align: center;
+}
+
 /* Navigatie balk */
 
 .logo{
