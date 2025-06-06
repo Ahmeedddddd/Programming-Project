@@ -1,0 +1,51 @@
+# Node.js modules (in root of subfolders)
+node_modules/
+src/Server/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specifiek
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
+
+# Optional: environment files (als je met .env werkt)
+.env
+.env.local
+.env.*.local
+
+# Cache folders
+.cache/
+.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# JetBrains / IntelliJ IDE (zoals WebStorm, PhpStorm...)
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Coverage reports
+coverage/
+
+# Mac-specifiek
+__MACOSX/
+
+# Optional: tijdelijke bestanden
+*.swp
+*.tmp
