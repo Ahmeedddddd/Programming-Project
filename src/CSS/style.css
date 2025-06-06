@@ -126,6 +126,29 @@ body {
   font-weight: 700;
 }
 
+<<<<<<< Updated upstream
+=======
+.cardList .card {
+  background: #d9d9d9;
+  border-radius: 18px;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  /* Breedte wordt nu door grid bepaald! */
+  width: auto;
+  min-height: unset;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+#bedrijfLink{
+  color: #090909;
+  text-decoration: none;
+}
+
+>>>>>>> Stashed changes
 .cardList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -313,6 +336,36 @@ footer {
 }
 
 
+
+/* LOGIN */
+
+.loginButton:hover {
+      background: linear-gradient(90deg, #13c032 60%, #14F933 100%);
+    }
+
+    .loginExtra {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 1rem;
+      color: #666;
+    }
+
+    .loginExtra a {
+      color: #14F933;
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 6px;
+      transition: color .15s;
+    }
+
+    .loginExtra a:hover {
+      color: #13c032;
+      text-decoration: underline;
+    }
+
+    #loginButton{
+      
+    }
 
 /* STUDENT*/
 
