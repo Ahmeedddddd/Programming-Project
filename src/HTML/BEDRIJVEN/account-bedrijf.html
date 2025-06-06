@@ -1,52 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Bedrijf</title>
-    <link rel="stylesheet" href="/src/CSS/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Bedrijf</title>
+  <link rel="stylesheet" href="/src/CSS/style.css">
 </head>
+
 <body>
 
+  <div class="container">
     <div class="nav">
-        <div class="Logo">
-          <img src="/public/images/image.png" alt="Logo" class="logo" />
+      <div class="logo">
+        <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
+      </div>
+      <div class="navBar">
+        <a href="/index.html" class="navItem active">Home</a>
+        <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
+        <a href="#" class="navItem">Mijn gesprekken</a>
+        <div class="pfpContainer">
+          <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic"/>
         </div>
-
+      </div>
     </div>
-    
-        <div class="rolSwitch">
-          <button class="rolBtn">Bedrijf</button>
-        </div>
-        <form class="aanmeldForm">
-          <div class="formGroup">
-            <label for="voornaam">Voornaam</label>
-            <input type="text" id="voornaam" name="voornaam" required>
-          </div>
-          <div class="formGroup">
-            <label for="achternaam">Achternaam</label>
-            <input type="text" id="achternaam" name="achternaam" required>
-          </div>
-          <div class="formGroup">
-            <label for="tva-nummer">TVA-nummer</label>
-            <input type="text" id="achternaam" name="achternaam" required>
-          </div>
-          
-          <div class="formGroup">
-            <label for="email">Email-adres</label>
-            <input type="email" id="email" name="email" required>
-          </div>
-          <div class="formGroup">
-            <label for="wachtwoord">Maak wachtwoord</label>
-            <input type="password" id="wachtwoord" name="wachtwoord" required>
-          </div>
-          <div class="formGroup">
-            <label for="herhaalWachtwoord">Herhaal wachtwoord</label>
-            <input type="password" id="herhaalWachtwoord" name="herhaalWachtwoord" required>
-          </div>
-          <button type="submit" class="formSubmit">Meld aan</button>
-        </form>
-      
-    
+    <main class="main">
+      <section class="card">
+        <a href="/src/HTML/STUDENTEN/gegevens-student.html" class="gegevensBtn"> Mijn gegevens </a>
+        <a href="#" class="documentBtn">Mijn Documenten</a>
+        <a href="/index.html" class="uitloggenBtn">Uitloggen</a>
+
+      </section>
+    </main>
+  </div>
+
 </body>
+
 </html>
