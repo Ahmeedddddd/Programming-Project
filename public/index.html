@@ -4,42 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerLaunch</title>
-    <link rel="stylesheet" href="/src/CSS/style.css">
-</head>
-<body>
-  <!-- Navigatie -->
-  <div class="nav">
-    <div class="logo">
-    <img src="/images/image.png" alt="Erasmus Logo" class="logo">
+    <link rel="stylesheet" href="/src/CSS/style.css" />
+  </head>
+  <body>
+    <!-- Navigatie -->
+    <div class="nav">
+      <div class="logo">
+        <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+        <div class="navBar">
+          <a href="#" class="navItem active">Home</a>
+          <a href="/programma" class="navItem">Programma</a>
+          <a href="#" class="navItem">Mijn gesprekken</a>
+          <div class="pfpContainer" id="burgerToggle">
+            <img
+              src="/images/mystery man avatar.webp"
+              alt="Profiel"
+              class="profile-pic"
+            />
+          </div>
+        </div>
+      </div>
+      <!-- Verborgen sidebar -->
+      <div class="sideMenu" id="sideMenu">
+        <a href="#">Instellingen</a>
+        <a href="#">Log uit</a>
+        <a href="#">Account</a>
+        <!-- Voeg hier jouw eigen links toe -->
+      </div>
     </div>
-    <div class="navBar">
-        <a href="#" class="navItem active">Home</a>
-        <a href="/programma" class="navItem">Programma</a>
-        <a href="#" class="navItem">Mijn gesprekken</a>
-      <div class="pfpContainer">
-        <img src="public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
-      <a href="#" class="navItem active">Home</a>
-      <a href="/programma" class="navItem">Programma</a>
-      <a href="#" class="navItem">Mijn gesprekken</a>
-    
-      <div class="pfpContainer" id="burgerToggle">
-    
-    <!-- Verborgen sidebar -->
-    <div class="sideMenu" id="sideMenu">
-      <a href="#">Instellingen</a>
-      <a href="#">Log uit</a>
-      <a href="#">Account</a>
-      <!-- Voeg hier jouw eigen links toe -->
-    </div>
-  </div>
 
-  <!-- Zoekbalk -->
-  <section class="searchSection">
-    <div class="searchBar">
-      <span>Zoeken</span>
-      <button class="searchBtn"><img src="" alt="Zoek"></button>
-    </div>
-  </section>
+    <!-- Zoekbalk -->
+    <section class="searchSection">
+      <div class="searchBar">
+        <span>Zoeken</span>
+        <button class="searchBtn"><img src="" alt="Zoek" /></button>
+      </div>
+    </section>
 
     <!-- Bedrijven -->
     <main>
@@ -59,34 +59,34 @@
           </a>
           <article class="card">
             <a href="#" id="bedrijfLink">
-            <h3>Vital’O Network</h3>
-            <p>
-              Vital’O Network verbindt medische systemen met elkaar voor vlotte
-              en veilige datastromen. Hun innovatieve platform maakt zorg
-              slimmer via FHIR-API’s en moderne IT-oplossingen.
-            </p>
+              <h3>Vital’O Network</h3>
+              <p>
+                Vital’O Network verbindt medische systemen met elkaar voor
+                vlotte en veilige datastromen. Hun innovatieve platform maakt
+                zorg slimmer via FHIR-API’s en moderne IT-oplossingen.
+              </p>
             </a>
           </article>
           <article class="card">
             <a href="#" id="bedrijfLink">
-            <h3>PixelPioniers</h3>
-            <p>
-              PixelPioniers bouwt schaalbare Cisco-netwerken met focus op
-              SD-WAN, DNA Center en geautomatiseerde provisioning. Ze combineren
-              netwerksecurity en NetDevOps om bedrijven future-proof te
-              verbinden.
-            </p>
+              <h3>PixelPioniers</h3>
+              <p>
+                PixelPioniers bouwt schaalbare Cisco-netwerken met focus op
+                SD-WAN, DNA Center en geautomatiseerde provisioning. Ze
+                combineren netwerksecurity en NetDevOps om bedrijven
+                future-proof te verbinden.
+              </p>
             </a>
           </article>
           <article class="card">
             <a id="bedrijfLink" href="#">
-            <h3>QuantumOps</h3>
-            <p>
-              QuantumOps is een IT-consultancybedrijf dat cloudinfrastructuur,
-              moderne werkplekken en datagedreven inzichten levert. Hun
-              oplossingen helpen bedrijven groeien met veilige, flexibele en
-              intelligente IT-architectuur.
-            </p>
+              <h3>QuantumOps</h3>
+              <p>
+                QuantumOps is een IT-consultancybedrijf dat cloudinfrastructuur,
+                moderne werkplekken en datagedreven inzichten levert. Hun
+                oplossingen helpen bedrijven groeien met veilige, flexibele en
+                intelligente IT-architectuur.
+              </p>
             </a>
           </article>
         </div>
@@ -201,4 +201,6 @@
       </div>
     </footer>
   </body>
+
+  <script src="'src/JS/startPage.js"></script>
 </html>
