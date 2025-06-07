@@ -1,11 +1,4 @@
-// src/server/mail.js
-// Deze module is verantwoordelijk voor het verzenden van e-mails met facturen
-// Zorg ervoor dat je de juiste modules hebt geïnstalleerd:
-// npm install nodemailer nodemailer-express-handlebars express-handlebars
-
 const nodemailer = require('nodemailer');
-const hbsModule = require('nodemailer-express-handlebars');
-const hbs = typeof hbsModule === 'function' ? hbsModule : hbsModule.default;
 const path = require('path');
 
 const transporter = nodemailer.createTransport({
@@ -27,7 +20,11 @@ const handlebarOptions = {
   extName: '.handlebars'
 };
 
-transporter.use('compile', hbs(handlebarOptions));
+(async () => {
+  const hbsModule = await import('nodemailer-express-handlebars');
+  const hbs = hbsModule.default;
+  transporter.use('compile', hbs(handlebarOptions));
+})();
 
 async function sendInvoice(data) {
   const mailOptions = {
