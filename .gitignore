@@ -1,6 +1,7 @@
 # Node.js modules (in root of subfolders)
 node_modules/
 src/Server/node_modules/
+src/JS/node_modules/
 
 # Logs
 logs/
