@@ -3,6 +3,9 @@ node_modules/
 src/Server/node_modules/
 src/JS/node_modules/
 
+# Config
+src/Server/.env
+
 # Logs
 logs/
 *.log
