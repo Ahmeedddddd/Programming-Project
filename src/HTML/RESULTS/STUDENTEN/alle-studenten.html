@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>John Doe – Portfolio & Reservatie</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header met site-titel en navigatie -->
+  <header class="site-header">
+    <div class="header-inner">
+      <h1 class="site-title">John Doe</h1>
+      <nav class="site-nav">
+        <ul>
+          <!-- Nav links naar secties; volgorde blijft logisch: Over mezelf, Project, Contact, Info -->
+          <li><a href="#over-mezelf">Over mezelf</a></li>
+          <li><a href="#project">Mijn Project</a></li>
+          <li><a href="#contact">Contacteer</a></li>
+          <li><a href="#info">Info</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Layout: main-content eerst in DOM, daarna aside -->
+  <div class="layout">
+    <!-- Main content: primaire inhoud -->
+    <main class="main-content">
+      <!-- “Over mezelf” sectie -->
+      <section class="section-over" id="over-mezelf">
+        <h2>Over mezelf</h2>
+        <p>
+          Hallo! Ik ben John Doe, een developer met interesse in AI, embedded software, mechatronica en IoT. Ik werk aan projecten waarin kunstmatige intelligentie samenkomt met hardware en robotica. In mijn vrije tijd lees ik graag vakliteratuur en experimenteer ik met nieuwe technologieën.
+        </p>
+      </section>
+
+      <!-- “Mijn Project” sectie -->
+      <section class="section-project" id="project">
+        <h2>Mijn Project: Kokende AI Robot</h2>
+        <div class="project-content">
+          <div class="project-text">
+            <p>
+              De Kokende AI Robot is een geavanceerde huishoudrobot ontworpen om volledig zelfstandig maaltijden te bereiden. Uitgerust met kunstmatige intelligentie, spraakherkenning en honderden ingebouwde recepten, analyseert hij voedingsvoorkeuren, allergieën en beschikbare ingrediënten. Dankzij zijn precisiearmen en temperatuurcontrole kan hij koken als een professionele chef. In de fictieve wereld waarin deze robot populair is, verandert hij het dagelijks leven door tijd te besparen en voedselverspilling te minimaliseren, terwijl hij tegelijkertijd gepersonaliseerde en gezonde gerechten op tafel zet.
+            </p>
+          </div>
+          <div class="project-images">
+            <figure>
+              <img src="fotoairobot.jpg" alt="Kokende AI Robot">
+              <figcaption>AI Robot</figcaption>
+            </figure>
+            <figure>
+              <img src="koken.jpg" alt="Robot aan het koken">
+              <figcaption>Koken</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- “Contacteer mij” sectie -->
+      <section class="section-contact" id="contact">
+        <h2>Contacteer mij</h2>
+        <p>
+          Heb je vragen of wil je samenwerken? Stuur me een bericht via e-mail of LinkedIn. 
+        </p>
+        <a href="mailto:johndoe@example.com" class="btn btn-contact">Stuur e-mail</a>
+      </section>
+    </main>
+
+    <!-- Sidebar: aanvullende info, profiel-links, reservatie -->
+    <aside class="sidebar">
+      <!-- Profielsectie -->
+      <figure class="profile-figure">
+        <!-- Placeholder profielafbeelding -->
+        <img src="profile-placeholder.jpg" alt="John Doe" class="profile-image">
+        <figcaption class="profile-name">John Doe</figcaption>
+      </figure>
+
+      <!-- Links: LinkedIn, GitHub, CV -->
+      <div class="profile-links">
+        <a href="https://www.linkedin.com/in/johndoe" target="_blank" rel="noopener" class="link-item">
+          <span>LinkedIn</span>
+        </a>
+        <a href="https://github.com/jonddoe3" target="_blank" rel="noopener" class="link-item">
+          <span>GitHub</span>
+        </a>
+        <a href="CV.pdf" target="_blank" class="link-item">
+          <span>CV (PDF)</span>
+        </a>
+      </div>
+
+      <!-- Info-sectie -->
+      <section class="reservation-section" id="info">
+        <h2>Tafel 1</h2>
+        <button type="button" class="btn btn-reserve">Reservatie maken</button>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>&copy; 2025 John Doe. Alle rechten voorbehouden.</p>
+  </footer>
+</body>
+</html>
