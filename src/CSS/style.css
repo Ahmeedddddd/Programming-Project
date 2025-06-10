@@ -1,13 +1,13 @@
 * {
   box-sizing: border-box;
 }
-
+ 
 img {
   display: block;
   max-width: 100%;
   height: auto;
 }
-
+ 
 body {
   margin: 0;
   padding: 0;
@@ -15,16 +15,20 @@ body {
   background: #fff;
   color: #1e1e1e;
 }
-
+ 
+h2{
+  text-align: center;
+}
+ 
 /* Navigatie balk */
-
+ 
 .logo{
   height: 120px;
   display: flex;
   align-items: center;
   margin-right: 280px;
 }
-
+ 
 .nav{
   display: flex;
   padding-bottom: 2px;
@@ -32,16 +36,16 @@ body {
   align-items: center;
   height: 125px;
 }
-
+ 
 .navBar{
   margin-top: 0px;
-  padding: 25px 476px 25px 25px;
+  padding: 25px 25px 25px 25px;
   background-color: #d9d9d9;
   border-radius: 10px;
   border: black solid 2px;
   width: 100%;
 }
-
+ 
 .pfpContainer{
   width: 68px;
   height: 68px;
@@ -50,7 +54,7 @@ body {
   right: 5px;
   z-index: 600;
 }
-
+ 
 /* Navigatieknoppen */
 .navItem {
   font-size: 1.2rem;
@@ -65,20 +69,20 @@ body {
   box-shadow: none;
   transition: background 0.16s;
 }
-
+ 
 .navItem.active,
 .navItem:hover {
   background: #444;
   color: #fff;
 }
-
+ 
 .searchSection {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 2rem 0 1rem 0;
 }
-
+ 
 .searchBar {
   display: flex;
   align-items: center;
@@ -89,12 +93,12 @@ body {
   min-width: 300px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.07);
 }
-
+ 
 .searchBar span {
   font-size: 1.15rem;
   font-weight: 500;
 }
-
+ 
 .searchBtn {
   border: none;
   background: #686868;
@@ -107,17 +111,22 @@ body {
   justify-content: center;
   transition: background 0.2s;
 }
-
+ 
 .searchBtn:hover {
   background: #bababa;
 }
-
+ 
 .bedrijven, .studenten, .projecten {
   padding: 2rem 0;
   margin: 0 auto;
   max-width: 900px;
 }
 
+#bedrijfLink{
+  color: #090909;
+  text-decoration: none;
+}
+ 
 .bedrijven h2,
 .studenten h2,
 .projecten h2 {
@@ -125,9 +134,7 @@ body {
   margin-bottom: 1.2rem;
   font-weight: 700;
 }
-
-<<<<<<< Updated upstream
-=======
+ 
 .cardList .card {
   background: #d9d9d9;
   border-radius: 18px;
@@ -142,19 +149,14 @@ body {
   gap: 0.5rem;
   margin: 0;
 }
-
-#bedrijfLink{
-  color: #090909;
-  text-decoration: none;
-}
-
->>>>>>> Stashed changes
+ 
+ 
 .cardList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.3rem;
 }
-
+ 
 .card {
   background: #d9d9d9;
   border-radius: 18px;
@@ -163,19 +165,19 @@ body {
   display: flex;
   flex-direction: column;
 }
-
+ 
 .card h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
   font-size: 1.3rem;
   font-weight: 600;
 }
-
+ 
 .card p {
   font-size: 1rem;
   margin-bottom: 0;
 }
-
+ 
 .btn {
   margin-top: 1.7rem;
   padding: 0.6rem 1.8rem;
@@ -188,17 +190,11 @@ body {
   font-weight: 600;
   transition: background 0.15s;
 }
-
+ 
 .btn:hover {
   background: #bababa;
   color: #222;
 }
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 
         /* Wat is Career Launch sectie */
         .about-section {
@@ -341,18 +337,6 @@ body {
             background: #c82333;
         }
 
-
-
-
-
-
-
-
-
-
-
- 
->>>>>>> Stashed changes
 /* Programma */
 #prgrmoverzicht{
   text-align: center;
@@ -376,7 +360,7 @@ body {
 .voormiddagBtn:hover, .namiddagBtn:hover {
   background: #444;
 }
-
+ 
 footer {
   background: #d9d9d9;
   border-radius: 40px 40px 0 0;
@@ -385,14 +369,7 @@ footer {
   text-align: left;
   font-size: 1.1rem;
 }
-
-
-/* Planning namiddag */
-
-* { box-sizing: border-box; }
-
-
-
+ 
 .sideBar {
   grid-area: sidebar;
   padding: 2.2rem 1.1rem 1.1rem 1.1rem;
@@ -402,9 +379,9 @@ footer {
   flex-direction: column;
   align-items: flex-start;
 }
-
-
-
+ 
+ 
+ 
 .sidebarTitle {
   background: #887979;
   color: #222;
@@ -414,7 +391,7 @@ footer {
   font-size: 1.12rem;
   font-weight: 600;
 }
-
+ 
 .sidebarZoekbalk {
   width: 100%;
   padding: 0.6em 1em;
@@ -423,7 +400,7 @@ footer {
   margin-bottom: 1.2rem;
   text-align: left;
 }
-
+ 
 .sidebarTafels {
   list-style: none;
   padding: 0;
@@ -444,7 +421,7 @@ footer {
   background: #a08c8c;
   color: #fff;
 }
-
+ 
 .overzichtContainer{
   display: flex;
   align-items: flex-start;
@@ -459,17 +436,18 @@ footer {
 .plattegrond{
   width: 800px;
 }
-
+ 
 #plattegrondImg{
   width: 50%;
   max-width: 700px;
   height: auto;
   display: block;
 }
+ 
 .footerContent {
   margin-left: 2.5rem;
 }
-
+ 
 @media (max-width: 700px) {
   .header {
     flex-direction: column;
@@ -494,11 +472,94 @@ footer {
   }
 }
 
-
-
 /* LOGIN */
 
-.loginButton:hover {
+.loginBlok {
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(120deg, #d9d9d9 0%, #f5f5f5 100%);
+      font-family: 'Inter', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loginContainer {
+      background: #fff;
+      border-radius: 32px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.07), 0 1.5px 3px rgba(20, 249, 51, 0.07);
+      width: 380px;
+      max-width: 95vw;
+      padding: 2.5rem 2rem 2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .loginLogo {
+      margin-bottom: 1.2rem;
+    }
+
+    .loginLogo img {
+      width: 70px;
+      height: 52px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .loginTitle {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #222;
+      letter-spacing: 1px;
+      margin-bottom: 1.8rem;
+    }
+
+    .loginForm {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .loginForm label {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .loginForm input {
+      padding: 0.8rem 1rem;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: #f5f5f5;
+      transition: border .2s;
+    }
+
+    .loginForm input:focus {
+      border: 1.5px solid #14F933;
+      outline: none;
+      background: #fff;
+    }
+
+    .loginButton {
+      margin-top: 1.2rem;
+      padding: 0.9rem 0;
+      background: linear-gradient(90deg, #14F933 60%, #13c032 100%);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(20, 249, 51, 0.09);
+      transition: background .15s;
+    }
+
+    .loginButton:hover {
       background: linear-gradient(90deg, #13c032 60%, #14F933 100%);
     }
 
@@ -522,12 +583,17 @@ footer {
       text-decoration: underline;
     }
 
-    #loginButton{
-      
+    .homeButton{
+      text-decoration: none;
+      cursor: pointer;
+      width: 50px;
+      position: fixed;
+      top: 5px;
+      left: 5px;
     }
-
+ 
 /* STUDENT*/
-
+ 
 /* ACCOUNT-STUDENT */
 .card {
   width: 754px;
@@ -542,10 +608,12 @@ footer {
   margin: 60px auto 0 auto;
   padding: 60px 0;
 }
-
+ 
 .gegevensBtn,
 .projectBtn,
-.uitloggenBtn {
+.uitloggenBtn,
+.overzichtBtn,
+.documentBtn {
   width: 491px;
   height: 80px;
   background: #d9d9d9;
@@ -563,29 +631,31 @@ footer {
   box-shadow: 0 2px 12px rgba(0,0,0,0.09);
   transition: background 0.15s, box-shadow 0.15s, color 0.1s;
 }
-
+ 
 .gegevensBtn:hover,
 .projectBtn:hover,
-.uitloggenBtn:hover {
+.uitloggenBtn,
+.overzichtBtn,
+.documentBtn:hover {
   background: #c3c3c3;
   box-shadow: 0 4px 18px rgba(0,0,0,0.14);
   color: #222;
   text-decoration: underline;
 }
-
+ 
 .uitloggenBtn {
   background: rgb(255, 184, 184);
   border-color: #d33;
   color: #c00;
 }
-
+ 
 .uitloggenBtn:hover {
   background: #ffbdbd;
   color: #a10000;
   box-shadow: 0 4px 18px rgba(220,0,0,0.10);
 }
-
-
+ 
+ 
 /* GEGEVENS-STUDENT  */
 .profielKaart {
   width: 600px;
@@ -599,7 +669,7 @@ footer {
   align-items: center;
   gap: 22px;
 }
-
+ 
 .rol {
   background: #d9d9d9;
   padding: 8px 34px;
@@ -610,7 +680,7 @@ footer {
   color: #444;
   letter-spacing: 1px;
 }
-
+ 
 .profielVeld {
   width: 100%;
   background: #d9d9d9;
@@ -624,7 +694,7 @@ footer {
   text-align: left;
   transition: background 0.13s;
 }
-
+ 
 .editBtn {
   margin-top: 16px;
   background: #14A9F9;
@@ -639,15 +709,12 @@ footer {
   box-shadow: 0 1px 8px rgba(0,0,0,0.11);
   transition: background 0.2s, color 0.13s;
 }
-
+ 
 .editBtn:hover {
   background: #0d8fd8;
   color: #f8f8f8;
 }
-
-
-
-
+ 
 /* MIJN PROJECTEN */
 .profielMain {
   display: flex;
@@ -656,7 +723,7 @@ footer {
   max-width: 1300px;
   margin: 0 auto;
 }
-
+ 
 /* Zijbalk */
 .profielZijbalk {
   width: 260px;
@@ -669,11 +736,11 @@ footer {
   min-width: 220px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
-
+ 
 .zijbalkSectie {
   margin-bottom: 16px;
 }
-
+ 
 .zijbalkTitel {
   font-size: 18px;
   font-weight: 600;
@@ -681,7 +748,7 @@ footer {
   margin-bottom: 14px;
   letter-spacing: 0.5px;
 }
-
+ 
 .zijbalkVeld {
   color: #313131;
   font-size: 14px;
@@ -692,11 +759,11 @@ footer {
   word-break: break-all;
   box-sizing: border-box;
 }
-
+ 
 .zijbalkSectie:last-child {
   margin-bottom: 0;
 }
-
+ 
 /* Inhoud Rechts */
 .profielInhoud {
   flex: 1;
@@ -709,66 +776,66 @@ footer {
   gap: 22px;
   position: relative;
 }
-
+ 
 .projectHeader {
   margin-bottom: 20px;
 }
-
+ 
 .projectTitel {
   font-size: 28px;
   font-weight: 700;
   color: #232323;
   margin-bottom: 5px;
 }
-
+ 
 .projectSubTitel {
   font-size: 20px;
   font-weight: 500;
   color: #333;
   margin-bottom: 5px;
 }
-
+ 
 .projectTegels {
   font-size: 13px;
   color: #757575;
   margin-bottom: 16px;
   letter-spacing: 0.1px;
 }
-
+ 
 .projectBeschrijving {
   font-size: 15px;
   color: #232323;
   line-height: 1.6;
   margin-bottom: 10px;
 }
-
+ 
 .projectSkills {
   font-size: 13px;
   color: #333;
   margin-bottom: 20px;
   font-style: italic;
 }
-
+ 
 .aboutSection {
   background: #d9d9d9;
   border-radius: 14px;
   padding: 18px 26px;
   margin-bottom: 18px;
 }
-
+ 
 .aboutTitel {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 8px;
   color: #222;
 }
-
+ 
 .aboutText {
   font-size: 14px;
   color: #181818;
   line-height: 1.7;
 }
-
+ 
 /* Edit Knop */
 .editBtn {
   background: #14A9F9;
@@ -789,5 +856,351 @@ footer {
   background: #0d8fd8;
   color: #f8f8f8;
 }
+ 
+ 
+/* ORGANISATOR */
+ 
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #fff;
+}
+ 
+ 
+/* Overzicht pagina */
+.overzichtMain {
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+ 
+.overzichtTitel {
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 48px;
+  letter-spacing: 1px;
+}
+ 
+.overzichtBlokken {
+  display: flex;
+  gap: 48px;
+  background: #D9D9D9;
+  border-radius: 135px;
+  padding: 44px 30px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+}
+ 
+.overzichtBlok {
+  width: 526px;
+  height: 110px;
+  background: #C8C5C5;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #181818;
+  font-weight: 500;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  transition: background 0.14s, color 0.14s;
+  text-decoration: none;
+}
+ 
+.overzichtBlok:hover {
+  background: #b2b2b2;
+  color: #2d2d2d;
+  cursor: pointer;
+  text-decoration: underline;
+}
 
 
+}
+
+/* Contacteer */
+
+.container {
+  width: 1535px;
+  height: 730px;
+  position: relative;
+  background: white;
+  overflow: hidden;
+  outline: 1px black solid;
+  outline-offset: -1px;
+}
+
+.line {
+  width: 2px;
+  height: 1px;
+  left: 41px;
+  top: 251px;
+  position: absolute;
+  background: #D9D9D9;
+}
+
+.form-box {
+  width: 647px;
+  height: 585px;
+  left: 442px;
+  top: 117px;
+  position: absolute;
+  background: #F5F5F5;
+  border-radius: 42px;
+}
+
+.title {
+  width: 438px;
+  height: 54px;
+  left: 548px;
+  top: 155px;
+  position: absolute;
+  text-align: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  color: black;
+  font-size: 24px;
+  font-family: Inter, sans-serif;
+  font-weight: 900;
+  word-wrap: break-word;
+}
+
+.email-bg {
+  width: 529px;
+  height: 41px;
+  left: 501px;
+  top: 237px;
+  position: absolute;
+  background: #BEBABA;
+}
+
+.email-label {
+  width: 529px;
+  height: 41px;
+  left: 501px;
+  top: 237px;
+  position: absolute;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  color: black;
+  font-size: 15px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  word-wrap: break-word;
+}
+
+.textarea-bg {
+  width: 529px;
+  height: 224px;
+  left: 501px;
+  top: 305px;
+  position: absolute;
+  background: #BEBABA;
+  border-radius: 45px;
+}
+
+.textarea-label {
+  width: 532px;
+  height: 208px;
+  left: 501px;
+  top: 313px;
+  position: absolute;
+  text-align: center;
+  color: black;
+  font-size: 15px;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  word-wrap: break-word;
+}
+
+.note {
+  width: 277px;
+  height: 41px;
+  left: 629px;
+  top: 626px;
+  position: absolute;
+  text-align: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  color: black;
+  font-size: 15px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  word-wrap: break-word;
+}
+
+.submit-button-bg {
+  width: 194px;
+  height: 58px;
+  left: 670px;
+  top: 558px;
+  position: absolute;
+  background: #14F933;
+}
+
+.submit-button-text {
+  width: 194px;
+  height: 58px;
+  left: 670px;
+  top: 558px;
+  position: absolute;
+  text-align: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  color: #010101;
+  font-size: 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  word-wrap: break-word;
+}
+
+.header {
+  width: 1033px;
+  height: 82px;
+  left: 463px;
+  top: 14px;
+  position: absolute;
+  background: #D9D9D9;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  border: 1px black solid;
+}
+
+.nav-info-bg {
+  width: 179px;
+  height: 35px;
+  left: 1006px;
+  top: 38px;
+  position: absolute;
+  background: #686868;
+}
+
+.nav-info-text {
+  width: 171px;
+  height: 30px;
+  left: 1019px;
+  top: 44px;
+  position: absolute;
+  color: black;
+  font-size: 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  word-wrap: break-word;
+}
+
+.img-right {
+  width: 89px;
+  height: 89px;
+  left: 1411px;
+  top: 10px;
+  position: absolute;
+}
+
+.img-left {
+  width: 123.38px;
+  height: 91px;
+  left: 34px;
+  top: 23px;
+  position: absolute;
+}
+
+.nav-home-bg {
+  width: 142px;
+  height: 35px;
+  left: 511px;
+  top: 38px;
+  position: absolute;
+  background: #686868;
+}
+
+.nav-home-text {
+  width: 79.39px;
+  height: 21.61px;
+  left: 556px;
+  top: 41.62px;
+  position: absolute;
+  color: black;
+  font-size: 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  word-wrap: break-word;
+}
+
+.nav-program-bg {
+  width: 142px;
+  height: 35px;
+  left: 663px;
+  top: 37px;
+  position: absolute;
+  background: #686868;
+}
+
+.nav-program-text {
+  width: 137.13px;
+  height: 26.71px;
+  left: 668px;
+  top: 42px;
+  position: absolute;
+  color: black;
+  font-size: 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  word-wrap: break-word;
+}
+
+.nav-chat-bg {
+  width: 179px;
+  height: 35px;
+  left: 816px;
+  top: 38px;
+  position: absolute;
+  background: #686868;
+}
+
+.nav-chat-text {
+  width: 171px;
+  height: 30px;
+  left: 824px;
+  top: 41.5px;
+  position: absolute;
+  color: black;
+  font-size: 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  word-wrap: break-word;
+}
+
+.nav-right-text {
+  width: 120px;
+  height: 43px;
+  left: 1298px;
+  top: 41px;
+  position: absolute;
+  color: black;
+  font-size: 20px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  word-wrap: break-word;
+}
+
+.icon-wrapper {
+  width: 61px;
+  height: 57px;
+  left: 311px;
+  top: 352px;
+  position: absolute;
+  overflow: hidden;
+}
+
+.icon-inner {
+  width: 50.83px;
+  height: 47.50px;
+  left: 5.08px;
+  top: 4.75px;
+  position: absolute;
+  background: #0A0A0A;
+}
