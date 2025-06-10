@@ -10,3 +10,26 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 * Versiebeheer: Git & GitHub
 * Samenwerking: Trello (voor taakverdeling en planning)
 * Icons: svgrepo.com
+
+## Instalatie/gebruik guide
+
+# Packages gebruikt
+* [Express](https://expressjs.com/)
+* [Nodemon](https://www.npmjs.com/package/nodemon)
+
+# Instaleer de packages
+* `npm install express`
+* `npm install --save-dev nodemon`
+
+# Start server
+* `cd src`
+* `cd Server`
+* `npm run dev`
+
+* Klik nu op de gegeven link in de terminal
+
+## ✉️ E-mailconfiguratie
+Maak een `.env` bestand in de root van het project met deze structuur:
+
+EMAIL_USER=je@gmail.com  
+EMAIL_PASS=jeAppSpecifiekWachtwoord  
