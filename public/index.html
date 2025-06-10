@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerLaunch</title>
-    <link rel="stylesheet" href="/src/CSS/style.css" />
+    <link rel="stylesheet" href="/src/CSS/index.css" />
   </head>
   <body>
     <!-- Navigatie -->
@@ -16,15 +16,13 @@
         <a href="/" class="navItem active">Home</a>
         <a href="/programma" class="navItem">Programma</a>
         <a href="#" class="navItem">Mijn gesprekken</a>
-        <div class="pfpContainer">
-          
-          <a href="/src/HTML/ACCOUT/login.html">
-            <img 
-            src="/images/mystery man avatar.webp"
-            
-            alt="Profiel"
-            class="profile-pic"
-          />
+        <div class="pfpContainer" id="burgerToggle">
+            <img
+              src="/images/mystery man avatar.webp"
+              alt="Profiel"
+              class="profile-pic"
+              id="burgerToggle"
+            />
           </a>
         </div>
       </div>
@@ -38,34 +36,129 @@
       </div>
     </section>
 
+    <!-- Wat is Career Launch -->
+    <section class="about-section">
+      <h2 class="about-title">Wat is Career launch?</h2>
+      <div class="about-content">
+        <div class="about-text">
+          <h3>Groot, praktijkgericht carrière-evenement</h3>
+          <p>
+            Career Launch brengt studenten in nauwe samenwerking met
+            onderwijsinstellingen samen met bedrijven uit diverse sectoren via
+            workshops, netwerkmomenten en persoonlijke gesprekken, waarmee
+            theorie en praktijk worden verbonden.
+          </p>
+        </div>
+        <div class="about-text">
+          <h3>Concrete loopbaankansen</h3>
+          <p>
+            studenten ontdekken stage- en werkmogelijkheden, wonen
+            bedrijfspresentaties bij en krijgen toegang tot loopbaanadvies en
+            coaching, volledig afgestemd op actuele ontwikkelingen op de
+            arbeidsmarkt.
+          </p>
+        </div>
+      </div>
+      <button class="learn-more-btn">Lees Meer</button>
+    </section>
+
+    <!-- Bedrijven en Studenten secties -->
+    <section class="content-sections">
+      <div class="sections-container">
+        <!-- Bedrijven sectie -->
+        <div class="section-card">
+          <h2 class="section-title">Bedrijven</h2>
+          <div class="section-features">
+            <h4>Direct in contact met jong talent:</h4>
+            <p>
+              Bereik gemotiveerde studenten op zoek naar stages,
+              studerjobprojecten en startersbanen, en voer waardevolle
+              gesprekken met kandidaten die echt interesse hebben in jouw
+              sector.
+            </p>
+
+            <h4>Vergroot je zichtbaarheid:</h4>
+            <p>
+              Presenteer je vacatures, stages en traineeships op locatie,
+              verstek je employer branding binnen onderwijsinstellingen en
+              vergroot je naamsbekendheid onder toekomstige professionals.
+            </p>
+
+            <h4>Volledig ingerichte beursstdelname:</h4>
+            <p>
+              Krijg een eigen stand op de beursvloer met kwalitatief
+              promotiemateriaal, interactieve gespreksken en de mogelijkheid tot
+              directe intake of presentatie op locatie.
+            </p>
+
+            <h4>Registratie en instructies:</h4>
+            <p>
+              Let op, het aantal standplaatsen is beperkt. Na inschrijving
+              ontvang je alle praktische informatie over opbouw, locatie, het
+              aanleveren van bedrijfsinformatie en (optionele) extra's zoals
+              stroom of lunch.
+            </p>
+          </div>
+          <a href="#" class="section-btn">Lees Meer</a>
+          <a href="#" class="cta-btn">Zie tarieven</a>
+        </div>
+
+        <!-- Studenten sectie -->
+        <div class="section-card">
+          <h2 class="section-title">Studenten</h2>
+          <div class="section-features">
+            <h4>Automatische inschrijving & verplichte deelname:</h4>
+            <p>
+              je bent via je opleiding al ingeschreven; aanwezigheid is
+              onderdeel van je studieprogramma.
+            </p>
+
+            <h4>Wat je kunt verwachten:</h4>
+            <p>
+              ontmoet bedrijven met stages, afstuderopdrachten en startersbanen;
+              neem deel aan CV-checks, coaching en sollicitatietrainingen;
+              ontvang waardevolle loopbaanfeedback.
+            </p>
+
+            <h4>Geen actie nodig:</h4>
+            <p>
+              de organisatie regelt je inschrijving; je hoeft niets extra te
+              doen.
+            </p>
+          </div>
+          <a href="#" class="section-btn">Lees Meer</a>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
     <!-- Bedrijven -->
     <main>
+      <!-- Bedrijven Section -->
       <section class="bedrijven">
-        <h2>Bedrijven</h2>
+        <div class="section-header">
+          <h2>Bedrijven</h2>
+        </div>
         <div class="cardList">
-          <a id="bedrijfLink" href="#">
-            <article class="card">
-              <h3>BilalAICorp</h3>
-              <p>
-                BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan
-                de gebruiker – ideaal voor zorg, onderwijs en industrie. Met
-                geavanceerde robots en edge-AI maken ze technologie
-                persoonlijker én efficiënter.
-              </p>
-            </article>
-          </a>
           <article class="card">
-            <a href="#" id="bedrijfLink">
-            <h3>Vital’O Network</h3>
+            <h3>BilalAICorp</h3>
             <p>
-              Vital’O Network verbindt medische systemen met elkaar voor vlotte
-              en veilige datastromen. Hun innovatieve platform maakt zorg
-              slimmer via FHIR-API’s en moderne IT-oplossingen.
+              BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan de
+              gebruiker – ideaal voor zorg, onderwijs en industrie. Met
+              geavanceerde robots en edge-AI maken ze technologie persoonlijker
+              én efficiënter.
             </p>
-            </a>
           </article>
           <article class="card">
-            <a href="#" id="bedrijfLink">
+            <h3>Vital'O Network</h3>
+            <p>
+              Vital'O Network verbindt medische systemen met elkaar voor vlotte
+              en veilige datastromen. Hun innovatieve platform maakt zorg
+              slimmer via FHIR-API's en moderne IT-oplossingen.
+            </p>
+          </article>
+          <article class="card">
             <h3>PixelPioniers</h3>
             <p>
               PixelPioniers bouwt schaalbare Cisco-netwerken met focus op
@@ -73,10 +166,8 @@
               netwerksecurity en NetDevOps om bedrijven future-proof te
               verbinden.
             </p>
-            </a>
           </article>
           <article class="card">
-            <a id="bedrijfLink" href="#">
             <h3>QuantumOps</h3>
             <p>
               QuantumOps is een IT-consultancybedrijf dat cloudinfrastructuur,
@@ -84,15 +175,18 @@
               oplossingen helpen bedrijven groeien met veilige, flexibele en
               intelligente IT-architectuur.
             </p>
-            </a>
           </article>
         </div>
-        <button class="btn btn-secondary">Meer bedrijven</button>
+        <div class="btn-center">
+          <button class="btn btn-secondary">Meer bedrijven</button>
+        </div>
       </section>
 
-      <!-- Studenten -->
+      <!-- Studenten Section -->
       <section class="studenten">
-        <h2>Studenten</h2>
+        <div class="section-header">
+          <h2>Studenten</h2>
+        </div>
         <div class="cardList">
           <article class="card">
             <h3>John Doe</h3>
@@ -124,7 +218,7 @@
               aan de Erasmushogeschool Brussel met een voorliefde voor
               multidisciplinaire hardware‑software integratie. In mijn vrije
               tijd experimenteer ik graag met 3D‑geprinte robotonderdelen en
-              optimizeer ik realtime besturingsalgoritmes. Mijn ‘About Me’ wordt
+              optimizeer ik realtime besturingsalgoritmes. Mijn 'About Me' wordt
               gekenmerkt door een hands‑on mentaliteit, een...
             </p>
           </article>
@@ -141,12 +235,16 @@
             </p>
           </article>
         </div>
-        <button class="btn btn-secondary">Meer studenten</button>
+        <div class="btn-center">
+          <button class="btn btn-secondary">Meer studenten</button>
+        </div>
       </section>
 
-      <!-- Projecten -->
+      <!-- Projecten Section -->
       <section class="projecten">
-        <h2>Projecten</h2>
+        <div class="section-header">
+          <h2>Projecten</h2>
+        </div>
         <div class="cardList">
           <article class="card">
             <h3>Kokende AI Robot</h3>
@@ -187,7 +285,9 @@
             </p>
           </article>
         </div>
-        <button class="btn btn-secondary">Meer projecten</button>
+        <div class="btn-center">
+          <button class="btn btn-secondary">Meer projecten</button>
+        </div>
       </section>
     </main>
 
@@ -197,243 +297,13 @@
         <span>Contactinfo van organisatie</span>
       </div>
     </footer>
+
+    <div id="loadingOverlay">
+      <div class="loader"></div>
+      <script src="src/JS/startPage.js"></script>
+
+      <script src="src/JS/test.js">
+      </script>
+    </div>
   </body>
 </html>
-=======
-  <!-- Zoekbalk -->
-  <section class="searchSection">
-    <div class="searchBar">
-      <span>Zoeken</span>
-      <button class="searchBtn"><img src="" alt="Zoek"></button>
-    </div>
-  </section>
-
-
-  
-    <!-- Wat is Career Launch -->
-    <section class="about-section">
-        <h2 class="about-title">Wat is Career launch?</h2>
-        <div class="about-content">
-            <div class="about-text">
-                <h3>Groot, praktijkgericht carrière-evenement</h3>
-                <p>Career Launch brengt studenten in nauwe samenwerking met onderwijsinstellingen samen met bedrijven uit diverse sectoren via workshops, netwerkmomenten en persoonlijke gesprekken, waarmee theorie en praktijk worden verbonden.</p>
-            </div>
-            <div class="about-text">
-                <h3>Concrete loopbaankansen</h3>
-                <p>studenten ontdekken stage- en werkmogelijkheden, wonen bedrijfspresentaties bij en krijgen toegang tot loopbaanadvies en coaching, volledig afgestemd op actuele ontwikkelingen op de arbeidsmarkt.</p>
-            </div>
-        </div>
-        <button class="learn-more-btn">Lees Meer</button>
-    </section>
-
-    <!-- Bedrijven en Studenten secties -->
-    <section class="content-sections">
-        <div class="sections-container">
-            <!-- Bedrijven sectie -->
-            <div class="section-card">
-                <h2 class="section-title">Bedrijven</h2>
-                <div class="section-features">
-                    <h4>Direct in contact met jong talent:</h4>
-                    <p>Bereik gemotiveerde studenten op zoek naar stages, studerjobprojecten en startersbanen, en voer waardevolle gesprekken met kandidaten die echt interesse hebben in jouw sector.</p>
-                    
-                    <h4>Vergroot je zichtbaarheid:</h4>
-                    <p>Presenteer je vacatures, stages en traineeships op locatie, verstek je employer branding binnen onderwijsinstellingen en vergroot je naamsbekendheid onder toekomstige professionals.</p>
-                    
-                    <h4>Volledig ingerichte beursstdelname:</h4>
-                    <p>Krijg een eigen stand op de beursvloer met kwalitatief promotiemateriaal, interactieve gespreksken en de mogelijkheid tot directe intake of presentatie op locatie.</p>
-                    
-                    <h4>Registratie en instructies:</h4>
-                    <p>Let op, het aantal standplaatsen is beperkt. Na inschrijving ontvang je alle praktische informatie over opbouw, locatie, het aanleveren van bedrijfsinformatie en (optionele) extra's zoals stroom of lunch.</p>
-                </div>
-                <a href="#" class="section-btn">Lees Meer</a>
-                <a href="#" class="cta-btn">Zie tarieven</a>
-              </div>
-            
-
-            <!-- Studenten sectie -->
-            <div class="section-card">
-                <h2 class="section-title">Studenten</h2>
-                <div class="section-features">
-                    <h4>Automatische inschrijving & verplichte deelname:</h4>
-                    <p>je bent via je opleiding al ingeschreven; aanwezigheid is onderdeel van je studieprogramma.</p>
-                    
-                    <h4>Wat je kunt verwachten:</h4>
-                    <p>ontmoet bedrijven met stages, afstuderopdrachten en startersbanen; neem deel aan CV-checks, coaching en sollicitatietrainingen; ontvang waardevolle loopbaanfeedback.</p>
-                    
-                    <h4>Geen actie nodig:</h4>
-                    <p>de organisatie regelt je inschrijving; je hoeft niets extra te doen.</p>
-                </div>
-                <a href="#" class="section-btn">Lees Meer</a>
-            </div>
-        </div>
-    </section>
-
-    <hr>
-
-  <!-- Bedrijven -->
-   <main>
-        <!-- Bedrijven Section -->
-        <section class="bedrijven">
-            <div class="section-header">
-                <h2>Bedrijven</h2>
-            </div>
-            <div class="cardList">
-                <article class="card">
-                    <h3>BilalAICorp</h3>
-                    <p>BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan de gebruiker – ideaal voor zorg, onderwijs en industrie. Met geavanceerde robots en edge-AI maken ze technologie persoonlijker én efficiënter.</p>
-                </article>
-                <article class="card">
-                    <h3>Vital'O Network</h3>
-                    <p>Vital'O Network verbindt medische systemen met elkaar voor vlotte en veilige datastromen. Hun innovatieve platform maakt zorg slimmer via FHIR-API's en moderne IT-oplossingen.</p>
-                </article>
-                <article class="card">
-                    <h3>PixelPioniers</h3>
-                    <p>PixelPioniers bouwt schaalbare Cisco-netwerken met focus op SD-WAN, DNA Center en geautomatiseerde provisioning. Ze combineren netwerksecurity en NetDevOps om bedrijven future-proof te verbinden.</p>
-                </article>
-                <article class="card">
-                    <h3>QuantumOps</h3>
-                    <p>QuantumOps is een IT-consultancybedrijf dat cloudinfrastructuur, moderne werkplekken en datagedreven inzichten levert. Hun oplossingen helpen bedrijven groeien met veilige, flexibele en intelligente IT-architectuur.</p>
-                </article>
-            </div>
-            <div class="btn-center">
-                <button class="btn btn-secondary">Meer bedrijven</button>
-            </div>
-        </section>
-
-        <!-- Studenten Section -->
-        <section class="studenten">
-            <div class="section-header">
-                <h2>Studenten</h2>
-            </div>
-            <div class="cardList">
-                <article class="card">
-                    <h3>John Doe</h3>
-                    <p>Ik ben John Doe, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel, altijd op zoek naar de volgende technische uitdaging. Mijn drijfveer is om complexe problemen hands‑on op te lossen, of dat nu in de werkplaats is of tijdens groepsprojecten. Als nieuwsgierige teamspeler geniet ik ervan om ideeën uit te wisselen en samen prototypes...</p>
-                </article>
-                <article class="card">
-                    <h3>Ben Huur</h3>
-                    <p>Ik ben Ben Huur, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een passie voor backendontwikkeling en automatisatie. Binnen projecten focus ik op API-integraties en het uitdenken van schaalbare oplossingen. Ik werk graag in team, waar ik technische uitdagingen mee help vertalen naar efficiënte code. Met een leergierige mindset en een praktische aanpak blijf ik steeds zoeken naar manieren om processen slimmer te maken...</p>
-                </article>
-                <article class="card">
-                    <h3>Jeretom Carnomina</h3>
-                    <p>Ik ben Jeretom Carnomina, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een voorliefde voor multidisciplinaire hardware‑software integratie. In mijn vrije tijd experimenteer ik graag met 3D‑geprinte robotonderdelen en optimizeer ik realtime besturingsalgoritmes. Mijn 'About Me' wordt gekenmerkt door een hands‑on mentaliteit, een...</p>
-                </article>
-                <article class="card">
-                    <h3>Elina Verstegen</h3>
-                    <p>Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands‑on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...</p>
-                </article>
-            </div>
-            <div class="btn-center">
-                <button class="btn btn-secondary">Meer studenten</button>
-            </div>
-        </section>
-
-        <!-- Projecten Section -->
-        <section class="projecten">
-            <div class="section-header">
-                <h2>Projecten</h2>
-            </div>
-            <div class="cardList">
-                <article class="card">
-                    <h3>Kokende AI Robot</h3>
-                    <p>De Kokende AI Robot is een slimme, zelfdenkende keukenrobot die volledig autonoom heerlijke maaltijden bereidt op maat van jouw voorkeuren en allergieën. Geïnteresseerd in spraakgestuurde AI, embedded systemen of robotica in het dagelijks leven? Kom zeker een kijkje nemen of een gesprek starten!</p>
-                </article>
-                <article class="card">
-                    <h3>SmartLine Inspector</h3>
-                    <p>SmartLine Inspector is een vision-gebaseerd edge-systeem voor kwaliteitscontrole in productielijnen. Door gebruik te maken van edge computing en AI worden defecte producten automatisch herkend en uit de stroom gehaald.</p>
-                </article>
-                <article class="card">
-                    <h3>NeuroTrack</h3>
-                    <p>NeuroTrack is een draagbare EEG-headset die hersenactiviteit in realtime meet tijdens sportprestaties of meditatie. Het toestel analyseert focus, stressniveau en cognitieve belasting via biosignalen en geeft live feedback via LED-indicatoren.</p>
-                </article>
-                <article class="card">
-                    <h3>ARchitect Viewer</h3>
-                    <p>ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen in hun toekomstige woning en feedback geven nog voor de bouw start...</p>
-                </article>
-            </div>
-            <div class="btn-center">
-                <button class="btn btn-secondary">Meer projecten</button>
-            </div>
-        </section>
-    </main>
-
-   
-  <!-- Footer -->
-  <footer>
-    <div class="footerContent">
-      <span>Contactinfo van organisatie</span>
-    </div>
-  </footer>
-
-<div id="loadingOverlay">
-    <div class="loader"></div>
-<script src="src/JS/startPage.js"></script>
-
- <script>
-        // Add scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe all cards for animation
-        document.querySelectorAll('.card').forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
-            observer.observe(card);
-        });
-
-        // Smooth scroll for buttons (if they link to sections)
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Add ripple effect
-                const ripple = document.createElement('span');
-                const rect = btn.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    left: ${x}px;
-                    top: ${y}px;
-                    background: rgba(255,255,255,0.3);
-                    border-radius: 50%;
-                    transform: scale(0);
-                    animation: ripple 0.6s linear;
-                    pointer-events: none;
-                `;
-                
-                btn.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 600);
-            });
-        });
-
-        // Add ripple animation CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-            .btn {
-                position: relative;
-                overflow: hidden;
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
