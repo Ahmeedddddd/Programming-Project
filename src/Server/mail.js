@@ -4,14 +4,15 @@
 // Zorg ervoor dat je de juiste module-afhankelijkheden hebt geïnstalleerd:
 // npm install nodemailer nodemailer-express-handlebars
 
+require('dotenv').config();
 const nodemailer = require('nodemailer');
 const path = require('path');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'tom1dekoning@gmail.com',
-    pass: 'arltbzxupcdcqowf'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
