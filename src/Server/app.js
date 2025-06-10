@@ -6,13 +6,101 @@ const app = express();
 // Serveer statische frontendbestanden
 app.use(express.static(path.join(__dirname, '../CareerLaunch')));
 
+app.use(express.static(path.join(__dirname, '../../public')));
 // Voorbeeld API endpoint
 app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hallo van de backend!' });
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../public.html'));
+});
+
+//ACCOUNT
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ACCOUNT/login.html'));
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ACCOUNT/account-aanmaken.html'));
+});
+
+//BEDRIJVEN
+app.get('/accountBedrijf', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/account-bedrijf.html'));
+});
+
+app.get('/gegevensBedrijf', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/gegevens-bedrijf.html'));
+});
+
+//INFO
+app.get('/info', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info.html'));
+});
+
+app.get('/info', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info-lees-meer.html'));
+});
+
+//ORGANISATOR
+app.get('/accountOrganisator', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/account-organisator.html'));
+});
+
+app.get('/gegevensOrganisator', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/gegevens-organisator.html'));
+});
+
+app.get('/overzichtOrganisator', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/overzicht-organisator.html'));
+});
+
+//PROGRAMMA
+app.get('/programma', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma.html'));
 });
 
 app.listen(3000, () => {
   console.log('Server draait op http://localhost:3000');
+app.get('/programmaVoormidag', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma-voormidag.html'));
 });
 
-console.log("test")
+app.get('/programmaNamidag', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma-namidag.html'));
+});
+
+//RESULTS
+app.get('/alleBedrijven', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html'));
+});
+
+app.get('/resultaatBedrijf', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html'));
+});
+
+app.get('/alleProjecten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html'));
+});
+
+app.get('/alleStudenten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html'));
+});
+
+//STUDENTEN
+app.get('/accountStudent', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/account-student.html'));
+});
+
+app.get('/gegevensStudent', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/gegevens-student.html'));
+});
+
+app.get('/mijnProject', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/mijn-project.html'));
+});
+
+
+const { sendInvoice } = require('./mail'); // of pad naar juiste locatie
+app.use(express.json()); // Zorg dat je JSON-body’s kunt ontvangen
+
+app.post('/api/send-invoice', async (req, res) => {
