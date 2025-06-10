@@ -383,9 +383,47 @@ h2{
     box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
 }
 
-.sideMenu-closeBtn i {
-    font-size: 1.1rem;
-    color: var(--text-primary);
+/* Optie 1: CSS X icoon (getekend) */
+.sideMenu-closeBtn::before,
+.sideMenu-closeBtn::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background-color: var(--text-primary);
+    border-radius: 1px;
+    transition: all 0.3s ease;
+}
+
+.sideMenu-closeBtn::before {
+    transform: rotate(45deg);
+}
+
+.sideMenu-closeBtn::after {
+    transform: rotate(-45deg);
+}
+
+.sideMenu-closeBtn:hover::before,
+.sideMenu-closeBtn:hover::after {
+    background-color: var(--primary);
+}
+
+/* Optie 2: Voor img/svg (voeg .use-image class toe aan button) */
+.sideMenu-closeBtn.use-image::before,
+.sideMenu-closeBtn.use-image::after {
+    display: none;
+}
+
+.sideMenu-closeBtn img,
+.sideMenu-closeBtn svg {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+}
+
+.sideMenu-closeBtn:hover img,
+.sideMenu-closeBtn:hover svg {
+    transform: scale(1.1);
 }
 
 /* Menu Inhoud */
