@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.students { border-left-color: #3498db; }
+        .stat-card.companies { border-left-color: #e74c3c; }
+        .stat-card.projects { border-left-color: #2ecc71; }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-card.students .stat-number { color: #3498db; }
+        .stat-card.companies .stat-number { color: #e74c3c; }
+        .stat-card.projects .stat-number { color: #2ecc71; }
+
+        .section {
+            margin: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+            border-left: 5px solid;
+        }
+
+        .section-header:hover {
+            background: #f8f9fa;
+        }
+
+        .section-header.students { border-left-color: #3498db; background: linear-gradient(135deg, #3498db20, #3498db10); }
+        .section-header.companies { border-left-color: #e74c3c; background: linear-gradient(135deg, #e74c3c20, #e74c3c10); }
+        .section-header.projects { border-left-color: #2ecc71; background: linear-gradient(135deg, #2ecc7120, #2ecc7110); }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .expand-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .section.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .section.expanded .section-content {
+            max-height: 2000px;
+        }
+
+        .content-inner {
+            padding: 20px;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .add-btn:hover {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .items-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .item-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .item-card:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .item-card.student { border-left-color: #3498db; }
+        .item-card.company { border-left-color: #e74c3c; }
+        .item-card.project { border-left-color: #2ecc71; }
+
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .item-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Multi-select dropdown styles */
+        .multi-select-container {
+            position: relative;
+        }
+
+        .multi-select-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background: white;
+            text-align: left;
+        }
+
+        .multi-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 10;
+        }
+
+        .multi-select-dropdown.active {
+            display: block;
+        }
+
+        .multi-select-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .multi-select-option:hover {
+            background: #f0f0f0;
+        }
+
+        .multi-select-option.selected {
+            background: #e3f2fd;
+            font-weight: bold;
+        }
+
+        .selected-students {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .selected-tag {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .selected-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            transform: translateY(-2px);
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .detail-value {
+            color: #666;
+        }
+
+        .no-items {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .student-list-in-project {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .student-badge {
+            background: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .modal-content {
+                min-width: 90vw;
+                margin: 10px;
+            }
+            
+            .search-filter {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Admin Panel</h1>
+            <p>Beheer studenten, bedrijven en projecten</p>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card students">
+                <div class="stat-number" id="student-count">0</div>
+                <div>Studenten</div>
+            </div>
+            <div class="stat-card companies">
+                <div class="stat-number" id="company-count">0</div>
+                <div>Bedrijven</div>
+            </div>
+            <div class="stat-card projects">
+                <div class="stat-number" id="project-count">0</div>
+                <div>Projecten</div>
+            </div>
+        </div>
+
+        <!-- Studenten Sectie -->
+        <div class="section" id="students-section">
+            <div class="section-header students" onclick="toggleSection('students-section')">
+                <div class="section-title">
+                    👨‍🎓 Studenten
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="section-content">
+                <div class="content-inner">
+                    <div class="search-filter">
+                        <input type="text" class="search-input" id="student-search" placeholder="Zoek studenten...">
+                        <button class="add-btn" onclick="showAddModal('student')">+ Student Toevoegen</button>
+                    </div>
+                    <div class="items-list" id="students-list">
+                        <div class="no-items">Geen studenten gevonden</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bedrijven Sectie -->
+        <div class="section" id="companies-section">
+            <div class="section-header companies" onclick="toggleSection('companies-section')">
+                <div class="section-title">
+                    🏢 Bedrijven
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="section-content">
+                <div class="content-inner">
+                    <div class="search-filter">
+                        <input type="text" class="search-input" id="company-search" placeholder="Zoek bedrijven...">
+                        <button class="add-btn" onclick="showAddModal('company')">+ Bedrijf Toevoegen</button>
+                    </div>
+                    <div class="items-list" id="companies-list">
+                        <div class="no-items">Geen bedrijven gevonden</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projecten Sectie -->
+        <div class="section" id="projects-section">
+            <div class="section-header projects" onclick="toggleSection('projects-section')">
+                <div class="section-title">
+                    📋 Projecten
+                </div>
+                <div class="expand-icon">▼</div>
+            </div>
+            <div class="section-content">
+                <div class="content-inner">
+                    <div class="search-filter">
+                        <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten...">
+                        <button class="add-btn" onclick="showAddModal('project')">+ Project Toevoegen</button>
+                    </div>
+                    <div class="items-list" id="projects-list">
+                        <div class="no-items">Geen projecten gevonden</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal voor toevoegen/details -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Item Toevoegen</div>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-body">
+                <!-- Dynamische content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data opslag
+        let students = [
+            {
+                id: 'st1',
+                name: 'Emma de Vries',
+                email: 'emma.devries@student.be',
+                studentNumber: 'S20230001',
+                major: 'Informatica',
+                phone: '0471234567',
+                createdAt: '15-11-2024'
+            },
+            {
+                id: 'st2',
+                name: 'Lucas Janssen',
+                email: 'lucas.janssen@student.be',
+                studentNumber: 'S20230002',
+                major: 'Bedrijfskunde',
+                phone: '0472345678',
+                createdAt: '20-11-2024'
+            },
+            {
+                id: 'st3',
+                name: 'Sophie Peeters',
+                email: 'sophie.peeters@student.be',
+                studentNumber: 'S20230003',
+                major: 'Marketing',
+                phone: '0473456789',
+                createdAt: '25-11-2024'
+            }
+        ];
+        let companies = [
+            {
+                id: 'co1',
+                name: 'TechStart BV',
+                email: 'info@techstart.be',
+                sector: 'IT Services',
+                address: 'Technologielaan 15, 1000 Brussel',
+                phone: '024567890',
+                website: 'https://techstart.be',
+                hasPaid: true,
+                createdAt: '10-11-2024'
+            },
+            {
+                id: 'co2',
+                name: 'Marketing Pro',
+                email: 'contact@marketingpro.be',
+                sector: 'Marketing & Communicatie',
+                address: 'Marketingstraat 42, 2000 Antwerpen',
+                phone: '034567890',
+                website: 'https://marketingpro.be',
+                hasPaid: false,
+                createdAt: '12-11-2024'
+            },
+            {
+                id: 'co3',
+                name: 'Green Energy Solutions',
+                email: 'info@greenenergy.be',
+                sector: 'Duurzame Energie',
+                address: 'Energieweg 8, 9000 Gent',
+                phone: '092345678',
+                website: 'https://greenenergy.be',
+                hasPaid: true,
+                createdAt: '18-11-2024'
+            }
+        ];
+        let projects = [
+            {
+                id: 'pr1',
+                name: 'Website Redesign',
+                description: 'Complete herontwerp van de bedrijfswebsite met moderne UI/UX principes',
+                status: 'actief',
+                startDate: '2025-01-15',
+                endDate: '2025-03-30',
+                budget: '15000',
+                studentIds: ['st1', 'st3'],
+                createdAt: '20-12-2024'
+            },
+            {
+                id: 'pr2',
+                name: 'Marketing Campagne Q1',
+                description: 'Ontwikkeling en uitvoering van social media marketing campagne voor het eerste kwartaal',
+                status: 'planning',
+                startDate: '2025-02-01',
+                endDate: '2025-04-30',
+                budget: '8000',
+                studentIds: ['st2', 'st3'],
+                createdAt: '22-12-2024'
+            }
+        ];
+        let selectedStudents = [];
+
+        // Helper functies
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function updateCounts() {
+            document.getElementById('student-count').textContent = students.length;
+            document.getElementById('company-count').textContent = companies.length;
+            document.getElementById('project-count').textContent = projects.length;
+        }
+
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('expanded');
+        }
+
+        function showModal() {
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            selectedStudents = []; // Reset selected students
+        }
+
+        function toggleStudentDropdown() {
+            const dropdown = document.getElementById('student-dropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('active');
+            }
+        }
+
+        function toggleStudentSelection(studentId) {
+            const index = selectedStudents.indexOf(studentId);
+            if (index > -1) {
+                selectedStudents.splice(index, 1);
+            } else {
+                selectedStudents.push(studentId);
+            }
+            updateStudentDropdown();
+        }
+
+        function updateStudentDropdown() {
+            const options = document.querySelectorAll('.multi-select-option');
+            options.forEach(option => {
+                const studentId = option.getAttribute('data-student-id');
+                if (selectedStudents.includes(studentId)) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            const selectedDisplay = document.getElementById('selected-students-display');
+            const selectText = document.getElementById('student-select-text');
+            
+            if (selectedDisplay && selectText) {
+                if (selectedStudents.length === 0) {
+                    selectText.textContent = 'Selecteer studenten...';
+                    selectedDisplay.innerHTML = '';
+                } else {
+                    selectText.textContent = `${selectedStudents.length} student(en) geselecteerd`;
+                    selectedDisplay.innerHTML = selectedStudents.map(studentId => {
+                        const student = students.find(s => s.id === studentId);
+                        return `
+                            <span class="selected-tag">
+                                ${student.name}
+                                <span class="remove" onclick="removeStudent('${studentId}')">×</span>
+                            </span>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        function removeStudent(studentId) {
+            selectedStudents = selectedStudents.filter(id => id !== studentId);
+            updateStudentDropdown();
+        }
+
+        function showAddModal(type) {
+        const modal = document.getElementById('modal');
+        const title = document.getElementById('modal-title');
+        const body = document.getElementById('modal-body');
+
+        let formHtml = '';
+        
+        switch(type) {
+            case 'student':
+                title.textContent = 'Student Toevoegen';
+                formHtml = `
+                    <form id="add-form">
+                        <div class="form-group">
+                            <label class="form-label">Naam</label>
+                            <input type="text" class="form-input" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Studentnummer</label>
+                            <input type="text" class="form-input" name="studentNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Studierichting</label>
+                            <input type="text" class="form-input" name="major" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefoon</label>
+                            <input type="tel" class="form-input" name="phone">
+                        </div>
+                        <button type="submit" class="submit-btn">Student Toevoegen</button>
+                    </form>
+                `;
+                break;
+            // ... (andere cases blijven hetzelfde)
+        }
+
+        body.innerHTML = formHtml;
+        
+        // Voeg event listener toe na het toevoegen van het formulier
+        const form = document.getElementById('add-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleFormSubmit(e, type);
+            });
+        }
+        
+        showModal();
+    }
+
+    function handleFormSubmit(event, type) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        
+        // Converteer FormData naar een object
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        addItem(type, data);
+    }
+
+    function addItem(type, data) {
+        data.id = generateId();
+        data.createdAt = new Date().toLocaleDateString('nl-NL');
+
+        switch(type) {
+            case 'student':
+                students.push(data);
+                renderStudents();
+                break;
+            case 'company':
+                data.hasPaid = data.hasPaid === 'true';
+                companies.push(data);
+                renderCompanies();
+                break;
+            case 'project':
+                data.studentIds = [...selectedStudents];
+                projects.push(data);
+                renderProjects();
+                break;
+        }
+
+        updateCounts();
+        closeModal();
+        
+        // Reset het formulier
+        const form = document.getElementById('add-form');
+        if (form) form.reset();
+    }
+
+        function handleFormSubmit(event, type) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            addItem(type, formData);
+        }
+
+        function addItem(type, formData) {
+            const data = Object.fromEntries(formData);
+            data.id = generateId();
+            data.createdAt = new Date().toLocaleDateString('nl-NL');
+
+            switch(type) {
+                case 'student':
+                    students.push(data);
+                    renderStudents();
+                    break;
+                case 'company':
+                    data.hasPaid = formData.get('hasPaid') === 'true';
+                    companies.push(data);
+                    renderCompanies();
+                    break;
+                case 'project':
+                    data.studentIds = [...selectedStudents]; // Add selected students to project
+                    projects.push(data);
+                    renderProjects();
+                    break;
+            }
+
+            updateCounts();
+            closeModal();
+        }
+
+        function showDetails(type, id) {
+            let item;
+            let title;
+
+            switch(type) {
+                case 'student':
+                    item = students.find(s => s.id === id);
+                    title = 'Student Details';
+                    break;
+                case 'company':
+                    item = companies.find(c => c.id === id);
+                    title = 'Bedrijf Details';
+                    break;
+                case 'project':
+                    item = projects.find(p => p.id === id);
+                    title = 'Project Details';
+                    break;
+            }
+
+            if (!item) return;
+
+            document.getElementById('modal-title').textContent = title;
+            
+            let detailsHtml = '';
+            for (const [key, value] of Object.entries(item)) {
+                if (key !== 'id' && key !== 'studentIds') {
+                    const label = getFieldLabel(key);
+                    let displayValue = value || 'Niet ingevuld';
+                    
+                    // Special formatting for certain fields
+                    if (key === 'hasPaid') {
+                        displayValue = value ? '<span style="color: #27ae60; font-weight: bold;">✓ Ja, heeft betaald</span>' : '<span style="color: #e74c3c; font-weight: bold;">✗ Nee, nog niet betaald</span>';
+                    } else if (key === 'budget' && value) {
+                        displayValue = `€ ${parseInt(value).toLocaleString('nl-NL')}`;
+                    } else if (key === 'website' && value) {
+                        displayValue = `<a href="${value}" target="_blank" style="color: #3498db;">${value}</a>`;
+                    } else if (key === 'email' && value) {
+                        displayValue = `<a href="mailto:${value}" style="color: #3498db;">${value}</a>`;
+                    } else if (key === 'phone' && value) {
+                        displayValue = `<a href="tel:${value}" style="color: #3498db;">${value}</a>`;
+                    }
+                    
+                    detailsHtml += `
+                        <div class="detail-item">
+                            <span class="detail-label">${label}:</span>
+                            <span class="detail-value">${displayValue}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            // Add students for projects
+            if (type === 'project' && item.studentIds && item.studentIds.length > 0) {
+                const projectStudents = item.studentIds.map(studentId => {
+                    const student = students.find(s => s.id === studentId);
+                    return student ? student.name : 'Onbekende student';
+                });
+                detailsHtml += `
+                    <div class="detail-item">
+                        <span class="detail-label">Studenten:</span>
+                        <span class="detail-value">
+                            <div class="student-list-in-project">
+                                ${projectStudents.map(name => `<span class="student-badge">${name}</span>`).join('')}
+                            </div>
+                        </span>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modal-body').innerHTML = detailsHtml;
+            showModal();
+        }
+
+        function getFieldLabel(field) {
+            const labels = {
+                name: 'Naam',
+                email: 'Email',
+                studentNumber: 'Studentnummer',
+                major: 'Studierichting',
+                phone: 'Telefoon',
+                sector: 'Sector',
+                address: 'Adres',
+                website: 'Website',
+                description: 'Beschrijving',
+                status: 'Status',
+                startDate: 'Startdatum',
+                endDate: 'Einddatum',
+                budget: 'Budget',
+                createdAt: 'Aangemaakt op',
+                hasPaid: 'Betaalstatus'
+            };
+            return labels[field] || field;
+        }
+
+        function renderStudents(searchTerm = '') {
+            const container = document.getElementById('students-list');
+            const filtered = students.filter(student => 
+                student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.studentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.major.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="no-items">Geen studenten gevonden</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(student => `
+                <div class="item-card student" onclick="showDetails('student', '${student.id}')">
+                    <div class="item-name">${student.name}</div>
+                    <div class="item-info">${student.studentNumber} • ${student.major}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCompanies(searchTerm = '') {
+            const container = document.getElementById('companies-list');
+            const filtered = companies.filter(company => 
+                company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                company.sector.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="no-items">Geen bedrijven gevonden</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(company => `
+                <div class="item-card company" onclick="showDetails('company', '${company.id}')">
+                    <div class="item-name">${company.name}</div>
+                    <div class="item-info">
+                        ${company.sector} • ${company.email}
+                        ${company.hasPaid ? '<span style="color: #27ae60; font-weight: bold;"> • ✓ Betaald</span>' : '<span style="color: #e74c3c; font-weight: bold;"> • ✗ Niet betaald</span>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderProjects(searchTerm = '') {
+            const container = document.getElementById('projects-list');
+            const filtered = projects.filter(project => 
+                project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                project.status.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="no-items">Geen projecten gevonden</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(project => {
+                const studentCount = project.studentIds ? project.studentIds.length : 0;
+                return `
+                    <div class="item-card project" onclick="showDetails('project', '${project.id}')">
+                        <div class="item-name">${project.name}</div>
+                        <div class="item-info">${project.status} • ${project.startDate} • ${studentCount} student(en)</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Event listeners voor zoekfuncties
+        document.getElementById('student-search').addEventListener('input', function(e) {
+            renderStudents(e.target.value);
+        });
+
+        document.getElementById('company-search').addEventListener('input', function(e) {
+            renderCompanies(e.target.value);
+        });
+
+        document.getElementById('project-search').addEventListener('input', function(e) {
+            renderProjects(e.target.value);
+        });
+
+        // Modal sluiten bij klikken buiten modal
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Escape toets om modal te sluiten
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('student-dropdown');
+            const container = e.target.closest('.multi-select-container');
+            if (!container && dropdown) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Initialisatie
+        updateCounts();
+        renderStudents();
+        renderCompanies();
+        renderProjects();
+    </script>
+</body>
+</html>
