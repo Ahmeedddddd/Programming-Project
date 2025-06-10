@@ -1,18 +1,20 @@
-// Server/app.js
-const express = require('express');
+// src/Server/app.js
+// Deze server is verantwoordelijk voor het bedienen van de frontend bestanden en de API endpoints
+
+const express = require('express')
+const app = express()
+const port = 8383
 const path = require('path');
-const app = express();
 
 // Serveer statische frontendbestanden
 app.use(express.static(path.join(__dirname, '../CareerLaunch')));
 
 app.use(express.static(path.join(__dirname, '../../public')));
-app.use(express.static(path.join(__dirname, '../CSS')));
-app.use(express.static(path.join(__dirname, '../JS')));
+app.use('/src/CSS', express.static(path.join(__dirname, '../CSS')));
+app.use('/src/JS', express.static(path.join(__dirname, '../JS')));
 
-// Voorbeeld API endpoint
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../public.html'));
+  res.sendFile(path.join(__dirname, '../../public/index.html'));
 });
 
 //ACCOUNT
@@ -98,7 +100,6 @@ app.get('/mijnProject', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/mijn-project.html'));
 });
 
-
 const { sendInvoice } = require('./mail'); // of pad naar juiste locatie
 app.use(express.json()); // Zorg dat je JSON-body’s kunt ontvangen
 
@@ -114,4 +115,3 @@ app.post('/api/send-invoice', async (req, res) => {
 
 
 app.listen(port, () => console.log(`Server has started on: http://localhost:${port}`))
-
