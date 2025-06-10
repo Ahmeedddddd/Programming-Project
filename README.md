@@ -27,3 +27,9 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 * `npm run dev`
 
 * Klik nu op de gegeven link in de terminal
+
+## ✉️ E-mailconfiguratie
+Maak een `.env` bestand in de root van het project met deze structuur:
+
+EMAIL_USER=je@gmail.com  
+EMAIL_PASS=jeAppSpecifiekWachtwoord  

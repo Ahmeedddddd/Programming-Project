@@ -15,19 +15,21 @@
       </div>
       <div class="navBar">
         <a href="/index.html" class="navItem">Home</a>
-        <a href="/programma" class="navItem active"
-          >Programma</a
-        >
+        <a href="/programma" class="navItem active">Programma</a>
         <a href="#" class="navItem">Mijn gesprekken</a>
-        <div class="pfpContainer">
-          <img
-            src="/images/mystery man avatar.webp"
-            alt="Profiel"
-            class="profile-pic"
-          />
+        <div class="pfpContainer" id="burgerToggle">
+          <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
         </div>
       </div>
-    </div>
+      
+  <!-- Verborgen sidebar -->
+  <div class="sideMenu" id="sideMenu">
+    <a href="/login">Login</a>
+    <a href="#">Info</a>
+    <a href="#">Contact us</a>
+    <!-- Voeg hier jouw eigen links toe -->
+  </div>
+</div>
 
 <div class="overzichtContainer">
   <aside class="sideBar">
@@ -52,16 +54,8 @@
 </div>
 
 <div id="loadingOverlay">
-    <div class="loader"></div>
-
-<script type="module">
-  import {hideLoading} from '/src/JS/main.js'
-
-  document.addEventListener('DOMContentLoaded', () => {
-      hideLoading();
-  });
-
-</script>
+  <div class="loader"></div>
+<script src="src/JS/startPage.js"></script>
 
 </body>
 </html>

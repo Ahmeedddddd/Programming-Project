@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>John Doe – Portfolio & Reservatie</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header: Naam groot boven links -->
+  <header class="site-header">
+    <h1 class="site-title">John Doe</h1>
+  </header>
+
+  <!-- Layout-container: main-content eerst in DOM, daarna sidebar -->
+  <div class="layout">
+    <!-- Main-content: primaire inhoud -->
+    <main class="main-content">
+      <!-- Project-sectie -->
+      <section class="section-project" id="project">
+        <h2>Mijn Project</h2>
+        <article class="project-article">
+          <h3 class="project-title">Kokende AI Robot</h3>
+          <p class="project-description">
+            De Kokende AI Robot is een geavanceerde huishoudrobot ontworpen om volledig zelfstandig maaltijden te bereiden. Uitgerust met kunstmatige intelligentie, spraakherkenning en honderden ingebouwde recepten, analyseert hij voedingsvoorkeuren, allergieën en beschikbare ingrediënten. Dankzij zijn precisiearmen en temperatuurcontrole kan hij koken als een professionele chef. In de fictieve wereld waarin deze robot populair is, verandert hij het dagelijks leven door tijd te besparen en voedselverspilling te minimaliseren, terwijl hij tegelijkertijd gepersonaliseerde en gezonde gerechten op tafel zet.
+          </p>
+          <div class="project-keywords">
+            <h4>Kernwoorden</h4>
+            <ul>
+              <li>AI</li>
+              <li>Embedded software</li>
+              <li>Mechatronica</li>
+              <li>Machine Learning</li>
+              <li>ROS</li>
+              <li>IoT &amp; Edge Computing</li>
+              <li>Sensorintegratie</li>
+              <li>Kalibratie</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- “Over mezelf” sectie onder Project -->
+      <section class="section-over" id="over-mezelf">
+        <h2>Over mezelf</h2>
+        <p>
+          Hallo! Ik ben John Doe, een developer met interesse in AI, embedded software, mechatronica en IoT. Ik werk aan projecten waarin kunstmatige intelligentie samenkomt met hardware en robotica. In mijn vrije tijd lees ik graag vakliteratuur en experimenteer ik met nieuwe technologieën. 
+          <!-- Vervang bovenstaande tekst door jouw eigen “over mezelf”-tekst -->
+        </p>
+      </section>
+    </main>
+
+    <!-- Sidebar: aanvullende info en interacties -->
+    <aside class="sidebar">
+      <!-- Info-links -->
+      <nav class="info-links" aria-labelledby="info-heading">
+        <h2 id="info-heading">Info</h2>
+        <ul>
+          <li><a href="https://www.linkedin.com/in/johndoe" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="https://github.com/jonddoe3" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="CV.pdf" target="_blank">CV (PDF)</a></li>
+          <li><span>Tafel 1</span></li>
+        </ul>
+      </nav>
+
+      <!-- Contacteer met hover/focus reveal van contactinformatie -->
+      <div class="contact-container">
+        <button type="button" class="contact-button">Contacteer</button>
+        <div class="contact-details">
+          <ul>
+            <li>E-mail: <a href="mailto:johndoe@example.com">johndoe@example.com</a></li>
+            <li>Telefoon: <a href="tel:+32123456789">+32 12 345 6789</a></li>
+            <!-- Voeg meer contactopties toe indien gewenst -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Reservatie maken knop onder Contacteer -->
+      <div class="reserve-container">
+        <button type="button" class="btn btn-reserve">Reservatie maken</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Footer optioneel -->
+  <footer class="site-footer">
+    <p>&copy; 2025 John Doe. Alle rechten voorbehouden.</p>
+  </footer>
+</body>
+</html>
