@@ -1,22 +1,229 @@
-function hideLoading(){
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    loadingOverlay.style.display = 'none';
+// startPage.js - Herbruikbare functionaliteit voor alle paginas
+
+export function startPage() {
+  console.log('🚀 CareerLaunch - Pagina wordt geladen...');
+
+  // Wacht tot DOM volledig geladen is
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+  } else {
+    // DOM is al geladen
+    initializePage();
+  }
 }
 
+function initializePage() {
+  console.log('📄 DOM geladen - Initialiseer functionaliteit');
+  
+  // Start alle systemen
+  hideLoading();
+  initializeMenu();
+  initializeGlobalFeatures();
+  
+  console.log('✅ Alle systemen geïnitialiseerd');
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-    const avatar = document.getElementById('burgerToggle');
-    const sideMenu = document.getElementById('sideMenu');
+// Verberg loading overlay
+function hideLoading() {
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  if (loadingOverlay) {
+    loadingOverlay.style.display = 'none';
+    console.log('📱 Loading overlay verborgen');
+  }
+}
+
+// Menu systeem - werkt op alle paginas
+function initializeMenu() {
+  const avatar = document.getElementById('burgerToggle');
+  const sideMenu = document.getElementById('sideMenu');
   
-    avatar.addEventListener('click', () => {
-      sideMenu.classList.toggle('open');
+  // Controleer of menu elementen bestaan
+  if (!avatar || !sideMenu) {
+    console.warn('⚠️ Menu elementen niet gevonden - controleer HTML structuur');
+    return;
+  }
+
+  console.log('🍔 Menu systeem wordt geïnitialiseerd...');
+
+  // Avatar click handler - toggle menu
+  avatar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    console.log('👆 Avatar geklikt - toggle menu');
+    toggleMenu();
+  });
+
+  // Close button handler (zoek binnen het menu)
+  const closeBtn = sideMenu.querySelector('.sideMenu-closeBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      console.log('❌ Close button geklikt');
+      closeMenu();
     });
-  
-    // Optional: sluit menu als je buiten klikt
-    document.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !avatar.contains(e.target)) {
-        sideMenu.classList.remove('open');
+  }
+
+  // Overlay handler (als deze bestaat)
+  const overlay = document.querySelector('.menu-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      console.log('📱 Overlay geklikt - sluit menu');
+      closeMenu();
+    });
+  }
+
+  // Sluit menu bij klik buiten menu
+  document.addEventListener('click', (e) => {
+    if (sideMenu.classList.contains('open') && 
+        !sideMenu.contains(e.target) && 
+        !avatar.contains(e.target)) {
+      console.log('🎯 Buiten menu geklikt - sluit menu');
+      closeMenu();
+    }
+  });
+
+  // Escape toets handler
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
+      console.log('⌨️ Escape ingedrukt - sluit menu');
+      closeMenu();
+    }
+  });
+
+  // Menu toggle functie
+  function toggleMenu() {
+    const isOpen = sideMenu.classList.contains('open');
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }
+
+  // Open menu
+  function openMenu() {
+    console.log('📂 Menu openen...');
+    sideMenu.classList.add('open');
+    
+    const overlay = document.querySelector('.menu-overlay');
+    if (overlay) {
+      overlay.classList.add('show');
+    }
+    
+    // Voorkom achtergrond scrollen
+    document.body.style.overflow = 'hidden';
+    console.log('✅ Menu geopend');
+  }
+
+  // Sluit menu
+  function closeMenu() {
+    console.log('📁 Menu sluiten...');
+    sideMenu.classList.remove('open');
+    
+    const overlay = document.querySelector('.menu-overlay');
+    if (overlay) {
+      overlay.classList.remove('show');
+    }
+    
+    // Herstel scrollen
+    document.body.style.overflow = '';
+    console.log('✅ Menu gesloten');
+  }
+
+  // Voeg hover effecten toe aan menu links
+  const menuLinks = sideMenu.querySelectorAll('a');
+  menuLinks.forEach(link => {
+    link.addEventListener('mouseenter', () => {
+      link.style.transform = 'translateX(8px) translateY(-2px) scale(1.02)';
+    });
+    
+    link.addEventListener('mouseleave', () => {
+      if (!link.classList.contains('active')) {
+        link.style.transform = '';
       }
     });
-    hideLoading();
   });
+
+  console.log('✅ Menu systeem geïnitialiseerd');
+}
+
+// Globale features die op alle paginas werken
+function initializeGlobalFeatures() {
+  // Smooth scroll voor anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
+  // Active navigation states
+  setActiveNavigation();
+  
+  // Form enhancements (als er forms zijn)
+  enhanceForms();
+  
+  console.log('🌐 Globale features geïnitialiseerd');
+}
+
+// Zet actieve navigatie status
+function setActiveNavigation() {
+  const currentPath = window.location.pathname;
+  const navItems = document.querySelectorAll('.navItem');
+  
+  navItems.forEach(item => {
+    const href = item.getAttribute('href');
+    if (href && (currentPath.includes(href) || (href === '/index.html' && currentPath === '/'))) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+// Verbeter formulieren (als ze bestaan)
+function enhanceForms() {
+  const forms = document.querySelectorAll('form');
+  forms.forEach(form => {
+    // Voeg loading states toe aan submit buttons
+    form.addEventListener('submit', (e) => {
+      const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+        }, 2000);
+      }
+    });
+  });
+}
+
+// Extra utility functions voor hergebruik
+export function showNotification(message, type = 'info') {
+  console.log(`📢 ${type.toUpperCase()}: ${message}`);
+  // Hier kan je later een toast notification systeem toevoegen
+}
+
+export function isMenuOpen() {
+  const sideMenu = document.getElementById('sideMenu');
+  return sideMenu ? sideMenu.classList.contains('open') : false;
+}
+
+export function closeMenuProgrammatically() {
+  const sideMenu = document.getElementById('sideMenu');
+  if (sideMenu && sideMenu.classList.contains('open')) {
+    sideMenu.classList.remove('open');
+    document.body.style.overflow = '';
+    const overlay = document.querySelector('.menu-overlay');
+    if (overlay) {
+      overlay.classList.remove('show');
+    }
+  }
+}
