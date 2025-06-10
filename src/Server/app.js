@@ -40,8 +40,12 @@ app.get('/info', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info.html'));
 });
 
-app.get('/info', (req, res) => {
+app.get('/infoLeesMeer', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info-lees-meer.html'));
+});
+
+app.get('/contacteer', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/contacteer.html'));
 });
 
 //ORGANISATOR
