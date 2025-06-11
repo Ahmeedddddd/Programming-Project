@@ -40,8 +40,16 @@ app.get('/info', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info.html'));
 });
 
-app.get('/infoLeesMeer', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info-lees-meer.html'));
+app.get('/infoBedrijven', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/informatie-bedrijven.html'));
+});
+
+app.get('/infoStudenten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/informatie-studenten.html'));
+});
+
+app.get('/infoCareerLaunch', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/informatie-career-launch.html'));
 });
 
 app.get('/contacteer', (req, res) => {
@@ -61,6 +69,10 @@ app.get('/overzichtOrganisator', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/overzicht-organisator.html'));
 });
 
+app.get('/adminPanel', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/admin-panel.html'));
+});
+
 //PROGRAMMA
 app.get('/programma', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma.html'));
@@ -75,6 +87,7 @@ app.get('/programmaNamidag', (req, res) => {
 });
 
 //RESULTS
+  //BEDRIJVEN
 app.get('/alleBedrijven', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html'));
 });
@@ -83,13 +96,33 @@ app.get('/resultaatBedrijf', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html'));
 });
 
+  //PROJECTEN
 app.get('/alleProjecten', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html'));
 });
 
+app.get('/zoekbalkProjecten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html'));
+});
+
+  //RESERVATIES
+app.get('/reservatie', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/reservatie.html'));
+});
+
+app.get('/gesprekkenOverzicht', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/gesprekken-overzicht.html'));
+});
+
+  //STUDENTEN
 app.get('/alleStudenten', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html'));
 });
+
+app.get('/zoekbalkStudenten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html'));
+});
+//RESULTS
 
 //STUDENTEN
 app.get('/accountStudent', (req, res) => {
