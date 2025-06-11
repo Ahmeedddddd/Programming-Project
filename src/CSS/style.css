@@ -193,7 +193,7 @@ h2 {
   align-items: center;
   background: var(--gray-200);
   border-radius: 30px;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.4rem;
   gap: 1.5rem;
   min-width: 350px;
   box-shadow: var(--shadow-md);
@@ -206,10 +206,18 @@ h2 {
   box-shadow: var(--shadow-red);
 }
 
-.searchBar span {
+.searchBar input {
   font-size: 1.1rem;
   font-weight: 500;
   color: var(--gray-600);
+  border: none;
+  background-color: var(--gray-200);;
+  padding: 0px;
+  height: 45px;
+}
+
+.searchBar input:focus{
+  outline: none;
 }
 
 .searchBtn {
