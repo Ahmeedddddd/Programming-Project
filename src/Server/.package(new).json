@@ -1,0 +1,27 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "main": "app.js",
+    "scripts": {
+      "start:app": "node app.js",
+      "start:api": "node api.js",
+      "dev": "npm-run-all --parallel start:app start:api",
+      "dev:watch": "npm-run-all --parallel \"nodemon app.js\" \"nodemon api.js\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+      "cors": "^2.8.5",
+      "dotenv": "^16.5.0",
+      "express": "^5.1.0",
+      "mysql2": "^3.14.1",
+      "nodemailer": "^7.0.3",
+      "nodemailer-express-handlebars": "^7.0.0",
+      "npm-run-all": "^4.1.5"
+    },
+    "devDependencies": {
+      "nodemon": "^3.1.10"
+    }
+  }

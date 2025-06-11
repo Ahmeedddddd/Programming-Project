@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start:app": "node app.js",
-    "start:api": "node api.js",
-    "dev": "npm-run-all --parallel start:app start:api",
-    "dev:watch": "npm-run-all --parallel \"nodemon app.js\" \"nodemon api.js\""
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
