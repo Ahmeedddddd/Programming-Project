@@ -2,7 +2,10 @@
 document.getElementById('registratieForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const name = e.target.name.value;
+  const firstName = e.target.voornaam.value;
+  const lastName = e.target.achternaam.value;
+  const name = `${firstName} ${lastName}`;
+
   const email = e.target.email.value;
 
   const invoiceData = {
