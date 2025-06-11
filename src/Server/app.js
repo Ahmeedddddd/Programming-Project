@@ -129,19 +129,7 @@ app.get('/mijnProject', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/mijn-project.html'));
 });
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-const { sendInvoice } = require('./mail'); // of pad naar juiste locatie
-=======
-=======
->>>>>>> Stashed changes
-//APIs
-app.get('/adminPanelNew', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/admin-panel-database.html'));
-});
-
 const { sendInvoice } = require('./SERVICES/emailServ'); // of pad naar juiste locatie
->>>>>>> Stashed changes
 app.use(express.json()); // Zorg dat je JSON-body’s kunt ontvangen
 
 app.post('/api/send-invoice', async (req, res) => {

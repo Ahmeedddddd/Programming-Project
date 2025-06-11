@@ -1,14 +1,35 @@
 require('dotenv').config();
 const express = require('express');
+<<<<<<<< HEAD:src/Server/database.js
+<<<<<<< Updated upstream:src/Server/database.js
+const mysql = require('mysql2/promise'); // Gebruik mysql2/promise voor async/await
+const bodyParser = require('body-parser');
+========
+const mysql = require('mysql2/promise'); // async/await ondersteuning
+>>>>>>>> main:src/Server/CONFIG/database.js
+const cors = require('cors'); // Voor cross-origin requests
+
+=======
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+>>>>>>> Stashed changes:src/Server/CONFIG/database.js
 const app = express();
 const port = process.env.PORT || 3306;
 
 // Middleware
 app.use(cors());
+<<<<<<<< HEAD:src/Server/database.js
+<<<<<<< Updated upstream:src/Server/database.js
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+=======
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+>>>>>>> Stashed changes:src/Server/CONFIG/database.js
+========
+app.use(express.json()); // JSON-body's verwerken
+app.use(express.urlencoded({ extended: true })); // Formulieren verwerken
+>>>>>>>> main:src/Server/CONFIG/database.js
 
 // Database configuratie
 const dbConfig = {
@@ -21,6 +42,14 @@ const dbConfig = {
   queueLimit: 0
 };
 
+<<<<<<<< HEAD:src/Server/database.js
+<<<<<<< Updated upstream:src/Server/database.js
+// Maak een connection pool (beter voor performance)
+=======
+>>>>>>> Stashed changes:src/Server/CONFIG/database.js
+========
+// Maak een connection pool
+>>>>>>>> main:src/Server/CONFIG/database.js
 const pool = mysql.createPool(dbConfig);
 
 // Health check
@@ -28,10 +57,19 @@ app.get('/', (req, res) => {
   res.json({ message: 'CareerLaunch API is working' });
 });
 
+<<<<<<<< HEAD:src/Server/database.js
+<<<<<<< Updated upstream:src/Server/database.js
+// Voorbeeld: GET endpoint om data op te halen
+========
+// Data ophalen - Student
+>>>>>>>> main:src/Server/CONFIG/database.js
+app.get('/api/dataStudent', async (req, res) => {
+=======
 // ===== STUDENT APIs =====
 
 // Alle studenten ophalen
 app.get('/api/studenten', async (req, res) => {
+>>>>>>> Stashed changes:src/Server/CONFIG/database.js
   try {
     const [rows] = await pool.query(`
       SELECT 
@@ -60,6 +98,39 @@ app.get('/api/studenten', async (req, res) => {
   }
 });
 
+<<<<<<<< HEAD:src/Server/database.js
+<<<<<<< Updated upstream:src/Server/database.js
+// Voorbeeld: GET endpoint om data op te halen
+========
+// Data ophalen - Bedrijf
+>>>>>>>> main:src/Server/CONFIG/database.js
+app.get('/api/dataBedrijf', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM your_table_name LIMIT 100');
+    res.json(rows);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
+// Data ophalen - Project
+app.get('/api/dataProject', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM your_table_name LIMIT 100');
+    res.json(rows);
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({ error: 'Database query failed' });
+  }
+});
+
+// Data toevoegen
+app.post('/api/data', async (req, res) => {
+  const { column1, column2 } = req.body;
+
+  if (!column1 || !column2) {
+=======
 // Specifieke student ophalen
 app.get('/api/studenten/:studentnummer', async (req, res) => {
   try {
@@ -394,6 +465,7 @@ app.post('/api/afspraken', async (req, res) => {
   const { studentnummer, bedrijfsnummer, startTijd, eindTijd, status = 'gepland' } = req.body;
 
   if (!studentnummer || !bedrijfsnummer || !startTijd || !eindTijd) {
+>>>>>>> Stashed changes:src/Server/CONFIG/database.js
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -530,6 +602,10 @@ app.use((err, req, res, next) => {
 
 // Server starten
 app.listen(port, () => {
+<<<<<<< Updated upstream:src/Server/database.js
+  console.log(`Server running on port ${port}`);
+<<<<<<<< HEAD:src/Server/database.js
+=======
   console.log(`CareerLaunch API Server running on port ${port}`);
   console.log(`Available endpoints:`);
   console.log(`- GET /api/studenten`);
@@ -538,4 +614,8 @@ app.listen(port, () => {
   console.log(`- GET /api/afspraken`);
   console.log(`- GET /api/facturen`);
   console.log(`- GET /api/statistieken`);
+>>>>>>> Stashed changes:src/Server/CONFIG/database.js
 });
+========
+});
+>>>>>>>> main:src/Server/CONFIG/database.js

@@ -1,29 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meer projecten</title>
+    <title>Alle Projecten</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
-</head>
 
+</head>
 <body>
     <div class="container">
         <div class="nav">
-            <div class="logo">
-                <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
-            </div>
-            <div class="navBar">
-                <a href="/index.html" class="navItem active">Home</a>
-                <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
-                <a href="#" class="navItem">Mijn gesprekken</a>
-                <div class="pfpContainer">
-                    <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" />
+            <div class="nav-content">
+                <div class="logo">
+                    <img src="/public/images/image.png" alt="Erasmus Logo" />
+                </div>
+                <div class="navBar">
+                    <a href="/index.html" class="navItem active">Home</a>
+                    <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
+                    <a href="#" class="navItem">Mijn gesprekken</a>
+                    <div class="pfpContainer">
+                        <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" />
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Alle Projecten</h1>
+            <p class="page-subtitle">Ontdek innovatieve studentenprojecten en technologische oplossingen tijdens CareerLaunch</p>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="category-pills">
+            <span class="category-pill active">Alle</span>
+            <span class="category-pill">AI & Robotica</span>
+            <span class="category-pill">Web Development</span>
+            <span class="category-pill">Hardware & IoT</span>
+            <span class="category-pill">Cybersecurity</span>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" class="search-input" placeholder="Zoek projecten...">
+            <select class="filter-select">
+                <option>Alle jaren</option>
+                <option>1e jaar</option>
+                <option>2e jaar</option>
+                <option>3e jaar</option>
+            </select>
+            <button class="filter-btn">Filter</button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <p class="stats-text">🚀 10 innovatieve projecten beschikbaar voor gesprekken</p>
+        </div>
+
+        <!-- Main Content -->
         <main class="projectTegels">
             <article class="projectTegel">
                 <h2 class="projectTitel">Kokende AI Robot</h2>
@@ -34,6 +68,7 @@
                     starten!
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">SmartLine Inspector</h2>
                 <p class="projectBeschrijving">
@@ -42,6 +77,7 @@
                     de stroom gehaald.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">NeuroTrack</h2>
                 <p class="projectBeschrijving">
@@ -50,66 +86,70 @@
                     biosignalen en geeft live feedback via LED-indicatoren.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">ARchitect Viewer</h2>
                 <p class="projectBeschrijving">
                     ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
                     een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    in hun toekomstige woning en feedback geven nog voor de bouw start.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">Geïntegreerd campus-beheer via Cisco DNA Center</h2>
                 <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    Een geavanceerd netwerk management systeem dat gebruik maakt van Cisco's DNA Center voor geautomatiseerde
+                    campus-infrastructuur beheer. Het project implementeert SD-WAN technologie en AI-gedreven
+                    netwerk optimalisatie voor moderne onderwijsinstellingen.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">High-Performance Web-API in Rust</h2>
                 <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    Een blazend snelle web-API gebouwd in Rust met focus op memory safety en concurrency. Het project
+                    demonstreert moderne backend architectuur patronen en achieve sub-millisecond response times
+                    voor kritieke business operaties.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">AI-gestuurd Gezondheidscoach-Platform</h2>
                 <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    Een intelligente gezondheidsplatform dat machine learning gebruikt om gepersonaliseerde fitness
+                    en voedingsadvies te geven. Het systeem analyseert gebruikersdata en past automatisch
+                    trainingsschema's en dieetplannen aan.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">Secure File Sync Service</h2>
                 <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    Een end-to-end versleutelde file synchronisatie service die enterprise-grade security combineert
+                    met gebruiksvriendelijkheid. Implementeert zero-knowledge architectuur en real-time
+                    collaboration features voor teams.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">ROS-gebaseerde Autonome Service-Robot</h2>
                 <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    Een autonome service robot gebouwd op ROS (Robot Operating System) die kan navigeren in
+                    complexe omgevingen. Uitgerust met LIDAR, computer vision en machine learning
+                    voor object detectie en pad planning.
                 </p>
             </article>
+            
             <article class="projectTegel">
                 <h2 class="projectTitel">Real-Time Audio DSP Engine</h2>
                 <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start...
+                    Een real-time audio processing engine met low-latency DSP algoritmes voor professionele
+                    audio applicaties. Implementeert geavanceerde filtering, reverb en spectral analysis
+                    technieken voor studio-quality sound processing.
                 </p>
             </article>
         </main>
     </div>
-
-
 </body>
-
 </html>

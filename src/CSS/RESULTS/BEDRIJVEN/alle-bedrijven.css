@@ -1,0 +1,290 @@
+/* Alle Bedrijven Specifieke Styling */
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.nav .nav-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Page Header */
+.page-header {
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 1rem;
+}
+
+.page-title {
+    color: #881538;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Main Content */
+.bedrijfTegels {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.bedrijfTegel {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.bedrijfTegel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #881538, #A91B47);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.bedrijfTegel:hover::before {
+    transform: scaleX(1);
+}
+
+.bedrijfTegel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(136, 21, 56, 0.25);
+}
+
+.bedrijfNaam {
+    color: #881538;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.bedrijfNaam::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: #A91B47;
+    transition: width 0.3s ease;
+}
+
+.bedrijfTegel:hover .bedrijfNaam::after {
+    width: 80px;
+}
+
+.bedrijfBeschrijving {
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+/* Company Icons */
+.bedrijfTegel:nth-child(1) .bedrijfNaam::before { content: "🤖 "; }
+.bedrijfTegel:nth-child(2) .bedrijfNaam::before { content: "⚕️ "; }
+.bedrijfTegel:nth-child(3) .bedrijfNaam::before { content: "🎨 "; }
+.bedrijfTegel:nth-child(4) .bedrijfNaam::before { content: "⚛️ "; }
+.bedrijfTegel:nth-child(5) .bedrijfNaam::before { content: "⭐ "; }
+.bedrijfTegel:nth-child(6) .bedrijfNaam::before { content: "🤖 "; }
+.bedrijfTegel:nth-child(7) .bedrijfNaam::before { content: "✈️ "; }
+.bedrijfTegel:nth-child(8) .bedrijfNaam::before { content: "💻 "; }
+.bedrijfTegel:nth-child(9) .bedrijfNaam::before { content: "🎨 "; }
+.bedrijfTegel:nth-child(10) .bedrijfNaam::before { content: "🎬 "; }
+
+/* Call to Action Button */
+.bedrijfTegel::after {
+    content: "Bekijk Details →";
+    position: absolute;
+    bottom: 1.5rem;
+    right: 2rem;
+    background: #881538;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.bedrijfTegel:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Search and Filter Bar */
+.filter-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 300px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #881538;
+    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: #881538;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: #A91B47;
+    transform: translateY(-2px);
+}
+
+/* Stats Bar */
+.stats-bar {
+    background: white;
+    padding: 1rem 0;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(136, 21, 56, 0.1);
+}
+
+.stats-text {
+    color: #881538;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    .bedrijfTegels {
+        padding: 0 1rem 2rem;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .bedrijfTegel {
+        padding: 1.5rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .filter-bar {
+        padding: 0 1rem 1.5rem;
+        flex-direction: column;
+    }
+    
+    .search-input {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bedrijfTegels {
+        padding: 0 0.5rem 1.5rem;
+    }
+    
+    .bedrijfTegel {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+    }
+    
+    .bedrijfNaam {
+        font-size: 1.3rem;
+    }
+    
+    .pfpContainer {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* Loading animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bedrijfTegel {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.bedrijfTegel:nth-child(even) {
+    animation-delay: 0.1s;
+}
+
+.bedrijfTegel:nth-child(odd) {
+    animation-delay: 0.2s;
+}

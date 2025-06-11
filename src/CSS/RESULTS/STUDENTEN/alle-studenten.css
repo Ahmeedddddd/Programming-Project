@@ -1,1 +1,388 @@
+/* Alle Studenten Specifieke Styling */
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
 
+.nav .nav-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Page Header */
+.page-header {
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 1rem;
+}
+
+.page-title {
+    color: #881538;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Main Content */
+.studentTegels {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.studentTegel {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.studentTegel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #881538, #A91B47);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.studentTegel:hover::before {
+    transform: scaleX(1);
+}
+
+.studentTegel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(136, 21, 56, 0.25);
+    border-color: #881538;
+}
+
+.studentNaam {
+    color: #881538;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.studentNaam::before {
+    content: "🎓";
+    font-size: 1.3rem;
+}
+
+.studentNaam::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 50px;
+    height: 2px;
+    background: #A91B47;
+    transition: width 0.3s ease;
+}
+
+.studentTegel:hover .studentNaam::after {
+    width: 100px;
+}
+
+.studentBeschrijving {
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+/* Student Action Button */
+.studentTegel::after {
+    content: "Bekijk Profiel →";
+    position: absolute;
+    bottom: 1.5rem;
+    right: 2rem;
+    background: #881538;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.studentTegel:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Filter and Search Bar */
+.filter-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 300px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #881538;
+    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
+}
+
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #881538;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: #881538;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: #A91B47;
+    transform: translateY(-2px);
+}
+
+/* Stats Bar */
+.stats-bar {
+    background: white;
+    padding: 1rem 0;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(136, 21, 56, 0.1);
+}
+
+.stats-text {
+    color: #881538;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Specialization Pills */
+.specialization-pills {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 1rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.specialization-pill {
+    background: white;
+    color: #881538;
+    border: 2px solid #881538;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.specialization-pill:hover,
+.specialization-pill.active {
+    background: #881538;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Student Year Indicators */
+.studentTegel:nth-child(1) .studentNaam::after { background: #28a745; } /* 1e jaar - groen */
+.studentTegel:nth-child(2) .studentNaam::after { background: #ffc107; } /* 2e jaar - geel */
+.studentTegel:nth-child(3) .studentNaam::after { background: #881538; } /* 3e jaar - primair */
+.studentTegel:nth-child(4) .studentNaam::after { background: #6f42c1; } /* Master - paars */
+
+/* Language badges */
+.studentBeschrijving::before {
+    content: "🇳🇱 Nederlands";
+    display: inline-block;
+    background: #f8f9fa;
+    color: #881538;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.studentTegel:nth-child(1) .studentBeschrijving::before,
+.studentTegel:nth-child(2) .studentBeschrijving::before { content: "🇬🇧 English"; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    .studentTegels {
+        padding: 0 1rem 2rem;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .studentTegel {
+        padding: 1.5rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .filter-bar {
+        padding: 0 1rem 1.5rem;
+        flex-direction: column;
+    }
+    
+    .search-input {
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .specialization-pills {
+        padding: 0 1rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .studentTegels {
+        padding: 0 0.5rem 1.5rem;
+    }
+    
+    .studentTegel {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+    }
+    
+    .studentNaam {
+        font-size: 1.3rem;
+    }
+    
+    .pfpContainer {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* Loading animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.studentTegel {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.studentTegel:nth-child(even) {
+    animation-delay: 0.1s;
+}
+
+.studentTegel:nth-child(odd) {
+    animation-delay: 0.15s;
+}
+
+/* Connect button styling */
+.connect-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: #881538;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateX(10px);
+}
+
+.studentTegel:hover .connect-btn {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.connect-btn:hover {
+    background: #A91B47;
+    transform: scale(1.05);
+}

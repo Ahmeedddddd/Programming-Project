@@ -1,0 +1,219 @@
+/* Gegevens Student Specifieke Styling */
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+}
+
+.nav .nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Main Content */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 140px);
+    padding: 2rem;
+}
+
+.profielKaart {
+    background: #f5f5f5;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+}
+
+.profielKaart::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #881538, #A91B47);
+    border-radius: 2px;
+}
+
+.rol {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    padding: 0.75rem 2.5rem;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(136, 21, 56, 0.3);
+    position: relative;
+}
+
+.rol::before {
+    content: "🎓";
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.profielVeld {
+    width: 100%;
+    background: #d9d9d9;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.profielVeld:hover {
+    background: #cecece;
+    border-color: #881538;
+    transform: translateX(5px);
+}
+
+/* Icons voor verschillende velden */
+.profielVeld:nth-child(3)::before { content: "👤 "; }
+.profielVeld:nth-child(4)::before { content: "📛 "; }
+.profielVeld:nth-child(5)::before { content: "📧 "; }
+.profielVeld:nth-child(6)::before { content: "🔒 "; }
+
+.editBtn {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    font-size: 1.1rem;
+    padding: 0.875rem 3rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.editBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.editBtn:hover::before {
+    left: 100%;
+}
+
+.editBtn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(136, 21, 56, 0.4);
+}
+
+.editBtn:active {
+    transform: translateY(0) scale(1.01);
+}
+
+.editBtn::after {
+    content: "✏️";
+    margin-left: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    main {
+        padding: 1rem;
+    }
+    
+    .profielKaart {
+        padding: 2rem 1.5rem;
+    }
+    
+    .rol {
+        font-size: 1.1rem;
+        padding: 0.6rem 2rem;
+    }
+    
+    .profielVeld {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profielKaart {
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+    }
+    
+    .editBtn {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+    }
+    
+    .pfpContainer {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .rol {
+        font-size: 1rem;
+        padding: 0.5rem 1.5rem;
+    }
+}
+
+/* Extra visuele verbeteringen */
+.profielKaart:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(136, 21, 56, 0.2);
+}
+
+/* Pulse effect voor de rol badge */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.rol {
+    animation: pulse 3s infinite ease-in-out;
+}
+
+.rol:hover {
+    animation: none;
+}
