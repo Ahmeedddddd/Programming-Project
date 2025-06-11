@@ -129,7 +129,7 @@ app.get('/mijnProject', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/mijn-project.html'));
 });
 
-const { sendInvoice } = require('./mail'); // of pad naar juiste locatie
+const { sendInvoice } = require('./SERVICES/emailServ'); // of pad naar juiste locatie
 app.use(express.json()); // Zorg dat je JSON-body’s kunt ontvangen
 
 app.post('/api/send-invoice', async (req, res) => {
