@@ -1,54 +1,89 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vital'O Network</title>
-  <link rel="stylesheet" href="/src/CSS/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vital'O Network - Bedrijfsdetails</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">
+
 </head>
 <body>
-  <div class="container">
-    <div class="box1"></div>
-    <div class="box2"></div>
-    <div class="box3"></div>
-    <div class="box4"></div>
-    <div class="box5"></div>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav">
+            <div class="nav-content">
+                <div class="logo">
+                    <img src="/public/images/image.png" alt="Erasmus Logo" />
+                </div>
+                <div class="navBar">
+                    <a href="/index.html" class="navItem">Home</a>
+                    <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem active">Programma</a>
+                    <a href="#" class="navItem">Mijn gesprekken</a>
+                    <div class="pfpContainer">
+                        <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" />
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="text1">
-      Wij zijn Vital'O Network, een toonaangevende health-tech scale-up gespecialiseerd in end-to-end interoperability van medische datastromen.<br/>
-      Ons platform maakt gebruik van FHIR-API's en HL7-integration engines om real-time patiëntmonitoring en EHR-synchronisatie te waarborgen.<br/>
-      Met edge-computing nodes uitgerust met ARM-based microcontrollers en Trusted Execution Environments (TEEs) verwerken we vitale signalen direct aan de bron.<br/>
-      Vanuit onze engineering hub in Roodebeek werken we met CI/CD-pipelines (GitLab, Docker, Kubernetes) en Infrastructure as Code (Terraform) aan schaalbare en maintainable health-tech oplossingen.
+        <!-- Main Content -->
+        <main class="bedrijf-detail">
+            <!-- Left Column - Company Info -->
+            <div class="bedrijf-info">
+                <div class="bedrijf-header">
+                    <div class="logo-container">
+                        V'O
+                    </div>
+                    <div class="bedrijf-titel">
+                        <h1 class="bedrijf-naam">Vital'O Network</h1>
+                        <p class="bedrijf-type">Health-Tech Scale-up</p>
+                    </div>
+                </div>
+
+                <div class="bedrijf-beschrijving">
+                    Wij zijn Vital'O Network, een toonaangevende health-tech scale-up gespecialiseerd in end-to-end interoperability van medische datastromen.<br/><br/>
+                    Ons platform maakt gebruik van FHIR-API's en HL7-integration engines om real-time patiëntmonitoring en EHR-synchronisatie te waarborgen.<br/><br/>
+                    Met edge-computing nodes uitgerust met ARM-based microcontrollers en Trusted Execution Environments (TEEs) verwerken we vitale signalen direct aan de bron.<br/><br/>
+                    Vanuit onze engineering hub in Roodebeek werken we met CI/CD-pipelines (GitLab, Docker, Kubernetes) en Infrastructure as Code (Terraform) aan schaalbare en maintainable health-tech oplossingen.
+                </div>
+
+                <div class="tafel-highlight">
+                    Bezoek ons op Tafel 2 tijdens het evenement
+                </div>
+            </div>
+
+            <!-- Right Column - Sidebar -->
+            <div class="bedrijf-sidebar">
+                <!-- Contact Information -->
+                <div class="contact-card">
+                    <h3 class="card-title">Locatie & Contact</h3>
+                    <div class="adres-info">
+                        <strong>Vital'O Network</strong><br/>
+                        Driesstraat, Roodebeek<br/>
+                        1200 Sint-Lambrechts-Woluwe
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-card">
+                    <h3 class="card-title">Acties</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn contact-btn">
+                            Contacteer bedrijf
+                        </button>
+                        <button class="action-btn favoriet-btn">
+                            Favoriet (reserveren)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Info -->
+                <div class="user-card">
+                    <img src="/public/images/mystery man avatar.webp" alt="Profile" class="user-avatar">
+                    <div class="user-name">John Doe</div>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <div class="titel">Vital'O Network</div>
-    <div class="logo-box"></div>
-    <div class="line1"></div>
-    <div class="line2"></div>
-    <div class="logo-tekst">Logo bedrijf</div>
-    <div class="tafel-info">Terug te vinden op Tafel 2.</div>
-    <div class="adres">Vital'O Network<br/>Driesstraat, Roodebeek<br/>1200 Sint-Lambrechts-Woluwe</div>
-
-    <div class="contact-btn"></div>
-    <div class="contact-txt">Contacteer</div>
-
-    <div class="favoriet-btn"></div>
-    <div class="favoriet-txt">Favoriet (om te reserveren)</div>
-
-    <div class="nav-bar"></div>
-    <img class="img1" src="https://placehold.co/89x89" alt="Profiel" />
-    <img class="img2" src="https://placehold.co/123x91" alt="Logo" />
-
-    <div class="nav-home"></div>
-    <div class="nav-home-txt">Home</div>
-
-    <div class="nav-programma"></div>
-    <div class="nav-programma-txt">Programma</div>
-
-    <div class="nav-gesprekken"></div>
-    <div class="nav-gesprekken-txt">Mijn gesprekken</div>
-
-    <div class="user-name">John Doe</div>
-  </div>
 </body>
 </html>
