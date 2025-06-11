@@ -28,20 +28,20 @@ app.get('/register', (req, res) => {
 
 //BEDRIJVEN
 app.get('/accountBedrijf', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/account-bedrijf.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJVEN/account-bedrijf.html'));
 });
 
 app.get('/gegevensBedrijf', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/gegevens-bedrijf.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIVEN/gegevens-bedrijf.html'));
 });
 
 //INFO
 app.get('/info', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/info.html'));
 });
 
 app.get('/infoLeesMeer', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/INFO/info-lees-meer.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/info-lees-meer.html'));
 });
 
 app.get('/contacteer', (req, res) => {
