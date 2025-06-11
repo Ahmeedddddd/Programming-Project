@@ -1,18 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Account Aanmaken</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
-</form>
-
+    <link rel="stylesheet" href="/src/CSS/ACCOUNT/account-aanmaken.css">
 </head>
 <body>
-<form id="registratieForm">
-  <input type="text" name="name" placeholder="Naam" required>
-  <input type="email" name="email" placeholder="E-mail" required>
-  <button type="submit">Verzenden</button>
+    <div class="form-container">
+        <h1 class="form-title">Account Aanmaken</h1>
+        <form id="registratieForm">
+            <input type="text" name="voornaam" placeholder="Voornaam" required>
+            <input type="text" name="achternaam" placeholder="Achternaam" required>
+            <input type="email" name="email" placeholder="E-mail" required>
+            <input type="password" name="wachtwoord" placeholder="Wachtwoord (minimaal 8 karakters)" required minlength="8">
+            <input type="password" name="herhaalWachtwoord" placeholder="Herhaal wachtwoord" required minlength="8">
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="voorwaarden" required>
+                    <span class="checkmark"></span>
+                    Ik ga akkoord met de <a href="/voorwaarden" target="_blank">algemene voorwaarden</a>
+                </label>
+            </div>
+            <button type="submit">Account Aanmaken</button>
+        </form>
+        <div class="login-link">
+            Heb je al een account? <a href="/login">Log hier in</a>
+        </div>
+    </div>
+    
 </body>
 <script type="module" src="/src/JS/sendInvoice.js"></script>
 

@@ -1,0 +1,413 @@
+/* student.css - Student pagina's styling voor CareerLaunch EHB */
+
+/* ===== STUDENT ACCOUNT KNOPPEN ===== */
+.gegevensBtn,
+.projectBtn,
+.uitloggenBtn,
+.overzichtBtn,
+.documentBtn {
+    width: 500px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+    border: 2px solid var(--gray-400);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-800);
+    font-size: 1.2rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: 'Inter', Arial, sans-serif;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.gegevensBtn::before,
+.projectBtn::before,
+.overzichtBtn::before,
+.documentBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.gegevensBtn:hover::before,
+.projectBtn:hover::before,
+.overzichtBtn:hover::before,
+.documentBtn:hover::before {
+    left: 100%;
+}
+
+.gegevensBtn:hover,
+.projectBtn:hover,
+.overzichtBtn:hover,
+.documentBtn:hover {
+    background: linear-gradient(135deg, var(--white) 0%, var(--gray-100) 100%);
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-red);
+    text-decoration: none;
+}
+
+/* Speciale styling voor uitloggen knop */
+.uitloggenBtn {
+    background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+}
+
+.uitloggenBtn:hover {
+    background: linear-gradient(135deg, #ffcccc 0%, #ff9999 100%);
+    color: var(--primary-red-dark);
+    border-color: var(--primary-red-dark);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+}
+
+/* ===== PROFIEL KAART ===== */
+.profielKaart {
+    width: 100%;
+    max-width: 650px;
+    margin: 3rem auto 0;
+    background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+    border-radius: 32px;
+    box-shadow: var(--shadow-lg);
+    padding: 3rem 2.5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    border: 1px solid var(--gray-200);
+    position: relative;
+}
+
+.profielKaart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-red), var(--primary-red-light), var(--primary-red));
+    border-radius: 32px 32px 0 0;
+}
+
+/* ===== ROL BADGE ===== */
+.rol {
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+    color: var(--white);
+    padding: 0.8rem 2rem;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-red);
+    text-transform: uppercase;
+}
+
+/* ===== PROFIEL VELDEN ===== */
+.profielVeld {
+    width: 100%;
+    background: var(--gray-100);
+    border: 2px solid var(--gray-200);
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--gray-800);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+    text-align: left;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.profielVeld:focus {
+    border-color: var(--primary-red);
+    background: var(--white);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.profielVeld::placeholder {
+    color: var(--gray-400);
+    font-style: italic;
+}
+
+/* ===== EDIT BUTTON ===== */
+.editBtn {
+    margin-top: 2rem;
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+    color: var(--white);
+    font-size: 1.1rem;
+    font-family: 'Inter', Arial, sans-serif;
+    padding: 1rem 3rem;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: var(--shadow-red);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.editBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.editBtn:hover::before {
+    left: 100%;
+}
+
+.editBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+/* ===== MIJN PROJECTEN LAYOUT ===== */
+.profielMain {
+    display: flex;
+    gap: 2.5rem;
+    padding: 2.5rem 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ===== PROFIEL ZIJBALK ===== */
+.profielZijbalk {
+    width: 300px;
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+    border-radius: 24px;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-width: 280px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-300);
+    position: relative;
+}
+
+.profielZijbalk::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-red), var(--primary-red-light));
+    border-radius: 24px 24px 0 0;
+}
+
+.zijbalkSectie {
+    margin-bottom: 1rem;
+}
+
+.zijbalkTitel {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.zijbalkVeld {
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.8rem;
+    word-break: break-word;
+    box-sizing: border-box;
+    transition: all var(--transition-normal);
+}
+
+.zijbalkVeld:hover {
+    border-color: var(--primary-red-light);
+    transform: translateX(4px);
+}
+
+/* ===== PROFIEL INHOUD (RECHTS) ===== */
+.profielInhoud {
+    flex: 1;
+    background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    border: 1px solid var(--gray-200);
+}
+
+.profielInhoud::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-red), var(--primary-red-light));
+    border-radius: 24px 24px 0 0;
+}
+
+/* ===== PROJECT HEADER ===== */
+.projectHeader {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: 1.5rem;
+}
+
+.projectTitel {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    margin-bottom: 0.5rem;
+}
+
+.projectSubTitel {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.projectTegels {
+    font-size: 0.9rem;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+    letter-spacing: 0.3px;
+    font-style: italic;
+}
+
+.projectBeschrijving {
+    font-size: 1rem;
+    color: var(--gray-700);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.projectSkills {
+    font-size: 0.9rem;
+    color: var(--primary-red);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    background: rgba(220, 38, 38, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-red);
+}
+
+/* ===== ABOUT SECTIE ===== */
+.aboutSection {
+    background: var(--gray-100);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--gray-200);
+    transition: all var(--transition-normal);
+}
+
+.aboutSection:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.aboutTitel {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary-red);
+}
+
+.aboutText {
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    line-height: 1.6;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+    .profielMain {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .profielZijbalk {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .gegevensBtn,
+    .projectBtn,
+    .uitloggenBtn,
+    .overzichtBtn,
+    .documentBtn {
+        width: 100%;
+        max-width: 450px;
+        height: 70px;
+        font-size: 1.1rem;
+    }
+    
+    .profielKaart {
+        padding: 2rem 1.5rem;
+        margin: 2rem auto 0;
+    }
+    
+    .profielInhoud {
+        padding: 2rem 1.5rem;
+    }
+    
+    .profielZijbalk {
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .gegevensBtn,
+    .projectBtn,
+    .uitloggenBtn,
+    .overzichtBtn,
+    .documentBtn {
+        width: 100%;
+        height: 60px;
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .profielKaart {
+        padding: 1.5rem 1rem;
+    }
+    
+    .projectTitel {
+        font-size: 1.6rem;
+    }
+    
+    .projectSubTitel {
+        font-size: 1.1rem;
+    }
+}
