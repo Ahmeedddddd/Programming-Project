@@ -50,6 +50,10 @@ app.get('/infoLeesMeer', (req, res) => {
 app.get('/contacteer', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/INFO/contacteer.html'));
 });
+app.get('/tarieven-info', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/tarieven-info.html'));
+});
+
 
 //ORGANISATOR
 app.get('/accountOrganisator', (req, res) => {
