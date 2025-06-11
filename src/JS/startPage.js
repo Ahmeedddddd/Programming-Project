@@ -13,14 +13,12 @@ export function startPage() {
 }
 
 function initializePage() {
-  console.log('📄 DOM geladen - Initialiseer functionaliteit');
   
   // Start alle systemen
   hideLoading();
   initializeMenu();
   initializeGlobalFeatures();
   
-  console.log('✅ Alle systemen geïnitialiseerd');
 }
 
 // Verberg loading overlay
@@ -28,7 +26,6 @@ function hideLoading() {
   const loadingOverlay = document.getElementById('loadingOverlay');
   if (loadingOverlay) {
     loadingOverlay.style.display = 'none';
-    console.log('📱 Loading overlay verborgen');
   }
 }
 
@@ -57,7 +54,6 @@ function initializeMenu() {
   if (closeBtn) {
     closeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      console.log('❌ Close button geklikt');
       closeMenu();
     });
   }
@@ -66,7 +62,6 @@ function initializeMenu() {
   const overlay = document.querySelector('.menu-overlay');
   if (overlay) {
     overlay.addEventListener('click', () => {
-      console.log('📱 Overlay geklikt - sluit menu');
       closeMenu();
     });
   }
@@ -76,7 +71,6 @@ function initializeMenu() {
     if (sideMenu.classList.contains('open') && 
         !sideMenu.contains(e.target) && 
         !avatar.contains(e.target)) {
-      console.log('🎯 Buiten menu geklikt - sluit menu');
       closeMenu();
     }
   });
@@ -84,7 +78,6 @@ function initializeMenu() {
   // Escape toets handler
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
-      console.log('⌨️ Escape ingedrukt - sluit menu');
       closeMenu();
     }
   });
@@ -111,12 +104,10 @@ function initializeMenu() {
     
     // Voorkom achtergrond scrollen
     document.body.style.overflow = 'hidden';
-    console.log('✅ Menu geopend');
   }
 
   // Sluit menu
   function closeMenu() {
-    console.log('📁 Menu sluiten...');
     sideMenu.classList.remove('open');
     
     const overlay = document.querySelector('.menu-overlay');
@@ -126,7 +117,6 @@ function initializeMenu() {
     
     // Herstel scrollen
     document.body.style.overflow = '';
-    console.log('✅ Menu gesloten');
   }
 
   // Voeg hover effecten toe aan menu links
@@ -143,7 +133,6 @@ function initializeMenu() {
     });
   });
 
-  console.log('✅ Menu systeem geïnitialiseerd');
 }
 
 // Globale features die op alle paginas werken
@@ -168,7 +157,6 @@ function initializeGlobalFeatures() {
   // Form enhancements (als er forms zijn)
   enhanceForms();
   
-  console.log('🌐 Globale features geïnitialiseerd');
 }
 
 // Zet actieve navigatie status
