@@ -1,61 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planning Namiddag</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS/PROGRAMMA/programma-namiddag.css">
 </head>
 <body>
-      <!-- Navigatiebalk -->
-     <div class="nav">
-      <div class="logo">
-        <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
-      </div>
-      <div class="navBar">
-        <a href="/index.html" class="navItem">Home</a>
-        <a href="/programma" class="navItem active"
-          >Programma</a
-        >
-        <a href="#" class="navItem">Mijn gesprekken</a>
-        <div class="pfpContainer" id="burgerToggle">
-          <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
+    <!-- Navigatiebalk -->
+    <div class="nav">
+        <div class="logo">
+            <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
         </div>
-      </div>
-      
-  <!-- Verborgen sidebar -->
-  <div class="sideMenu" id="sideMenu">
-    <a href="/login">Login</a>
-    <a href="#">Info</a>
-    <a href="#">Contact us</a>
-    <!-- Voeg hier jouw eigen links toe -->
-  </div>
-</div>
+        <div class="navBar">
+            <a href="/index.html" class="navItem">Home</a>
+            <a href="/programma" class="navItem active">Programma</a>
+            <a href="#" class="navItem">Mijn gesprekken</a>
+            <div class="pfpContainer" id="burgerToggle">
+                <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
+            </div>
+        </div>
+    </div>
 
-<div class="overzichtContainer">
-  <aside class="sideBar">
-    <h2 class="sidebarTitle">Overzicht tafels</h2>
-    <div class="sidebarZoekbalk">Zoekbalk</div>
-    <ul class="sidebarTafels">
-      <li>Tafel 1: BilalAICorp</li>
-      <li>Tafel 2: Vital’O Network</li>
-      <li>Tafel 3: QuantumOps</li>
-      <li>Tafel 4: PixelPioniers</li>
-      <li>Tafel 5: TomDKRobotics</li>
-      <li>Tafel 6: JeremStarInc</li>
-      <li>Tafel 7: CoreNova</li>
-    </ul>
-  </aside>
+    <!-- Main Content -->
+    <div class="overzichtContainer">
+        <aside class="sideBar">
+            <h2 class="sidebarTitle">Overzicht Tafels</h2>
+            <div class="sidebarZoekbalk">Zoek een tafel...</div>
+            <ul class="sidebarTafels">
+                <li>Tafel 1: BilalAICorp</li>
+                <li>Tafel 2: Vital'O Network</li>
+                <li>Tafel 3: QuantumOps</li>
+                <li>Tafel 4: PixelPioniers</li>
+                <li>Tafel 5: TomDKRobotics</li>
+                <li>Tafel 6: JeremStarInc</li>
+                <li>Tafel 7: CoreNova</li>
+            </ul>
+        </aside>
+        
+        <div class="plattegrond">
+            <h3>Plattegrond Namiddag</h3>
+            <img src="/public/plattegrondTafels.png" id="plattegrondImg" alt="Plattegrond Namiddag">
+        </div>
+    </div>
 
-<div class="plattegrond">
-    <h3>Plattegrond</h3>
-    <img src="/public/plattegrondTafels.png" id="plattegrondImg" alt="Plattegrond" style="max-width: 100%; height: auto;">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
 
-</div>
-</div>
+    <!-- Verborgen sidebar (voor extra functionaliteit) -->
+    <div class="sideMenu" id="sideMenu">
+        <a href="/login">Login</a>
+        <a href="#">Info</a>
+        <a href="#">Contact us</a>
+    </div>
 
-<div id="loadingOverlay">
-  <div class="loader"></div>
-<script src="src/JS/startPage.js"></script>
+    <script src="src/JS/startPage.js"></script>
 </body>
 </html>
