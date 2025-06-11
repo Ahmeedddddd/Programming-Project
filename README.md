@@ -39,25 +39,25 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 
 ### Packages installeren
 
-`cd src/Server`
-`npm install express nodemailer nodemailer-express-handlebars dotenv mysql2 body-parser cors`
-`npm install --save-dev nodemon`
+* `cd src/Server`
+* `npm install express nodemailer nodemailer-express-handlebars dotenv mysql2 body-parser cors`
+* `npm install --save-dev nodemon`
 
 ## Configuratie
 
 * Maak een .env bestand in de root van het project met deze variabelen:
-`EMAIL_USER=je@gmail.com`
-`EMAIL_PASS=jeAppSpecifiekWachtwoord`
-`DB_HOST=localhost`
-`DB_USER=root`
-`DB_PASSWORD=yourpassword`
-`DB_NAME=careerlaunch`
+* `EMAIL_USER=je@gmail.com`
+* `EMAIL_PASS=jeAppSpecifiekWachtwoord`
+* `DB_HOST=localhost`
+* `DB_USER=root`
+* `DB_PASSWORD=yourpassword`
+* `DB_NAME=careerlaunch`
 * Importeer de database structuur naar MySQL
 
 ### Server starten
 
-`cd src/Server`
-`npm run dev`
+* `cd src/Server`
+* `npm run dev`
 
 * De applicatie is nu bereikbaar op: http://localhost:8383
 
@@ -75,18 +75,6 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 * E-mail service - Facturen en bevestigingen versturen
 * Database integratie - CRUD operaties voor alle entiteiten
 * VIES API integratie - BTW-nummer validatie
-
-## 📂 Projectstructuur
-
-src/
-├── JS/               # Frontend JavaScript
-│   ├── startPage.js  # Hoofd initialisatie script
-│   └── sendInvoice.js # Factuur verzend logica
-├── Server/           # Backend code
-│   ├── app.js        # Hoofd server bestand
-│   ├── mail.js       # E-mail functionaliteit
-│   └── templates/   # E-mail templates
-public/               # Statische assets
 
 ## 📧 E-mailconfiguratie
 
