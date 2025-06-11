@@ -5,26 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vital'O Network - Bedrijfsdetails</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS/RESULTS/BEDRIJVEN/resultaat-bedrijf.css">
 
 </head>
 <body>
-    <div class="container">
-        <!-- Navigation -->
-        <div class="nav">
-            <div class="nav-content">
-                <div class="logo">
-                    <img src="/public/images/image.png" alt="Erasmus Logo" />
-                </div>
-                <div class="navBar">
-                    <a href="/index.html" class="navItem">Home</a>
-                    <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem active">Programma</a>
-                    <a href="#" class="navItem">Mijn gesprekken</a>
-                    <div class="pfpContainer">
-                        <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" />
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Navigatie -->
+<div class="container">
+  <div class="nav">
+    <div class="logo">
+      <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+    </div>
+    <div class="navBar">
+      <a href="/index.html" class="navItem active">Home</a>
+      <a href="/programma" class="navItem">Programma</a>
+      <a href="#" class="navItem">Mijn gesprekken</a>
+      <a href="/info" class="navItem">Info</a>
+      <div class="pfpContainer">
+        <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+      </div>
+    </div>
+  </div>
+
+<!-- Verborgen sidebar -->
+<div class="sideMenu" id="sideMenu">
+  <!-- Geanimeerde achtergrond laag -->
+  <div class="menu-bg-animation"></div>
+<div class="menu-bg-animation"></div>
+<div class="sparkles"></div>
+  
+  <!-- Header met titel -->
+  <div class="sideMenu-header">
+    <div>
+      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+      <p class="sideMenu-subtitle">Menu</p>
+    </div>
+    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <!-- Menu content -->
+  <div class="sideMenu-content">
+    <a href="/login">
+      <i class="fas fa-sign-in-alt"></i>
+      Login
+    </a>
+    <a href="/contacteer">
+      <i class="fas fa-envelope"></i>
+      Contact us
+    </a>
+    
+    <hr class="sideMenu-divider">
+  </div>
+</div>
 
         <!-- Main Content -->
         <main class="bedrijf-detail">
@@ -85,5 +118,10 @@
             </div>
         </main>
     </div>
+    <!-- Loading Overlay  -->
+  <div id="loadingOverlay">
+    <div class="loader"></div>
+  </div>
+  <script type="module" src="/src/JS/startPage.js"></script>
 </body>
 </html>

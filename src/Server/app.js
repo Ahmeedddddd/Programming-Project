@@ -20,6 +20,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/index.html'));
 });
 
+app.get('/test', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/test.html'));
+});
+
 //ACCOUNT
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/ACCOUNT/login.html'));
