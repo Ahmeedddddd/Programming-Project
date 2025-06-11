@@ -1,0 +1,123 @@
+/* Account Aanmaken Specifieke Styling */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.form-container {
+    background: white;
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.form-title {
+    color: #881538;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+}
+
+#registratieForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+#registratieForm input {
+    padding: 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+#registratieForm input:focus {
+    outline: none;
+    border-color: #881538;
+    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
+}
+
+#registratieForm button {
+    padding: 1rem 2rem;
+    background: #881538;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+#registratieForm button:hover {
+    background: #A91B47;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+}
+
+.checkbox-group {
+    margin: 1.5rem 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    cursor: pointer;
+    text-align: left;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.checkbox-label a {
+    color: #881538;
+    text-decoration: underline;
+}
+
+.checkbox-label a:hover {
+    color: #A91B47;
+}
+
+.login-link {
+    margin-top: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.login-link a {
+    color: #881538;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    color: #A91B47;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .form-container {
+        padding: 2rem;
+        margin: 1rem;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+    }
+}
