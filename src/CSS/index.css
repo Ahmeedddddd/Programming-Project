@@ -386,11 +386,11 @@ h2 {
 .cta-btn {
   background: #dc3545;
   color: white;
-  padding: 15px 40px;
+  padding: 12px 30px;
   border: none;
-  border-radius: 30px;
-  font-size: 1.2rem;
-  font-weight: 600;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
@@ -489,55 +489,26 @@ h2 {
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
 
-        .view-all-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 14px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .section-button-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 30px;
-        padding-top: 20px;
-}
-
-        .view-all-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
-        }
-
+       
 .btn-center {
   display: flex;
-  justify-content: center;
-  margin-top: 30px;
-  padding-top: 20px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
 }
 
 .btn {
-  margin-top: 0; /* Reset de margin-top */
-  padding: 0.8rem 2rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 30px;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: #fff;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+   margin-top: 0;
+    padding: 12px 30px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
 }
 
 .btn:hover {
@@ -593,13 +564,13 @@ h2 {
         }
 
         .card-description {
-            font-size: 0.9rem;
-            color: #666;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+             font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
         }
 
         /* Projects Section - Full Width */
@@ -1068,4 +1039,37 @@ h2 {
       right: -100vw;
       border-radius: 0;
   }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-container {
+        padding: 30px 20px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .btn-center {
+        margin-top: 25px;
+        padding-top: 15px;
+    }
+
+    .btn {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+    }
 }
