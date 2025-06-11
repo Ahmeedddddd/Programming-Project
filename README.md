@@ -56,8 +56,8 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 
 ### Server starten
 
-`cd src/Server`
-`npm run dev`
+* `cd src/Server`
+* `npm run dev`
 
 * De applicatie is nu bereikbaar op: http://localhost:8383
 
