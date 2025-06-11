@@ -1,7 +1,6 @@
 // startPage.js - Herbruikbare functionaliteit voor alle paginas
 
 export function startPage() {
-  console.log('🚀 CareerLaunch - Pagina wordt geladen...');
 
   // Wacht tot DOM volledig geladen is
   if (document.readyState === 'loading') {
@@ -36,16 +35,13 @@ function initializeMenu() {
   
   // Controleer of menu elementen bestaan
   if (!avatar || !sideMenu) {
-    console.warn('⚠️ Menu elementen niet gevonden - controleer HTML structuur');
     return;
   }
 
-  console.log('🍔 Menu systeem wordt geïnitialiseerd...');
 
   // Avatar click handler - toggle menu
   avatar.addEventListener('click', (e) => {
     e.stopPropagation();
-    console.log('👆 Avatar geklikt - toggle menu');
     toggleMenu();
   });
 
@@ -94,7 +90,6 @@ function initializeMenu() {
 
   // Open menu
   function openMenu() {
-    console.log('📂 Menu openen...');
     sideMenu.classList.add('open');
     
     const overlay = document.querySelector('.menu-overlay');
@@ -215,3 +210,5 @@ export function closeMenuProgrammatically() {
     }
   }
 }
+
+startPage();
