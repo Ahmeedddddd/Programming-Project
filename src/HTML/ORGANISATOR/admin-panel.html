@@ -453,6 +453,7 @@
 
         <div class="stats-overview">
             <div class="stat-card students">
+<<<<<<< Updated upstream
                 <div class="stat-number" id="student-count">0</div>
                 <div>Studenten</div>
             </div>
@@ -463,6 +464,22 @@
             <div class="stat-card projects">
                 <div class="stat-number" id="project-count">0</div>
                 <div>Projecten</div>
+=======
+                <div class="stat-number" id="student-count">-</div>
+                <div class="stat-label">Studenten</div>
+            </div>
+            <div class="stat-card companies">
+                <div class="stat-number" id="company-count">-</div>
+                <div class="stat-label">Bedrijven</div>
+            </div>
+            <div class="stat-card projects">
+                <div class="stat-number" id="project-count">-</div>
+                <div class="stat-label">Projecten</div>
+>>>>>>> Stashed changes
+            </div>
+            <div class="stat-card appointments">
+                <div class="stat-number" id="appointment-count">-</div>
+                <div class="stat-label">Afspraken</div>
             </div>
         </div>
 
@@ -481,7 +498,7 @@
                         <button class="add-btn" onclick="showAddModal('student')">+ Student Toevoegen</button>
                     </div>
                     <div class="items-list" id="students-list">
-                        <div class="no-items">Geen studenten gevonden</div>
+                        <div class="loading">Studenten laden...</div>
                     </div>
                 </div>
             </div>
@@ -502,7 +519,7 @@
                         <button class="add-btn" onclick="showAddModal('company')">+ Bedrijf Toevoegen</button>
                     </div>
                     <div class="items-list" id="companies-list">
-                        <div class="no-items">Geen bedrijven gevonden</div>
+                        <div class="loading">Bedrijven laden...</div>
                     </div>
                 </div>
             </div>
@@ -519,11 +536,15 @@
             <div class="section-content">
                 <div class="content-inner">
                     <div class="search-filter">
+<<<<<<< Updated upstream
                         <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten...">
+=======
+                        <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten op naam, beschrijving...">
+>>>>>>> Stashed changes
                         <button class="add-btn" onclick="showAddModal('project')">+ Project Toevoegen</button>
                     </div>
                     <div class="items-list" id="projects-list">
-                        <div class="no-items">Geen projecten gevonden</div>
+                        <div class="loading">Projecten laden...</div>
                     </div>
                 </div>
             </div>
@@ -544,6 +565,7 @@
     </div>
 
     <script>
+<<<<<<< Updated upstream
         // Data opslag
         let students = [
             {
@@ -634,18 +656,91 @@
             }
         ];
         let selectedStudents = [];
+=======
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3306/api'; // Pas aan naar jouw database server port
+>>>>>>> Stashed changes
 
-        // Helper functies
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        // Data storage
+        let students = [];
+        let companies = [];
+        let projects = [];
+        let currentEditId = null;
+        let currentEditType = null;
+
+        // API Helper functions
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const config = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (data) {
+                config.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'API request failed');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                showTemporaryMessage(`❌ ${error.message}`, 'error');
+                throw error;
+            }
         }
 
-        function updateCounts() {
-            document.getElementById('student-count').textContent = students.length;
-            document.getElementById('company-count').textContent = companies.length;
-            document.getElementById('project-count').textContent = projects.length;
+        // Data loading functions
+        async function loadStudents() {
+            try {
+                students = await apiRequest('/studenten');
+                renderStudents();
+            } catch (error) {
+                document.getElementById('students-list').innerHTML = 
+                    '<div class="error-message">Fout bij laden van studenten</div>';
+            }
         }
 
+        async function loadCompanies() {
+            try {
+                companies = await apiRequest('/bedrijven');
+                renderCompanies();
+            } catch (error) {
+                document.getElementById('companies-list').innerHTML = 
+                    '<div class="error-message">Fout bij laden van bedrijven</div>';
+            }
+        }
+
+        async function loadProjects() {
+            try {
+                projects = await apiRequest('/projecten');
+                renderProjects();
+            } catch (error) {
+                document.getElementById('projects-list').innerHTML = 
+                    '<div class="error-message">Fout bij laden van projecten</div>';
+            }
+        }
+
+        async function loadStatistics() {
+            try {
+                const stats = await apiRequest('/statistieken');
+                document.getElementById('student-count').textContent = stats.studenten;
+                document.getElementById('company-count').textContent = stats.bedrijven;
+                document.getElementById('project-count').textContent = stats.projecten;
+                document.getElementById('appointment-count').textContent = stats.afspraken;
+            } catch (error) {
+                console.error('Failed to load statistics:', error);
+            }
+        }
+
+        // Helper functions
         function toggleSection(sectionId) {
             const section = document.getElementById(sectionId);
             section.classList.toggle('expanded');
@@ -657,6 +752,7 @@
 
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
+<<<<<<< Updated upstream
             selectedStudents = []; // Reset selected students
         }
 
@@ -820,13 +916,149 @@
             const data = Object.fromEntries(formData);
             data.id = generateId();
             data.createdAt = new Date().toLocaleDateString('nl-NL');
+=======
+            currentEditId = null;
+            currentEditType = null;
+        }
+
+        function showAddModal(type) {
+            currentEditId = null;
+            currentEditType = type;
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+
+            let formHtml = '';
+            
+            switch(type) {
+                case 'student':
+                    title.textContent = 'Student Toevoegen';
+                    formHtml = `
+                        <form id="data-form">
+                            <div class="form-group">
+                                <label class="form-label">Studentnummer *</label>
+                                <input type="text" class="form-input" name="studentnummer" required placeholder="S20240001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Voornaam *</label>
+                                <input type="text" class="form-input" name="voornaam" required placeholder="Jan">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Achternaam *</label>
+                                <input type="text" class="form-input" name="achternaam" required placeholder="Janssen">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" required placeholder="jan.janssen@student.ehb.be">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" placeholder="04XX XX XX XX">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Opleiding</label>
+                                <input type="text" class="form-input" name="opleiding" placeholder="Bachelor">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Opleidingsrichting</label>
+                                <input type="text" class="form-input" name="opleidingsrichting" placeholder="Toegepaste Informatica">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Titel</label>
+                                <input type="text" class="form-input" name="projectTitel" placeholder="Mijn Project">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Beschrijving</label>
+                                <textarea class="form-input form-textarea" name="projectBeschrijving" placeholder="Beschrijving van het project..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Over mezelf</label>
+                                <textarea class="form-input form-textarea" name="overMezelf" placeholder="Korte beschrijving over mezelf..."></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Student Toevoegen</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'company':
+                    title.textContent = 'Bedrijf Toevoegen';
+                    formHtml = `
+                        <form id="data-form">
+                            <div class="form-group">
+                                <label class="form-label">Bedrijfsnaam *</label>
+                                <input type="text" class="form-input" name="naam" required placeholder="Bedrijfsnaam BV">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" required placeholder="info@bedrijf.be">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sector *</label>
+                                <input type="text" class="form-input" name="sector" required placeholder="IT Services">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">TVA Nummer</label>
+                                <input type="text" class="form-input" name="TVA_nummer" placeholder="BE123456789">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" placeholder="02 XXX XX XX">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adres</label>
+                                <input type="text" class="form-input" name="straatnaam" placeholder="Straatnaam">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Huisnummer</label>
+                                <input type="text" class="form-input" name="huisnummer" placeholder="123">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gemeente</label>
+                                <input type="text" class="form-input" name="gemeente" placeholder="Brussel">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Postcode</label>
+                                <input type="text" class="form-input" name="postcode" placeholder="1000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Land</label>
+                                <input type="text" class="form-input" name="land" placeholder="België">
+                            </div>
+                            <button type="submit" class="submit-btn">Bedrijf Toevoegen</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'project':
+                    showTemporaryMessage('ℹ️ Projecten worden beheerd via studentgegevens', 'info');
+                    return;
+            }
+
+            body.innerHTML = formHtml;
+            
+            const form = document.getElementById('data-form');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+            
+            showModal();
+        }
+
+        function showEditModal(type, id) {
+            currentEditType = type;
+            currentEditId = id;
+            
+            let item;
+            let title;
+>>>>>>> Stashed changes
 
             switch(type) {
                 case 'student':
-                    students.push(data);
-                    renderStudents();
+                    item = students.find(s => s.studentnummer == id);
+                    title = 'Student Bewerken';
                     break;
                 case 'company':
+<<<<<<< Updated upstream
                     data.hasPaid = formData.get('hasPaid') === 'true';
                     companies.push(data);
                     renderCompanies();
@@ -835,11 +1067,213 @@
                     data.studentIds = [...selectedStudents]; // Add selected students to project
                     projects.push(data);
                     renderProjects();
+=======
+                    item = companies.find(c => c.bedrijfsnummer == id);
+                    title = 'Bedrijf Bewerken';
+                    break;
+                case 'project':
+                    item = projects.find(p => p.studentnummer == id);
+                    title = 'Project Bewerken';
+>>>>>>> Stashed changes
                     break;
             }
 
-            updateCounts();
-            closeModal();
+            if (!item) return;
+            
+            document.getElementById('modal-title').textContent = title;
+            
+            let formHtml = '';
+            
+            switch(type) {
+                case 'student':
+                    formHtml = `
+                        <form id="data-form">
+                            <div class="form-group">
+                                <label class="form-label">Studentnummer *</label>
+                                <input type="text" class="form-input" name="studentnummer" value="${item.studentnummer || ''}" required readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Voornaam *</label>
+                                <input type="text" class="form-input" name="voornaam" value="${item.voornaam || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Achternaam *</label>
+                                <input type="text" class="form-input" name="achternaam" value="${item.achternaam || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" value="${item.gsm_nummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Opleiding</label>
+                                <input type="text" class="form-input" name="opleiding" value="${item.opleiding || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Opleidingsrichting</label>
+                                <input type="text" class="form-input" name="opleidingsrichting" value="${item.opleidingsrichting || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Titel</label>
+                                <input type="text" class="form-input" name="projectTitel" value="${item.projectTitel || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Beschrijving</label>
+                                <textarea class="form-input form-textarea" name="projectBeschrijving">${item.projectBeschrijving || ''}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Over mezelf</label>
+                                <textarea class="form-input form-textarea" name="overMezelf">${item.overMezelf || ''}</textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Student Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'company':
+                    formHtml = `
+                        <form id="data-form">
+                            <div class="form-group">
+                                <label class="form-label">Bedrijfsnaam *</label>
+                                <input type="text" class="form-input" name="naam" value="${item.naam || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sector *</label>
+                                <input type="text" class="form-input" name="sector" value="${item.sector || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">TVA Nummer</label>
+                                <input type="text" class="form-input" name="TVA_nummer" value="${item.TVA_nummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" value="${item.gsm_nummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adres</label>
+                                <input type="text" class="form-input" name="straatnaam" value="${item.straatnaam || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Huisnummer</label>
+                                <input type="text" class="form-input" name="huisnummer" value="${item.huisnummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gemeente</label>
+                                <input type="text" class="form-input" name="gemeente" value="${item.gemeente || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Postcode</label>
+                                <input type="text" class="form-input" name="postcode" value="${item.postcode || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Land</label>
+                                <input type="text" class="form-input" name="land" value="${item.land || ''}">
+                            </div>
+                            <button type="submit" class="submit-btn">Bedrijf Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+            }
+
+            document.getElementById('modal-body').innerHTML = formHtml;
+            
+            const form = document.getElementById('data-form');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+            
+            showModal();
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                data[key] = value || null;
+            });
+
+            try {
+                if (currentEditId) {
+                    // Update existing item
+                    switch(currentEditType) {
+                        case 'student':
+                            await apiRequest(`/studenten/${currentEditId}`, 'PUT', data);
+                            await loadStudents();
+                            break;
+                        case 'company':
+                            await apiRequest(`/bedrijven/${currentEditId}`, 'PUT', data);
+                            await loadCompanies();
+                            break;
+                    }
+                    showTemporaryMessage('✅ Item succesvol bijgewerkt!', 'success');
+                } else {
+                    // Create new item
+                    switch(currentEditType) {
+                        case 'student':
+                            await apiRequest('/studenten', 'POST', data);
+                            await loadStudents();
+                            break;
+                        case 'company':
+                            await apiRequest('/bedrijven', 'POST', data);
+                            await loadCompanies();
+                            break;
+                    }
+                    showTemporaryMessage('✅ Item succesvol toegevoegd!', 'success');
+                }
+                
+                await loadStatistics();
+                closeModal();
+            } catch (error) {
+                // Error message is already shown by apiRequest
+            }
+        }
+
+        async function deleteItem(type, id) {
+            let itemName = '';
+            let confirmMessage = '';
+            
+            switch(type) {
+                case 'student':
+                    const student = students.find(s => s.studentnummer == id);
+                    itemName = student ? `${student.voornaam} ${student.achternaam}` : 'Deze student';
+                    confirmMessage = `Weet je zeker dat je de student "${itemName}" wilt verwijderen?`;
+                    break;
+                case 'company':
+                    const company = companies.find(c => c.bedrijfsnummer == id);
+                    itemName = company ? company.naam : 'Dit bedrijf';
+                    confirmMessage = `Weet je zeker dat je het bedrijf "${itemName}" wilt verwijderen?`;
+                    break;
+            }
+            
+            if (confirm(confirmMessage + '\n\nDeze actie kan niet ongedaan worden gemaakt.')) {
+                try {
+                    switch(type) {
+                        case 'student':
+                            await apiRequest(`/studenten/${id}`, 'DELETE');
+                            await loadStudents();
+                            await loadProjects(); // Projects kunnen veranderen
+                            break;
+                        case 'company':
+                            await apiRequest(`/bedrijven/${id}`, 'DELETE');
+                            await loadCompanies();
+                            break;
+                    }
+                    
+                    await loadStatistics();
+                    showTemporaryMessage('🗑️ Item succesvol verwijderd!', 'success');
+                } catch (error) {
+                    // Error message is already shown by apiRequest
+                }
+            }
         }
 
         function showDetails(type, id) {
@@ -848,15 +1282,15 @@
 
             switch(type) {
                 case 'student':
-                    item = students.find(s => s.id === id);
+                    item = students.find(s => s.studentnummer == id);
                     title = 'Student Details';
                     break;
                 case 'company':
-                    item = companies.find(c => c.id === id);
+                    item = companies.find(c => c.bedrijfsnummer == id);
                     title = 'Bedrijf Details';
                     break;
                 case 'project':
-                    item = projects.find(p => p.id === id);
+                    item = projects.find(p => p.studentnummer == id);
                     title = 'Project Details';
                     break;
             }
@@ -867,10 +1301,11 @@
             
             let detailsHtml = '';
             for (const [key, value] of Object.entries(item)) {
-                if (key !== 'id' && key !== 'studentIds') {
+                if (key !== 'studentnummer' && key !== 'bedrijfsnummer' && value) {
                     const label = getFieldLabel(key);
-                    let displayValue = value || 'Niet ingevuld';
+                    let displayValue = value;
                     
+<<<<<<< Updated upstream
                     // Special formatting for certain fields
                     if (key === 'hasPaid') {
                         displayValue = value ? '<span style="color: #27ae60; font-weight: bold;">✓ Ja, heeft betaald</span>' : '<span style="color: #e74c3c; font-weight: bold;">✗ Nee, nog niet betaald</span>';
@@ -882,6 +1317,12 @@
                         displayValue = `<a href="mailto:${value}" style="color: #3498db;">${value}</a>`;
                     } else if (key === 'phone' && value) {
                         displayValue = `<a href="tel:${value}" style="color: #3498db;">${value}</a>`;
+=======
+                    if (key === 'email') {
+                        displayValue = `<a href="mailto:${value}" style="color: #881538;">${value}</a>`;
+                    } else if (key === 'gsm_nummer') {
+                        displayValue = `<a href="tel:${value}" style="color: #881538;">${value}</a>`;
+>>>>>>> Stashed changes
                     }
                     
                     detailsHtml += `
@@ -893,6 +1334,7 @@
                 }
             }
 
+<<<<<<< Updated upstream
             // Add students for projects
             if (type === 'project' && item.studentIds && item.studentIds.length > 0) {
                 const projectStudents = item.studentIds.map(studentId => {
@@ -910,28 +1352,88 @@
                     </div>
                 `;
             }
+=======
+            // Add action buttons
+            detailsHtml += `
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #f8f9fa; display: flex; gap: 1rem;">
+                    <button onclick="showEditModal('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); flex: 1;">
+                        ✏️ Bewerken
+                    </button>
+                    <button onclick="deleteItem('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); flex: 1;">
+                        🗑️ Verwijderen
+                    </button>
+                </div>
+            `;
+>>>>>>> Stashed changes
 
             document.getElementById('modal-body').innerHTML = detailsHtml;
             showModal();
         }
 
+<<<<<<< Updated upstream
+=======
+        function showTemporaryMessage(message, type = 'success') {
+            const messageEl = document.createElement('div');
+            messageEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                ${type === 'success' ? 
+                    'background: linear-gradient(135deg, #27ae60, #2ecc71);' : 
+                    type === 'error' ?
+                    'background: linear-gradient(135deg, #e74c3c, #c0392b);' :
+                    'background: linear-gradient(135deg, #3498db, #2980b9);'
+                }
+            `;
+            messageEl.textContent = message;
+            
+            document.body.appendChild(messageEl);
+            
+            setTimeout(() => {
+                messageEl.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                messageEl.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.parentNode.removeChild(messageEl);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+>>>>>>> Stashed changes
         function getFieldLabel(field) {
             const labels = {
-                name: 'Naam',
+                voornaam: 'Voornaam',
+                achternaam: 'Achternaam',
+                naam: 'Naam',
                 email: 'Email',
-                studentNumber: 'Studentnummer',
-                major: 'Studierichting',
-                phone: 'Telefoon',
+                gsm_nummer: 'GSM Nummer',
+                opleiding: 'Opleiding',
+                opleidingsrichting: 'Opleidingsrichting',
+                projectTitel: 'Project Titel',
+                projectBeschrijving: 'Project Beschrijving',
+                overMezelf: 'Over mezelf',
                 sector: 'Sector',
-                address: 'Adres',
-                website: 'Website',
-                description: 'Beschrijving',
-                status: 'Status',
-                startDate: 'Startdatum',
-                endDate: 'Einddatum',
-                budget: 'Budget',
-                createdAt: 'Aangemaakt op',
-                hasPaid: 'Betaalstatus'
+                TVA_nummer: 'TVA Nummer',
+                straatnaam: 'Straat',
+                huisnummer: 'Huisnummer',
+                gemeente: 'Gemeente',
+                postcode: 'Postcode',
+                bus: 'Bus',
+                land: 'Land',
+                studentNaam: 'Student'
             };
             return labels[field] || field;
         }
@@ -939,10 +1441,11 @@
         function renderStudents(searchTerm = '') {
             const container = document.getElementById('students-list');
             const filtered = students.filter(student => 
-                student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.voornaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.achternaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                student.studentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                student.major.toLowerCase().includes(searchTerm.toLowerCase())
+                student.studentnummer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (student.opleidingsrichting && student.opleidingsrichting.toLowerCase().includes(searchTerm.toLowerCase()))
             );
 
             if (filtered.length === 0) {
@@ -951,9 +1454,23 @@
             }
 
             container.innerHTML = filtered.map(student => `
+<<<<<<< Updated upstream
                 <div class="item-card student" onclick="showDetails('student', '${student.id}')">
                     <div class="item-name">${student.name}</div>
                     <div class="item-info">${student.studentNumber} • ${student.major}</div>
+=======
+                <div class="item-card student" onclick="showDetails('student', '${student.studentnummer}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('student', '${student.studentnummer}')" title="Bewerken">
+                            ✏️
+                        </button>
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('student', '${student.studentnummer}')" title="Verwijderen">
+                            🗑️
+                        </button>
+                    </div>
+                    <div class="item-name">${student.voornaam} ${student.achternaam}</div>
+                    <div class="item-info">${student.studentnummer} • ${student.opleidingsrichting || 'Geen richting'} • ${student.email}</div>
+>>>>>>> Stashed changes
                 </div>
             `).join('');
         }
@@ -961,7 +1478,7 @@
         function renderCompanies(searchTerm = '') {
             const container = document.getElementById('companies-list');
             const filtered = companies.filter(company => 
-                company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                company.naam.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 company.sector.toLowerCase().includes(searchTerm.toLowerCase())
             );
@@ -972,12 +1489,26 @@
             }
 
             container.innerHTML = filtered.map(company => `
+<<<<<<< Updated upstream
                 <div class="item-card company" onclick="showDetails('company', '${company.id}')">
                     <div class="item-name">${company.name}</div>
                     <div class="item-info">
                         ${company.sector} • ${company.email}
                         ${company.hasPaid ? '<span style="color: #27ae60; font-weight: bold;"> • ✓ Betaald</span>' : '<span style="color: #e74c3c; font-weight: bold;"> • ✗ Niet betaald</span>'}
                     </div>
+=======
+                <div class="item-card company" onclick="showDetails('company', '${company.bedrijfsnummer}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('company', '${company.bedrijfsnummer}')" title="Bewerken">
+                            ✏️
+                        </button>
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('company', '${company.bedrijfsnummer}')" title="Verwijderen">
+                            🗑️
+                        </button>
+                    </div>
+                    <div class="item-name">${company.naam}</div>
+                    <div class="item-info">${company.sector} • ${company.email}</div>
+>>>>>>> Stashed changes
                 </div>
             `).join('');
         }
@@ -985,9 +1516,9 @@
         function renderProjects(searchTerm = '') {
             const container = document.getElementById('projects-list');
             const filtered = projects.filter(project => 
-                project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                project.status.toLowerCase().includes(searchTerm.toLowerCase())
+                (project.projectTitel && project.projectTitel.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (project.projectBeschrijving && project.projectBeschrijving.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                project.studentNaam.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
             if (filtered.length === 0) {
@@ -995,15 +1526,28 @@
                 return;
             }
 
+<<<<<<< Updated upstream
             container.innerHTML = filtered.map(project => {
                 const studentCount = project.studentIds ? project.studentIds.length : 0;
                 return `
                     <div class="item-card project" onclick="showDetails('project', '${project.id}')">
                         <div class="item-name">${project.name}</div>
                         <div class="item-info">${project.status} • ${project.startDate} • ${studentCount} student(en)</div>
+=======
+            container.innerHTML = filtered.map(project => `
+                <div class="item-card project" onclick="showDetails('project', '${project.studentnummer}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('student', '${project.studentnummer}')" title="Student Bewerken">
+                            ✏️
+                        </button>
+>>>>>>> Stashed changes
                     </div>
-                `;
-            }).join('');
+                    <div class="item-name">${project.projectTitel || 'Geen titel'}</div>
+                    <div class="item-info">
+                        Door: ${project.studentNaam} • ${project.opleidingsrichting || 'Geen richting'}
+                    </div>
+                </div>
+            `).join('');
         }
 
         // Event listeners voor zoekfuncties
@@ -1033,20 +1577,29 @@
             }
         });
 
+<<<<<<< Updated upstream
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('student-dropdown');
             const container = e.target.closest('.multi-select-container');
             if (!container && dropdown) {
                 dropdown.classList.remove('active');
+=======
+        // Initialize application
+        async function initApp() {
+            try {
+                await loadStatistics();
+                await loadStudents();
+                await loadCompanies();
+                await loadProjects();
+            } catch (error) {
+                showTemporaryMessage('❌ Fout bij initialiseren van de applicatie', 'error');
+>>>>>>> Stashed changes
             }
-        });
+        }
 
-        // Initialisatie
-        updateCounts();
-        renderStudents();
-        renderCompanies();
-        renderProjects();
+        // Start the application
+        initApp();
     </script>
 </body>
 </html>

@@ -2,10 +2,12 @@
   "name": "server",
   "version": "1.0.0",
   "main": "app.js",
-  "scripts": {
-    "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+    "scripts": {
+      "start:app": "node src/Server/app.js",
+      "start:db": "node src/Server/database.js",
+      "dev": "npm-run-all --parallel start:app start:db",
+      "dev:watch": "npm-run-all --parallel \"nodemon src/Server/app.js\" \"nodemon src/Server/database.js\""
+    },
   "keywords": [],
   "author": "",
   "license": "ISC",
