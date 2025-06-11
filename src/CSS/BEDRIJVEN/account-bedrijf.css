@@ -1,0 +1,101 @@
+/* Account Bedrijf Specifieke Styling */
+.nav .nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.card {
+    background: white;
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.card h1 {
+    color: #881538;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.card a {
+    display: block;
+    padding: 1rem 2rem;
+    margin: 1rem 0;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.gegevensBtn {
+    background: #881538;
+    color: white;
+}
+
+.gegevensBtn:hover {
+    background: #A91B47;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+}
+
+.documentBtn {
+    background: #f8f9fa;
+    color: #333;
+    border-color: #dee2e6;
+}
+
+.documentBtn:hover {
+    background: #881538;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.uitloggenBtn {
+    background: white;
+    color: #881538;
+    border-color: #881538;
+}
+
+.uitloggenBtn:hover {
+    background: #881538;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    .card {
+        padding: 2rem;
+    }
+}
