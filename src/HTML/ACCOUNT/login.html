@@ -9,33 +9,36 @@
     
 </head>
 <body>
-   <div class="loginBlok">
-    <div class="homeDiv">
-  <a class="homeButton" href="/">
-    <img src="/images/home-button-black.svg" alt="Home Button">
-  </a>
-  </div>
-    <main class="loginContainer">
-    <div class="loginLogo">
-      <img src="/" alt="Logo">
+    <div class="container">
+        <div class="logo">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0id2hpdGUiLz4KPHA0aCBkPSJNMjAgMTBMMzAgMjBMMjAgMzBMMTAgMjBMMjAgMTBaIiBmaWxsPSIjOGIxNTM4Ii8+Cjwvc3ZnPgo=" alt="Logo">
+        </div>
+        <h2>Log in</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail" class="required">Email-adres</label>
+                <input type="email" id="loginEmail" placeholder="Voer je email in" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword" class="required">Wachtwoord</label>
+                <input type="password" id="loginPassword" placeholder="Voer je wachtwoord in" required>
+            </div>
+            <button type="submit" class="btn">Inloggen</button>
+        </form>
+        <div class="toggle-link">
+            <span>Nog geen account? </span>
+            <a href="register.html">Maak een account aan</a>
+        </div>
     </div>
-    <h2 class="loginTitle">Log in</h2>
-    <form class="loginForm" autocomplete="off">
-      <div>
-        <label for="email">Email-adres</label>
-        <input type="email" id="email" name="email" placeholder="Voer je email in" required>
-      </div>
-      <div>
-        <label for="password">Wachtwoord</label>
-        <input type="password" id="password" name="password" placeholder="Voer je wachtwoord in" required>
-      </div>
-      <button class="loginButton" type="submit">Inloggen</button>
-    </form>
-    <div class="loginExtra">
-      Nog geen account?
-      <a href="/register">Maak een account aan</a>
-    </div>
-  </main>
-    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if (email && password) {
+                alert('Login succesvol! (Demo)');
+            }
+        });
+    </script>
 </body>
 </html>
