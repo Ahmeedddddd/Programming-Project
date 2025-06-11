@@ -81,8 +81,11 @@ h2 {
   height: 125px;
   background: var(--white);
   border-bottom: 2px solid var(--gray-200);
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
+
 
 .logo {
   height: 120px;
@@ -184,7 +187,7 @@ h2 {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 0 1rem 0;
+  padding: 2rem 0 2rem 0;
 }
 
 .searchBar {
