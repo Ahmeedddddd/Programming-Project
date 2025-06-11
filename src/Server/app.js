@@ -34,6 +34,9 @@ app.get('/accountBedrijf', (req, res) => {
 app.get('/gegevensBedrijf', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/gegevens-bedrijf.html'));
 });
+app.get('/tarieven', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/tarieven.html'));
+});
 
 //INFO
 app.get('/info', (req, res) => {
