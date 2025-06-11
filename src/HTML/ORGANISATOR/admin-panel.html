@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS/ORGANISATOR/admin-panel.css">
     <title>CareerLaunch Admin Panel</title>
 
 </head>
@@ -15,16 +17,20 @@
 
         <div class="stats-overview">
             <div class="stat-card students">
-                <div class="stat-number" id="student-count">0</div>
+                <div class="stat-number" id="student-count">-</div>
                 <div class="stat-label">Studenten</div>
             </div>
             <div class="stat-card companies">
-                <div class="stat-number" id="company-count">0</div>
+                <div class="stat-number" id="company-count">-</div>
                 <div class="stat-label">Bedrijven</div>
             </div>
             <div class="stat-card projects">
-                <div class="stat-number" id="project-count">0</div>
+                <div class="stat-number" id="project-count">-</div>
                 <div class="stat-label">Projecten</div>
+            </div>
+            <div class="stat-card appointments">
+                <div class="stat-number" id="appointment-count">-</div>
+                <div class="stat-label">Afspraken</div>
             </div>
         </div>
 
@@ -43,7 +49,7 @@
                         <button class="add-btn" onclick="showAddModal('student')">+ Student Toevoegen</button>
                     </div>
                     <div class="items-list" id="students-list">
-                        <div class="no-items">Geen studenten gevonden</div>
+                        <div class="loading">Studenten laden...</div>
                     </div>
                 </div>
             </div>
@@ -64,7 +70,7 @@
                         <button class="add-btn" onclick="showAddModal('company')">+ Bedrijf Toevoegen</button>
                     </div>
                     <div class="items-list" id="companies-list">
-                        <div class="no-items">Geen bedrijven gevonden</div>
+                        <div class="loading">Bedrijven laden...</div>
                     </div>
                 </div>
             </div>
@@ -81,11 +87,11 @@
             <div class="section-content">
                 <div class="content-inner">
                     <div class="search-filter">
-                        <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten op naam, beschrijving, status...">
+                        <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten op naam, beschrijving...">
                         <button class="add-btn" onclick="showAddModal('project')">+ Project Toevoegen</button>
                     </div>
                     <div class="items-list" id="projects-list">
-                        <div class="no-items">Geen projecten gevonden</div>
+                        <div class="loading">Projecten laden...</div>
                     </div>
                 </div>
             </div>
@@ -106,131 +112,89 @@
     </div>
 
     <script>
-        // Data opslag
-        let students = [
-            {
-                id: 'st1',
-                name: 'Emma de Vries',
-                email: 'emma.devries@student.ehb.be',
-                studentNumber: 'S20230001',
-                major: 'Toegepaste Informatica',
-                phone: '0471234567',
-                createdAt: '15-11-2024'
-            },
-            {
-                id: 'st2',
-                name: 'Lucas Janssen',
-                email: 'lucas.janssen@student.ehb.be',
-                studentNumber: 'S20230002',
-                major: 'Industriële Wetenschappen',
-                phone: '0472345678',
-                createdAt: '20-11-2024'
-            },
-            {
-                id: 'st3',
-                name: 'Sophie Peeters',
-                email: 'sophie.peeters@student.ehb.be',
-                studentNumber: 'S20230003',
-                major: 'Marketing & Communicatie',
-                phone: '0473456789',
-                createdAt: '25-11-2024'
-            },
-            {
-                id: 'st4',
-                name: 'John Doe',
-                email: 'john.doe@student.ehb.be',
-                studentNumber: 'S20230004',
-                major: 'Toegepaste Informatica',
-                phone: '0474567890',
-                createdAt: '01-12-2024'
-            }
-        ];
-        
-        let companies = [
-            {
-                id: 'co1',
-                name: 'TechStart BV',
-                email: 'info@techstart.be',
-                sector: 'IT Services',
-                address: 'Technologielaan 15, 1000 Brussel',
-                phone: '024567890',
-                website: 'https://techstart.be',
-                hasPaid: true,
-                createdAt: '10-11-2024'
-            },
-            {
-                id: 'co2',
-                name: 'Vital\'O Network',
-                email: 'contact@vitalo.be',
-                sector: 'Health-Tech',
-                address: 'Driesstraat, Roodebeek, 1200 Sint-Lambrechts-Woluwe',
-                phone: '024567891',
-                website: 'https://vitalo.be',
-                hasPaid: true,
-                createdAt: '12-11-2024'
-            },
-            {
-                id: 'co3',
-                name: 'Green Energy Solutions',
-                email: 'info@greenenergy.be',
-                sector: 'Duurzame Energie',
-                address: 'Energieweg 8, 9000 Gent',
-                phone: '092345678',
-                website: 'https://greenenergy.be',
-                hasPaid: false,
-                createdAt: '18-11-2024'
-            }
-        ];
-        
-        let projects = [
-            {
-                id: 'pr1',
-                name: 'Kokende AI Robot',
-                description: 'Een geavanceerde huishoudrobot die volledig zelfstandig maaltijden kan bereiden met AI en spraakherkenning',
-                status: 'actief',
-                startDate: '2024-09-01',
-                endDate: '2025-01-30',
-                budget: '12000',
-                studentIds: ['st1', 'st4'],
-                createdAt: '01-09-2024'
-            },
-            {
-                id: 'pr2',
-                name: 'SmartLine Inspector',
-                description: 'Vision-gebaseerd edge-systeem voor kwaliteitscontrole in productielijnen',
-                status: 'actief',
-                startDate: '2024-10-01',
-                endDate: '2025-02-28',
-                budget: '8000',
-                studentIds: ['st2'],
-                createdAt: '22-09-2024'
-            },
-            {
-                id: 'pr3',
-                name: 'Website Redesign Platform',
-                description: 'Complete herontwerp van een bedrijfswebsite met moderne UI/UX principes',
-                status: 'planning',
-                startDate: '2025-02-01',
-                endDate: '2025-05-30',
-                budget: '15000',
-                studentIds: ['st3'],
-                createdAt: '20-12-2024'
-            }
-        ];
-        
-        let selectedStudents = [];
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3301/api';
 
-        // Helper functies
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        // Data storage
+        let students = [];
+        let companies = [];
+        let projects = [];
+        let currentEditId = null;
+        let currentEditType = null;
+
+        // API Helper functions
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const config = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (data) {
+                config.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'API request failed');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                showTemporaryMessage(`❌ ${error.message}`, 'error');
+                throw error;
+            }
         }
 
-        function updateCounts() {
-            document.getElementById('student-count').textContent = students.length;
-            document.getElementById('company-count').textContent = companies.length;
-            document.getElementById('project-count').textContent = projects.length;
+        // Data loading functions
+        async function loadStudents() {
+            try {
+                students = await apiRequest('/studenten');
+                renderStudents();
+            } catch (error) {
+                document.getElementById('students-list').innerHTML = 
+                    '<div class="error-message">Fout bij laden van studenten</div>';
+            }
         }
 
+        async function loadCompanies() {
+            try {
+                companies = await apiRequest('/bedrijven');
+                renderCompanies();
+            } catch (error) {
+                document.getElementById('companies-list').innerHTML = 
+                    '<div class="error-message">Fout bij laden van bedrijven</div>';
+            }
+        }
+
+        async function loadProjects() {
+            try {
+                projects = await apiRequest('/projecten');
+                renderProjects();
+            } catch (error) {
+                document.getElementById('projects-list').innerHTML = 
+                    '<div class="error-message">Fout bij laden van projecten</div>';
+            }
+        }
+
+        async function loadStatistics() {
+            try {
+                const stats = await apiRequest('/statistieken');
+                document.getElementById('student-count').textContent = stats.studenten;
+                document.getElementById('company-count').textContent = stats.bedrijven;
+                document.getElementById('project-count').textContent = stats.projecten;
+                document.getElementById('appointment-count').textContent = stats.afspraken;
+            } catch (error) {
+                console.error('Failed to load statistics:', error);
+            }
+        }
+
+        // Helper functions
         function toggleSection(sectionId) {
             const section = document.getElementById(sectionId);
             section.classList.toggle('expanded');
@@ -242,65 +206,13 @@
 
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
-            selectedStudents = [];
-        }
-
-        function toggleStudentDropdown() {
-            const dropdown = document.getElementById('student-dropdown');
-            if (dropdown) {
-                dropdown.classList.toggle('active');
-            }
-        }
-
-        function toggleStudentSelection(studentId) {
-            const index = selectedStudents.indexOf(studentId);
-            if (index > -1) {
-                selectedStudents.splice(index, 1);
-            } else {
-                selectedStudents.push(studentId);
-            }
-            updateStudentDropdown();
-        }
-
-        function updateStudentDropdown() {
-            const options = document.querySelectorAll('.multi-select-option');
-            options.forEach(option => {
-                const studentId = option.getAttribute('data-student-id');
-                if (selectedStudents.includes(studentId)) {
-                    option.classList.add('selected');
-                } else {
-                    option.classList.remove('selected');
-                }
-            });
-
-            const selectedDisplay = document.getElementById('selected-students-display');
-            const selectText = document.getElementById('student-select-text');
-            
-            if (selectedDisplay && selectText) {
-                if (selectedStudents.length === 0) {
-                    selectText.textContent = 'Selecteer studenten...';
-                    selectedDisplay.innerHTML = '';
-                } else {
-                    selectText.textContent = `${selectedStudents.length} student(en) geselecteerd`;
-                    selectedDisplay.innerHTML = selectedStudents.map(studentId => {
-                        const student = students.find(s => s.id === studentId);
-                        return `
-                            <span class="selected-tag">
-                                ${student ? student.name : 'Onbekend'}
-                                <span class="remove" onclick="removeStudent('${studentId}')">×</span>
-                            </span>
-                        `;
-                    }).join('');
-                }
-            }
-        }
-
-        function removeStudent(studentId) {
-            selectedStudents = selectedStudents.filter(id => id !== studentId);
-            updateStudentDropdown();
+            currentEditId = null;
+            currentEditType = null;
         }
 
         function showAddModal(type) {
+            currentEditId = null;
+            currentEditType = type;
             const modal = document.getElementById('modal');
             const title = document.getElementById('modal-title');
             const body = document.getElementById('modal-body');
@@ -311,26 +223,46 @@
                 case 'student':
                     title.textContent = 'Student Toevoegen';
                     formHtml = `
-                        <form id="add-form">
+                        <form id="data-form">
                             <div class="form-group">
-                                <label class="form-label">Naam *</label>
-                                <input type="text" class="form-input" name="name" required placeholder="Volledige naam">
+                                <label class="form-label">Studentnummer *</label>
+                                <input type="text" class="form-input" name="studentnummer" required placeholder="S20240001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Voornaam *</label>
+                                <input type="text" class="form-input" name="voornaam" required placeholder="Jan">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Achternaam *</label>
+                                <input type="text" class="form-input" name="achternaam" required placeholder="Janssen">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email *</label>
-                                <input type="email" class="form-input" name="email" required placeholder="student@ehb.be">
+                                <input type="email" class="form-input" name="email" required placeholder="jan.janssen@student.ehb.be">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Studentnummer *</label>
-                                <input type="text" class="form-input" name="studentNumber" required placeholder="S20240001">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" placeholder="04XX XX XX XX">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Studierichting *</label>
-                                <input type="text" class="form-input" name="major" required placeholder="Toegepaste Informatica">
+                                <label class="form-label">Opleiding</label>
+                                <input type="text" class="form-input" name="opleiding" placeholder="Bachelor">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Telefoon</label>
-                                <input type="tel" class="form-input" name="phone" placeholder="04XX XX XX XX">
+                                <label class="form-label">Opleidingsrichting</label>
+                                <input type="text" class="form-input" name="opleidingsrichting" placeholder="Toegepaste Informatica">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Titel</label>
+                                <input type="text" class="form-input" name="projectTitel" placeholder="Mijn Project">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Beschrijving</label>
+                                <textarea class="form-input form-textarea" name="projectBeschrijving" placeholder="Beschrijving van het project..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Over mezelf</label>
+                                <textarea class="form-input form-textarea" name="overMezelf" placeholder="Korte beschrijving over mezelf..."></textarea>
                             </div>
                             <button type="submit" class="submit-btn">Student Toevoegen</button>
                         </form>
@@ -340,10 +272,10 @@
                 case 'company':
                     title.textContent = 'Bedrijf Toevoegen';
                     formHtml = `
-                        <form id="add-form">
+                        <form id="data-form">
                             <div class="form-group">
                                 <label class="form-label">Bedrijfsnaam *</label>
-                                <input type="text" class="form-input" name="name" required placeholder="Bedrijfsnaam BV">
+                                <input type="text" class="form-input" name="naam" required placeholder="Bedrijfsnaam BV">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email *</label>
@@ -354,25 +286,32 @@
                                 <input type="text" class="form-input" name="sector" required placeholder="IT Services">
                             </div>
                             <div class="form-group">
+                                <label class="form-label">TVA Nummer</label>
+                                <input type="text" class="form-input" name="TVA_nummer" placeholder="BE123456789">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" placeholder="02 XXX XX XX">
+                            </div>
+                            <div class="form-group">
                                 <label class="form-label">Adres</label>
-                                <input type="text" class="form-input" name="address" placeholder="Straat 123, 1000 Brussel">
+                                <input type="text" class="form-input" name="straatnaam" placeholder="Straatnaam">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Telefoon</label>
-                                <input type="tel" class="form-input" name="phone" placeholder="02 XXX XX XX">
+                                <label class="form-label">Huisnummer</label>
+                                <input type="text" class="form-input" name="huisnummer" placeholder="123">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Website</label>
-                                <input type="url" class="form-input" name="website" placeholder="https://bedrijf.be">
+                                <label class="form-label">Gemeente</label>
+                                <input type="text" class="form-input" name="gemeente" placeholder="Brussel">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">
-                                    <input type="checkbox" name="hasPaid" style="margin-right: 0.5rem; transform: scale(1.2);">
-                                    <strong>Heeft betaald voor evenement deelname</strong>
-                                </label>
-                                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
-                                    Vink aan als het bedrijf heeft betaald voor deelname aan CareerLaunch
-                                </div>
+                                <label class="form-label">Postcode</label>
+                                <input type="text" class="form-input" name="postcode" placeholder="1000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Land</label>
+                                <input type="text" class="form-input" name="land" placeholder="België">
                             </div>
                             <button type="submit" class="submit-btn">Bedrijf Toevoegen</button>
                         </form>
@@ -380,107 +319,238 @@
                     break;
                     
                 case 'project':
-                    title.textContent = 'Project Toevoegen';
-                    formHtml = `
-                        <form id="add-form">
-                            <div class="form-group">
-                                <label class="form-label">Projectnaam *</label>
-                                <input type="text" class="form-input" name="name" required placeholder="Mijn Geweldig Project">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Beschrijving *</label>
-                                <textarea class="form-input form-textarea" name="description" required placeholder="Uitgebreide beschrijving van het project..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Status</label>
-                                <select class="form-input" name="status">
-                                    <option value="planning">Planning</option>
-                                    <option value="actief">Actief</option>
-                                    <option value="voltooid">Voltooid</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Startdatum</label>
-                                <input type="date" class="form-input" name="startDate">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Einddatum</label>
-                                <input type="date" class="form-input" name="endDate">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Budget (€)</label>
-                                <input type="number" class="form-input" name="budget" placeholder="5000">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Studenten</label>
-                                <div class="multi-select-container">
-                                    <div class="multi-select-input" onclick="toggleStudentDropdown()">
-                                        <span id="student-select-text">Selecteer studenten...</span>
-                                    </div>
-                                    <div class="multi-select-dropdown" id="student-dropdown">
-                                        ${students.map(student => `
-                                            <div class="multi-select-option" data-student-id="${student.id}" onclick="toggleStudentSelection('${student.id}')">
-                                                ${student.name} (${student.studentNumber})
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                    <div class="selected-students" id="selected-students-display"></div>
-                                </div>
-                            </div>
-                            <button type="submit" class="submit-btn">Project Toevoegen</button>
-                        </form>
-                    `;
-                    break;
+                    showTemporaryMessage('ℹ️ Projecten worden beheerd via studentgegevens', 'info');
+                    return;
             }
 
             body.innerHTML = formHtml;
             
-            const form = document.getElementById('add-form');
+            const form = document.getElementById('data-form');
             if (form) {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleFormSubmit(e, type);
-                });
+                form.addEventListener('submit', handleFormSubmit);
             }
             
             showModal();
         }
 
-        function handleFormSubmit(event, type) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
+        function showEditModal(type, id) {
+            currentEditType = type;
+            currentEditId = id;
             
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-            
-            addItem(type, data);
-        }
-
-        function addItem(type, data) {
-            data.id = generateId();
-            data.createdAt = new Date().toLocaleDateString('nl-NL');
+            let item;
+            let title;
 
             switch(type) {
                 case 'student':
-                    students.push(data);
-                    renderStudents();
+                    item = students.find(s => s.studentnummer == id);
+                    title = 'Student Bewerken';
                     break;
                 case 'company':
-                    data.hasPaid = data.hasPaid === 'on';
-                    companies.push(data);
-                    renderCompanies();
+                    item = companies.find(c => c.bedrijfsnummer == id);
+                    title = 'Bedrijf Bewerken';
                     break;
                 case 'project':
-                    data.studentIds = [...selectedStudents];
-                    projects.push(data);
-                    renderProjects();
+                    item = projects.find(p => p.studentnummer == id);
+                    title = 'Project Bewerken';
                     break;
             }
 
-            updateCounts();
-            closeModal();
+            if (!item) return;
+            
+            document.getElementById('modal-title').textContent = title;
+            
+            let formHtml = '';
+            
+            switch(type) {
+                case 'student':
+                    formHtml = `
+                        <form id="data-form">
+                            <div class="form-group">
+                                <label class="form-label">Studentnummer *</label>
+                                <input type="text" class="form-input" name="studentnummer" value="${item.studentnummer || ''}" required readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Voornaam *</label>
+                                <input type="text" class="form-input" name="voornaam" value="${item.voornaam || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Achternaam *</label>
+                                <input type="text" class="form-input" name="achternaam" value="${item.achternaam || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" value="${item.gsm_nummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Opleiding</label>
+                                <input type="text" class="form-input" name="opleiding" value="${item.opleiding || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Opleidingsrichting</label>
+                                <input type="text" class="form-input" name="opleidingsrichting" value="${item.opleidingsrichting || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Titel</label>
+                                <input type="text" class="form-input" name="projectTitel" value="${item.projectTitel || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Project Beschrijving</label>
+                                <textarea class="form-input form-textarea" name="projectBeschrijving">${item.projectBeschrijving || ''}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Over mezelf</label>
+                                <textarea class="form-input form-textarea" name="overMezelf">${item.overMezelf || ''}</textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Student Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'company':
+                    formHtml = `
+                        <form id="data-form">
+                            <div class="form-group">
+                                <label class="form-label">Bedrijfsnaam *</label>
+                                <input type="text" class="form-input" name="naam" value="${item.naam || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sector *</label>
+                                <input type="text" class="form-input" name="sector" value="${item.sector || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">TVA Nummer</label>
+                                <input type="text" class="form-input" name="TVA_nummer" value="${item.TVA_nummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GSM Nummer</label>
+                                <input type="tel" class="form-input" name="gsm_nummer" value="${item.gsm_nummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adres</label>
+                                <input type="text" class="form-input" name="straatnaam" value="${item.straatnaam || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Huisnummer</label>
+                                <input type="text" class="form-input" name="huisnummer" value="${item.huisnummer || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gemeente</label>
+                                <input type="text" class="form-input" name="gemeente" value="${item.gemeente || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Postcode</label>
+                                <input type="text" class="form-input" name="postcode" value="${item.postcode || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Land</label>
+                                <input type="text" class="form-input" name="land" value="${item.land || ''}">
+                            </div>
+                            <button type="submit" class="submit-btn">Bedrijf Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+            }
+
+            document.getElementById('modal-body').innerHTML = formHtml;
+            
+            const form = document.getElementById('data-form');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+            
+            showModal();
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                data[key] = value || null;
+            });
+
+            try {
+                if (currentEditId) {
+                    // Update existing item
+                    switch(currentEditType) {
+                        case 'student':
+                            await apiRequest(`/studenten/${currentEditId}`, 'PUT', data);
+                            await loadStudents();
+                            break;
+                        case 'company':
+                            await apiRequest(`/bedrijven/${currentEditId}`, 'PUT', data);
+                            await loadCompanies();
+                            break;
+                    }
+                    showTemporaryMessage('✅ Item succesvol bijgewerkt!', 'success');
+                } else {
+                    // Create new item
+                    switch(currentEditType) {
+                        case 'student':
+                            await apiRequest('/studenten', 'POST', data);
+                            await loadStudents();
+                            break;
+                        case 'company':
+                            await apiRequest('/bedrijven', 'POST', data);
+                            await loadCompanies();
+                            break;
+                    }
+                    showTemporaryMessage('✅ Item succesvol toegevoegd!', 'success');
+                }
+                
+                await loadStatistics();
+                closeModal();
+            } catch (error) {
+                // Error message is already shown by apiRequest
+            }
+        }
+
+        async function deleteItem(type, id) {
+            let itemName = '';
+            let confirmMessage = '';
+            
+            switch(type) {
+                case 'student':
+                    const student = students.find(s => s.studentnummer == id);
+                    itemName = student ? `${student.voornaam} ${student.achternaam}` : 'Deze student';
+                    confirmMessage = `Weet je zeker dat je de student "${itemName}" wilt verwijderen?`;
+                    break;
+                case 'company':
+                    const company = companies.find(c => c.bedrijfsnummer == id);
+                    itemName = company ? company.naam : 'Dit bedrijf';
+                    confirmMessage = `Weet je zeker dat je het bedrijf "${itemName}" wilt verwijderen?`;
+                    break;
+            }
+            
+            if (confirm(confirmMessage + '\n\nDeze actie kan niet ongedaan worden gemaakt.')) {
+                try {
+                    switch(type) {
+                        case 'student':
+                            await apiRequest(`/studenten/${id}`, 'DELETE');
+                            await loadStudents();
+                            await loadProjects(); // Projects kunnen veranderen
+                            break;
+                        case 'company':
+                            await apiRequest(`/bedrijven/${id}`, 'DELETE');
+                            await loadCompanies();
+                            break;
+                    }
+                    
+                    await loadStatistics();
+                    showTemporaryMessage('🗑️ Item succesvol verwijderd!', 'success');
+                } catch (error) {
+                    // Error message is already shown by apiRequest
+                }
+            }
         }
 
         function showDetails(type, id) {
@@ -489,15 +559,15 @@
 
             switch(type) {
                 case 'student':
-                    item = students.find(s => s.id === id);
+                    item = students.find(s => s.studentnummer == id);
                     title = 'Student Details';
                     break;
                 case 'company':
-                    item = companies.find(c => c.id === id);
+                    item = companies.find(c => c.bedrijfsnummer == id);
                     title = 'Bedrijf Details';
                     break;
                 case 'project':
-                    item = projects.find(p => p.id === id);
+                    item = projects.find(p => p.studentnummer == id);
                     title = 'Project Details';
                     break;
             }
@@ -508,24 +578,14 @@
             
             let detailsHtml = '';
             for (const [key, value] of Object.entries(item)) {
-                if (key !== 'id' && key !== 'studentIds') {
+                if (key !== 'studentnummer' && key !== 'bedrijfsnummer' && value) {
                     const label = getFieldLabel(key);
-                    let displayValue = value || 'Niet ingevuld';
+                    let displayValue = value;
                     
-                    if (key === 'hasPaid') {
-                        displayValue = value ? 
-                            '<span class="payment-status paid">✓ Heeft betaald</span>' : 
-                            '<span class="payment-status unpaid">✗ Nog niet betaald</span>';
-                    } else if (key === 'budget' && value) {
-                        displayValue = `€ ${parseInt(value).toLocaleString('nl-NL')}`;
-                    } else if (key === 'website' && value) {
-                        displayValue = `<a href="${value}" target="_blank" style="color: #881538;">${value}</a>`;
-                    } else if (key === 'email' && value) {
+                    if (key === 'email') {
                         displayValue = `<a href="mailto:${value}" style="color: #881538;">${value}</a>`;
-                    } else if (key === 'phone' && value) {
+                    } else if (key === 'gsm_nummer') {
                         displayValue = `<a href="tel:${value}" style="color: #881538;">${value}</a>`;
-                    } else if (key === 'status' && value) {
-                        displayValue = `<span class="status-indicator ${value}">${value}</span>`;
                     }
                     
                     detailsHtml += `
@@ -535,23 +595,6 @@
                         </div>
                     `;
                 }
-            }
-
-            if (type === 'project' && item.studentIds && item.studentIds.length > 0) {
-                const projectStudents = item.studentIds.map(studentId => {
-                    const student = students.find(s => s.id === studentId);
-                    return student ? student.name : 'Onbekende student';
-                });
-                detailsHtml += `
-                    <div class="detail-item">
-                        <span class="detail-label">Studenten:</span>
-                        <span class="detail-value">
-                            <div class="student-list-in-project">
-                                ${projectStudents.map(name => `<span class="student-badge">${name}</span>`).join('')}
-                            </div>
-                        </span>
-                    </div>
-                `;
             }
 
             // Add action buttons
@@ -570,317 +613,7 @@
             showModal();
         }
 
-        function showEditModal(type, id) {
-            let item;
-            let title;
-
-            switch(type) {
-                case 'student':
-                    item = students.find(s => s.id === id);
-                    title = 'Student Bewerken';
-                    break;
-                case 'company':
-                    item = companies.find(c => c.id === id);
-                    title = 'Bedrijf Bewerken';
-                    break;
-                case 'project':
-                    item = projects.find(p => p.id === id);
-                    title = 'Project Bewerken';
-                    break;
-            }
-
-            if (!item) return;
-
-            selectedStudents = item.studentIds || [];
-            
-            document.getElementById('modal-title').textContent = title;
-            
-            let formHtml = '';
-            
-            switch(type) {
-                case 'student':
-                    formHtml = `
-                        <form id="edit-form">
-                            <div class="form-group">
-                                <label class="form-label">Naam *</label>
-                                <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email *</label>
-                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Studentnummer *</label>
-                                <input type="text" class="form-input" name="studentNumber" value="${item.studentNumber || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Studierichting *</label>
-                                <input type="text" class="form-input" name="major" value="${item.major || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Telefoon</label>
-                                <input type="tel" class="form-input" name="phone" value="${item.phone || ''}">
-                            </div>
-                            <button type="submit" class="submit-btn">Student Bijwerken</button>
-                        </form>
-                    `;
-                    break;
-                    
-                case 'company':
-                    formHtml = `
-                        <form id="edit-form">
-                            <div class="form-group">
-                                <label class="form-label">Bedrijfsnaam *</label>
-                                <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email *</label>
-                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Sector *</label>
-                                <input type="text" class="form-input" name="sector" value="${item.sector || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Adres</label>
-                                <input type="text" class="form-input" name="address" value="${item.address || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Telefoon</label>
-                                <input type="tel" class="form-input" name="phone" value="${item.phone || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Website</label>
-                                <input type="url" class="form-input" name="website" value="${item.website || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <input type="checkbox" name="hasPaid" ${item.hasPaid ? 'checked' : ''} style="margin-right: 0.5rem; transform: scale(1.2);">
-                                    <strong>Heeft betaald voor evenement deelname</strong>
-                                </label>
-                                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
-                                    Vink aan als het bedrijf heeft betaald voor deelname aan CareerLaunch
-                                </div>
-                            </div>
-                            <button type="submit" class="submit-btn">Bedrijf Bijwerken</button>
-                        </form>
-                    `;
-                    break;
-                    
-                case 'project':
-                    formHtml = `
-                        <form id="edit-form">
-                            <div class="form-group">
-                                <label class="form-label">Projectnaam *</label>
-                                <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Beschrijving *</label>
-                                <textarea class="form-input form-textarea" name="description" required>${item.description || ''}</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Status</label>
-                                <select class="form-input" name="status">
-                                    <option value="planning" ${item.status === 'planning' ? 'selected' : ''}>Planning</option>
-                                    <option value="actief" ${item.status === 'actief' ? 'selected' : ''}>Actief</option>
-                                    <option value="voltooid" ${item.status === 'voltooid' ? 'selected' : ''}>Voltooid</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Startdatum</label>
-                                <input type="date" class="form-input" name="startDate" value="${item.startDate || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Einddatum</label>
-                                <input type="date" class="form-input" name="endDate" value="${item.endDate || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Budget (€)</label>
-                                <input type="number" class="form-input" name="budget" value="${item.budget || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Studenten</label>
-                                <div class="multi-select-container">
-                                    <div class="multi-select-input" onclick="toggleStudentDropdown()">
-                                        <span id="student-select-text">Selecteer studenten...</span>
-                                    </div>
-                                    <div class="multi-select-dropdown" id="student-dropdown">
-                                        ${students.map(student => `
-                                            <div class="multi-select-option" data-student-id="${student.id}" onclick="toggleStudentSelection('${student.id}')">
-                                                ${student.name} (${student.studentNumber})
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                    <div class="selected-students" id="selected-students-display"></div>
-                                </div>
-                            </div>
-                            <button type="submit" class="submit-btn">Project Bijwerken</button>
-                        </form>
-                    `;
-                    break;
-            }
-
-            document.getElementById('modal-body').innerHTML = formHtml;
-            
-            // Voeg event listener toe aan het formulier
-            const form = document.getElementById('edit-form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleEditFormSubmit(e, type, id);
-                });
-            }
-            
-            // Update student dropdown voor projecten
-            if (type === 'project') {
-                setTimeout(() => {
-                    updateStudentDropdown();
-                }, 100);
-            }
-            
-            showModal();
-        }
-
-        // Nieuwe functie specifiek voor edit form submit
-        function handleEditFormSubmit(event, type, id) {
-            event.preventDefault();
-            console.log('Edit form submitted for:', type, id);
-            
-            const formData = new FormData(event.target);
-            const data = {};
-            
-            // Verzamel alle form data
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-            
-            // Handle checkbox for company payment status
-            if (type === 'company') {
-                const checkbox = event.target.querySelector('input[name="hasPaid"]');
-                data.hasPaid = checkbox ? checkbox.checked : false;
-            }
-            
-            // Handle project students
-            if (type === 'project') {
-                data.studentIds = [...selectedStudents];
-            }
-            
-            console.log('Data to update:', data);
-            
-            // Update the item
-            updateItem(type, id, data);
-        }
-
-        function updateItem(type, id, data) {
-            let index = -1;
-            
-            switch(type) {
-                case 'student':
-                    index = students.findIndex(s => s.id === id);
-                    if (index !== -1) {
-                        students[index] = { ...students[index], ...data };
-                        renderStudents();
-                    }
-                    break;
-                case 'company':
-                    index = companies.findIndex(c => c.id === id);
-                    if (index !== -1) {
-                        companies[index] = { ...companies[index], ...data };
-                        renderCompanies();
-                    }
-                    break;
-                case 'project':
-                    index = projects.findIndex(p => p.id === id);
-                    if (index !== -1) {
-                        projects[index] = { ...projects[index], ...data };
-                        renderProjects();
-                    }
-                    break;
-            }
-
-            if (index !== -1) {
-                closeModal();
-                showTemporaryMessage('✅ Item succesvol bijgewerkt!', 'success');
-            } else {
-                showTemporaryMessage('❌ Er ging iets mis bij het bijwerken.', 'error');
-            }
-        }
-
-        function deleteItem(type, id) {
-            let itemName = '';
-            let confirmMessage = '';
-            
-            switch(type) {
-                case 'student':
-                    const student = students.find(s => s.id === id);
-                    itemName = student ? student.name : 'Deze student';
-                    confirmMessage = `Weet je zeker dat je de student "${itemName}" wilt verwijderen?`;
-                    break;
-                case 'company':
-                    const company = companies.find(c => c.id === id);
-                    itemName = company ? company.name : 'Dit bedrijf';
-                    confirmMessage = `Weet je zeker dat je het bedrijf "${itemName}" wilt verwijderen?`;
-                    break;
-                case 'project':
-                    const project = projects.find(p => p.id === id);
-                    itemName = project ? project.name : 'Dit project';
-                    confirmMessage = `Weet je zeker dat je het project "${itemName}" wilt verwijderen?`;
-                    break;
-            }
-            
-            if (confirm(confirmMessage + '\n\nDeze actie kan niet ongedaan worden gemaakt.')) {
-                performDelete(type, id);
-            }
-        }
-
-        function performDelete(type, id) {
-            let deleted = false;
-            
-            switch(type) {
-                case 'student':
-                    const studentIndex = students.findIndex(s => s.id === id);
-                    if (studentIndex !== -1) {
-                        students.splice(studentIndex, 1);
-                        // Remove student from all projects
-                        projects.forEach(project => {
-                            if (project.studentIds) {
-                                project.studentIds = project.studentIds.filter(studentId => studentId !== id);
-                            }
-                        });
-                        renderStudents();
-                        renderProjects(); // Update projects to reflect removed student
-                        deleted = true;
-                    }
-                    break;
-                case 'company':
-                    const companyIndex = companies.findIndex(c => c.id === id);
-                    if (companyIndex !== -1) {
-                        companies.splice(companyIndex, 1);
-                        renderCompanies();
-                        deleted = true;
-                    }
-                    break;
-                case 'project':
-                    const projectIndex = projects.findIndex(p => p.id === id);
-                    if (projectIndex !== -1) {
-                        projects.splice(projectIndex, 1);
-                        renderProjects();
-                        deleted = true;
-                    }
-                    break;
-            }
-            
-            if (deleted) {
-                updateCounts();
-                closeModal();
-                showTemporaryMessage('🗑️ Item succesvol verwijderd!', 'success');
-            } else {
-                showTemporaryMessage('❌ Er ging iets mis bij het verwijderen.', 'error');
-            }
-        }
-
         function showTemporaryMessage(message, type = 'success') {
-            // Create message element
             const messageEl = document.createElement('div');
             messageEl.style.cssText = `
                 position: fixed;
@@ -897,19 +630,19 @@
                 transition: transform 0.3s ease;
                 ${type === 'success' ? 
                     'background: linear-gradient(135deg, #27ae60, #2ecc71);' : 
-                    'background: linear-gradient(135deg, #e74c3c, #c0392b);'
+                    type === 'error' ?
+                    'background: linear-gradient(135deg, #e74c3c, #c0392b);' :
+                    'background: linear-gradient(135deg, #3498db, #2980b9);'
                 }
             `;
             messageEl.textContent = message;
             
             document.body.appendChild(messageEl);
             
-            // Animate in
             setTimeout(() => {
                 messageEl.style.transform = 'translateX(0)';
             }, 100);
             
-            // Remove after 3 seconds
             setTimeout(() => {
                 messageEl.style.transform = 'translateX(100%)';
                 setTimeout(() => {
@@ -922,21 +655,25 @@
 
         function getFieldLabel(field) {
             const labels = {
-                name: 'Naam',
+                voornaam: 'Voornaam',
+                achternaam: 'Achternaam',
+                naam: 'Naam',
                 email: 'Email',
-                studentNumber: 'Studentnummer',
-                major: 'Studierichting',
-                phone: 'Telefoon',
+                gsm_nummer: 'GSM Nummer',
+                opleiding: 'Opleiding',
+                opleidingsrichting: 'Opleidingsrichting',
+                projectTitel: 'Project Titel',
+                projectBeschrijving: 'Project Beschrijving',
+                overMezelf: 'Over mezelf',
                 sector: 'Sector',
-                address: 'Adres',
-                website: 'Website',
-                description: 'Beschrijving',
-                status: 'Status',
-                startDate: 'Startdatum',
-                endDate: 'Einddatum',
-                budget: 'Budget',
-                createdAt: 'Aangemaakt op',
-                hasPaid: 'Betaalstatus'
+                TVA_nummer: 'TVA Nummer',
+                straatnaam: 'Straat',
+                huisnummer: 'Huisnummer',
+                gemeente: 'Gemeente',
+                postcode: 'Postcode',
+                bus: 'Bus',
+                land: 'Land',
+                studentNaam: 'Student'
             };
             return labels[field] || field;
         }
@@ -944,10 +681,11 @@
         function renderStudents(searchTerm = '') {
             const container = document.getElementById('students-list');
             const filtered = students.filter(student => 
-                student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.voornaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                student.achternaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                student.studentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                student.major.toLowerCase().includes(searchTerm.toLowerCase())
+                student.studentnummer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (student.opleidingsrichting && student.opleidingsrichting.toLowerCase().includes(searchTerm.toLowerCase()))
             );
 
             if (filtered.length === 0) {
@@ -956,17 +694,17 @@
             }
 
             container.innerHTML = filtered.map(student => `
-                <div class="item-card student" onclick="showDetails('student', '${student.id}')">
+                <div class="item-card student" onclick="showDetails('student', '${student.studentnummer}')">
                     <div class="quick-actions">
-                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('student', '${student.id}')" title="Bewerken">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('student', '${student.studentnummer}')" title="Bewerken">
                             ✏️
                         </button>
-                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('student', '${student.id}')" title="Verwijderen">
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('student', '${student.studentnummer}')" title="Verwijderen">
                             🗑️
                         </button>
                     </div>
-                    <div class="item-name">${student.name}</div>
-                    <div class="item-info">${student.studentNumber} • ${student.major} • ${student.email}</div>
+                    <div class="item-name">${student.voornaam} ${student.achternaam}</div>
+                    <div class="item-info">${student.studentnummer} • ${student.opleidingsrichting || 'Geen richting'} • ${student.email}</div>
                 </div>
             `).join('');
         }
@@ -974,7 +712,7 @@
         function renderCompanies(searchTerm = '') {
             const container = document.getElementById('companies-list');
             const filtered = companies.filter(company => 
-                company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                company.naam.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 company.sector.toLowerCase().includes(searchTerm.toLowerCase())
             );
@@ -985,46 +723,27 @@
             }
 
             container.innerHTML = filtered.map(company => `
-                <div class="item-card company" onclick="showDetails('company', '${company.id}')">
+                <div class="item-card company" onclick="showDetails('company', '${company.bedrijfsnummer}')">
                     <div class="quick-actions">
-                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('company', '${company.id}')" title="Bewerken">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('company', '${company.bedrijfsnummer}')" title="Bewerken">
                             ✏️
                         </button>
-                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('company', '${company.id}')" title="Verwijderen">
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('company', '${company.bedrijfsnummer}')" title="Verwijderen">
                             🗑️
                         </button>
                     </div>
-                    <div class="item-name">${company.name}</div>
-                    <div class="item-info">
-                        ${company.sector} • ${company.email}
-                        <button class="payment-toggle ${company.hasPaid ? 'paid' : 'unpaid'}" 
-                                onclick="event.stopPropagation(); togglePaymentStatus('${company.id}')"
-                                title="Klik om betaalstatus te wijzigen">
-                            ${company.hasPaid ? '✓ Betaald' : '✗ Niet betaald'}
-                        </button>
-                    </div>
+                    <div class="item-name">${company.naam}</div>
+                    <div class="item-info">${company.sector} • ${company.email}</div>
                 </div>
             `).join('');
-        }
-
-        function togglePaymentStatus(companyId) {
-            const company = companies.find(c => c.id === companyId);
-            if (company) {
-                company.hasPaid = !company.hasPaid;
-                renderCompanies();
-                showTemporaryMessage(
-                    `💰 Betaalstatus bijgewerkt: ${company.name} heeft ${company.hasPaid ? 'WEL' : 'NIET'} betaald`, 
-                    'success'
-                );
-            }
         }
 
         function renderProjects(searchTerm = '') {
             const container = document.getElementById('projects-list');
             const filtered = projects.filter(project => 
-                project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                project.status.toLowerCase().includes(searchTerm.toLowerCase())
+                (project.projectTitel && project.projectTitel.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (project.projectBeschrijving && project.projectBeschrijving.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                project.studentNaam.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
             if (filtered.length === 0) {
@@ -1032,34 +751,19 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(project => {
-                const studentCount = project.studentIds ? project.studentIds.length : 0;
-                const studentNames = project.studentIds ? 
-                    project.studentIds.map(id => {
-                        const student = students.find(s => s.id === id);
-                        return student ? student.name : 'Onbekend';
-                    }).slice(0, 2).join(', ') + (studentCount > 2 ? ` +${studentCount - 2}` : '') :
-                    'Geen studenten';
-                    
-                return `
-                    <div class="item-card project" onclick="showDetails('project', '${project.id}')">
-                        <div class="quick-actions">
-                            <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('project', '${project.id}')" title="Bewerken">
-                                ✏️
-                            </button>
-                            <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('project', '${project.id}')" title="Verwijderen">
-                                🗑️
-                            </button>
-                        </div>
-                        <div class="item-name">${project.name}</div>
-                        <div class="item-info">
-                            <span class="status-indicator ${project.status}">${project.status}</span> • 
-                            ${project.startDate || 'Geen startdatum'} • 
-                            ${studentCount} student(en): ${studentNames}
-                        </div>
+            container.innerHTML = filtered.map(project => `
+                <div class="item-card project" onclick="showDetails('project', '${project.studentnummer}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('student', '${project.studentnummer}')" title="Student Bewerken">
+                            ✏️
+                        </button>
                     </div>
-                `;
-            }).join('');
+                    <div class="item-name">${project.projectTitel || 'Geen titel'}</div>
+                    <div class="item-info">
+                        Door: ${project.studentNaam} • ${project.opleidingsrichting || 'Geen richting'}
+                    </div>
+                </div>
+            `).join('');
         }
 
         // Event listeners
@@ -1087,19 +791,20 @@
             }
         });
 
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('student-dropdown');
-            const container = e.target.closest('.multi-select-container');
-            if (!container && dropdown) {
-                dropdown.classList.remove('active');
+        // Initialize application
+        async function initApp() {
+            try {
+                await loadStatistics();
+                await loadStudents();
+                await loadCompanies();
+                await loadProjects();
+            } catch (error) {
+                showTemporaryMessage('❌ Fout bij initialiseren van de applicatie', 'error');
             }
-        });
+        }
 
-        // Initialisatie
-        updateCounts();
-        renderStudents();
-        renderCompanies();
-        renderProjects();
+        // Start the application
+        initApp();
     </script>
 </body>
 </html>

@@ -269,11 +269,17 @@ h2 {
   box-shadow: var(--shadow-red);
 }
 
-/* ===== PREMIUM EHB SIDE MENU ===== */
-/* Glassmorphism variabelen */
+/* Premium EHB Side Menu - Alleen CSS voor het menu */
 :root {
+  --primary: #dc2626;
+  --secondary: #b91c1c;
+  --accent: #f87171;
   --glass-primary: rgba(255, 255, 255, 0.25);
   --glass-secondary: rgba(255, 255, 255, 0.18);
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --shadow-soft: 0 8px 32px rgba(220, 38, 38, 0.25);
+  --shadow-intense: 0 12px 40px rgba(220, 38, 38, 0.35);
   --border-glass: 1px solid rgba(255, 255, 255, 0.18);
 }
 
@@ -286,13 +292,13 @@ h2 {
   height: 100vh;
   background: 
       linear-gradient(145deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%),
-      linear-gradient(135deg, var(--primary-red) 0%, var(--secondary-red) 50%, #701438 100%);
+      linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
   backdrop-filter: blur(40px) saturate(200%);
   border-left: var(--border-glass);
   border-top-left-radius: 32px;
   border-bottom-left-radius: 32px;
   box-shadow: 
-      -20px 0 80px rgba(136, 21, 56, 0.4),
+      -20px 0 80px rgba(220, 38, 38, 0.4),
       inset 1px 0 1px rgba(255, 255, 255, 0.6);
   transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1000;
@@ -320,8 +326,8 @@ h2 {
   height: 300px;
   background: radial-gradient(
       circle,
-      rgba(169, 27, 71, 0.4) 0%,
-      rgba(136, 21, 56, 0.2) 50%,
+      rgba(248, 113, 113, 0.4) 0%,
+      rgba(239, 68, 68, 0.2) 50%,
       transparent 100%
   );
   border-radius: 50%;
@@ -339,7 +345,7 @@ h2 {
   background: radial-gradient(
       circle,
       rgba(255, 255, 255, 0.3) 0%,
-      rgba(169, 27, 71, 0.15) 50%,
+      rgba(248, 113, 113, 0.15) 50%,
       transparent 100%
   );
   border-radius: 50%;
@@ -355,8 +361,8 @@ h2 {
   right: 0;
   bottom: 0;
   background: 
-      radial-gradient(circle at 30% 20%, rgba(169, 27, 71, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(136, 21, 56, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 30% 20%, rgba(248, 113, 113, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 60% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 40%);
   animation: backgroundPulse 20s infinite ease-in-out;
   z-index: -2;
@@ -386,13 +392,13 @@ h2 {
 }
 
 .sideMenu-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--white);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  letter-spacing: -0.02em;
-  position: relative;
-  margin-bottom: 0.3rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.02em;
+    position: relative;
+    margin-bottom: 0.3rem;
 }
 
 .sideMenu-subtitle {
@@ -424,17 +430,17 @@ h2 {
 .sideMenu-closeBtn:hover {
   background: rgba(255, 255, 255, 0.95);
   transform: rotate(90deg) scale(1.1);
-  box-shadow: 0 8px 30px rgba(136, 21, 56, 0.3);
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
 }
 
-/* CSS X icoon */
+/* Optie 1: CSS X icoon (getekend) */
 .sideMenu-closeBtn::before,
 .sideMenu-closeBtn::after {
   content: '';
   position: absolute;
   width: 18px;
   height: 2px;
-  background-color: var(--gray-700);
+  background-color: var(--text-primary);
   border-radius: 1px;
   transition: all 0.3s ease;
 }
@@ -449,7 +455,25 @@ h2 {
 
 .sideMenu-closeBtn:hover::before,
 .sideMenu-closeBtn:hover::after {
-  background-color: var(--primary-red);
+  background-color: var(--primary);
+}
+
+/* Optie 2: Voor img/svg (voeg .use-image class toe aan button) */
+.sideMenu-closeBtn.use-image::before,
+.sideMenu-closeBtn.use-image::after {
+  display: none;
+}
+
+.sideMenu-closeBtn img,
+.sideMenu-closeBtn svg {
+  width: 20px;
+  height: 20px;
+  transition: all 0.3s ease;
+}
+
+.sideMenu-closeBtn:hover img,
+.sideMenu-closeBtn:hover svg {
+  transform: scale(1.1);
 }
 
 /* Menu Inhoud */
@@ -472,7 +496,7 @@ h2 {
   text-decoration: none;
   font-size: 1.1rem;
   font-weight: 500;
-  color: var(--gray-700);
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -505,9 +529,9 @@ h2 {
   background: rgba(255, 255, 255, 0.8);
   transform: translateX(8px) translateY(-2px);
   box-shadow: 
-      0 8px 25px rgba(136, 21, 56, 0.2),
+      0 8px 25px rgba(220, 38, 38, 0.2),
       0 0 0 1px rgba(255, 255, 255, 0.5);
-  color: var(--primary-red);
+  color: var(--primary);
 }
 
 .sideMenu a i {
@@ -520,7 +544,7 @@ h2 {
 
 .sideMenu a:hover i {
   transform: scale(1.2) rotate(5deg);
-  color: var(--secondary-red);
+  color: var(--secondary);
 }
 
 /* Sectie Scheidingslijnen */
@@ -543,7 +567,7 @@ h2 {
   background: linear-gradient(
       90deg,
       transparent,
-      rgba(169, 27, 71, 0.8),
+      rgba(248, 113, 113, 0.8),
       transparent
   );
   animation: dividerShine 3s infinite linear;
@@ -554,13 +578,18 @@ h2 {
   100% { left: 100%; }
 }
 
+@keyframes sparkle {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
 .sideMenu-divider::after {
   content: "✦";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--primary-red);
+  color: rgba(220, 38, 38, 0.8);
   font-size: 0.9rem;
   background: rgba(255, 255, 255, 0.9);
   padding: 0.2rem 0.6rem;
@@ -577,15 +606,15 @@ h2 {
 
 /* Speciale Actieve Status */
 .sideMenu a.active {
-  background: linear-gradient(135deg, var(--primary-red), var(--secondary-red));
-  color: var(--white);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
   box-shadow: 
-      0 8px 25px rgba(136, 21, 56, 0.4),
+      0 8px 25px rgba(220, 38, 38, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .sideMenu a.active i {
-  color: var(--white);
+  color: white;
 }
 
 /* Overlay */
@@ -608,67 +637,11 @@ h2 {
   visibility: visible;
 }
 
-/* ===== FOOTER ===== */
-footer {
-  background: var(--gray-200);
-  border-radius: 40px 40px 0 0;
-  margin-top: 2.5rem;
-  padding: 2rem 0;
-  text-align: left;
-  font-size: 1.1rem;
-  border-top: 3px solid var(--primary-red);
-}
-
-.footerContent {
-  margin-left: 2.5rem;
-  color: var(--gray-700);
-}
-
-/* ===== RESPONSIEVE DESIGN ===== */
-@media (max-width: 768px) {
-  .nav {
-    flex-direction: column;
-    height: auto;
-    padding: 1rem;
-  }
-  
-  .logo {
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
-  
-  .navBar {
-    margin-right: 0;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .pfpContainer {
-    position: relative;
-    top: auto;
-    right: auto;
-    margin-top: 1rem;
-  }
-  
-  .sideMenu {
-    width: 100vw;
-    right: -100vw;
-    border-radius: 0;
-  }
-  
-  .footerContent {
-    margin-left: 1rem;
-  }
-}
-
+/* Responsief */
 @media (max-width: 480px) {
-  .navItem {
-    font-size: 0.9rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .searchBar {
-    min-width: 280px;
-    padding: 0.5rem 1rem;
+  .sideMenu {
+      width: 100vw;
+      right: -100vw;
+      border-radius: 0;
   }
 }
