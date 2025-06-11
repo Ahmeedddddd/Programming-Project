@@ -130,8 +130,11 @@ app.get('/mijnProject', (req, res) => {
 });
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 const { sendInvoice } = require('./mail'); // of pad naar juiste locatie
 =======
+=======
+>>>>>>> Stashed changes
 //APIs
 app.get('/adminPanelNew', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/admin-panel-database.html'));
