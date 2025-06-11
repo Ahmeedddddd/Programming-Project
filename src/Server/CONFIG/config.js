@@ -15,7 +15,7 @@ module.exports = {
   // Server configuratie
   server: {
     mainPort: process.env.MAIN_PORT || 8383,
-    apiPort: process.env.API_PORT || 3306,
+    apiPort: process.env.API_PORT || 3301,
     nodeEnv: process.env.NODE_ENV || 'development'
   },
   
@@ -27,7 +27,7 @@ module.exports = {
   
   // Email configuratie
   email: {
-    host: process.env.EMAIL_HOST,
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: process.env.EMAIL_PORT || 587,
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASSWORD

@@ -10,7 +10,7 @@ async function testConnection() {
     console.log('✅ Database verbinding succesvol');
     connection.release();
   } catch (error) {
-    console.error('❌ Database verbinding mislukt:', error);
+    console.log('⚠️  Database verbinding mislukt:', error.message);
   }
 }
 
