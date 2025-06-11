@@ -76,18 +76,6 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 * Database integratie - CRUD operaties voor alle entiteiten
 * VIES API integratie - BTW-nummer validatie
 
-## 📂 Projectstructuur
-
-src/
-├── JS/               # Frontend JavaScript
-│   ├── startPage.js  # Hoofd initialisatie script
-│   └── sendInvoice.js # Factuur verzend logica
-├── Server/           # Backend code
-│   ├── app.js        # Hoofd server bestand
-│   ├── mail.js       # E-mail functionaliteit
-│   └── templates/   # E-mail templates
-public/               # Statische assets
-
 ## 📧 E-mailconfiguratie
 
 De applicatie gebruikt Gmail voor het versturen van facturen. Zorg dat:
