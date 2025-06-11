@@ -128,15 +128,15 @@ app.get('/zoekbalkStudenten', (req, res) => {
 
 //STUDENTEN
 app.get('/accountStudent', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/account-student.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/account-student.html'));
 });
 
 app.get('/gegevensStudent', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/gegevens-student.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/gegevens-student.html'));
 });
 
 app.get('/mijnProject', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENT/mijn-project.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/mijn-project.html'));
 });
 
 // Email service endpoint - Check if SERVICES folder exists

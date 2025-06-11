@@ -1,23 +1,19 @@
 // startPage.js - Herbruikbare functionaliteit voor alle paginas
 
 export function startPage() {
-
   // Wacht tot DOM volledig geladen is
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializePage);
   } else {
-    // DOM is al geladen
     initializePage();
   }
 }
 
 function initializePage() {
-  
   // Start alle systemen
   hideLoading();
   initializeMenu();
   initializeGlobalFeatures();
-  
 }
 
 // Verberg loading overlay
@@ -38,49 +34,10 @@ function initializeMenu() {
     return;
   }
 
-
-  // Avatar click handler - toggle menu
-  avatar.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleMenu();
-  });
-
-  // Close button handler (zoek binnen het menu)
-  const closeBtn = sideMenu.querySelector('.sideMenu-closeBtn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeMenu();
-    });
-  }
-
-  // Overlay handler (als deze bestaat)
-  const overlay = document.querySelector('.menu-overlay');
-  if (overlay) {
-    overlay.addEventListener('click', () => {
-      closeMenu();
-    });
-  }
-
-  // Sluit menu bij klik buiten menu
-  document.addEventListener('click', (e) => {
-    if (sideMenu.classList.contains('open') && 
-        !sideMenu.contains(e.target) && 
-        !avatar.contains(e.target)) {
-      closeMenu();
-    }
-  });
-
-  // Escape toets handler
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
-      closeMenu();
-    }
-  });
-
   // Menu toggle functie
   function toggleMenu() {
     const isOpen = sideMenu.classList.contains('open');
+    
     if (isOpen) {
       closeMenu();
     } else {
@@ -105,6 +62,9 @@ function initializeMenu() {
   function closeMenu() {
     sideMenu.classList.remove('open');
     
+    // Reset inline style if it was set
+    sideMenu.style.right = '';
+    
     const overlay = document.querySelector('.menu-overlay');
     if (overlay) {
       overlay.classList.remove('show');
@@ -113,6 +73,45 @@ function initializeMenu() {
     // Herstel scrollen
     document.body.style.overflow = '';
   }
+
+  // Avatar click handler - toggle menu
+  avatar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleMenu();
+  });
+
+  // Close button handler (zoek binnen het menu)
+  const closeBtn = sideMenu.querySelector('.sideMenu-closeBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeMenu();
+    });
+  }
+
+  // Overlay handler
+  const overlay = document.querySelector('.menu-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      closeMenu();
+    });
+  }
+
+  // Sluit menu bij klik buiten menu
+  document.addEventListener('click', (e) => {
+    if (sideMenu.classList.contains('open') && 
+        !sideMenu.contains(e.target) && 
+        !avatar.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  // Escape toets handler
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
+      closeMenu();
+    }
+  });
 
   // Voeg hover effecten toe aan menu links
   const menuLinks = sideMenu.querySelectorAll('a');
@@ -127,7 +126,6 @@ function initializeMenu() {
       }
     });
   });
-
 }
 
 // Globale features die op alle paginas werken
@@ -151,7 +149,6 @@ function initializeGlobalFeatures() {
   
   // Form enhancements (als er forms zijn)
   enhanceForms();
-  
 }
 
 // Zet actieve navigatie status
