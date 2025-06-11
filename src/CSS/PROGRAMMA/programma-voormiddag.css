@@ -1,0 +1,279 @@
+/* Programma Voormiddag Specifieke Styling */
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Main Layout */
+.overzichtContainer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* Sidebar Styling */
+.sideBar {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    width: 320px;
+    min-width: 280px;
+    flex-shrink: 0;
+}
+
+.sidebarTitle {
+    color: #881538;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #881538;
+}
+
+.sidebarZoekbalk {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    color: #666;
+    font-style: italic;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.sidebarZoekbalk:hover {
+    border-color: #881538;
+    background: white;
+}
+
+.sidebarTafels {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebarTafels li {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.sidebarTafels li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: #881538;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.sidebarTafels li:hover {
+    background: white;
+    border-color: #881538;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(136, 21, 56, 0.2);
+}
+
+.sidebarTafels li:hover::before {
+    transform: scaleY(1);
+}
+
+.sidebarTafels li.selected {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    border-color: #881538;
+    transform: translateX(5px);
+}
+
+.sidebarTafels li.selected::before {
+    background: white;
+    transform: scaleY(1);
+}
+
+/* Speciale styling voor langere projectnamen */
+.sidebarTafels li:nth-child(5),
+.sidebarTafels li:nth-child(6),
+.sidebarTafels li:nth-child(7) {
+    font-size: 0.85rem;
+    padding: 0.8rem;
+}
+
+/* Plattegrond Sectie */
+.plattegrond {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    text-align: center;
+}
+
+.plattegrond h3 {
+    color: #881538;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #881538;
+    display: inline-block;
+}
+
+#plattegrondImg {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#plattegrondImg:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(136, 21, 56, 0.2);
+}
+
+/* Loading Overlay */
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(136, 21, 56, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .overzichtContainer {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    
+    .sideBar {
+        width: 100%;
+        order: 2;
+    }
+    
+    .plattegrond {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .sideBar {
+        padding: 1.5rem;
+        width: 350px;
+        max-width: 100%;
+    }
+    
+    .plattegrond {
+        padding: 1.5rem;
+    }
+    
+    .sidebarTitle,
+    .plattegrond h3 {
+        font-size: 1.3rem;
+    }
+    
+    .sidebarTafels li {
+        padding: 0.7rem;
+        font-size: 0.85rem;
+    }
+    
+    .sidebarTafels li:nth-child(5),
+    .sidebarTafels li:nth-child(6),
+    .sidebarTafels li:nth-child(7) {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .overzichtContainer {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+    
+    .sideBar,
+    .plattegrond {
+        padding: 1rem;
+    }
+    
+    .sidebarTitle,
+    .plattegrond h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .sideBar {
+        width: 100%;
+    }
+}
+
+/* Extra visuele verbeteringen */
+.plattegrond::before {
+    content: "🌅";
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.sideBar::before {
+    content: "⏰";
+    font-size: 1.5rem;
+    display: block;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Time indicator voor voormiddag */
+.sideBar::after {
+    content: "9:00 - 12:00";
+    display: block;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #881538;
+    font-weight: 600;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}

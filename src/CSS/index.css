@@ -20,15 +20,19 @@ h2 {
   text-align: center;
 }
 
+.coverImage{
+  width: 100%;
+  height: auto;
+}
+
 /* Career Launch Hero Section */
 .aboutSection {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 20px;
   padding: 60px 0;
   background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
   border-radius: 30px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
   animation: fadeInUp 1s ease-out;
 }
 
@@ -198,30 +202,6 @@ h2 {
   gap: 2rem;
 }
 
-/* Login */
-.loginBlok {
-  min-height: 100vh;
-  margin: 0;
-  background: linear-gradient(120deg, #d9d9d9 0%, #f5f5f5 100%);
-  font-family: 'Inter', Arial, sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loginContainer {
-  background: #fff;
-  border-radius: 32px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.07), 0 1.5px 3px rgba(20, 249, 51, 0.07);
-  width: 380px;
-  max-width: 95vw;
-  padding: 2.5rem 2rem 2rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
 /* Content Sections */
 .content-sections {
   background: #f5f5f5;
@@ -339,8 +319,30 @@ h2 {
 }
 
 .section-btn:hover {
-   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(139, 21, 56, 0.6);
+  transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(139, 21, 56, 0.6);
+}
+
+.section-btn1{
+  margin-top: 20px;
+  background: linear-gradient(135deg, #8B1538, #A91B47);
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 21, 56, 0.4);
+  margin-right: 15px;
+}
+
+.section-btn1:hover {
+  transform: translateY(-2px);
+ box-shadow: 0 8px 25px rgba(139, 21, 56, 0.6);
 }
 
 .cta-btn {

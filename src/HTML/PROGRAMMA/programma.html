@@ -1,48 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerLaunch</title>
-<link rel="stylesheet" href="/src/CSS/style.css">
-</head>
-</head>
+    <title>CareerLaunch - Programma</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">
+<link rel="stylesheet" href="/src/CSS/PROGRAMMA/programma.css">
 
-<!-- Navigatiebalk -->
-<div class="nav">
-  <div class="logo">
-    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-  </div>
-  <div class="navBar">
-    <a href="/index.html" class="navItem">Home</a>
-    <a href="/programma" class="navItem active">Programma</a>
-    <a href="#" class="navItem">Mijn gesprekken</a>
-    <div class="pfpContainer" id="burgerToggle">
-      <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
-    </div>
-  </div>
-  
-  <!-- Verborgen sidebar -->
-  <div class="sideMenu" id="sideMenu">
-    <a href="/login">Login</a>
-    <a href="#">Info</a>
-    <a href="#">Contact us</a>
-    <!-- Voeg hier jouw eigen links toe -->
-  </div>
-</div>
-      
+</head>
 <body>
+    <!-- Navigatiebalk -->
+    <div class="nav">
+        <div class="logo">
+            <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+        </div>
+        <div class="navBar">
+            <a href="/index.html" class="navItem">Home</a>
+            <a href="/programma" class="navItem active">Programma</a>
+            <a href="#" class="navItem">Mijn gesprekken</a>
+            <div class="pfpContainer" id="burgerToggle">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
     <main class="mainContent">
         <section class="planningBox">
-            <h2>Programma overzicht</h2>
-            <a href="/programmaVoormidag" class="voormiddagBtn">Voormiddag</a> 
+            <h2>Programma Overzicht</h2>
+            <a href="/programmaVoormidag" class="voormiddagBtn">Voormiddag</a>
             <a href="/programmaNamidag" class="namiddagBtn">Namiddag</a>
         </section>
     </main>
-    
-    <div id="loadingOverlay">
-      <div class="loader"></div>
-  <script src="src/JS/startPage.js"></script>
 
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Verborgen sidebar -->
+    <div class="sideMenu" id="sideMenu">
+        <a href="/login">Login</a>
+        <a href="#">Info</a>
+        <a href="#">Contact us</a>
+    </div>
+
+    <script src="src/JS/startPage.js"></script>
 </body>
 </html>

@@ -1,38 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacteer</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS/INFO/contacteer.css">
 </head>
 <body>
     <div class="container">
-  <div class="line"></div>
-  <div class="form-box"></div>
-  <div class="title">Heeft u een probleem?</div>
-  <div class="email-bg"></div>
-  <div class="email-label">Email-adres</div>
-  <div class="textarea-bg"></div>
-  <div class="textarea-label">Beschrijf uw probleem</div>
-  <div class="note">We beantwoorden u zo snel mogelijk</div>
-  <div class="submit-button-bg"></div>
-  <div class="submit-button-text">Indienen</div>
-  <div class="header"></div>
-  <div class="nav-info-bg"></div>
-  <div class="nav-info-text">Info</div>
-  <!-- <img class="img-right" src="https://placehold.co/89x89" />
-  <img class="img-left" src="https://placehold.co/123x91" /> -->
-  <div class="nav-home-bg"></div>
-  <div class="nav-home-text">Home</div>
-  <div class="nav-program-bg"></div>
-  <div class="nav-program-text">Programma</div>
-  <div class="nav-chat-bg"></div>
-  <div class="nav-chat-text">Mijn gesprekken</div>
-  <div class="nav-right-text">String value</div>
-  <div class="icon-wrapper">
-    <div class="icon-inner"></div>
-  </div>
-</div>
+        <!-- Header Navigatie -->
+        <div class="header">
+            <div class="nav-section">
+                <a href="/index.html" class="nav-item">Home</a>
+                <a href="/src/HTML/PROGRAMMA/programma.html" class="nav-item">Programma</a>
+                <a href="#" class="nav-item">Mijn gesprekken</a>
+                <a href="#" class="nav-item active">Info</a>
+            </div>
+            <div class="nav-right">Contacteer</div>
+        </div>
+
+        <!-- Contact Icon -->
+        <div class="contact-icon"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="form-container">
+                <h1 class="form-title">Heeft u een probleem?</h1>
+                <form>
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email-adres</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            class="form-input"
+                            placeholder="Voer uw email-adres in"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="problem">Beschrijf uw probleem</label>
+                        <textarea 
+                            id="problem" 
+                            name="problem" 
+                            class="form-textarea"
+                            placeholder="Beschrijf hier uw probleem in detail..."
+                            required
+                        ></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-button">Indienen</button>
+                    <p class="form-note">We beantwoorden u zo snel mogelijk</p>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
