@@ -69,9 +69,8 @@ h2 {
 
 /* ===== CONTAINER ===== */
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  margin: 0;
+  padding: 0;
 }
 
 /* ===== NAVIGATIE SYSTEEM ===== */
@@ -106,7 +105,7 @@ h2 {
   background: var(--gray-200);
   border-radius: 12px;
   border: 2px solid var(--gray-800);
-  margin-right: 80px; /* Ruimte voor profiel foto */
+  margin-right: 450px; /* Ruimte voor profiel foto */
 }
 
 /* Navigatie Items */
