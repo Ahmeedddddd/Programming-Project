@@ -3,466 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <title>CareerLaunch Admin Panel</title>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .stats-overview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 5px solid;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-card.students { border-left-color: #3498db; }
-        .stat-card.companies { border-left-color: #e74c3c; }
-        .stat-card.projects { border-left-color: #2ecc71; }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .stat-card.students .stat-number { color: #3498db; }
-        .stat-card.companies .stat-number { color: #e74c3c; }
-        .stat-card.projects .stat-number { color: #2ecc71; }
-
-        .section {
-            margin: 20px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .section-header {
-            padding: 20px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.3s ease;
-            border-left: 5px solid;
-        }
-
-        .section-header:hover {
-            background: #f8f9fa;
-        }
-
-        .section-header.students { border-left-color: #3498db; background: linear-gradient(135deg, #3498db20, #3498db10); }
-        .section-header.companies { border-left-color: #e74c3c; background: linear-gradient(135deg, #e74c3c20, #e74c3c10); }
-        .section-header.projects { border-left-color: #2ecc71; background: linear-gradient(135deg, #2ecc7120, #2ecc7110); }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .expand-icon {
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
-
-        .section.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
-
-        .section-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .section.expanded .section-content {
-            max-height: 2000px;
-        }
-
-        .content-inner {
-            padding: 20px;
-        }
-
-        .search-filter {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 25px;
-            font-size: 16px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
-        }
-
-        .add-btn {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
-        }
-
-        .add-btn:hover {
-            background: linear-gradient(135deg, #27ae60, #229954);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
-        }
-
-        .items-list {
-            display: grid;
-            gap: 15px;
-        }
-
-        .item-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-left: 4px solid;
-        }
-
-        .item-card:hover {
-            background: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transform: translateX(5px);
-        }
-
-        .item-card.student { border-left-color: #3498db; }
-        .item-card.company { border-left-color: #e74c3c; }
-        .item-card.project { border-left-color: #2ecc71; }
-
-        .item-name {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .item-info {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            min-width: 400px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-            padding: 5px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        .close-btn:hover {
-            background: #f8f9fa;
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Multi-select dropdown styles */
-        .multi-select-container {
-            position: relative;
-        }
-
-        .multi-select-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            background: white;
-            text-align: left;
-        }
-
-        .multi-select-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 10px 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-            z-index: 10;
-        }
-
-        .multi-select-dropdown.active {
-            display: block;
-        }
-
-        .multi-select-option {
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .multi-select-option:hover {
-            background: #f0f0f0;
-        }
-
-        .multi-select-option.selected {
-            background: #e3f2fd;
-            font-weight: bold;
-        }
-
-        .selected-students {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        .selected-tag {
-            background: #3498db;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .selected-tag .remove {
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .submit-btn:hover {
-            background: linear-gradient(135deg, #2980b9, #21618c);
-            transform: translateY(-2px);
-        }
-
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .detail-label {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .detail-value {
-            color: #666;
-        }
-
-        .no-items {
-            text-align: center;
-            color: #999;
-            font-style: italic;
-            padding: 40px;
-        }
-
-        .student-list-in-project {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .student-badge {
-            background: #3498db;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-            }
-            
-            .modal-content {
-                min-width: 90vw;
-                margin: 10px;
-            }
-            
-            .search-filter {
-                flex-direction: column;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 Admin Panel</h1>
-            <p>Beheer studenten, bedrijven en projecten</p>
+            <h1>🎓 CareerLaunch Admin Panel</h1>
+            <p>Beheer studenten, bedrijven en projecten voor het CareerLaunch evenement</p>
         </div>
 
         <div class="stats-overview">
             <div class="stat-card students">
                 <div class="stat-number" id="student-count">0</div>
-                <div>Studenten</div>
+                <div class="stat-label">Studenten</div>
             </div>
             <div class="stat-card companies">
                 <div class="stat-number" id="company-count">0</div>
-                <div>Bedrijven</div>
+                <div class="stat-label">Bedrijven</div>
             </div>
             <div class="stat-card projects">
                 <div class="stat-number" id="project-count">0</div>
-                <div>Projecten</div>
+                <div class="stat-label">Projecten</div>
             </div>
         </div>
 
@@ -470,14 +32,14 @@
         <div class="section" id="students-section">
             <div class="section-header students" onclick="toggleSection('students-section')">
                 <div class="section-title">
-                    👨‍🎓 Studenten
+                    👨‍🎓 Studenten Beheer
                 </div>
                 <div class="expand-icon">▼</div>
             </div>
             <div class="section-content">
                 <div class="content-inner">
                     <div class="search-filter">
-                        <input type="text" class="search-input" id="student-search" placeholder="Zoek studenten...">
+                        <input type="text" class="search-input" id="student-search" placeholder="Zoek studenten op naam, email, studentnummer...">
                         <button class="add-btn" onclick="showAddModal('student')">+ Student Toevoegen</button>
                     </div>
                     <div class="items-list" id="students-list">
@@ -491,14 +53,14 @@
         <div class="section" id="companies-section">
             <div class="section-header companies" onclick="toggleSection('companies-section')">
                 <div class="section-title">
-                    🏢 Bedrijven
+                    🏢 Bedrijven Beheer
                 </div>
                 <div class="expand-icon">▼</div>
             </div>
             <div class="section-content">
                 <div class="content-inner">
                     <div class="search-filter">
-                        <input type="text" class="search-input" id="company-search" placeholder="Zoek bedrijven...">
+                        <input type="text" class="search-input" id="company-search" placeholder="Zoek bedrijven op naam, sector, email...">
                         <button class="add-btn" onclick="showAddModal('company')">+ Bedrijf Toevoegen</button>
                     </div>
                     <div class="items-list" id="companies-list">
@@ -512,14 +74,14 @@
         <div class="section" id="projects-section">
             <div class="section-header projects" onclick="toggleSection('projects-section')">
                 <div class="section-title">
-                    📋 Projecten
+                    📋 Projecten Beheer
                 </div>
                 <div class="expand-icon">▼</div>
             </div>
             <div class="section-content">
                 <div class="content-inner">
                     <div class="search-filter">
-                        <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten...">
+                        <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten op naam, beschrijving, status...">
                         <button class="add-btn" onclick="showAddModal('project')">+ Project Toevoegen</button>
                     </div>
                     <div class="items-list" id="projects-list">
@@ -549,31 +111,41 @@
             {
                 id: 'st1',
                 name: 'Emma de Vries',
-                email: 'emma.devries@student.be',
+                email: 'emma.devries@student.ehb.be',
                 studentNumber: 'S20230001',
-                major: 'Informatica',
+                major: 'Toegepaste Informatica',
                 phone: '0471234567',
                 createdAt: '15-11-2024'
             },
             {
                 id: 'st2',
                 name: 'Lucas Janssen',
-                email: 'lucas.janssen@student.be',
+                email: 'lucas.janssen@student.ehb.be',
                 studentNumber: 'S20230002',
-                major: 'Bedrijfskunde',
+                major: 'Industriële Wetenschappen',
                 phone: '0472345678',
                 createdAt: '20-11-2024'
             },
             {
                 id: 'st3',
                 name: 'Sophie Peeters',
-                email: 'sophie.peeters@student.be',
+                email: 'sophie.peeters@student.ehb.be',
                 studentNumber: 'S20230003',
-                major: 'Marketing',
+                major: 'Marketing & Communicatie',
                 phone: '0473456789',
                 createdAt: '25-11-2024'
+            },
+            {
+                id: 'st4',
+                name: 'John Doe',
+                email: 'john.doe@student.ehb.be',
+                studentNumber: 'S20230004',
+                major: 'Toegepaste Informatica',
+                phone: '0474567890',
+                createdAt: '01-12-2024'
             }
         ];
+        
         let companies = [
             {
                 id: 'co1',
@@ -588,13 +160,13 @@
             },
             {
                 id: 'co2',
-                name: 'Marketing Pro',
-                email: 'contact@marketingpro.be',
-                sector: 'Marketing & Communicatie',
-                address: 'Marketingstraat 42, 2000 Antwerpen',
-                phone: '034567890',
-                website: 'https://marketingpro.be',
-                hasPaid: false,
+                name: 'Vital\'O Network',
+                email: 'contact@vitalo.be',
+                sector: 'Health-Tech',
+                address: 'Driesstraat, Roodebeek, 1200 Sint-Lambrechts-Woluwe',
+                phone: '024567891',
+                website: 'https://vitalo.be',
+                hasPaid: true,
                 createdAt: '12-11-2024'
             },
             {
@@ -605,34 +177,47 @@
                 address: 'Energieweg 8, 9000 Gent',
                 phone: '092345678',
                 website: 'https://greenenergy.be',
-                hasPaid: true,
+                hasPaid: false,
                 createdAt: '18-11-2024'
             }
         ];
+        
         let projects = [
             {
                 id: 'pr1',
-                name: 'Website Redesign',
-                description: 'Complete herontwerp van de bedrijfswebsite met moderne UI/UX principes',
+                name: 'Kokende AI Robot',
+                description: 'Een geavanceerde huishoudrobot die volledig zelfstandig maaltijden kan bereiden met AI en spraakherkenning',
                 status: 'actief',
-                startDate: '2025-01-15',
-                endDate: '2025-03-30',
-                budget: '15000',
-                studentIds: ['st1', 'st3'],
-                createdAt: '20-12-2024'
+                startDate: '2024-09-01',
+                endDate: '2025-01-30',
+                budget: '12000',
+                studentIds: ['st1', 'st4'],
+                createdAt: '01-09-2024'
             },
             {
                 id: 'pr2',
-                name: 'Marketing Campagne Q1',
-                description: 'Ontwikkeling en uitvoering van social media marketing campagne voor het eerste kwartaal',
+                name: 'SmartLine Inspector',
+                description: 'Vision-gebaseerd edge-systeem voor kwaliteitscontrole in productielijnen',
+                status: 'actief',
+                startDate: '2024-10-01',
+                endDate: '2025-02-28',
+                budget: '8000',
+                studentIds: ['st2'],
+                createdAt: '22-09-2024'
+            },
+            {
+                id: 'pr3',
+                name: 'Website Redesign Platform',
+                description: 'Complete herontwerp van een bedrijfswebsite met moderne UI/UX principes',
                 status: 'planning',
                 startDate: '2025-02-01',
-                endDate: '2025-04-30',
-                budget: '8000',
-                studentIds: ['st2', 'st3'],
-                createdAt: '22-12-2024'
+                endDate: '2025-05-30',
+                budget: '15000',
+                studentIds: ['st3'],
+                createdAt: '20-12-2024'
             }
         ];
+        
         let selectedStudents = [];
 
         // Helper functies
@@ -657,7 +242,7 @@
 
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
-            selectedStudents = []; // Reset selected students
+            selectedStudents = [];
         }
 
         function toggleStudentDropdown() {
@@ -701,7 +286,7 @@
                         const student = students.find(s => s.id === studentId);
                         return `
                             <span class="selected-tag">
-                                ${student.name}
+                                ${student ? student.name : 'Onbekend'}
                                 <span class="remove" onclick="removeStudent('${studentId}')">×</span>
                             </span>
                         `;
@@ -716,108 +301,164 @@
         }
 
         function showAddModal(type) {
-        const modal = document.getElementById('modal');
-        const title = document.getElementById('modal-title');
-        const body = document.getElementById('modal-body');
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
 
-        let formHtml = '';
-        
-        switch(type) {
-            case 'student':
-                title.textContent = 'Student Toevoegen';
-                formHtml = `
-                    <form id="add-form">
-                        <div class="form-group">
-                            <label class="form-label">Naam</label>
-                            <input type="text" class="form-input" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Studentnummer</label>
-                            <input type="text" class="form-input" name="studentNumber" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Studierichting</label>
-                            <input type="text" class="form-input" name="major" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Telefoon</label>
-                            <input type="tel" class="form-input" name="phone">
-                        </div>
-                        <button type="submit" class="submit-btn">Student Toevoegen</button>
-                    </form>
-                `;
-                break;
-            // ... (andere cases blijven hetzelfde)
+            let formHtml = '';
+            
+            switch(type) {
+                case 'student':
+                    title.textContent = 'Student Toevoegen';
+                    formHtml = `
+                        <form id="add-form">
+                            <div class="form-group">
+                                <label class="form-label">Naam *</label>
+                                <input type="text" class="form-input" name="name" required placeholder="Volledige naam">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" required placeholder="student@ehb.be">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Studentnummer *</label>
+                                <input type="text" class="form-input" name="studentNumber" required placeholder="S20240001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Studierichting *</label>
+                                <input type="text" class="form-input" name="major" required placeholder="Toegepaste Informatica">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefoon</label>
+                                <input type="tel" class="form-input" name="phone" placeholder="04XX XX XX XX">
+                            </div>
+                            <button type="submit" class="submit-btn">Student Toevoegen</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'company':
+                    title.textContent = 'Bedrijf Toevoegen';
+                    formHtml = `
+                        <form id="add-form">
+                            <div class="form-group">
+                                <label class="form-label">Bedrijfsnaam *</label>
+                                <input type="text" class="form-input" name="name" required placeholder="Bedrijfsnaam BV">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" required placeholder="info@bedrijf.be">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sector *</label>
+                                <input type="text" class="form-input" name="sector" required placeholder="IT Services">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adres</label>
+                                <input type="text" class="form-input" name="address" placeholder="Straat 123, 1000 Brussel">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefoon</label>
+                                <input type="tel" class="form-input" name="phone" placeholder="02 XXX XX XX">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Website</label>
+                                <input type="url" class="form-input" name="website" placeholder="https://bedrijf.be">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" name="hasPaid" style="margin-right: 0.5rem; transform: scale(1.2);">
+                                    <strong>Heeft betaald voor evenement deelname</strong>
+                                </label>
+                                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                                    Vink aan als het bedrijf heeft betaald voor deelname aan CareerLaunch
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Bedrijf Toevoegen</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'project':
+                    title.textContent = 'Project Toevoegen';
+                    formHtml = `
+                        <form id="add-form">
+                            <div class="form-group">
+                                <label class="form-label">Projectnaam *</label>
+                                <input type="text" class="form-input" name="name" required placeholder="Mijn Geweldig Project">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Beschrijving *</label>
+                                <textarea class="form-input form-textarea" name="description" required placeholder="Uitgebreide beschrijving van het project..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status</label>
+                                <select class="form-input" name="status">
+                                    <option value="planning">Planning</option>
+                                    <option value="actief">Actief</option>
+                                    <option value="voltooid">Voltooid</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Startdatum</label>
+                                <input type="date" class="form-input" name="startDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Einddatum</label>
+                                <input type="date" class="form-input" name="endDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Budget (€)</label>
+                                <input type="number" class="form-input" name="budget" placeholder="5000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Studenten</label>
+                                <div class="multi-select-container">
+                                    <div class="multi-select-input" onclick="toggleStudentDropdown()">
+                                        <span id="student-select-text">Selecteer studenten...</span>
+                                    </div>
+                                    <div class="multi-select-dropdown" id="student-dropdown">
+                                        ${students.map(student => `
+                                            <div class="multi-select-option" data-student-id="${student.id}" onclick="toggleStudentSelection('${student.id}')">
+                                                ${student.name} (${student.studentNumber})
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="selected-students" id="selected-students-display"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Project Toevoegen</button>
+                        </form>
+                    `;
+                    break;
+            }
+
+            body.innerHTML = formHtml;
+            
+            const form = document.getElementById('add-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleFormSubmit(e, type);
+                });
+            }
+            
+            showModal();
         }
-
-        body.innerHTML = formHtml;
-        
-        // Voeg event listener toe na het toevoegen van het formulier
-        const form = document.getElementById('add-form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                handleFormSubmit(e, type);
-            });
-        }
-        
-        showModal();
-    }
-
-    function handleFormSubmit(event, type) {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        
-        // Converteer FormData naar een object
-        const data = {};
-        formData.forEach((value, key) => {
-            data[key] = value;
-        });
-        
-        addItem(type, data);
-    }
-
-    function addItem(type, data) {
-        data.id = generateId();
-        data.createdAt = new Date().toLocaleDateString('nl-NL');
-
-        switch(type) {
-            case 'student':
-                students.push(data);
-                renderStudents();
-                break;
-            case 'company':
-                data.hasPaid = data.hasPaid === 'true';
-                companies.push(data);
-                renderCompanies();
-                break;
-            case 'project':
-                data.studentIds = [...selectedStudents];
-                projects.push(data);
-                renderProjects();
-                break;
-        }
-
-        updateCounts();
-        closeModal();
-        
-        // Reset het formulier
-        const form = document.getElementById('add-form');
-        if (form) form.reset();
-    }
 
         function handleFormSubmit(event, type) {
             event.preventDefault();
             const formData = new FormData(event.target);
-            addItem(type, formData);
+            
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            addItem(type, data);
         }
 
-        function addItem(type, formData) {
-            const data = Object.fromEntries(formData);
+        function addItem(type, data) {
             data.id = generateId();
             data.createdAt = new Date().toLocaleDateString('nl-NL');
 
@@ -827,12 +468,12 @@
                     renderStudents();
                     break;
                 case 'company':
-                    data.hasPaid = formData.get('hasPaid') === 'true';
+                    data.hasPaid = data.hasPaid === 'on';
                     companies.push(data);
                     renderCompanies();
                     break;
                 case 'project':
-                    data.studentIds = [...selectedStudents]; // Add selected students to project
+                    data.studentIds = [...selectedStudents];
                     projects.push(data);
                     renderProjects();
                     break;
@@ -871,17 +512,20 @@
                     const label = getFieldLabel(key);
                     let displayValue = value || 'Niet ingevuld';
                     
-                    // Special formatting for certain fields
                     if (key === 'hasPaid') {
-                        displayValue = value ? '<span style="color: #27ae60; font-weight: bold;">✓ Ja, heeft betaald</span>' : '<span style="color: #e74c3c; font-weight: bold;">✗ Nee, nog niet betaald</span>';
+                        displayValue = value ? 
+                            '<span class="payment-status paid">✓ Heeft betaald</span>' : 
+                            '<span class="payment-status unpaid">✗ Nog niet betaald</span>';
                     } else if (key === 'budget' && value) {
                         displayValue = `€ ${parseInt(value).toLocaleString('nl-NL')}`;
                     } else if (key === 'website' && value) {
-                        displayValue = `<a href="${value}" target="_blank" style="color: #3498db;">${value}</a>`;
+                        displayValue = `<a href="${value}" target="_blank" style="color: #881538;">${value}</a>`;
                     } else if (key === 'email' && value) {
-                        displayValue = `<a href="mailto:${value}" style="color: #3498db;">${value}</a>`;
+                        displayValue = `<a href="mailto:${value}" style="color: #881538;">${value}</a>`;
                     } else if (key === 'phone' && value) {
-                        displayValue = `<a href="tel:${value}" style="color: #3498db;">${value}</a>`;
+                        displayValue = `<a href="tel:${value}" style="color: #881538;">${value}</a>`;
+                    } else if (key === 'status' && value) {
+                        displayValue = `<span class="status-indicator ${value}">${value}</span>`;
                     }
                     
                     detailsHtml += `
@@ -893,7 +537,6 @@
                 }
             }
 
-            // Add students for projects
             if (type === 'project' && item.studentIds && item.studentIds.length > 0) {
                 const projectStudents = item.studentIds.map(studentId => {
                     const student = students.find(s => s.id === studentId);
@@ -911,8 +554,370 @@
                 `;
             }
 
+            // Add action buttons
+            detailsHtml += `
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #f8f9fa; display: flex; gap: 1rem;">
+                    <button onclick="showEditModal('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); flex: 1;">
+                        ✏️ Bewerken
+                    </button>
+                    <button onclick="deleteItem('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); flex: 1;">
+                        🗑️ Verwijderen
+                    </button>
+                </div>
+            `;
+
             document.getElementById('modal-body').innerHTML = detailsHtml;
             showModal();
+        }
+
+        function showEditModal(type, id) {
+            let item;
+            let title;
+
+            switch(type) {
+                case 'student':
+                    item = students.find(s => s.id === id);
+                    title = 'Student Bewerken';
+                    break;
+                case 'company':
+                    item = companies.find(c => c.id === id);
+                    title = 'Bedrijf Bewerken';
+                    break;
+                case 'project':
+                    item = projects.find(p => p.id === id);
+                    title = 'Project Bewerken';
+                    break;
+            }
+
+            if (!item) return;
+
+            selectedStudents = item.studentIds || [];
+            
+            document.getElementById('modal-title').textContent = title;
+            
+            let formHtml = '';
+            
+            switch(type) {
+                case 'student':
+                    formHtml = `
+                        <form id="edit-form">
+                            <div class="form-group">
+                                <label class="form-label">Naam *</label>
+                                <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Studentnummer *</label>
+                                <input type="text" class="form-input" name="studentNumber" value="${item.studentNumber || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Studierichting *</label>
+                                <input type="text" class="form-input" name="major" value="${item.major || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefoon</label>
+                                <input type="tel" class="form-input" name="phone" value="${item.phone || ''}">
+                            </div>
+                            <button type="submit" class="submit-btn">Student Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'company':
+                    formHtml = `
+                        <form id="edit-form">
+                            <div class="form-group">
+                                <label class="form-label">Bedrijfsnaam *</label>
+                                <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-input" name="email" value="${item.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sector *</label>
+                                <input type="text" class="form-input" name="sector" value="${item.sector || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adres</label>
+                                <input type="text" class="form-input" name="address" value="${item.address || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefoon</label>
+                                <input type="tel" class="form-input" name="phone" value="${item.phone || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Website</label>
+                                <input type="url" class="form-input" name="website" value="${item.website || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <input type="checkbox" name="hasPaid" ${item.hasPaid ? 'checked' : ''} style="margin-right: 0.5rem; transform: scale(1.2);">
+                                    <strong>Heeft betaald voor evenement deelname</strong>
+                                </label>
+                                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                                    Vink aan als het bedrijf heeft betaald voor deelname aan CareerLaunch
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Bedrijf Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'project':
+                    formHtml = `
+                        <form id="edit-form">
+                            <div class="form-group">
+                                <label class="form-label">Projectnaam *</label>
+                                <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Beschrijving *</label>
+                                <textarea class="form-input form-textarea" name="description" required>${item.description || ''}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status</label>
+                                <select class="form-input" name="status">
+                                    <option value="planning" ${item.status === 'planning' ? 'selected' : ''}>Planning</option>
+                                    <option value="actief" ${item.status === 'actief' ? 'selected' : ''}>Actief</option>
+                                    <option value="voltooid" ${item.status === 'voltooid' ? 'selected' : ''}>Voltooid</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Startdatum</label>
+                                <input type="date" class="form-input" name="startDate" value="${item.startDate || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Einddatum</label>
+                                <input type="date" class="form-input" name="endDate" value="${item.endDate || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Budget (€)</label>
+                                <input type="number" class="form-input" name="budget" value="${item.budget || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Studenten</label>
+                                <div class="multi-select-container">
+                                    <div class="multi-select-input" onclick="toggleStudentDropdown()">
+                                        <span id="student-select-text">Selecteer studenten...</span>
+                                    </div>
+                                    <div class="multi-select-dropdown" id="student-dropdown">
+                                        ${students.map(student => `
+                                            <div class="multi-select-option" data-student-id="${student.id}" onclick="toggleStudentSelection('${student.id}')">
+                                                ${student.name} (${student.studentNumber})
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="selected-students" id="selected-students-display"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn">Project Bijwerken</button>
+                        </form>
+                    `;
+                    break;
+            }
+
+            document.getElementById('modal-body').innerHTML = formHtml;
+            
+            // Voeg event listener toe aan het formulier
+            const form = document.getElementById('edit-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleEditFormSubmit(e, type, id);
+                });
+            }
+            
+            // Update student dropdown voor projecten
+            if (type === 'project') {
+                setTimeout(() => {
+                    updateStudentDropdown();
+                }, 100);
+            }
+            
+            showModal();
+        }
+
+        // Nieuwe functie specifiek voor edit form submit
+        function handleEditFormSubmit(event, type, id) {
+            event.preventDefault();
+            console.log('Edit form submitted for:', type, id);
+            
+            const formData = new FormData(event.target);
+            const data = {};
+            
+            // Verzamel alle form data
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            // Handle checkbox for company payment status
+            if (type === 'company') {
+                const checkbox = event.target.querySelector('input[name="hasPaid"]');
+                data.hasPaid = checkbox ? checkbox.checked : false;
+            }
+            
+            // Handle project students
+            if (type === 'project') {
+                data.studentIds = [...selectedStudents];
+            }
+            
+            console.log('Data to update:', data);
+            
+            // Update the item
+            updateItem(type, id, data);
+        }
+
+        function updateItem(type, id, data) {
+            let index = -1;
+            
+            switch(type) {
+                case 'student':
+                    index = students.findIndex(s => s.id === id);
+                    if (index !== -1) {
+                        students[index] = { ...students[index], ...data };
+                        renderStudents();
+                    }
+                    break;
+                case 'company':
+                    index = companies.findIndex(c => c.id === id);
+                    if (index !== -1) {
+                        companies[index] = { ...companies[index], ...data };
+                        renderCompanies();
+                    }
+                    break;
+                case 'project':
+                    index = projects.findIndex(p => p.id === id);
+                    if (index !== -1) {
+                        projects[index] = { ...projects[index], ...data };
+                        renderProjects();
+                    }
+                    break;
+            }
+
+            if (index !== -1) {
+                closeModal();
+                showTemporaryMessage('✅ Item succesvol bijgewerkt!', 'success');
+            } else {
+                showTemporaryMessage('❌ Er ging iets mis bij het bijwerken.', 'error');
+            }
+        }
+
+        function deleteItem(type, id) {
+            let itemName = '';
+            let confirmMessage = '';
+            
+            switch(type) {
+                case 'student':
+                    const student = students.find(s => s.id === id);
+                    itemName = student ? student.name : 'Deze student';
+                    confirmMessage = `Weet je zeker dat je de student "${itemName}" wilt verwijderen?`;
+                    break;
+                case 'company':
+                    const company = companies.find(c => c.id === id);
+                    itemName = company ? company.name : 'Dit bedrijf';
+                    confirmMessage = `Weet je zeker dat je het bedrijf "${itemName}" wilt verwijderen?`;
+                    break;
+                case 'project':
+                    const project = projects.find(p => p.id === id);
+                    itemName = project ? project.name : 'Dit project';
+                    confirmMessage = `Weet je zeker dat je het project "${itemName}" wilt verwijderen?`;
+                    break;
+            }
+            
+            if (confirm(confirmMessage + '\n\nDeze actie kan niet ongedaan worden gemaakt.')) {
+                performDelete(type, id);
+            }
+        }
+
+        function performDelete(type, id) {
+            let deleted = false;
+            
+            switch(type) {
+                case 'student':
+                    const studentIndex = students.findIndex(s => s.id === id);
+                    if (studentIndex !== -1) {
+                        students.splice(studentIndex, 1);
+                        // Remove student from all projects
+                        projects.forEach(project => {
+                            if (project.studentIds) {
+                                project.studentIds = project.studentIds.filter(studentId => studentId !== id);
+                            }
+                        });
+                        renderStudents();
+                        renderProjects(); // Update projects to reflect removed student
+                        deleted = true;
+                    }
+                    break;
+                case 'company':
+                    const companyIndex = companies.findIndex(c => c.id === id);
+                    if (companyIndex !== -1) {
+                        companies.splice(companyIndex, 1);
+                        renderCompanies();
+                        deleted = true;
+                    }
+                    break;
+                case 'project':
+                    const projectIndex = projects.findIndex(p => p.id === id);
+                    if (projectIndex !== -1) {
+                        projects.splice(projectIndex, 1);
+                        renderProjects();
+                        deleted = true;
+                    }
+                    break;
+            }
+            
+            if (deleted) {
+                updateCounts();
+                closeModal();
+                showTemporaryMessage('🗑️ Item succesvol verwijderd!', 'success');
+            } else {
+                showTemporaryMessage('❌ Er ging iets mis bij het verwijderen.', 'error');
+            }
+        }
+
+        function showTemporaryMessage(message, type = 'success') {
+            // Create message element
+            const messageEl = document.createElement('div');
+            messageEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                ${type === 'success' ? 
+                    'background: linear-gradient(135deg, #27ae60, #2ecc71);' : 
+                    'background: linear-gradient(135deg, #e74c3c, #c0392b);'
+                }
+            `;
+            messageEl.textContent = message;
+            
+            document.body.appendChild(messageEl);
+            
+            // Animate in
+            setTimeout(() => {
+                messageEl.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                messageEl.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.parentNode.removeChild(messageEl);
+                    }
+                }, 300);
+            }, 3000);
         }
 
         function getFieldLabel(field) {
@@ -952,8 +957,16 @@
 
             container.innerHTML = filtered.map(student => `
                 <div class="item-card student" onclick="showDetails('student', '${student.id}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('student', '${student.id}')" title="Bewerken">
+                            ✏️
+                        </button>
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('student', '${student.id}')" title="Verwijderen">
+                            🗑️
+                        </button>
+                    </div>
                     <div class="item-name">${student.name}</div>
-                    <div class="item-info">${student.studentNumber} • ${student.major}</div>
+                    <div class="item-info">${student.studentNumber} • ${student.major} • ${student.email}</div>
                 </div>
             `).join('');
         }
@@ -973,13 +986,37 @@
 
             container.innerHTML = filtered.map(company => `
                 <div class="item-card company" onclick="showDetails('company', '${company.id}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('company', '${company.id}')" title="Bewerken">
+                            ✏️
+                        </button>
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('company', '${company.id}')" title="Verwijderen">
+                            🗑️
+                        </button>
+                    </div>
                     <div class="item-name">${company.name}</div>
                     <div class="item-info">
                         ${company.sector} • ${company.email}
-                        ${company.hasPaid ? '<span style="color: #27ae60; font-weight: bold;"> • ✓ Betaald</span>' : '<span style="color: #e74c3c; font-weight: bold;"> • ✗ Niet betaald</span>'}
+                        <button class="payment-toggle ${company.hasPaid ? 'paid' : 'unpaid'}" 
+                                onclick="event.stopPropagation(); togglePaymentStatus('${company.id}')"
+                                title="Klik om betaalstatus te wijzigen">
+                            ${company.hasPaid ? '✓ Betaald' : '✗ Niet betaald'}
+                        </button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function togglePaymentStatus(companyId) {
+            const company = companies.find(c => c.id === companyId);
+            if (company) {
+                company.hasPaid = !company.hasPaid;
+                renderCompanies();
+                showTemporaryMessage(
+                    `💰 Betaalstatus bijgewerkt: ${company.name} heeft ${company.hasPaid ? 'WEL' : 'NIET'} betaald`, 
+                    'success'
+                );
+            }
         }
 
         function renderProjects(searchTerm = '') {
@@ -997,16 +1034,35 @@
 
             container.innerHTML = filtered.map(project => {
                 const studentCount = project.studentIds ? project.studentIds.length : 0;
+                const studentNames = project.studentIds ? 
+                    project.studentIds.map(id => {
+                        const student = students.find(s => s.id === id);
+                        return student ? student.name : 'Onbekend';
+                    }).slice(0, 2).join(', ') + (studentCount > 2 ? ` +${studentCount - 2}` : '') :
+                    'Geen studenten';
+                    
                 return `
                     <div class="item-card project" onclick="showDetails('project', '${project.id}')">
+                        <div class="quick-actions">
+                            <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); showEditModal('project', '${project.id}')" title="Bewerken">
+                                ✏️
+                            </button>
+                            <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); deleteItem('project', '${project.id}')" title="Verwijderen">
+                                🗑️
+                            </button>
+                        </div>
                         <div class="item-name">${project.name}</div>
-                        <div class="item-info">${project.status} • ${project.startDate} • ${studentCount} student(en)</div>
+                        <div class="item-info">
+                            <span class="status-indicator ${project.status}">${project.status}</span> • 
+                            ${project.startDate || 'Geen startdatum'} • 
+                            ${studentCount} student(en): ${studentNames}
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Event listeners voor zoekfuncties
+        // Event listeners
         document.getElementById('student-search').addEventListener('input', function(e) {
             renderStudents(e.target.value);
         });
@@ -1019,21 +1075,18 @@
             renderProjects(e.target.value);
         });
 
-        // Modal sluiten bij klikken buiten modal
         document.getElementById('modal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
             }
         });
 
-        // Escape toets om modal te sluiten
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
             }
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('student-dropdown');
             const container = e.target.closest('.multi-select-container');

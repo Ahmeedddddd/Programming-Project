@@ -1,92 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meer studenten</title>
+    <title>Alle Studenten</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
+
 </head>
 <body>
     <div class="container">
         <div class="nav">
-            <div class="logo">
-                <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
-            </div>
-            <div class="navBar">
-                <a href="/index.html" class="navItem active">Home</a>
-                <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
-                <a href="#" class="navItem">Mijn gesprekken</a>
-                <div class="pfpContainer">
-                    <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" />
+            <div class="nav-content">
+                <div class="logo">
+                    <img src="/public/images/image.png" alt="Erasmus Logo" />
+                </div>
+                <div class="navBar">
+                    <a href="/index.html" class="navItem active">Home</a>
+                    <a href="/src/HTML/PROGRAMMA/programma.html" class="navItem">Programma</a>
+                    <a href="#" class="navItem">Mijn gesprekken</a>
+                    <div class="pfpContainer">
+                        <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" />
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Alle Studenten</h1>
+            <p class="page-subtitle">Ontmoet getalenteerde studenten en ontdek hun passies en expertise tijdens CareerLaunch</p>
+        </div>
 
-      
+        <!-- Specialization Pills -->
+        <div class="specialization-pills">
+            <span class="specialization-pill active">Alle</span>
+            <span class="specialization-pill">Toegepaste Informatica</span>
+            <span class="specialization-pill">Industriële Wetenschappen</span>
+            <span class="specialization-pill">Cybersecurity</span>
+            <span class="specialization-pill">AI & Robotica</span>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" class="search-input" placeholder="Zoek studenten op naam of vaardigheden...">
+            <select class="filter-select">
+                <option>Alle jaren</option>
+                <option>1e jaar</option>
+                <option>2e jaar</option>
+                <option>3e jaar</option>
+                <option>Master</option>
+            </select>
+            <button class="filter-btn">Filter</button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <p class="stats-text">🎓 10 studenten beschikbaar voor netwerkgesprekken</p>
+        </div>
+
+        <!-- Main Content -->
         <main class="studentTegels">
-          <article class="studentTegel">
-            <h2 class="studentNaam">John Doe</h2>
-            <p class="studentBeschrijving">
-              Ik ben John Doe, ik spreek Engels en ben derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel, altijd op zoek naar de volgende technische uitdaging. Mijn drijfveer is om complexe problemen hands-on op te lossen, of dat nu in de werkplaats is of tijdens groepsprojecten. Als nieuwsgierige teamspeler geniet ik ervan om ideeën uit te wisselen en samen prototypes...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Ben Huur</h2>
-            <p class="studentBeschrijving">
-              Ik ben Ben Huur, ik spreek Engels en ben derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een passie voor backendontwikkeling en automatisatie. Binnen projecten focus ik op API-integraties en het uitdenken van schaalbare oplossingen. Ik werk graag in team, waar ik technische uitdagingen mee help vertalen naar efficiënte code. Met een leergierige mindset en een praktische aanpak blijf ik steeds zoeken naar manieren om processen slimmer te maken...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Jeretom Carnomina</h2>
-            <p class="studentBeschrijving">
-              Ik ben Jeretom Carnomina, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een voorliefde voor multidisciplinaire hardware-software integratie. In mijn vrije tijd experimenteer ik graag met 3D-geprinte robotonderdelen en optimaliseer ik realtime besturingsalgoritmes. Mijn 'About Me' wordt gekenmerkt door een hands-on mentaliteit, een...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Elina Verstegen</h2>
-            <p class="studentBeschrijving">
-              Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands-on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Anatoly Kaas</h2>
-            <p class="studentBeschrijving">
-              Ik ben Jeretom Carnomina, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een voorliefde voor multidisciplinaire hardware-software integratie. In mijn vrije tijd experimenteer ik graag met 3D‑geprinte robotonderdelen en optimaliseer ik realtime besturingsalgoritmes. Mijn 'About Me' wordt gekenmerkt door een hands-on mentaliteit, een...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Bella Swan</h2>
-            <p class="studentBeschrijving">
-              Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands-on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Lucas Hortier</h2>
-            <p class="studentBeschrijving">
-              Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands‑on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Anakin Volto</h2>
-            <p class="studentBeschrijving">
-              Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands‑on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Mies Vedero</h2>
-            <p class="studentBeschrijving">
-              Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands‑on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...
-            </p>
-          </article>
-          <article class="studentTegel">
-            <h2 class="studentNaam">Persephone Dienst</h2>
-            <p class="studentBeschrijving">
-              Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands‑on aanpak, altijd met veiligheid en schaalbaarheid als prioriteit...
-            </p>
-          </article>
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">John Doe</h2>
+                <p class="studentBeschrijving">
+                    Ik ben John Doe, ik spreek Engels en ben derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel, altijd op zoek naar de volgende technische uitdaging. Mijn drijfveer is om complexe problemen hands-on op te lossen, of dat nu in de werkplaats is of tijdens groepsprojecten. Als nieuwsgierige teamspeler geniet ik ervan om ideeën uit te wisselen en samen prototypes te bouwen.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Ben Huur</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Ben Huur, ik spreek Engels en ben derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een passie voor backend ontwikkeling en automatisatie. Binnen projecten focus ik op API-integraties en het uitdenken van schaalbare oplossingen. Ik werk graag in team, waar ik technische uitdagingen mee help vertalen naar efficiënte code.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Jeretom Carnomina</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Jeretom Carnomina, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een voorliefde voor multidisciplinaire hardware-software integratie. In mijn vrije tijd experimenteer ik graag met 3D-geprinte robotonderdelen en optimaliseer ik realtime besturingsalgoritmes. Mijn 'About Me' wordt gekenmerkt door een hands-on mentaliteit.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Elina Verstegen</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands-on aanpak.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Anatoly Kaas</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Anatoly Kaas, een gepassioneerde student met interesse in machine learning en data science. Mijn focus ligt op het ontwikkelen van intelligent algoritmes en het optimaliseren van grote datasets. Ik combineer theoretische kennis met praktische implementaties in Python en R voor real-world toepassingen.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Bella Swan</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Bella Swan, student met een passie voor UX/UI design en frontend development. Ik focus op het creëren van intuïtieve gebruikerservaringen en moderne webinterfaces. Met een achtergrond in zowel design als development help ik teams bij het overbruggen van de kloof tussen creativiteit en technologie.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Lucas Hortier</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Lucas Hortier, een dedicated student in Industriële Wetenschappen met specialisatie in IoT en embedded systems. Mijn interesse ligt in het ontwikkelen van slimme sensorsystemen en real-time data processing. Ik werk graag aan projecten die de fysieke en digitale wereld verbinden.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Anakin Volto</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Anakin Volto, een ambitieuze student met focus op blockchain technologie en decentralized applications. Mijn passie ligt in het ontwikkelen van veilige, transparante systemen en smart contracts. Ik ben altijd op zoek naar innovatieve manieren om blockchain toe te passen in verschillende industrieën.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Mies Vedero</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Mies Vedero, student met een sterke interesse in game development en computer graphics. Ik werk met Unity, Unreal Engine en custom graphics engines om immersive experiences te creëren. Mijn doel is om technologie en creativiteit te combineren in interactieve digitale werelden.
+                </p>
+            </article>
+            
+            <article class="studentTegel">
+                <button class="connect-btn">💬 Connect</button>
+                <h2 class="studentNaam">Persephone Dienst</h2>
+                <p class="studentBeschrijving">
+                    Ik ben Persephone Dienst, een gedreven student in cybersecurity en ethical hacking. Mijn focus ligt op het identificeren van kwetsbaarheden en het ontwikkelen van robuuste beveiligingsoplossingen. Ik help organisaties bij het beschermen van hun digitale assets door proactieve security assessments.
+                </p>
+            </article>
         </main>
-      </div>
-      
+    </div>
 </body>
 </html>

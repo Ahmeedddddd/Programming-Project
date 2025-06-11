@@ -1,0 +1,369 @@
+/* Mijn Project Specifieke Styling */
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+}
+
+.nav .nav-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Main Layout - Two Column */
+.profielMain {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* Sidebar Styling */
+.profielZijbalk {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    width: 320px;
+    min-width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 2rem;
+}
+
+.zijbalkSectie {
+    margin-bottom: 2rem;
+}
+
+.zijbalkSectie:last-child {
+    margin-bottom: 0;
+}
+
+.zijbalkTitel {
+    color: #881538;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #881538;
+    position: relative;
+}
+
+.zijbalkTitel::before {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: #A91B47;
+}
+
+/* Icons voor sidebar titels */
+.zijbalkSectie:first-child .zijbalkTitel::after { content: " 📞"; }
+.zijbalkSectie:last-child .zijbalkTitel::after { content: " 👥"; }
+
+.zijbalkVeld {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #333;
+    transition: all 0.3s ease;
+    word-break: break-word;
+    position: relative;
+    overflow: hidden;
+}
+
+.zijbalkVeld::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: #881538;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.zijbalkVeld:hover {
+    background: white;
+    border-color: #881538;
+    transform: translateX(5px);
+}
+
+.zijbalkVeld:hover::before {
+    transform: scaleY(1);
+}
+
+.zijbalkVeld:last-child {
+    margin-bottom: 0;
+}
+
+/* Main Content Area */
+.profielInhoud {
+    flex: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    position: relative;
+}
+
+.profielInhoud::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #881538, #A91B47);
+    border-radius: 16px 16px 0 0;
+}
+
+/* Project Header */
+.projectHeader {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.projectTitel {
+    color: #881538;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.projectSubTitel {
+    color: #A91B47;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.projectTegels {
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.projectTegels::before {
+    content: "📎 ";
+}
+
+/* Project Description */
+.projectBeschrijving {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 2rem;
+    text-align: justify;
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid #881538;
+}
+
+.projectSkills {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.projectSkills::before {
+    content: "🛠️ Skills: ";
+    font-weight: 700;
+}
+
+/* About Section */
+.aboutSection {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #A91B47;
+}
+
+.aboutTitel {
+    color: #881538;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.aboutTitel::before {
+    content: "👤 ";
+}
+
+.aboutText {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #333;
+    text-align: justify;
+}
+
+/* Edit Button */
+.editBtn {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    font-size: 1.1rem;
+    padding: 0.875rem 3rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.editBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.editBtn:hover::before {
+    left: 100%;
+}
+
+.editBtn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(136, 21, 56, 0.4);
+}
+
+.editBtn::after {
+    content: " ✏️";
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .profielMain {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    
+    .profielZijbalk {
+        width: 100%;
+        position: static;
+        order: 2;
+    }
+    
+    .profielInhoud {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    .profielZijbalk,
+    .profielInhoud {
+        padding: 1.5rem;
+    }
+    
+    .projectTitel {
+        font-size: 1.7rem;
+    }
+    
+    .projectSubTitel {
+        font-size: 1.2rem;
+    }
+    
+    .aboutSection {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profielMain {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+    
+    .profielZijbalk,
+    .profielInhoud {
+        padding: 1rem;
+    }
+    
+    .projectTitel {
+        font-size: 1.5rem;
+    }
+    
+    .projectSubTitel {
+        font-size: 1.1rem;
+    }
+    
+    .editBtn {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+    }
+    
+    .pfpContainer {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* Extra visuele verbeteringen */
+.profielZijbalk:hover,
+.profielInhoud:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(136, 21, 56, 0.2);
+}
+
+/* Loading animation voor content */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profielMain > * {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.profielInhoud {
+    animation-delay: 0.2s;
+}
