@@ -1,0 +1,348 @@
+/* login.css - Login pagina styling voor CareerLaunch EHB */
+
+/* ===== LOGIN PAGINA LAYOUT ===== */
+.loginBlok {
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 50%, var(--black) 100%);
+    font-family: 'Inter', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Geanimeerde achtergrond elementen */
+.loginBlok::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    animation: backgroundMove 20s ease-in-out infinite alternate;
+}
+
+@keyframes backgroundMove {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(5deg) scale(1.1); }
+}
+
+/* ===== LOGIN CONTAINER ===== */
+.loginContainer {
+    background: var(--white);
+    border-radius: 32px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 8px 32px rgba(220, 38, 38, 0.2);
+    width: 420px;
+    max-width: 95vw;
+    padding: 3rem 2.5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Top accent bar */
+.loginContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-red), var(--primary-red-light), var(--primary-red));
+    border-radius: 32px 32px 0 0;
+}
+
+/* ===== LOGIN LOGO ===== */
+.loginLogo {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.loginLogo img {
+    width: 80px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+}
+
+.loginLogo:hover img {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-red);
+}
+
+/* ===== LOGIN TITEL ===== */
+.loginTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    letter-spacing: -0.5px;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.loginTitle::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: var(--primary-red);
+    border-radius: 2px;
+}
+
+/* ===== LOGIN FORM ===== */
+.loginForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.loginForm label {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.loginForm input {
+    padding: 1rem 1.2rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--gray-50);
+    transition: all var(--transition-normal);
+    font-family: inherit;
+}
+
+.loginForm input:focus {
+    border-color: var(--primary-red);
+    outline: none;
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    transform: translateY(-1px);
+}
+
+.loginForm input::placeholder {
+    color: var(--gray-400);
+    font-weight: 400;
+}
+
+/* ===== LOGIN BUTTON ===== */
+.loginButton {
+    margin-top: 1.5rem;
+    padding: 1rem 0;
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+    color: var(--white);
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: var(--shadow-red);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+.loginButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.loginButton:hover::before {
+    left: 100%;
+}
+
+.loginButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+.loginButton:active {
+    transform: translateY(0);
+}
+
+/* ===== LOGIN EXTRA LINKS ===== */
+.loginExtra {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.loginExtra a {
+    color: var(--primary-red);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 6px;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.loginExtra a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-red);
+    transition: width var(--transition-normal);
+}
+
+.loginExtra a:hover::after {
+    width: 100%;
+}
+
+.loginExtra a:hover {
+    color: var(--primary-red-dark);
+}
+
+/* ===== HOME BUTTON ===== */
+.homeButton {
+    text-decoration: none;
+    cursor: pointer;
+    width: 60px;
+    height: 60px;
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    z-index: 1000;
+}
+
+.homeButton:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-red);
+    background: var(--white);
+}
+
+.homeButton img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+/* ===== ERROR/SUCCESS STATES ===== */
+.loginForm .error {
+    border-color: #dc3545;
+    background: #ffe6e6;
+}
+
+.loginForm .error:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.loginForm .success {
+    border-color: #28a745;
+    background: #e6ffe6;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 480px) {
+    .loginContainer {
+        width: 90vw;
+        padding: 2rem 1.5rem;
+    }
+    
+    .loginTitle {
+        font-size: 1.8rem;
+    }
+    
+    .homeButton {
+        width: 50px;
+        height: 50px;
+        top: 1rem;
+        left: 1rem;
+    }
+    
+    .homeButton img {
+        width: 25px;
+        height: 25px;
+    }
+}
+
+/* ===== LOADING STATE ===== */
+.loginButton.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.loginButton.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--white);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
