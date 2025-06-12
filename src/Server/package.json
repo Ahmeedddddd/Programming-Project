@@ -4,45 +4,43 @@
   "description": "CareerLaunch Backend & Frontend Servers",
   "main": "backend.js",
   "scripts": {
-    "start": "npm-run-all --parallel start:frontend start:backend",
-    "start:frontend": "node app.js",
-    "start:backend": "node backend.js",
-    "start:api": "node api.js",
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "nodemon app.js",
     "dev:backend": "nodemon backend.js",
-    "dev:watch": "npm-run-all --parallel \"nodemon app.js\" \"nodemon backend.js\"",
-    "dev:old": "npm-run-all --parallel \"nodemon app.js\" \"nodemon api.js\"",
-    "test:servers": "npm-run-all --parallel test:frontend test:backend",
-    "test:frontend": "curl http://localhost:8383 || echo 'Frontend server not responding'",
-    "test:backend": "curl http://localhost:3001/api/health || echo 'Backend server not responding'",
-    "stop": "pkill -f 'node.*app.js|node.*backend.js' || echo 'No servers to stop'"
+    "start": "npm-run-all --parallel start:frontend start:backend",
+    "start:frontend": "node app.js",
+    "start:backend": "node backend.js",
+    "test:backend": "curl http://localhost:3001/api/health || echo 'Backend not responding'",
+    "test:frontend": "curl http://localhost:8383 || echo 'Frontend not responding'",
+    "install:all": "npm install express@4.19.2 cors dotenv mysql2 bcrypt jsonwebtoken express-validator nodemailer nodemailer-express-handlebars npm-run-all && npm install --save-dev nodemon concurrently"
   },
   "keywords": [
     "careerlaunch",
     "backend",
-    "frontend", 
+    "frontend",
     "express",
     "mysql",
-    "mvc"
+    "mvc",
+    "authentication",
+    "jwt"
   ],
   "author": "CareerLaunch Team",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0",
+    "express": "^4.19.2",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
     "nodemailer": "^7.0.3",
     "nodemailer-express-handlebars": "^7.0.0",
-    "npm-run-all": "^4.1.5",
-    "bcrypt": "^5.1.1",
-    "jsonwebtoken": "^9.0.2",
-    "express-validator": "^7.0.1"
+    "npm-run-all": "^4.1.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.10"
   },
   "engines": {
     "node": ">=16.0.0",
