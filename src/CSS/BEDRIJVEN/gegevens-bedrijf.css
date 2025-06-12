@@ -1,10 +1,37 @@
-/* ===== EHB STIJL CSS - MODERN DESIGN ===== */
+/* ===== BEDRIJF GEGEVENS SPECIFIEKE STYLING ===== */
 
 /* Basis pagina styling */
 body {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     min-height: 100vh;
     font-family: 'Inter', Arial, sans-serif;
+}
+
+.nav .nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Main Content */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 140px);
+    padding: 2rem;
 }
 
 /* ===== KAART COMPONENTEN ===== */
@@ -17,6 +44,8 @@ body {
     margin: 1.5rem 0;
     position: relative;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 700px;
 }
 
 .contentKaart::before {
@@ -57,11 +86,12 @@ body {
     transform: scale(1.02);
 }
 
-/* Verschillende badge types */
-.ehbBadge.bedrijf::before { content: "🏢 "; }
-.ehbBadge.student::before { content: "🎓 "; }
-.ehbBadge.project::before { content: "🚀 "; }
-.ehbBadge.info::before { content: "ℹ️ "; }
+/* Bedrijf specifieke badge */
+.ehbBadge.bedrijf::before { 
+    content: "🏢 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
 
 /* ===== INPUT VELDEN ===== */
 
@@ -94,10 +124,26 @@ body {
 }
 
 /* Icons voor verschillende velden */
-.ehbVeld.naam::before { content: "👤 "; font-size: 1.1rem; margin-right: 0.5rem; }
-.ehbVeld.email::before { content: "📧 "; font-size: 1.1rem; margin-right: 0.5rem; }
-.ehbVeld.telefoon::before { content: "📞 "; font-size: 1.1rem; margin-right: 0.5rem; }
-.ehbVeld.bedrijf::before { content: "🏢 "; font-size: 1.1rem; margin-right: 0.5rem; }
+.ehbVeld.naam::before { 
+    content: "👤 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+.ehbVeld.email::before { 
+    content: "📧 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+.ehbVeld.telefoon::before { 
+    content: "📞 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+.ehbVeld.bedrijf::before { 
+    content: "🏢 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
 
 /* ===== KNOPPEN ===== */
 
@@ -149,14 +195,10 @@ body {
 }
 
 /* Verschillende knop types */
-.ehbBtn.primair::after { content: "→"; margin-left: 0.5rem; }
-.ehbBtn.bewerken::after { content: "✏️"; margin-left: 0.5rem; }
-.ehbBtn.opslaan::after { content: "💾"; margin-left: 0.5rem; }
-.ehbBtn.verwijderen { 
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+.ehbBtn.bewerken::after { 
+    content: "✏️"; 
+    margin-left: 0.5rem; 
 }
-.ehbBtn.verwijderen::after { content: "🗑️"; margin-left: 0.5rem; }
 
 /* Secundaire knop */
 .ehbBtn.secundair {
@@ -171,40 +213,6 @@ body {
     border-color: #881538;
 }
 
-/* ===== LIJSTEN EN ITEMS ===== */
-
-.ehbLijst {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.ehbLijstItem {
-    background: #d9d9d9;
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem;
-    margin-bottom: 0.8rem;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    position: relative;
-    cursor: pointer;
-}
-
-.ehbLijstItem:hover {
-    background: #cecece;
-    border-color: #881538;
-    transform: translateX(8px) translateY(-2px);
-    box-shadow: 0 8px 20px rgba(136, 21, 56, 0.15);
-}
-
-.ehbLijstItem::before {
-    content: "•";
-    color: #881538;
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-right: 0.8rem;
-}
-
 /* ===== SECTIE HEADERS ===== */
 
 .ehbSectieHeader {
@@ -213,8 +221,8 @@ body {
     position: relative;
 }
 
-.ehbSectieHeader h2 {
-    font-size: 2.2rem;
+.ehbSectieHeader h3 {
+    font-size: 1.3rem;
     font-weight: 700;
     background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
     -webkit-background-clip: text;
@@ -224,32 +232,25 @@ body {
     position: relative;
 }
 
-.ehbSectieHeader h2::after {
+.ehbSectieHeader h3::after {
     content: "";
     position: absolute;
-    bottom: -10px;
+    bottom: -5px;
     left: 50%;
     transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
+    width: 40px;
+    height: 2px;
     background: linear-gradient(90deg, #881538, #A91B47);
-    border-radius: 2px;
-}
-
-.ehbSectieHeader p {
-    color: #666;
-    font-size: 1.1rem;
-    max-width: 600px;
-    margin: 1rem auto 0;
+    border-radius: 1px;
 }
 
 /* ===== GRID LAYOUTS ===== */
 
 .ehbGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin: 2rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1rem 0;
 }
 
 .ehbGrid.tweekolomnig {
@@ -260,44 +261,12 @@ body {
     grid-template-columns: repeat(3, 1fr);
 }
 
-/* ===== FORMULIEREN ===== */
-
-.ehbForm {
-    background: #f5f5f5;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-}
-
-.ehbFormGroep {
-    margin-bottom: 1.5rem;
-}
-
-.ehbLabel {
-    display: block;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
 /* ===== ANIMATIES ===== */
 
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.02); }
     100% { transform: scale(1); }
-}
-
-@keyframes slideInFromLeft {
-    0% { 
-        opacity: 0; 
-        transform: translateX(-30px); 
-    }
-    100% { 
-        opacity: 1; 
-        transform: translateX(0); 
-    }
 }
 
 @keyframes fadeInUp {
@@ -312,10 +281,6 @@ body {
 }
 
 /* Animatie klassen */
-.animatie-slide-in {
-    animation: slideInFromLeft 0.6s ease-out;
-}
-
 .animatie-fade-up {
     animation: fadeInUp 0.8s ease-out;
 }
@@ -323,6 +288,14 @@ body {
 /* ===== RESPONSIVE DESIGN ===== */
 
 @media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    main {
+        padding: 1rem;
+    }
+    
     .contentKaart {
         padding: 2rem 1.5rem;
         margin: 1rem;
@@ -338,8 +311,8 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .ehbSectieHeader h2 {
-        font-size: 1.8rem;
+    .ehbSectieHeader h3 {
+        font-size: 1.2rem;
     }
 }
 
@@ -349,17 +322,25 @@ body {
         border-radius: 16px;
     }
     
-    .ehbForm {
-        padding: 1.5rem;
-    }
-    
     .ehbBtn {
         width: 100%;
         padding: 1rem;
+        margin-bottom: 0.5rem;
     }
     
-    .ehbSectieHeader h2 {
-        font-size: 1.6rem;
+    .pfpContainer {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .ehbBadge {
+        font-size: 1rem;
+        padding: 0.6rem 1.5rem;
+    }
+
+    .flex-center {
+        flex-direction: column;
+        gap: 0.5rem !important;
     }
 }
 
