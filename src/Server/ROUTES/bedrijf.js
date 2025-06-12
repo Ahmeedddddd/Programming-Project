@@ -10,9 +10,6 @@ const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 // GET /api/bedrijven - Alle bedrijven ophalen
 router.get('/', bedrijfController.getAllBedrijven);
 
-// GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
-router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
-
 // ===== PROTECTED ROUTES (authentication required) =====
 
 // GET /api/bedrijf/profile - Eigen bedrijfsgegevens bekijken (alleen voor ingelogde bedrijven)
@@ -29,6 +26,13 @@ router.put('/profile',
   validateBedrijf,
   bedrijfController.updateOwnProfile
 );
+
+// ===== END PROTECTED ROUTES (authentication required) =====
+
+// GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
+router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
+
+// ===== END PUBLIC ROUTES (no authentication required) =====
 
 // ===== ADMIN ROUTES (only organisator) =====
 
