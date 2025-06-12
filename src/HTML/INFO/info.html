@@ -3,9 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Infopagina</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS/INFO/info.css">
 </head>
 <body>
+
+    <div class="container">
+        <div class="nav">
+            <div class="logo">
+              <img src="/public/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar">
+              <a href="/index.html" class="navItem active">Home</a>
+              <a href="/programma" class="navItem">Programma</a>
+              <a href="#" class="navItem">Mijn gesprekken</a>
+              <a href="/info" class="navItem">Info</a>
+            </div>
+            <div class="pfpContainer">
+              <img src="/public/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+              </div>
+            </div>
+          
+        <main class="infoMain">
+          <section class="infoKaart">
+            <h2 class="infoTitel">Waarom deze website?</h2>
+            <p class="infoBeschrijving">
+              Deze site helpt bedrijven en studenten snel en eenvoudig:<br>
+              <ul class="infoLijst">
+                <li>Informatie over het event te vinden</li>
+                <li>Zich in te schrijven (enkel voor bedrijven)</li>
+                <li>Contact op te nemen</li>
+                <li>Het programma te bekijken</li>
+              </ul>
+            </p>
+            <a href="/src/HTML/PROGRAMMA/programma.html" class="infoBtn">Bekijk het programma</a>
+          </section>
+      
+          <section class="infoKaart infoKaartDubbel">
+            <h2 class="infoTitel">Hoe gebruik je deze website?</h2>
+            <div class="infoFlex">
+              <div>
+                <h3 class="infoSubtitel">Voor bedrijven:</h3>
+                <ul class="infoLijst">
+                  <li>Bekijk de eventinformatie</li>
+                  <li>Maak een account aan</li>
+                  <li>Reserveer een stand</li>
+                  <li>Beoordeel de studenten</li>
+                  <li>Contacteer de student</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 class="infoSubtitel">Voor studenten:</h3>
+                <ul class="infoLijst">
+                  <li>Bekijk uw standnummer</li>
+                  <li>Maak een account aan</li>
+                  <li>Bekijk bedrijven</li>
+                  <li>Plan gesprekken in</li>
+                  <li>Bekijk de feedback</li>
+                </ul>
+              </div>
+            </div>
+            <a href="/src/HTML/ACCOUNT/account-aanmaken.html" class="infoBtn small">Registreer nu</a>
+          </section>
+         
+      
+          <section class="infoKaart">
+            <h2 class="infoTitel">Feedback geven?</h2>
+            <p class="infoBeschrijving">
+              We horen graag jouw mening! Tijdens Career Launch kun je eenvoudig feedback geven via je smartphone.<br><br>
+              Op elke tafel staat een QR-code waarmee je direct het feedbackformulier opent - of je nu student, bedrijf of bezoeker bent. Jouw input helpt ons om het event steeds verder te verbeteren.<br><br>
+              Voor studenten is deze feedback extra waardevol: het helpt hen om hun presentatie- en communicatievaardigheden aan te scherpen en zich beter voor te bereiden op de arbeidsmarkt.<br><br>
+              <b>Bedankt voor je bijdrage!</b>
+            </p>
+          </section>
+      
+          <section class="infoKaart">
+            <h2 class="infoTitel">Vragen of hulp nodig?</h2>
+            <p class="infoBeschrijving">
+              Bij vragen contacteer <a href="mailto:Bilal.bouchta@student.ehb.be">Bilal.bouchta@student.ehb.be</a>.
+            </p>
+          </section>
+        </main>
+      </div>
+      
     
 </body>
 </html>

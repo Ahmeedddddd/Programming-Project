@@ -1,0 +1,90 @@
+.studentenKaart {
+  width: 98%;
+  max-width: 1200px;
+  background: #f7f6f6;
+  border-radius: 40px;
+  margin: 48px auto;
+  padding: 0 0 36px 0;
+  font-family: 'Inter', Arial, sans-serif;
+  border-left: 2px solid #A91B47;
+  border-right: 2px solid #A91B47;
+  border-bottom: 2px solid #A91B47;
+  border-top: none;
+  box-shadow: 0 14px 36px -10px rgba(169,27,71,0.13);
+  overflow: visible;
+}
+
+.studentenTitel {
+  background: linear-gradient(90deg, #A91B47 0%, #881538 100%);
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 32px 20px 24px 20px;
+  border-radius: 40px 40px 0 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(169,27,71,0.09);
+}
+
+.studentenText {
+  font-size: 1.13rem;
+  color: #222;
+  line-height: 1.7;
+  padding: 10px 80px 0 80px;
+}
+
+.studentenSubtitel {
+  font-weight: 700;
+  color: #A91B47;
+  margin-top: 30px;
+  margin-bottom: 6px;
+  font-size: 1.13rem;
+  letter-spacing: 0.02em;
+  background: none;
+  display: block;
+  padding: 0;
+}
+
+.studentenList {
+  margin: 12px 0 0 20px;
+  padding-left: 24px;
+  list-style: disc;
+  color: #A91B47;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.studentenList li {
+  color: #232323;
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+.studentenList b {
+  color: #A91B47;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .studentenKaart {
+    border-radius: 16px;
+    padding: 0 0 10px 0;
+  }
+  .studentenTitel {
+    font-size: 1.4rem;
+    padding: 16px 10px 14px 10px;
+    border-radius: 16px 16px 0 0;
+  }
+  .studentenText {
+    padding: 24px 10px 0 10px;
+  }
+}
+@media (max-width: 480px) {
+  .studentenKaart {
+    border-radius: 8px;
+    padding: 0 0 6px 0;
+  }
+  .studentenText {
+    padding: 12px 3vw 0 3vw;
+  }
+}
