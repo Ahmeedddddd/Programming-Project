@@ -43,6 +43,25 @@ const bedrijfController = {
     }
   },
 
+  async getGegevensBedrijf(req, res) {
+  try {
+    // req.user.userId bevat het bedrijfsnummer voor bedrijven
+    const bedrijfsnummer = req.user.userId;
+    
+    const bedrijf = await Bedrijf.getById(bedrijfsnummer);
+    
+    if (!bedrijf) {
+      return res.status(404).json({ error: 'Bedrijf not found' });
+    }
+
+    res.json(bedrijf); 
+
+  } catch (error) {
+    console.error('Error fetching company details:', error);
+    res.status(500).json({ error: 'Failed to fetch company details' });
+  }
+},
+
   async updateBedrijf(req, res) {
     try {
       const affectedRows = await Bedrijf.update(req.params.bedrijfsnummer, req.body);
