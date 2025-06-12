@@ -7,6 +7,11 @@ const { validateBedrijf } = require('../MIDDLEWARE/validation');
 const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
 router.get('/', bedrijfController.getAllBedrijven);
+router.get('/gegevensBedrijf', 
+  authenticateToken, 
+  requireRole(['bedrijf']), 
+  bedrijfController.getGegevensBedrijf
+);
 router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
 
 router.post('/', 
