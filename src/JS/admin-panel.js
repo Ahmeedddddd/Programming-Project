@@ -54,7 +54,96 @@ class AdminPanel {
         // Secties standaard uitklappen
         this.expandSection('students-section');
         
+        // Voeg tijdelijke test knop toe
+        this.addTestAuthButton();
+        
         console.log('✅ AdminPanel initialization complete!');
+    }
+
+    // ===== TIJDELIJKE TEST FUNCTIE =====
+    addTestAuthButton() {
+        // Voeg test knop toe aan header
+        const header = document.querySelector('.header');
+        if (header && !document.getElementById('test-auth-btn')) {
+            const testButton = document.createElement('button');
+            testButton.id = 'test-auth-btn';
+            testButton.innerHTML = '🔑 Test Auth Token (Tijdelijk)';
+            testButton.title = 'Klik om admin functies te testen zonder echte login';
+            testButton.style.cssText = `
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: linear-gradient(135deg, #27ae60, #2ecc71);
+                color: white;
+                border: none;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 600;
+                z-index: 10;
+                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+                transition: all 0.3s ease;
+                animation: pulse 2s infinite;
+            `;
+            
+            // Voeg CSS animatie toe voor attention
+            const pulseStyle = document.createElement('style');
+            pulseStyle.textContent = `
+                @keyframes pulse {
+                    0% { box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
+                    50% { box-shadow: 0 4px 15px rgba(39, 174, 96, 0.6); }
+                    100% { box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
+                }
+            `;
+            document.head.appendChild(pulseStyle);
+            
+            testButton.addEventListener('click', () => {
+                // Waarschuwing voor test gebruik
+                if (confirm('⚠️ WAARSCHUWING: Dit is een test functie!\n\nDeze knop geeft je tijdelijk admin rechten voor testing.\nAlleen gebruiken in development omgeving.\n\nDoorgaan?')) {
+                    // Stel een dummy auth token in voor testing
+                    this.setAuthToken('test-admin-token-12345');
+                    this.showTemporaryMessage('🔑 Test auth token ingesteld! Admin functies zijn nu beschikbaar.', 'success');
+                    
+                    // Toon extra info
+                    console.log('🧪 TEST MODE ACTIVATED');
+                    console.log('📝 Nu kan je testen:');
+                    console.log('   - Studenten toevoegen/bewerken/verwijderen');
+                    console.log('   - Bedrijven toevoegen/bewerken/verwijderen');
+                    console.log('   - Afspraken bekijken/status wijzigen/verwijderen');
+                    console.log('🧹 Gebruik removeTestButton() om deze knop te verwijderen');
+                    
+                    // Verberg de knop na gebruik
+                    testButton.style.display = 'none';
+                }
+            });
+            
+            testButton.addEventListener('mouseover', () => {
+                testButton.style.transform = 'translateY(-2px)';
+                testButton.style.boxShadow = '0 8px 25px rgba(39, 174, 96, 0.4)';
+            });
+            
+            testButton.addEventListener('mouseout', () => {
+                testButton.style.transform = 'translateY(0)';
+                testButton.style.boxShadow = '0 4px 15px rgba(39, 174, 96, 0.3)';
+            });
+            
+            header.appendChild(testButton);
+        }
+    }
+
+    // ===== TEST AUTH TOKEN HELPER =====
+    enableTestMode() {
+        this.setAuthToken('test-admin-token-12345');
+        this.showTemporaryMessage('🧪 Test modus geactiveerd! Alle admin functies beschikbaar.', 'info');
+    }
+
+    removeTestButton() {
+        const testButton = document.getElementById('test-auth-btn');
+        if (testButton) {
+            testButton.remove();
+            console.log('🧹 Test knop verwijderd');
+        }
     }
 
     setupEventListeners() {
@@ -974,9 +1063,99 @@ document.addEventListener('DOMContentLoaded', () => {
     // Debug helpers voor de console
     window.setAuthToken = (token) => window.adminPanel?.setAuthToken(token);
     window.clearAuthToken = () => window.adminPanel?.clearAuthToken();
+    window.enableTestMode = () => window.adminPanel?.enableTestMode();
+    window.removeTestButton = () => window.adminPanel?.removeTestButton();
     
     console.log('🔧 Debug helpers available:');
     console.log('- setAuthToken(token) - Zet auth token voor admin functies');
     console.log('- clearAuthToken() - Wis auth token');
+    console.log('- enableTestMode() - Activeer test modus voor debugging');
+    console.log('- removeTestButton() - Verwijder test knop');
     console.log('- adminPanel - Direct toegang tot AdminPanel instance');
+    
+    // Voeg CSS voor appointments toe
+    addAppointmentStyling();
 });
+
+// Voeg CSS styling toe voor appointments sectie
+function addAppointmentStyling() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Appointments sectie styling */
+        .section-header.appointments { 
+            border-left-color: #881538; 
+            background: linear-gradient(135deg, rgba(136, 21, 56, 0.1), rgba(136, 21, 56, 0.05)); 
+        }
+        
+        .item-card.appointment { 
+            border-left-color: #881538; 
+        }
+        
+        .stat-card.appointments { 
+            --color: #881538; 
+            --color-light: #A91B47;
+            border-left-color: #881538; 
+        }
+        
+        .stat-card.appointments .stat-number { 
+            color: #881538; 
+        }
+        
+        /* Status badges verbeterd */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .status-aangevraagd { 
+            background: linear-gradient(135deg, #f39c12, #e67e22); 
+            color: white; 
+        }
+        
+        .status-bevestigd { 
+            background: linear-gradient(135deg, #27ae60, #2ecc71); 
+            color: white; 
+        }
+        
+        .status-geweigerd { 
+            background: linear-gradient(135deg, #e74c3c, #c0392b); 
+            color: white; 
+        }
+        
+        .status-geannuleerd { 
+            background: linear-gradient(135deg, #f39c12, #d68910); 
+            color: white; 
+        }
+        
+        .status-afgewerkt { 
+            background: linear-gradient(135deg, #881538, #A91B47); 
+            color: white; 
+        }
+        
+        .status-no-show { 
+            background: linear-gradient(135deg, #636e72, #2d3436); 
+            color: white; 
+        }
+        
+        /* Test knop hover effect verbetering */
+        #test-auth-btn:hover {
+            background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+        }
+        
+        /* Afspraak item specifieke styling */
+        .item-card.appointment:hover {
+            border-color: #881538;
+            box-shadow: 0 8px 25px rgba(136, 21, 56, 0.2);
+        }
+        
+        .item-card.appointment .item-name {
+            color: #881538;
+        }
+    `;
+    document.head.appendChild(style);
+}
