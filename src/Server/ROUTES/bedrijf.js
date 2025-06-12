@@ -1,35 +1,57 @@
 //src/Server/ROUTERS/bedrijf.js
-
 const express = require('express');
 const router = express.Router();
 const bedrijfController = require('../CONTROLLERS/bedrijfController');
 const { validateBedrijf } = require('../MIDDLEWARE/validation');
 const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
+// ===== PUBLIC ROUTES (no authentication required) =====
+
+// GET /api/bedrijven - Alle bedrijven ophalen
 router.get('/', bedrijfController.getAllBedrijven);
-router.get('/gegevensBedrijf', 
-  authenticateToken, 
-  requireRole(['bedrijf']), 
-  bedrijfController.getGegevensBedrijf
-);
+
+// GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
 router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
 
-router.post('/', 
+// ===== PROTECTED ROUTES (authentication required) =====
+
+// GET /api/bedrijf/profile - Eigen bedrijfsgegevens bekijken (alleen voor ingelogde bedrijven)
+router.get('/profile', 
   authenticateToken, 
-  requireRole(['organisator']), 
-  validateBedrijf, 
+  requireRole(['bedrijf']), 
+  bedrijfController.getOwnProfile
+);
+
+// PUT /api/bedrijf/profile - Eigen bedrijfsgegevens bijwerken (alleen voor ingelogde bedrijven)
+router.put('/profile',
+  authenticateToken,
+  requireRole(['bedrijf']),
+  validateBedrijf,
+  bedrijfController.updateOwnProfile
+);
+
+// ===== ADMIN ROUTES (only organisator) =====
+
+// POST /api/bedrijven - Nieuw bedrijf aanmaken (alleen organisator)
+router.post('/',
+  authenticateToken,
+  requireRole(['organisator']),
+  validateBedrijf,
   bedrijfController.createBedrijf
 );
 
-router.put('/:bedrijfsnummer', 
-  authenticateToken, 
-  requireRole(['organisator', 'bedrijf']), 
+// PUT /api/bedrijven/:bedrijfsnummer - Bedrijf bijwerken (organisator of het bedrijf zelf)
+router.put('/:bedrijfsnummer',
+  authenticateToken,
+  requireRole(['organisator', 'bedrijf']),
+  validateBedrijf,
   bedrijfController.updateBedrijf
 );
 
-router.delete('/:bedrijfsnummer', 
-  authenticateToken, 
-  requireRole(['organisator']), 
+// DELETE /api/bedrijven/:bedrijfsnummer - Bedrijf verwijderen (alleen organisator)
+router.delete('/:bedrijfsnummer',
+  authenticateToken,
+  requireRole(['organisator']),
   bedrijfController.deleteBedrijf
 );
 

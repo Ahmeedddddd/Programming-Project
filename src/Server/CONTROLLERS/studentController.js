@@ -1,91 +1,304 @@
+//src/Server/CONTROLLERS/studentController.js
 const Student = require('../MODELS/student');
 const { validationResult } = require('express-validator');
 
 const studentController = {
-  // GET /api/studenten
+  
+  // ===== PUBLIC ENDPOINTS =====
+  
+  // GET /api/studenten - Alle studenten ophalen
   async getAllStudents(req, res) {
     try {
       const students = await Student.getAll();
-      res.json(students);
+      res.json({
+        success: true,
+        data: students,
+        count: students.length
+      });
     } catch (error) {
       console.error('Error fetching students:', error);
-      res.status(500).json({ error: 'Failed to fetch students' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch students',
+        message: 'Er ging iets mis bij het ophalen van de studenten'
+      });
     }
   },
 
-  // GET /api/studenten/:studentnummer
+  // GET /api/studenten/:studentnummer - Specifieke student ophalen
   async getStudent(req, res) {
     try {
-      const student = await Student.getById(req.params.studentnummer);
-      if (!student) {
-        return res.status(404).json({ error: 'Student not found' });
+      const { studentnummer } = req.params;
+      
+      if (!studentnummer) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid studentnummer provided' 
+        });
       }
-      res.json(student);
+
+      const student = await Student.getById(studentnummer);
+      
+      if (!student) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Student not found',
+          message: 'Student met dit nummer bestaat niet'
+        });
+      }
+      
+      res.json({
+        success: true,
+        data: student
+      });
     } catch (error) {
       console.error('Error fetching student:', error);
-      res.status(500).json({ error: 'Failed to fetch student' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch student',
+        message: 'Er ging iets mis bij het ophalen van de student'
+      });
     }
   },
 
-  // POST /api/studenten
+  // GET /api/studenten/projecten - Alle projecten ophalen
+  async getProjects(req, res) {
+    try {
+      const projects = await Student.getWithProjects();
+      res.json({
+        success: true,
+        data: projects,
+        count: projects.length
+      });
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch projects',
+        message: 'Er ging iets mis bij het ophalen van de projecten'
+      });
+    }
+  },
+
+  // ===== AUTHENTICATED ENDPOINTS =====
+
+  // GET /api/student/profile - Eigen studentprofiel bekijken
+  async getOwnProfile(req, res) {
+    try {
+      const studentnummer = req.user.userId;
+      
+      if (!studentnummer) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Studentnummer not found in token',
+          message: 'Uw sessie is ongeldig, log opnieuw in'
+        });
+      }
+
+      const student = await Student.getById(studentnummer);
+      
+      if (!student) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Student not found',
+          message: 'Uw studentprofiel werd niet gevonden'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: student,
+        message: 'Studentprofiel succesvol opgehaald'
+      });
+    } catch (error) {
+      console.error('Error fetching own profile:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch student profile',
+        message: 'Er ging iets mis bij het ophalen van uw profiel'
+      });
+    }
+  },
+
+  // PUT /api/student/profile - Eigen studentprofiel bijwerken
+  async updateOwnProfile(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const studentnummer = req.user.userId;
+      
+      if (!studentnummer) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Studentnummer not found in token'
+        });
+      }
+
+      // Voorkom dat ze hun eigen studentnummer kunnen wijzigen
+      const updateData = { ...req.body };
+      delete updateData.studentnummer;
+      delete updateData.id;
+
+      const affectedRows = await Student.update(studentnummer, updateData);
+      
+      if (affectedRows === 0) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Student not found',
+          message: 'Uw studentprofiel werd niet gevonden'
+        });
+      }
+
+      // Haal updated data op
+      const updatedStudent = await Student.getById(studentnummer);
+
+      res.json({ 
+        success: true,
+        message: 'Studentprofiel succesvol bijgewerkt',
+        data: updatedStudent
+      });
+    } catch (error) {
+      console.error('Error updating own profile:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to update student profile',
+        message: 'Er ging iets mis bij het bijwerken van uw profiel'
+      });
+    }
+  },
+
+  // ===== ADMIN ENDPOINTS =====
+
+  // POST /api/studenten - Nieuwe student aanmaken (alleen organisator)
   async createStudent(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
       }
 
       const studentId = await Student.create(req.body);
+      
       res.status(201).json({
+        success: true,
         message: 'Student created successfully',
-        studentnummer: req.body.studentnummer
+        data: {
+          studentnummer: req.body.studentnummer,
+          ...req.body
+        }
       });
     } catch (error) {
       console.error('Error creating student:', error);
+      
       if (error.code === 'ER_DUP_ENTRY') {
-        res.status(409).json({ error: 'Student number already exists' });
+        res.status(409).json({ 
+          success: false,
+          error: 'Student number already exists',
+          message: 'Er bestaat al een student met dit studentnummer'
+        });
       } else {
-        res.status(500).json({ error: 'Failed to create student' });
+        res.status(500).json({ 
+          success: false,
+          error: 'Failed to create student',
+          message: 'Er ging iets mis bij het aanmaken van de student'
+        });
       }
     }
   },
 
-  // PUT /api/studenten/:studentnummer
+  // PUT /api/studenten/:studentnummer - Student bijwerken (organisator of student zelf)
   async updateStudent(req, res) {
     try {
-      const affectedRows = await Student.update(req.params.studentnummer, req.body);
-      if (affectedRows === 0) {
-        return res.status(404).json({ error: 'Student not found' });
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
       }
-      res.json({ message: 'Student updated successfully' });
+
+      const { studentnummer } = req.params;
+      
+      // Check of student zichzelf wil updaten of organisator is
+      if (req.user.userType === 'student' && req.user.userId !== studentnummer) {
+        return res.status(403).json({ 
+          success: false,
+          error: 'Forbidden',
+          message: 'U kunt alleen uw eigen studentprofiel bijwerken'
+        });
+      }
+
+      const affectedRows = await Student.update(studentnummer, req.body);
+      
+      if (affectedRows === 0) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Student not found',
+          message: 'Student niet gevonden'
+        });
+      }
+
+      res.json({ 
+        success: true,
+        message: 'Student updated successfully',
+        studentnummer: studentnummer
+      });
     } catch (error) {
       console.error('Error updating student:', error);
-      res.status(500).json({ error: 'Failed to update student' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to update student',
+        message: 'Er ging iets mis bij het bijwerken van de student'
+      });
     }
   },
 
-  // DELETE /api/studenten/:studentnummer
+  // DELETE /api/studenten/:studentnummer - Student verwijderen (alleen organisator)
   async deleteStudent(req, res) {
     try {
-      const affectedRows = await Student.delete(req.params.studentnummer);
-      if (affectedRows === 0) {
-        return res.status(404).json({ error: 'Student not found' });
+      const { studentnummer } = req.params;
+      
+      if (!studentnummer) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid studentnummer provided'
+        });
       }
-      res.json({ message: 'Student deleted successfully' });
+
+      const affectedRows = await Student.delete(studentnummer);
+      
+      if (affectedRows === 0) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Student not found',
+          message: 'Student niet gevonden'
+        });
+      }
+
+      res.json({ 
+        success: true,
+        message: 'Student deleted successfully',
+        studentnummer: studentnummer
+      });
     } catch (error) {
       console.error('Error deleting student:', error);
-      res.status(500).json({ error: 'Failed to delete student' });
-    }
-  },
-
-  // GET /api/projecten
-  async getProjects(req, res) {
-    try {
-      const projects = await Student.getWithProjects();
-      res.json(projects);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      res.status(500).json({ error: 'Failed to fetch projects' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to delete student',
+        message: 'Er ging iets mis bij het verwijderen van de student'
+      });
     }
   }
 };

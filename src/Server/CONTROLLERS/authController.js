@@ -1,6 +1,7 @@
+//src/Server/CONTROLLERS/authController.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../database');
+const { pool } = require('../CONFIG/database'); // ✅ FIXED: Correct import
 const config = require('../CONFIG/config');
 
 const authController = {
@@ -23,7 +24,11 @@ const authController = {
       `, [email, email, email]);
 
       if (users.length === 0) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ 
+          success: false,
+          error: 'Invalid credentials',
+          message: 'Email of wachtwoord is incorrect'
+        });
       }
 
       const user = users[0];
@@ -32,7 +37,11 @@ const authController = {
       if (user.userType === 'organisator' && user.password_hash) {
         const validPassword = await bcrypt.compare(password, user.password_hash);
         if (!validPassword) {
-          return res.status(401).json({ error: 'Invalid credentials' });
+          return res.status(401).json({ 
+            success: false,
+            error: 'Invalid credentials',
+            message: 'Email of wachtwoord is incorrect'
+          });
         }
       }
 
@@ -44,6 +53,8 @@ const authController = {
       );
 
       res.json({
+        success: true,
+        message: 'Login successful',
         token,
         user: {
           id: user.id,
@@ -53,7 +64,11 @@ const authController = {
       });
     } catch (error) {
       console.error('Login error:', error);
-      res.status(500).json({ error: 'Login failed' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Login failed',
+        message: 'Er ging iets mis bij het inloggen'
+      });
     }
   },
 
@@ -67,9 +82,16 @@ const authController = {
       // Create user based on type
       let userId;
       if (userType === 'student') {
+        const Student = require('../MODELS/student');
         userId = await Student.create({ email, ...userData });
       } else if (userType === 'bedrijf') {
+        const Bedrijf = require('../MODELS/bedrijf');
         userId = await Bedrijf.create({ email, ...userData });
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid user type'
+        });
       }
 
       // Create login entry
@@ -78,10 +100,60 @@ const authController = {
         [userId, hashedPassword]
       );
 
-      res.status(201).json({ message: 'User registered successfully' });
+      res.status(201).json({ 
+        success: true,
+        message: 'User registered successfully',
+        userId: userId
+      });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ error: 'Registration failed' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Registration failed',
+        message: 'Er ging iets mis bij het registreren'
+      });
+    }
+  },
+
+  // GET /api/auth/me - Get current user info
+  async getMe(req, res) {
+    try {
+      const userId = req.user.userId;
+      const userType = req.user.userType;
+
+      let userData;
+      
+      if (userType === 'student') {
+        const Student = require('../MODELS/student');
+        userData = await Student.getById(userId);
+      } else if (userType === 'bedrijf') {
+        const Bedrijf = require('../MODELS/bedrijf');
+        userData = await Bedrijf.getById(userId);
+      } else if (userType === 'organisator') {
+        const Organisator = require('../MODELS/organisator');
+        userData = await Organisator.getById(userId);
+      }
+
+      if (!userData) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...userData,
+          userType: userType
+        }
+      });
+    } catch (error) {
+      console.error('Get me error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get user data'
+      });
     }
   }
 };
