@@ -9,7 +9,7 @@ class AdminPanel {
         this.appointments = [];
         this.currentEditId = null;
         this.currentEditType = null;
-        this.authToken = localStorage.getItem('authToken'); // Voor later gebruik
+        this.authToken = this.getValidAuthToken(); // Verbeterde token validatie
         
         console.log('🚀 AdminPanel initializing...');
         console.log('Auth token available:', !!this.authToken);
@@ -18,9 +18,37 @@ class AdminPanel {
     }
 
     // ===== UTILITY METHODS =====
-    setAuthToken(token) {
+    getValidAuthToken() {
+        const token = localStorage.getItem('authToken');
+        const tokenTimestamp = localStorage.getItem('authTokenTimestamp');
+        const isTestToken = localStorage.getItem('isTestToken') === 'true';
+        
+        // Als het een test token is, check of de pagina is gerefresht
+        if (isTestToken && tokenTimestamp) {
+            const sessionStartTime = sessionStorage.getItem('sessionStartTime');
+            if (!sessionStartTime) {
+                // Pagina is gerefresht, test token expiren
+                console.log('🔄 Pagina refresh gedetecteerd - test token expired');
+                this.clearAuthToken();
+                return null;
+            }
+        }
+        
+        return token;
+    }
+    
+    setAuthToken(token, isTestToken = false) {
         this.authToken = token;
         localStorage.setItem('authToken', token);
+        localStorage.setItem('authTokenTimestamp', Date.now().toString());
+        localStorage.setItem('isTestToken', isTestToken.toString());
+        
+        if (isTestToken) {
+            // Stel session marker in voor test tokens
+            sessionStorage.setItem('sessionStartTime', Date.now().toString());
+            console.log('🧪 Test token ingesteld - vervalt bij pagina refresh');
+        }
+        
         console.log('✅ Auth token set successfully');
         
         // Reload data with authentication
@@ -30,6 +58,9 @@ class AdminPanel {
     clearAuthToken() {
         this.authToken = null;
         localStorage.removeItem('authToken');
+        localStorage.removeItem('authTokenTimestamp');
+        localStorage.removeItem('isTestToken');
+        sessionStorage.removeItem('sessionStartTime');
         console.log('🔑 Auth token cleared');
     }
 
@@ -46,18 +77,28 @@ class AdminPanel {
         // Event listeners instellen
         this.setupEventListeners();
         
+        // Zorg ervoor dat modal standaard verborgen is
+        this.initModal();
+        
         console.log('📊 Loading data...');
         // Data laden
         await this.loadAllData();
         
-        console.log('📂 Expanding students section...');
-        // Secties standaard uitklappen
-        this.expandSection('students-section');
+        // VERWIJDERD: Secties standaard gesloten laten
+        // this.expandSection('students-section');
         
         // Voeg tijdelijke test knop toe
         this.addTestAuthButton();
         
         console.log('✅ AdminPanel initialization complete!');
+    }
+
+    // ===== MODAL INITIALIZATION =====
+    initModal() {
+        const modal = document.getElementById('modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 
     // ===== TIJDELIJKE TEST FUNCTIE =====
@@ -100,10 +141,10 @@ class AdminPanel {
             
             testButton.addEventListener('click', () => {
                 // Waarschuwing voor test gebruik
-                if (confirm('⚠️ WAARSCHUWING: Dit is een test functie!\n\nDeze knop geeft je tijdelijk admin rechten voor testing.\nAlleen gebruiken in development omgeving.\n\nDoorgaan?')) {
-                    // Stel een dummy auth token in voor testing
-                    this.setAuthToken('test-admin-token-12345');
-                    this.showTemporaryMessage('🔑 Test auth token ingesteld! Admin functies zijn nu beschikbaar.', 'success');
+                if (confirm('⚠️ WAARSCHUWING: Dit is een test functie!\n\nDeze knop geeft je tijdelijk admin rechten voor testing.\nAlleen gebruiken in development omgeving.\n\nTest token vervalt automatisch bij pagina refresh.\n\nDoorgaan?')) {
+                    // Stel een dummy auth token in voor testing (met test flag)
+                    this.setAuthToken('test-admin-token-12345', true);
+                    this.showTemporaryMessage('🔑 Test auth token ingesteld! Vervalt bij refresh.', 'success');
                     
                     // Toon extra info
                     console.log('🧪 TEST MODE ACTIVATED');
@@ -111,6 +152,7 @@ class AdminPanel {
                     console.log('   - Studenten toevoegen/bewerken/verwijderen');
                     console.log('   - Bedrijven toevoegen/bewerken/verwijderen');
                     console.log('   - Afspraken bekijken/status wijzigen/verwijderen');
+                    console.log('🔄 Token vervalt automatisch bij pagina refresh');
                     console.log('🧹 Gebruik removeTestButton() om deze knop te verwijderen');
                     
                     // Verberg de knop na gebruik
@@ -134,8 +176,8 @@ class AdminPanel {
 
     // ===== TEST AUTH TOKEN HELPER =====
     enableTestMode() {
-        this.setAuthToken('test-admin-token-12345');
-        this.showTemporaryMessage('🧪 Test modus geactiveerd! Alle admin functies beschikbaar.', 'info');
+        this.setAuthToken('test-admin-token-12345', true);
+        this.showTemporaryMessage('🧪 Test modus geactiveerd! Vervalt bij refresh.', 'info');
     }
 
     removeTestButton() {
@@ -322,9 +364,12 @@ class AdminPanel {
         try {
             const response = await this.apiRequest('/reservaties', 'GET', null, true);
             this.appointments = response.data || response;
+            this.renderAppointments();
         } catch (error) {
             // Silent fail for appointments - they require auth
             this.appointments = [];
+            document.getElementById('appointments-list').innerHTML = 
+                '<div class="no-items">🔒 Login vereist om afspraken te bekijken</div>';
         }
     }
 
@@ -342,16 +387,9 @@ class AdminPanel {
     showModal() {
         const modal = document.getElementById('modal');
         if (modal) {
-            // Verbeterde modal display met fixed positioning
+            // FLEXBOX MODAL - Simpel en clean!
             modal.style.display = 'flex';
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100%';
-            modal.style.height = '100%';
-            modal.style.alignItems = 'center';
-            modal.style.justifyContent = 'center';
-            modal.style.zIndex = '10000';
+            // CSS zorgt automatisch voor align-items: center en justify-content: center
             
             // Scroll naar top van pagina voor betere UX
             window.scrollTo({
@@ -1058,6 +1096,11 @@ window.toggleMenu = toggleMenu;
 
 // Initialize admin panel when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Zet session marker om refresh detection mogelijk te maken
+    if (!sessionStorage.getItem('sessionStartTime')) {
+        sessionStorage.setItem('sessionStartTime', Date.now().toString());
+    }
+    
     window.adminPanel = new AdminPanel();
     
     // Debug helpers voor de console
@@ -1072,9 +1115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('- enableTestMode() - Activeer test modus voor debugging');
     console.log('- removeTestButton() - Verwijder test knop');
     console.log('- adminPanel - Direct toegang tot AdminPanel instance');
-    
-    // Voeg CSS voor appointments toe
-    addAppointmentStyling();
 });
 
 // Voeg CSS styling toe voor appointments sectie
