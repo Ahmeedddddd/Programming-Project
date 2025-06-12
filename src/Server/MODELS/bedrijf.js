@@ -1,4 +1,4 @@
-const { pool } = require('../CONFIG/database');
+const { pool } = require('../database');
 
 class Bedrijf {
   static async getAll() {
