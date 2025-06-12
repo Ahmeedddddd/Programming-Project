@@ -71,6 +71,10 @@ class AdminPanel {
             this.renderProjects(e.target.value);
         });
 
+        document.getElementById('appointment-search')?.addEventListener('input', (e) => {
+            this.renderAppointments(e.target.value);
+        });
+
         // Modal event listeners
         document.getElementById('modal')?.addEventListener('click', (e) => {
             if (e.target.id === 'modal') {
@@ -249,6 +253,17 @@ class AdminPanel {
     showModal() {
         const modal = document.getElementById('modal');
         if (modal) {
+            // Verbeterde modal display met fixed positioning
+            modal.style.display = 'flex';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = '10000';
+            
             // Scroll naar top van pagina voor betere UX
             window.scrollTo({
                 top: 0,
@@ -258,16 +273,13 @@ class AdminPanel {
             // Blokkeer body scroll tijdens modal
             document.body.style.overflow = 'hidden';
             
-            // Toon modal
-            modal.style.display = 'block';
-            
             // Focus management voor accessibility
             setTimeout(() => {
                 const firstInput = modal.querySelector('input, textarea, button');
                 if (firstInput) {
                     firstInput.focus();
                 }
-            }, 300); // Wacht tot smooth scroll klaar is
+            }, 100);
         }
     }
 
@@ -343,9 +355,47 @@ class AdminPanel {
             postcode: 'Postcode',
             bus: 'Bus',
             land: 'Land',
-            studentNaam: 'Student'
+            studentNaam: 'Student',
+            bedrijfNaam: 'Bedrijf',
+            startTijd: 'Start Tijd',
+            eindTijd: 'Eind Tijd',
+            status: 'Status'
         };
         return labels[field] || field;
+    }
+
+    formatDateTime(dateTimeString) {
+        if (!dateTimeString) return 'Onbekend';
+        const date = new Date(dateTimeString);
+        return date.toLocaleString('nl-BE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    formatTime(timeString) {
+        if (!timeString) return 'Onbekend';
+        const time = new Date(`2000-01-01T${timeString}`);
+        return time.toLocaleTimeString('nl-BE', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            'gepland': 'Gepland',
+            'bevestigd': 'Bevestigd',
+            'geannuleerd': 'Geannuleerd',
+            'afgewerkt': 'Afgewerkt',
+            'no-show': 'No-show',
+            'aangevraagd': 'Aangevraagd',
+            'geweigerd': 'Geweigerd'
+        };
+        return statusMap[status] || status;
     }
 
     // ===== RENDERING METHODS =====
@@ -443,6 +493,40 @@ class AdminPanel {
         `).join('');
     }
 
+    renderAppointments(searchTerm = '') {
+        const container = document.getElementById('appointments-list');
+        if (!container) return;
+
+        const filtered = this.appointments.filter(appointment => 
+            appointment.studentNaam?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.bedrijfNaam?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.status?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="no-items">Geen afspraken gevonden</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(appointment => `
+            <div class="item-card appointment" onclick="adminPanel.showDetails('appointment', '${appointment.id}')">
+                <div class="quick-actions">
+                    <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); adminPanel.showEditModal('appointment', '${appointment.id}')" title="Status Bewerken">
+                        ✏️
+                    </button>
+                    <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); adminPanel.deleteItem('appointment', '${appointment.id}')" title="Verwijderen">
+                        🗑️
+                    </button>
+                </div>
+                <div class="item-name">${appointment.studentNaam} ↔ ${appointment.bedrijfNaam}</div>
+                <div class="item-info">
+                    ${this.formatDateTime(appointment.startTijd)} - ${this.formatTime(appointment.eindTijd)} • 
+                    <span class="status-badge status-${appointment.status}">${this.getStatusText(appointment.status)}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
     // ===== MODAL METHODS =====
     showAddModal(type) {
         // Check auth voor add operaties
@@ -509,6 +593,10 @@ class AdminPanel {
                 item = this.projects.find(p => p.studentnummer == id);
                 title = 'Project Bewerken';
                 break;
+            case 'appointment':
+                item = this.appointments.find(a => a.id == id);
+                title = 'Afspraak Status Wijzigen';
+                break;
         }
 
         if (!item) return;
@@ -524,6 +612,10 @@ class AdminPanel {
                 
             case 'company':
                 formHtml = this.getCompanyFormHtml(item);
+                break;
+
+            case 'appointment':
+                formHtml = this.getAppointmentFormHtml(item);
                 break;
         }
 
@@ -554,6 +646,10 @@ class AdminPanel {
                 item = this.projects.find(p => p.studentnummer == id);
                 title = 'Project Details';
                 break;
+            case 'appointment':
+                item = this.appointments.find(a => a.id == id);
+                title = 'Afspraak Details';
+                break;
         }
 
         if (!item) return;
@@ -562,7 +658,7 @@ class AdminPanel {
         
         let detailsHtml = '';
         for (const [key, value] of Object.entries(item)) {
-            if (key !== 'studentnummer' && key !== 'bedrijfsnummer' && value) {
+            if (key !== 'studentnummer' && key !== 'bedrijfsnummer' && key !== 'id' && value) {
                 const label = this.getFieldLabel(key);
                 let displayValue = value;
                 
@@ -570,6 +666,12 @@ class AdminPanel {
                     displayValue = `<a href="mailto:${value}" style="color: #881538;">${value}</a>`;
                 } else if (key === 'gsm_nummer') {
                     displayValue = `<a href="tel:${value}" style="color: #881538;">${value}</a>`;
+                } else if (key === 'startTijd') {
+                    displayValue = this.formatDateTime(value);
+                } else if (key === 'eindTijd') {
+                    displayValue = this.formatTime(value);
+                } else if (key === 'status') {
+                    displayValue = `<span class="status-badge status-${value}">${this.getStatusText(value)}</span>`;
                 }
                 
                 detailsHtml += `
@@ -582,10 +684,17 @@ class AdminPanel {
         }
 
         // Add action buttons
+        let editButtonText = '✏️ Bewerken';
+        let editAction = `adminPanel.showEditModal('${type}', '${id}')`;
+        
+        if (type === 'appointment') {
+            editButtonText = '📝 Status Wijzigen';
+        }
+
         detailsHtml += `
             <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #f8f9fa; display: flex; gap: 1rem;">
-                <button onclick="adminPanel.showEditModal('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); flex: 1;">
-                    ✏️ Bewerken
+                <button onclick="${editAction}" class="submit-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); flex: 1;">
+                    ${editButtonText}
                 </button>
                 <button onclick="adminPanel.deleteItem('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); flex: 1;">
                     🗑️ Verwijderen
@@ -696,12 +805,47 @@ class AdminPanel {
         `;
     }
 
+    getAppointmentFormHtml(item = null) {
+        return `
+            <form id="data-form">
+                <div class="form-group">
+                    <label class="form-label">Student</label>
+                    <input type="text" class="form-input" value="${item?.studentNaam || ''}" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bedrijf</label>
+                    <input type="text" class="form-input" value="${item?.bedrijfNaam || ''}" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Start Tijd</label>
+                    <input type="text" class="form-input" value="${this.formatDateTime(item?.startTijd)}" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Eind Tijd</label>
+                    <input type="text" class="form-input" value="${this.formatTime(item?.eindTijd)}" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status *</label>
+                    <select class="form-input" name="status" required>
+                        <option value="aangevraagd" ${item?.status === 'aangevraagd' ? 'selected' : ''}>Aangevraagd</option>
+                        <option value="bevestigd" ${item?.status === 'bevestigd' ? 'selected' : ''}>Bevestigd</option>
+                        <option value="geweigerd" ${item?.status === 'geweigerd' ? 'selected' : ''}>Geweigerd</option>
+                        <option value="geannuleerd" ${item?.status === 'geannuleerd' ? 'selected' : ''}>Geannuleerd</option>
+                        <option value="afgewerkt" ${item?.status === 'afgewerkt' ? 'selected' : ''}>Afgewerkt</option>
+                        <option value="no-show" ${item?.status === 'no-show' ? 'selected' : ''}>No-show</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">Status Bijwerken</button>
+            </form>
+        `;
+    }
+
     // ===== CRUD OPERATIONS =====
     async handleFormSubmit(event) {
         event.preventDefault();
         
         // Check auth voor alle form submissions (CREATE/UPDATE vereisen auth)
-        if (!this.requiresAuth('studenten/bedrijven beheren')) {
+        if (!this.requiresAuth('studenten/bedrijven/afspraken beheren')) {
             return;
         }
 
@@ -724,6 +868,10 @@ class AdminPanel {
                         await this.apiRequest(`/bedrijven/${this.currentEditId}`, 'PUT', data, true);
                         await this.loadCompanies();
                         break;
+                    case 'appointment':
+                        await this.apiRequest(`/reservaties/${this.currentEditId}/status`, 'PUT', data, true);
+                        await this.loadAppointments();
+                        break;
                 }
                 this.showTemporaryMessage('✅ Item succesvol bijgewerkt!', 'success');
             } else {
@@ -737,6 +885,7 @@ class AdminPanel {
                         await this.apiRequest('/bedrijven', 'POST', data, true);
                         await this.loadCompanies();
                         break;
+                    // Note: Appointments worden meestal aangemaakt door studenten/bedrijven, niet via admin panel
                 }
                 this.showTemporaryMessage('✅ Item succesvol toegevoegd!', 'success');
             }
@@ -769,6 +918,11 @@ class AdminPanel {
                 itemName = company ? company.naam : 'Dit bedrijf';
                 confirmMessage = `Weet je zeker dat je het bedrijf "${itemName}" wilt verwijderen?`;
                 break;
+            case 'appointment':
+                const appointment = this.appointments.find(a => a.id == id);
+                itemName = appointment ? `${appointment.studentNaam} ↔ ${appointment.bedrijfNaam}` : 'Deze afspraak';
+                confirmMessage = `Weet je zeker dat je de afspraak "${itemName}" wilt verwijderen?`;
+                break;
         }
         
         if (confirm(confirmMessage + '\n\nDeze actie kan niet ongedaan worden gemaakt.')) {
@@ -782,6 +936,10 @@ class AdminPanel {
                     case 'company':
                         await this.apiRequest(`/bedrijven/${id}`, 'DELETE', null, true);
                         await this.loadCompanies();
+                        break;
+                    case 'appointment':
+                        await this.apiRequest(`/reservaties/${id}`, 'DELETE', null, true);
+                        await this.loadAppointments();
                         break;
                 }
                 
