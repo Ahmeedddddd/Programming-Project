@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLaunch - Test Navigation</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">
+    <style>
+        /* Test Page Specific Styling */
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #881538, #A91B47);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.3);
+        }
+        
+        .test-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 0.5rem 0;
+            color: white;
+        }
+        
+        .test-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-group {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(136, 21, 56, 0.1);
+        }
+        
+        .section-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #881538;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-icon {
+            font-size: 1.5rem;
+        }
+        
+        .link-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .test-link {
+            display: block;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #881538;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .test-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .test-link:hover::before {
+            left: 100%;
+        }
+        
+        .test-link:hover {
+            background: linear-gradient(135deg, #881538, #A91B47);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+            border-color: #A91B47;
+        }
+        
+        .api-link {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            color: white !important;
+        }
+        
+        .api-link:hover {
+            background: linear-gradient(135deg, #047857, #059669) !important;
+        }
+        
+        .back-home {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(136, 21, 56, 0.9);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(136, 21, 56, 0.3);
+        }
+        
+        .back-home:hover {
+            background: rgba(169, 27, 71, 0.9);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(136, 21, 56, 0.5);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(136, 21, 56, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(136, 21, 56, 0.1);
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #881538;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .test-container {
+                padding: 1rem;
+            }
+            
+            .test-header {
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .test-header h1 {
+                font-size: 2rem;
+            }
+            
+            .sections-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .section-group {
+                padding: 1.5rem;
+            }
+            
+            .back-home {
+                position: static;
+                display: inline-block;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <a href="/" class="back-home">← Terug naar Home</a>
+        
+        <div class="test-header">
+            <h1>🧪 CareerLaunch Test Navigation</h1>
+            <p>Alle pagina's en API's georganiseerd voor eenvoudig testen - Volledig gesynchroniseerd met server routes</p>
+        </div>
+        
+        <div class="sections-grid">
+            <!-- Homepage -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">🏠</span>
+                    Homepage
+                </h2>
+                <div class="link-list">
+                    <a href="/" class="test-link">CareerLaunch Home</a>
+                </div>
+            </div>
+            
+            <!-- Authentication -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">🔐</span>
+                    Authenticatie
+                </h2>
+                <div class="link-list">
+                    <a href="/login" class="test-link">Login</a>
+                    <a href="/register" class="test-link">Registreren</a>
+                </div>
+            </div>
+            
+            <!-- Account Pages -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">👤</span>
+                    Account Pagina's
+                </h2>
+                <div class="link-list">
+                    <a href="/accountStudent" class="test-link">Account Student</a>
+                    <a href="/accountBedrijf" class="test-link">Account Bedrijf</a>
+                    <a href="/accountOrganisator" class="test-link">Account Organisator</a>
+                </div>
+            </div>
+            
+            <!-- Gegevens & Settings -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">⚙️</span>
+                    Gegevens & Instellingen
+                </h2>
+                <div class="link-list">
+                    <a href="/gegevensStudent" class="test-link">Gegevens Student</a>
+                    <a href="/gegevensBedrijf" class="test-link">Gegevens Bedrijf</a>
+                    <a href="/gegevensOrganisator" class="test-link">Gegevens Organisator</a>
+                    <a href="/mijnProject" class="test-link">Mijn Project</a>
+                </div>
+            </div>
+            
+            <!-- Information Pages -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">ℹ️</span>
+                    Informatie Pagina's
+                </h2>
+                <div class="link-list">
+                    <a href="/info" class="test-link">Algemene Info</a>
+                    <a href="/infoStudent" class="test-link">Info voor Studenten</a>
+                    <a href="/infoBedrijf" class="test-link">Info voor Bedrijven</a>
+                    <a href="/infoCareerLaunch" class="test-link">Info CareerLaunch</a>
+                </div>
+            </div>
+            
+            <!-- Programs & Events -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">📅</span>
+                    Programma & Events
+                </h2>
+                <div class="link-list">
+                    <a href="/programma" class="test-link">Programma</a>
+                    <a href="/programmaVoormidag" class="test-link">Programma Voormiddag</a>
+                    <a href="/programmaNamidag" class="test-link">Programma Namiddag</a>
+                    <a href="/reservatie" class="test-link">Reservatie</a>
+                    <a href="/gesprekkenOverzicht" class="test-link">Gesprekken Overzicht</a>
+                </div>
+            </div>
+            
+            <!-- Browse & Search -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">🔍</span>
+                    Zoeken & Bladeren
+                </h2>
+                <div class="link-list">
+                    <a href="/alleBedrijven" class="test-link">Alle Bedrijven</a>
+                    <a href="/alleStudenten" class="test-link">Alle Studenten</a>
+                    <a href="/alleProjecten" class="test-link">Alle Projecten</a>
+                    <a href="/zoekbalkProjecten" class="test-link">Zoek Projecten</a>
+                    <a href="/zoekbalkStudenten" class="test-link">Zoek Studenten</a>
+                </div>
+            </div>
+            
+            <!-- Results & Details -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">📋</span>
+                    Resultaten & Details
+                </h2>
+                <div class="link-list">
+                    <a href="/resultaatBedrijf" class="test-link">Bedrijf Details</a>
+                    <a href="/overzichtOrganisator" class="test-link">Organisator Overzicht</a>
+                </div>
+            </div>
+            
+            <!-- Admin & Management -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">🛠️</span>
+                    Beheer & Admin
+                </h2>
+                <div class="link-list">
+                    <a href="/adminPanel" class="test-link">Admin Panel</a>
+                </div>
+            </div>
+            
+            <!-- Contact & Support -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">📞</span>
+                    Contact & Support
+                </h2>
+                <div class="link-list">
+                    <a href="/contacteer" class="test-link">Contact Opnemen</a>
+                </div>
+            </div>
+            
+            <!-- API & Development -->
+            <div class="section-group">
+                <h2 class="section-title">
+                    <span class="section-icon">⚡</span>
+                    API & Development
+                </h2>
+                <div class="link-list">
+                    <a href="/api/health" class="test-link api-link" target="_blank">Health Check API ⚡</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-number">29</span>
+                <span class="stat-label">Totaal Links</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">11</span>
+                <span class="stat-label">Categorieën</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">3</span>
+                <span class="stat-label">User Types</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Ready to Test</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script type="module" src="/src/JS/startPage.js"></script>
+    <script>
+        // Add some test functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Count links
+            const totalLinks = document.querySelectorAll('.test-link').length;
+            console.log(`🧪 Test page loaded with ${totalLinks} navigation links`);
+            
+            // Add click tracking
+            document.querySelectorAll('.test-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const href = link.getAttribute('href');
+                    console.log(`🔗 Testing navigation to: ${href}`);
+                    
+                    // Show notification if available
+                    if (window.showNotification) {
+                        window.showNotification(`Navigating to ${href}`, 'info', 2000);
+                    }
+                });
+            });
+            
+            // Add keyboard shortcut to return home
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'h' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    window.location.href = '/';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
