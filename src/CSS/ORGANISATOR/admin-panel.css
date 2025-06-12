@@ -522,6 +522,23 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-aangevraagd { background: #ffeaa7; color: #2d3436; }
+.status-bevestigd { background: #55a3ff; color: white; }
+.status-geweigerd { background: #fd79a8; color: white; }
+.status-geannuleerd { background: #fdcb6e; color: #2d3436; }
+.status-afgewerkt { background: #00b894; color: white; }
+.status-no-show { background: #636e72; color: white; }
+
+.item-card.appointment { border-left-color: #00b894; }
+
 @media (max-width: 768px) {
     .container {
         margin: 10px;
