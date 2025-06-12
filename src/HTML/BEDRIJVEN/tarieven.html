@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarieven</title>
+    <link rel="stylesheet" href="/src/CSS/BEDRIJVEN/tarieven.css">
+    <link rel="stylesheet" href="/src/CSS/style.css">
+</head>
+
+<body>
+
+
+
+
+
+    <div class="content-area">
+        <div class="page-header">
+            <h1 class="page-title">Kies uw pakket</h1>
+            <p class="page-subtitle">Selecteer het partnership niveau dat het beste past bij uw organisatie</p>
+        </div>
+
+        <div class="pricing-container">
+            <div class="pricing-package bronze" onclick="togglePackage(this)">
+                <div class="package-header">
+                    <div class="package-check"></div>
+                    <div class="package-name">Bronze Partner</div>
+                    <div class="package-price">€160</div>
+                </div>
+                <div class="package-body">
+                    <ul class="package-features">
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Stand:</span> 1,5m x 1,5m</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Duur:</span> 1 dag</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Team:</span> Maximaal 2 informanten</div>
+                        </li>
+                    </ul>
+                    <div class="highlight-badge">
+                        Ideaal voor bedrijven met minder dan 20 werknemers
+                    </div>
+                </div>
+            </div>
+
+            <div class="pricing-package silver" onclick="togglePackage(this)">
+                <div class="package-header">
+                    <div class="package-check"></div>
+                    <div class="package-name">Silver Partner</div>
+                    <div class="package-price">€460</div>
+                </div>
+                <div class="package-body">
+                    <ul class="package-features">
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Stand:</span> 3m x 2m</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Duur:</span> 1 dag</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Team:</span> Maximaal 2 informanten</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pricing-package gold" onclick="togglePackage(this)">
+                <div class="package-header">
+                    <div class="package-check"></div>
+                    <div class="package-name">Gold Partner</div>
+                    <div class="package-price">€650</div>
+                </div>
+                <div class="package-body">
+                    <ul class="package-features">
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Presentatie:</span> 30 minuten</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Discussie:</span> Premium vakdiscussie</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Stand:</span> 3m x 2m</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Duur:</span> 1 dag</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Tickets:</span> 4 informanten</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pricing-package startup" onclick="togglePackage(this)">
+                <div class="package-header">
+                    <div class="package-check"></div>
+                    <div class="package-name">Startup Pakket</div>
+                    <div class="package-price">€130</div>
+                </div>
+                <div class="package-body">
+                    <ul class="package-features">
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Voorwaarde:</span> Jonger dan 5 jaar</div>
+                        </li>
+                        <li>
+                            <div class="feature-icon"></div>
+                            <div><span class="feature-label">Stand:</span> 2m x 2m</div>
+                        </li>
+                    </ul>
+                    <div class="highlight-badge">
+                        Speciaal tarief voor nieuwe bedrijven
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="selected-count" id="selectedCount">geen pakket geselecteerd</div>
+        <button class="primary-button" id="continueBtn" disabled>Doorgaan naar bestelling</button>
+    </div>
+
+
+</body>
+
+</html>

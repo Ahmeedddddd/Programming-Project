@@ -41,6 +41,9 @@ app.get('/accountBedrijf', (req, res) => {
 app.get('/gegevensBedrijf', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html'));
 });
+app.get('/tarieven', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJF/tarieven.html'));
+});
 
 //INFO
 app.get('/info', (req, res) => {
@@ -62,6 +65,10 @@ app.get('/infoCareerLaunch', (req, res) => {
 app.get('/contacteer', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/INFO/contacteer.html'));
 });
+app.get('/tarieven-info', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/tarieven-info.html'));
+});
+
 
 //ORGANISATOR
 app.get('/accountOrganisator', (req, res) => {
