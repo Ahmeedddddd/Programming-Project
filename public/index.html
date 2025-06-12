@@ -5,30 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerLaunch</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
-    <link rel="stylesheet" href="/src/CSS/index.css" />
+    <link rel="stylesheet" href="/src/CSS/index.css">
   </head>
   <body>
     <!-- Navigatie -->
 <div class="container">
   <div class="nav">
-    <div class="logo">
-      <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-    </div>
-    <div class="navBar">
-      <a href="/index.html" class="navItem active">Home</a>
-      <a href="/programma" class="navItem">Programma</a>
-      <a href="#" class="navItem">Mijn gesprekken</a>
-      <a href="/info" class="navItem">Info</a>
-      <div class="pfpContainer">
-        <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-      </div>
+  <div class="logo">
+    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+  </div>
+  <div class="navBar">
+    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/programma" class="navItem">Programma</a>
+    <a href="#" class="navItem">Mijn gesprekken</a>
+    <a href="/info" class="navItem">Info</a>
+  </div>
+  <div class="pfpContainer">
+    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
+
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
   <!-- Geanimeerde achtergrond laag -->
   <div class="menu-bg-animation"></div>
+<div class="menu-bg-animation"></div>
+<div class="sparkles"></div>
   
   <!-- Header met titel -->
   <div class="sideMenu-header">
@@ -63,6 +66,8 @@
       <a href="/infoCareerLaunch" class="section-btn1">Lees Meer</a>
     </section>
 
+    
+
 <!-- Zoekbalk -->
 <section class="searchSection">
   <div class="searchBar">
@@ -78,7 +83,7 @@
     <div class="section-card">
       <h2 class="section-title">
         <div class="section-icon">🏢</div>
-        Bedrijven
+        Bedrijven <span data-count="25">0</span>
       </h2>
       <div class="section-features">
         <h4>Direct in contact met jong talent:</h4>
@@ -98,7 +103,7 @@
     <div class="section-card">
       <h2 class="section-title">
         <div class="section-icon">🎓</div>
-        Studenten
+        Studenten <span data-count="25">0</span>
       </h2>
       <div class="section-features">
         <h4>Automatische inschrijving & verplichte deelname:</h4>
@@ -121,7 +126,7 @@
         <div class="section-header">
             <h2 class="section-title">
                 <div class="section-icon">🏢</div>
-                Bedrijfsexposanten
+                Bedrijfsexposanten <span data-count="25">0</span>
             </h2>
             <!-- KNOP WEGGEHAALD UIT HEADER -->
         </div>
@@ -159,9 +164,8 @@
         <div class="section-header">
             <h2 class="section-title">
                 <div class="section-icon">🎓</div>
-                Studentenoverzicht
+                Studentenoverzicht <span data-count="25">0</span>
             </h2>
-            <!-- KNOP WEGGEHAALD UIT HEADER -->
         </div>
         
         <div class="card-grid">
@@ -198,7 +202,7 @@
             <div class="section-header">
                 <h2 class="section-title">
                     <div class="section-icon">🚀</div>
-                    Studentenprojecten
+                    Studentenprojecten <span data-count="25">0</span>
                 </h2>
 
                 <div class="section-button-container">
@@ -243,8 +247,15 @@
     </footer>
   </div>
 
+  <!-- Loading Overlay  -->
   <div id="loadingOverlay">
     <div class="loader"></div>
-<script type="module" src="src/JS/index.js"></script>
-  </body>
+  </div>
+
+  <div class="menu-overlay"></div>
+  </div>
+
+  <script type="module" src="src/JS/startPage.js"></script>
+  <script type="module" src="src/JS/index.js"></script>
+</body>
 </html>

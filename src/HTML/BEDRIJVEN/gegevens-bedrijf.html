@@ -1,51 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gegevens-Bedrijf</title>
+    <title>Bedrijf Gegevens</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS/BEDRIJVEN/gegevens-bedrijf.css">
 </head>
 <body>
-    <div class="nav">
-        <div class="Logo">
-          <img src="/public/images/image.png" alt="Logo" class="logo" />
-        </div>
+    <!-- Navigatie -->
+<div class="container">
+  <div class="nav">
+  <div class="logo">
+    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+  </div>
+  <div class="navBar">
+    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/programma" class="navItem">Programma</a>
+    <a href="#" class="navItem">Mijn gesprekken</a>
+    <a href="/info" class="navItem">Info</a>
+  </div>
+  <div class="pfpContainer">
+    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+    </div>
+  </div>
+
+
+<!-- Verborgen sidebar -->
+<div class="sideMenu" id="sideMenu">
+  <!-- Geanimeerde achtergrond laag -->
+  <div class="menu-bg-animation"></div>
+<div class="menu-bg-animation"></div>
+<div class="sparkles"></div>
+  
+  <!-- Header met titel -->
+  <div class="sideMenu-header">
+    <div>
+      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+      <p class="sideMenu-subtitle">Menu</p>
+    </div>
+    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <!-- Menu content -->
+  <div class="sideMenu-content">
+    <a href="/login">
+      <i class="fas fa-sign-in-alt"></i>
+      Login
+    </a>
+    <a href="/contacteer">
+      <i class="fas fa-envelope"></i>
+      Contact us
+    </a>
     
-      </div>
-    
-      <div class="rolSwitch">
-        <button class="rolBtn">Bedrijf</button>
-      </div>
-      <form class="aanmeldForm">
-        <div class="formGroup">
-          <label for="voornaam">Voornaam</label>
-          <input type="text" id="voornaam" name="voornaam" required>
-        </div>
-        <div class="formGroup">
-          <label for="achternaam">Achternaam</label>
-          <input type="text" id="achternaam" name="achternaam" required>
-        </div>
-        <div class="formGroup">
-          <label for="tva-nummer">TVA-nummer</label>
-          <input type="text" id="achternaam" name="achternaam" required>
-        </div>
-    
-        <div class="formGroup">
-          <label for="email">Email-adres</label>
-          <input type="email" id="email" name="email" required>
-        </div>
-        <div class="formGroup">
-          <label for="wachtwoord">Maak wachtwoord</label>
-          <input type="password" id="wachtwoord" name="wachtwoord" required>
-        </div>
-        <div class="formGroup">
-          <label for="herhaalWachtwoord">Herhaal wachtwoord</label>
-          <input type="password" id="herhaalWachtwoord" name="herhaalWachtwoord" required>
-        </div>
-        <button type="submit" class="formSubmit">Meld aan</button>
-      </form>
-      </div>
-    
+    <hr class="sideMenu-divider">
+  </div>
+</div>
+
+        <!-- Main Content -->
+        <main class="flex-center">
+            <div class="contentKaart animatie-fade-up">
+                
+                <!-- Header met rol badge -->
+                <div class="text-center mb-3">
+                    <span class="ehbBadge bedrijf">Bedrijf Account</span>
+                </div>
+
+                <!-- Profiel Informatie -->
+                <div class="w-full">
+                    
+                    <!-- Persoonlijke Gegevens -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📝 Persoonlijke Gegevens</h3>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld naam">
+                            <strong>Voornaam:</strong> Jan
+                        </div>
+                        <div class="ehbVeld naam">
+                            <strong>Achternaam:</strong> Janssen
+                        </div>
+                    </div>
+
+                    <!-- Bedrijf Gegevens -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🏢 Bedrijf Informatie</h3>
+                    </div>
+
+                    <div class="ehbVeld bedrijf mb-2">
+                        <strong>Bedrijfsnaam:</strong> TechSolutions BV
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld">
+                            <strong>TVA-nummer:</strong> BE 0123.456.789
+                        </div>
+                        <div class="ehbVeld">
+                            <strong>Sector:</strong> IT & Technology
+                        </div>
+                    </div>
+
+                    <div class="ehbVeld">
+                        <strong>Website:</strong> https://techsolutions.be
+                    </div>
+
+                    <!-- Contact Gegevens -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📞 Contact Informatie</h3>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld email">
+                            <strong>Email:</strong> jan.janssen@techsolutions.be
+                        </div>
+                        <div class="ehbVeld telefoon">
+                            <strong>Telefoon:</strong> +32 2 123 45 67
+                        </div>
+                    </div>
+
+                    <!-- Beveiligng -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🔒 Beveiliging</h3>
+                    </div>
+
+                    <div class="ehbVeld mb-2">
+                        <strong>Wachtwoord:</strong> ••••••••••••
+                    </div>
+
+                    <div class="ehbVeld">
+                        <strong>Laatste login:</strong> Vandaag om 14:32
+                    </div>
+
+                    <!-- Bedrijfsbeschrijving -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📋 Over Ons</h3>
+                    </div>
+
+                    <div class="ehbVeld" style="min-height: 100px; padding: 1.5rem;">
+                        <strong>Bedrijfsbeschrijving:</strong><br><br>
+                        TechSolutions BV is een innovatief IT-bedrijf gespecialiseerd in cloudoplossingen en digitale transformatie. We helpen bedrijven hun technologische uitdagingen aan te pakken met op maat gemaakte softwareoplossingen en strategisch advies.
+                    </div>
+
+                </div>
+
+                <!-- Actie Buttons -->
+                <div class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap;">
+                    <button class="ehbBtn bewerken" onclick="enableEditMode()">
+                        Gegevens Bewerken
+                    </button>
+                    <button class="ehbBtn secundair">
+                        <i class="fas fa-key"></i>
+                        Wachtwoord Wijzigen
+                    </button>
+                    <button class="ehbBtn" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+                        <i class="fas fa-trash"></i>
+                        Account Verwijderen
+                    </button>
+                </div>
+
+                <!-- Account Status -->
+                <div class="text-center mt-4">
+                    <div class="ehbVeld" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Account Status:</strong> Actief en Geverifieerd
+                    </div>
+                </div>
+
+                <!-- Extra Informatie -->
+                <div class="text-center mt-3">
+                    <p style="color: #666; font-size: 0.9rem;">
+                        Account aangemaakt op: 15 januari 2024<br>
+                        Laatste update: 3 dagen geleden
+                    </p>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Menu Overlay -->
+        <div class="menu-overlay"></div>
+        
+    </div>
+    <!-- Loading Overlay  -->
+  <div id="loadingOverlay">
+    <div class="loader"></div>
+  </div>
+     <script type="module" src="/src/JS/startPage.js"></script>
+     <script type="module" src="/src/JS/gegevens-qol.js"></script>
 </body>
 </html>

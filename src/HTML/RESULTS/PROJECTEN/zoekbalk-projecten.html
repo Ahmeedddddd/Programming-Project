@@ -5,25 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project - Kokende AI Robot</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
+    <link rel="stylesheet" href="/src/CSS//RESULTS/PROJECTEN/zoekbalk-projecten.css">
 
 </head>
 <body>
     <!-- Navigatie -->
-    <div class="nav">
-        <div class="nav-content">
-            <div class="logo">
-                <img src="/images/image.png" alt="Erasmus Logo" class="logo">
-            </div>
-            <div class="navBar">
-                <a href="/index.html" class="navItem">Home</a>
-                <a href="/programma" class="navItem active">Programma</a>
-                <a href="#" class="navItem">Mijn gesprekken</a>
-                <div class="pfpContainer" id="burgerToggle">
-                    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic">
-                </div>
-            </div>
-        </div>
+<div class="container">
+  <div class="nav">
+  <div class="logo">
+    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+  </div>
+  <div class="navBar">
+    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/programma" class="navItem">Programma</a>
+    <a href="#" class="navItem">Mijn gesprekken</a>
+    <a href="/info" class="navItem">Info</a>
+  </div>
+  <div class="pfpContainer">
+    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
+  </div>
+
+
+<!-- Verborgen sidebar -->
+<div class="sideMenu" id="sideMenu">
+  <!-- Geanimeerde achtergrond laag -->
+  <div class="menu-bg-animation"></div>
+<div class="menu-bg-animation"></div>
+<div class="sparkles"></div>
+  
+  <!-- Header met titel -->
+  <div class="sideMenu-header">
+    <div>
+      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+      <p class="sideMenu-subtitle">Menu</p>
+    </div>
+    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <!-- Menu content -->
+  <div class="sideMenu-content">
+    <a href="/login">
+      <i class="fas fa-sign-in-alt"></i>
+      Login
+    </a>
+    <a href="/contacteer">
+      <i class="fas fa-envelope"></i>
+      Contact us
+    </a>
+    
+    <hr class="sideMenu-divider">
+  </div>
+</div>
 
     <div class="layout-container">
         <!-- Header met projecttitel en skills -->
@@ -47,12 +82,10 @@
             <!-- Sidebar voor afbeeldingen -->
             <aside class="images-sidebar">
                 <figure class="image-figure">
-                    <img src="fotoairobot.jpg" alt="Illustratie van de Kokende AI Robot">
-                    <figcaption>AI Robot</figcaption>
+                    <img src="" >
                 </figure>
                 <figure class="image-figure">
-                    <img src="koken.jpg" alt="Robot die aan het koken is">
-                    <figcaption>Koken</figcaption>
+                    <img src="" >
                 </figure>
             </aside>
         </main>
@@ -68,5 +101,11 @@
             </ul>
         </section>
     </div>
+    </div>
+    <!-- Loading Overlay  -->
+  <div id="loadingOverlay">
+    <div class="loader"></div>
+  </div>
+  <script type="module" src="/src/JS/startPage.js"></script>
 </body>
 </html>

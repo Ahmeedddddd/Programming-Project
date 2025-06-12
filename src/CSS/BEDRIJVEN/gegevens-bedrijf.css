@@ -1,0 +1,370 @@
+/* ===== BEDRIJF GEGEVENS SPECIFIEKE STYLING ===== */
+
+/* Basis pagina styling */
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+.nav .nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navItem.active {
+    background: #881538;
+    color: white;
+}
+
+.pfpContainer {
+    border: 2px solid #881538;
+}
+
+/* Main Content */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 140px);
+    padding: 2rem;
+}
+
+/* ===== KAART COMPONENTEN ===== */
+
+.contentKaart {
+    background: #f5f5f5;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+    padding: 2.5rem 2rem;
+    margin: 1.5rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 700px;
+}
+
+.contentKaart::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #881538, #A91B47);
+    border-radius: 2px;
+}
+
+.contentKaart:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(136, 21, 56, 0.2);
+}
+
+/* ===== BADGES EN LABELS ===== */
+
+.ehbBadge {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(136, 21, 56, 0.3);
+    position: relative;
+    display: inline-block;
+    animation: pulse 3s infinite ease-in-out;
+}
+
+.ehbBadge:hover {
+    animation: none;
+    transform: scale(1.02);
+}
+
+/* Bedrijf specifieke badge */
+.ehbBadge.bedrijf::before { 
+    content: "🏢 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+
+/* ===== INPUT VELDEN ===== */
+
+.ehbVeld {
+    width: 100%;
+    background: #d9d9d9;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.ehbVeld:hover {
+    background: #cecece;
+    border-color: #881538;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(136, 21, 56, 0.1);
+}
+
+.ehbVeld:focus {
+    outline: none;
+    border-color: #A91B47;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
+}
+
+/* Icons voor verschillende velden */
+.ehbVeld.naam::before { 
+    content: "👤 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+.ehbVeld.email::before { 
+    content: "📧 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+.ehbVeld.telefoon::before { 
+    content: "📞 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+.ehbVeld.bedrijf::before { 
+    content: "🏢 "; 
+    font-size: 1.1rem; 
+    margin-right: 0.5rem; 
+}
+
+/* ===== KNOPPEN ===== */
+
+.ehbBtn {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    font-size: 1.1rem;
+    padding: 0.875rem 2.5rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* SHINE EFFECT voor knoppen */
+.ehbBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+.ehbBtn:hover::before {
+    left: 100%;
+}
+
+.ehbBtn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(136, 21, 56, 0.4);
+}
+
+.ehbBtn:active {
+    transform: translateY(0) scale(1.01);
+}
+
+/* Verschillende knop types */
+.ehbBtn.bewerken::after { 
+    content: "✏️"; 
+    margin-left: 0.5rem; 
+}
+
+/* Secundaire knop */
+.ehbBtn.secundair {
+    background: rgba(136, 21, 56, 0.1);
+    color: #881538;
+    border: 2px solid rgba(136, 21, 56, 0.2);
+    box-shadow: 0 4px 15px rgba(136, 21, 56, 0.1);
+}
+
+.ehbBtn.secundair:hover {
+    background: rgba(136, 21, 56, 0.15);
+    border-color: #881538;
+}
+
+/* ===== SECTIE HEADERS ===== */
+
+.ehbSectieHeader {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.ehbSectieHeader h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.ehbSectieHeader h3::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, #881538, #A91B47);
+    border-radius: 1px;
+}
+
+/* ===== GRID LAYOUTS ===== */
+
+.ehbGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.ehbGrid.tweekolomnig {
+    grid-template-columns: 1fr 1fr;
+}
+
+.ehbGrid.driekolomnig {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* ===== ANIMATIES ===== */
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+    0% { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Animatie klassen */
+.animatie-fade-up {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+    .nav .nav-content {
+        padding: 0 1rem;
+    }
+    
+    main {
+        padding: 1rem;
+    }
+    
+    .contentKaart {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+    
+    .ehbBtn {
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+    }
+    
+    .ehbGrid.tweekolomnig,
+    .ehbGrid.driekolomnig {
+        grid-template-columns: 1fr;
+    }
+    
+    .ehbSectieHeader h3 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .contentKaart {
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+    }
+    
+    .ehbBtn {
+        width: 100%;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pfpContainer {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .ehbBadge {
+        font-size: 1rem;
+        padding: 0.6rem 1.5rem;
+    }
+
+    .flex-center {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+}
+
+/* ===== UTILITY KLASSEN ===== */
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
