@@ -8,30 +8,142 @@
     <link rel="stylesheet" href="/src/CSS/ACCOUNT/account-aanmaken.css">
 </head>
 <body>
-    <div class="form-container">
-        <h1 class="form-title">Account Aanmaken</h1>
-        <form id="registratieForm">
-            <input type="text" name="voornaam" placeholder="Voornaam" required>
-            <input type="text" name="achternaam" placeholder="Achternaam" required>
-            <input type="email" name="email" placeholder="E-mail" required>
-            <input type="password" name="wachtwoord" placeholder="Wachtwoord (minimaal 8 karakters)" required minlength="8">
-            <input type="password" name="herhaalWachtwoord" placeholder="Herhaal wachtwoord" required minlength="8">
-            <div class="checkbox-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="voorwaarden" required>
-                    <span class="checkmark"></span>
-                    Ik ga akkoord met de <a href="/voorwaarden" target="_blank">algemene voorwaarden</a>
-                </label>
+    <!-- Register Form -->
+        <div id="registerForm" class="hidden">
+            <h2 id="registerTitle">Account Aanmaken als Bedrijf</h2>
+            
+            <div class="user-type-toggle">
+                <div class="toggle-option active" onclick="switchUserType('bedrijf')">
+                    Bedrijf
+                </div>
+                <div class="toggle-option" onclick="switchUserType('student')">
+                    Student
+                </div>
             </div>
-            <button type="submit">Account Aanmaken</button>
-        </form>
-        <div class="login-link">
-            Heb je al een account? <a href="/login">Log hier in</a>
+
+            <form>
+                <!-- Bedrijf velden -->
+                <div id="bedrijfFields">
+                    <div class="form-group">
+                        <label for="bedrijfNaam" class="required">Naam bedrijf</label>
+                        <input type="text" id="bedrijfNaam" placeholder="Naam bedrijf" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="voornaam" class="required">Voornaam</label>
+                        <input type="text" id="voornaam" placeholder="Voornaam" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="achternaam" class="required">Achternaam</label>
+                        <input type="text" id="achternaam" placeholder="Achternaam" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="btwNummer" class="required">BTW-nummer</label>
+                        <input type="text" id="btwNummer" placeholder="BTW-nummer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailContactpersoon" class="required">Email-adres contactpersoon</label>
+                        <input type="email" id="emailContactpersoon" placeholder="Email-adres contactpersoon" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="straat" class="required">Straat</label>
+                        <input type="text" id="straat" placeholder="Straat" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nummer" class="required">Nummer</label>
+                        <input type="text" id="nummer" placeholder="Nummer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="postcode" class="required">Postcode</label>
+                        <input type="text" id="postcode" placeholder="Postcode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gemeente" class="required">Gemeente</label>
+                        <input type="text" id="gemeente" placeholder="Gemeente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefoonnummer" class="required">Telefoonnummer</label>
+                        <input type="text" id="telefoonnummer" placeholder="Telefoonnummer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="websiteLinkedin">Website of LinkedIn</label>
+                        <input type="text" id="websiteLinkedin" placeholder="Website of LinkedIn">
+                    </div>
+                    <div class="form-group">
+                        <label for="bedrijfslogo">Upload bedrijfslogo</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="bedrijfslogo" accept="image/*" class="file-input">
+                            <label for="bedrijfslogo" class="file-upload-label">
+                                <span class="file-upload-text">Kies bestand</span>
+                                <span class="file-upload-icon">📁</span>
+                            </label>
+                            <span class="file-name" id="fileName"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student velden -->
+                <div id="studentFields" class="hidden">
+                    <div class="form-group">
+                        <label for="studentNaam" class="required">Naam</label>
+                        <input type="text" id="studentNaam" placeholder="Naam" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentAchternaam" class="required">Achternaam</label>
+                        <input type="text" id="studentAchternaam" placeholder="Achternaam" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentennummer" class="required">Unieke studentennummer</label>
+                        <input type="text" id="studentennummer" placeholder="Unieke studentennummer" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="opleiding" class="required">Opleiding</label>
+                        <select id="opleiding" required>
+                            <option value="">Kies een opleiding</option>
+                            <option value="dagtraject-toegepaste-informatica">Dagtraject Toegepaste Informatica</option>
+                            <option value="graduaat">Graduaat</option>
+                            <option value="multimedia">Multimedia</option>
+                            <option value="werktraject-toegepaste-informatica">Werktraject Toegepaste Informatica</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentMail" class="required">Mail</label>
+                        <input type="email" id="studentMail" placeholder="Student email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gsmNummer" class="required">GSM nummer</label>
+                        <input type="text" id="gsmNummer" placeholder="GSM nummer" required>
+                    </div>
+                </div>
+
+                <!-- Gemeenschappelijke velden -->
+                <div class="form-group">
+                    <label for="registerPassword" class="required">Wachtwoord (minimaal 8 karakters)</label>
+                    <input type="password" id="registerPassword" placeholder="Kies een sterk wachtwoord" required>
+                </div>
+                <div class="form-group" id="bedrijfPasswordRepeat">
+                    <label for="confirmPassword" class="required">Herhaal wachtwoord</label>
+                    <input type="password" id="confirmPassword" placeholder="Herhaal je wachtwoord" required>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreeTerms" required>
+                    <label for="agreeTerms">
+                        Ik ga akkoord met de <a href="#" target="_blank">algemene voorwaarden</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn" id="registerButton">Account Aanmaken</button>
+            </form>
+            
+            <div class="toggle-link">
+                <span>Heb je al een account? </span>
+                <a href="/src/HTML/ACCOUNT/login.html" onclick="showLoginForm()">Log hier in</a>
+            </div>
         </div>
     </div>
     
 </body>
 <script type="module" src="/src/JS/sendInvoice.js"></script>
-
+<script src="/src/JS/register.js"></script>
 
 </html>

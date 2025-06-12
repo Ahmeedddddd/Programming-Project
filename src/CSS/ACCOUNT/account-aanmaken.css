@@ -1,123 +1,214 @@
-/* Account Aanmaken Specifieke Styling */
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+#registerForm {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: auto;
+    background-color: white;
 }
 
-.form-container {
-    background: white;
-    padding: 3rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-    width: 100%;
-    max-width: 500px;
+#registerForm h2 {
     text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 600;
 }
 
-.form-title {
-    color: #881538;
-    font-size: 2rem;
-    margin-bottom: 2rem;
-    font-weight: 700;
+#registerForm .form-group {
+    margin-bottom: 20px;
 }
 
-#registratieForm {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+#registerForm label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+    font-size: 14px;
 }
 
-#registratieForm input {
-    padding: 1rem;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 1rem;
+#registerForm label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+#registerForm input[type="email"],
+#registerForm input[type="password"],
+#registerForm input[type="text"],
+#registerForm select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    font-size: 16px;
     transition: all 0.3s ease;
+    background: #fafbfc;
 }
 
-#registratieForm input:focus {
+#registerForm input:focus,
+#registerForm select:focus {
     outline: none;
-    border-color: #881538;
-    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
+    border-color: #8b1538;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(139, 21, 56, 0.1);
 }
 
-#registratieForm button {
-    padding: 1rem 2rem;
-    background: #881538;
+#registerForm input:required:invalid {
+    border-color: #dc3545;
+}
+
+#registerForm input:required:valid {
+    border-color: #28a745;
+}
+
+/* Bestandsupload */
+#registerForm .file-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#registerForm .file-input {
+    display: none;
+}
+
+#registerForm .file-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 20px;
+    background: #8b1538;
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+#registerForm .file-upload-label:hover {
+    background: #a91b47;
+    transform: translateY(-1px);
+}
+
+#registerForm .file-name {
+    color: #666;
+    font-size: 14px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Toggle gebruikerstype */
+#registerForm .user-type-toggle {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 25px;
+    border: 2px solid #e1e5e9;
+}
+
+#registerForm .toggle-option {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+#registerForm .toggle-option.active {
+    background: #8b1538;
+    color: white;
+    box-shadow: 0 2px 8px rgba(139, 21, 56, 0.3);
+}
+
+#registerForm .toggle-option:hover:not(.active) {
+    background: rgba(139, 21, 56, 0.1);
+    color: #8b1538;
+}
+
+#registerForm .btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #8b1538, #a91b47);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 1rem;
 }
 
-#registratieForm button:hover {
-    background: #A91B47;
+#registerForm .btn:hover {
+    background: linear-gradient(135deg, #a91b47, #c7215a);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+    box-shadow: 0 8px 25px rgba(139, 21, 56, 0.3);
 }
 
-.checkbox-group {
-    margin: 1.5rem 0;
+#registerForm .toggle-link {
+    text-align: center;
+    margin-top: 20px;
 }
 
-.checkbox-label {
+#registerForm .toggle-link a {
+    color: #8b1538;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+#registerForm .toggle-link a:hover {
+    color: #a91b47;
+}
+
+/* Checkbox groep */
+#registerForm .checkbox-group {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    font-size: 0.9rem;
+    margin: 20px 0;
+    gap: 10px;
+}
+
+#registerForm .checkbox-group input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #8b1538;
+}
+
+#registerForm .checkbox-group label {
+    margin: 0;
+    font-size: 14px;
     line-height: 1.4;
     cursor: pointer;
-    text-align: left;
 }
 
-.checkbox-label input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    padding: 0;
+#registerForm .checkbox-group a {
+    color: #8b1538;
+    text-decoration: none;
 }
 
-.checkbox-label a {
-    color: #881538;
+#registerForm .checkbox-group a:hover {
     text-decoration: underline;
 }
 
-.checkbox-label a:hover {
-    color: #A91B47;
+#registerForm .hidden {
+    display: none;
 }
 
-.login-link {
-    margin-top: 2rem;
-    text-align: center;
-    color: #666;
-    font-size: 0.95rem;
-}
-
-.login-link a {
-    color: #881538;
-    text-decoration: underline;
-    font-weight: 600;
-}
-
-.login-link a:hover {
-    color: #A91B47;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-    .form-container {
-        padding: 2rem;
-        margin: 1rem;
+@media (max-width: 480px) {
+    #registerForm {
+        padding: 30px 20px;
     }
-    
-    .form-title {
-        font-size: 1.5rem;
+
+    #registerForm h2 {
+        font-size: 24px;
     }
 }
