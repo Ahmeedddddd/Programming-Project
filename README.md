@@ -40,8 +40,8 @@ Dit project is ontwikkeld in het kader van het vak Programming Project. In een t
 ### Packages installeren
 
 * `cd src/Server`
-* `npm install express nodemailer nodemailer-express-handlebars dotenv mysql2 body-parser cors`
-* `npm install --save-dev nodemon`
+* `npm install:all`
+* `npm audit fix`
 
 ## Configuratie
 
