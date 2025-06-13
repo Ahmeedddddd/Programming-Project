@@ -12,7 +12,7 @@
     "start:backend": "node backend.js",
     "test:backend": "curl http://localhost:3001/api/health || echo 'Backend not responding'",
     "test:frontend": "curl http://localhost:8383 || echo 'Frontend not responding'",
-    "install:all": "npm install express@4.19.2 cors dotenv mysql2 bcrypt jsonwebtoken express-validator nodemailer nodemailer-express-handlebars npm-run-all bcrypt && npm install --save-dev nodemon concurrently && npm audit fix"
+    "install:all": "npm install express@4.19.2 cors dotenv mysql2 bcrypt jsonwebtoken express-validator nodemailer nodemailer-express-handlebars npm-run-all bcrypt express-validator helmet express-rate-limit && npm install --save-dev nodemon concurrently && npm audit fix"
   },
   "keywords": [
     "careerlaunch",
