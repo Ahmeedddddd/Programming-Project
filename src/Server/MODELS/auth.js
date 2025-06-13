@@ -1,5 +1,8 @@
-//src/Server/MODELS/auth.js
+//src/Server/MODELS/auth.js - Past bij jouw projectstructuur
+
 const { pool } = require('../CONFIG/database');
+
+// Import jouw bestaande password hasher
 const {
   hashPassword,
   verifyPassword,
@@ -7,14 +10,14 @@ const {
   findUser,
   createUserCredentials,
   updatePassword
-} = require('../CONFIG/passwordhasher'); // ✅ Gebruik jullie echte implementatie
+} = require('../PASSWOORD/CONFIG/passwordhasher');
 
 class Auth {
   
   // 🔍 Find user by email (across all user types)
   static async findUserByEmail(email) {
     try {
-      // Check in STUDENT table
+      // Check in STUDENT table 
       const [students] = await pool.query(
         'SELECT studentnummer as id, email, "student" as userType FROM STUDENT WHERE email = ?',
         [email]
@@ -42,13 +45,13 @@ class Auth {
     }
   }
 
-  // 🔐 Get login credentials (gebruik jullie authenticateUser)
+  // 🔐 Get login credentials (gebruik jouw authenticateUser)
   static async getLoginCredentials(email) {
     try {
       const user = await this.findUserByEmail(email);
       if (!user) return null;
 
-      // Gebruik jullie findUser functie
+      // Gebruik jouw findUser functie
       let userCredentials;
       
       if (user.userType === 'student') {
@@ -64,7 +67,7 @@ class Auth {
           ...userCredentials,
           email: user.email,
           userType: user.userType,
-          userId: user.userType === 'organisator' ? user.id : userCredentials[user.userType === 'bedrijf' ? 'bedrijfsnummer' : 'studentnummer']
+          userId: user.id
         };
       }
 
@@ -75,18 +78,18 @@ class Auth {
     }
   }
 
-  // 📝 Register new student
+  // 📝 Register new student - aangepast voor jouw database schema
   static async registerStudent(studentData, password) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
 
-      // 1. Create student record
+      // 1. Create student record - using your exact schema
       const {
         studentnummer, voornaam, achternaam, email, gsm_nummer,
-        opleiding, opleidingsrichting, projectTitel = '', projectBeschrijving = '',
-        overMezelf = '', huisnummer, straatnaam, gemeente, postcode, bus, 
-        land = 'België', evenementId = 1, leerjaar = 3, tafelNr = 1
+        opleiding, opleidingsrichting = '', projectTitel = '', projectBeschrijving = '',
+        overMezelf = '', huisnummer = '', straatnaam = '', gemeente = '', postcode = '', bus = '', 
+        evenementId = 1, leerjaar = 3, tafelNr = 1
       } = studentData;
 
       await connection.query(`
@@ -105,7 +108,7 @@ class Auth {
 
       await connection.commit();
       
-      // 2. Gebruik jullie createUserCredentials functie
+      // 2. Gebruik jouw createUserCredentials functie
       const credentialsResult = await createUserCredentials('student', studentnummer, password);
       
       if (!credentialsResult.success) {
@@ -128,17 +131,17 @@ class Auth {
     }
   }
 
-  // 🏢 Register new bedrijf
+  // 🏢 Register new bedrijf - aangepast voor jouw database schema
   static async registerBedrijf(bedrijfData, password) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
 
-      // 1. Create bedrijf record
+      // 1. Create bedrijf record - using your exact schema
       const {
-        naam, email, gsm_nummer, sector, TVA_nummer,
-        huisnummer, straatnaam, gemeente, postcode, bus,
-        land = 'België', tafelNr = 1, bechrijving = ''
+        naam, email, gsm_nummer, sector = '', TVA_nummer,
+        huisnummer, straatnaam, gemeente, postcode, bus = '',
+        land = 'België', tafelNr = 1, bechrijving = '' // Note: "bechrijving" typo in your schema
       } = bedrijfData;
 
       const [bedrijfResult] = await connection.query(`
@@ -157,7 +160,7 @@ class Auth {
 
       await connection.commit();
       
-      // 2. Gebruik jullie createUserCredentials functie
+      // 2. Gebruik jouw createUserCredentials functie
       const credentialsResult = await createUserCredentials('bedrijf', bedrijfsnummer, password);
       
       if (!credentialsResult.success) {
@@ -198,7 +201,7 @@ class Auth {
 
       await connection.commit();
       
-      // 2. Gebruik jullie createUserCredentials functie voor organisator
+      // 2. Gebruik jouw createUserCredentials functie voor organisator
       const credentialsResult = await createUserCredentials('organisator', email, password);
       
       if (!credentialsResult.success) {
@@ -227,7 +230,7 @@ class Auth {
     }
   }
 
-  // 🔑 Verify password (gebruik jullie verifyPassword)
+  // 🔑 Verify password (gebruik jouw verifyPassword)
   static async verifyPassword(plainPassword, hashedPassword) {
     try {
       return await verifyPassword(plainPassword, hashedPassword);
@@ -240,7 +243,6 @@ class Auth {
   // 🔄 Update password
   static async updatePassword(gebruikersId, newPassword) {
     try {
-      // Gebruik de nieuwe hash functie om direct te updaten
       const hashedPassword = await hashPassword(newPassword);
       
       const [result] = await pool.query(
