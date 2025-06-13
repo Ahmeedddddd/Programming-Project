@@ -1,44 +1,44 @@
-//src/Server/MIDDLEWARE/validation.js
+// src/Server/MIDDLEWARE/validation.js
 const { body } = require('express-validator');
 
+// Student validation
 const validateStudent = [
-  body('studentnummer').notEmpty().withMessage('Studentnummer is required'),
-  body('voornaam').notEmpty().withMessage('Voornaam is required'),
-  body('achternaam').notEmpty().withMessage('Achternaam is required'),
-  body('email').isEmail().withMessage('Valid email is required')
+  body('studentnummer').notEmpty().withMessage('Studentnummer is verplicht'),
+  body('voornaam').notEmpty().withMessage('Voornaam is verplicht'),
+  body('achternaam').notEmpty().withMessage('Achternaam is verplicht'),
+  body('email').isEmail().withMessage('Geldig email adres is verplicht'),
+  body('gsm_nummer').optional().isMobilePhone('any').withMessage('Geldig GSM nummer vereist'),
 ];
 
+// Bedrijf validation
 const validateBedrijf = [
-  body('naam').notEmpty().withMessage('Bedrijfsnaam is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('sector').notEmpty().withMessage('Sector is required')
+  body('naam').notEmpty().withMessage('Bedrijfsnaam is verplicht'),
+  body('email').isEmail().withMessage('Geldig email adres is verplicht'),
+  body('sector').notEmpty().withMessage('Sector is verplicht'),
+  body('TVA_nummer').optional().isLength({ min: 2 }).withMessage('TVA nummer moet minstens 2 karakters lang zijn'),
+  body('gsm_nummer').optional().isMobilePhone('any').withMessage('Geldig GSM nummer vereist'),
 ];
 
-const validateOrganisator = [
-  body('voornaam').notEmpty().withMessage('Voornaam is required'),
-  body('achternaam').notEmpty().withMessage('Achternaam is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('gsm_nummer').optional().isMobilePhone().withMessage('Valid phone number required')
-];
-
+// Reservatie validation
 const validateReservatie = [
-  body('studentnummer').notEmpty().withMessage('Studentnummer is required'),
-  body('bedrijfsnummer').notEmpty().withMessage('Bedrijfsnummer is required'),
-  body('startTijd').isISO8601().withMessage('Valid start time is required'),
-  body('eindTijd').isISO8601().withMessage('Valid end time is required')
+  body('studentnummer').notEmpty().withMessage('Studentnummer is verplicht'),
+  body('bedrijfsnummer').notEmpty().withMessage('Bedrijfsnummer is verplicht'),
+  body('startTijd').isISO8601().withMessage('Geldige start tijd is verplicht'),
+  body('eindTijd').isISO8601().withMessage('Geldige eind tijd is verplicht'),
+  body('opmerkingen').optional().isLength({ max: 500 }).withMessage('Opmerkingen mogen maximaal 500 karakters lang zijn'),
 ];
 
-const validateAfspraak = [
-  body('studentnummer').notEmpty().withMessage('Studentnummer is required'),
-  body('bedrijfsnummer').notEmpty().withMessage('Bedrijfsnummer is required'),
-  body('startTijd').isISO8601().withMessage('Valid start time is required'),
-  body('eindTijd').isISO8601().withMessage('Valid end time is required')
+// Organisator validation
+const validateOrganisator = [
+  body('voornaam').notEmpty().withMessage('Voornaam is verplicht'),
+  body('achternaam').notEmpty().withMessage('Achternaam is verplicht'),
+  body('email').isEmail().withMessage('Geldig email adres is verplicht'),
+  body('gsm_nummer').optional().isMobilePhone('any').withMessage('Geldig GSM nummer vereist'),
 ];
 
 module.exports = {
   validateStudent,
   validateBedrijf,
-  validateOrganisator,
   validateReservatie,
-  validateAfspraak
+  validateOrganisator
 };

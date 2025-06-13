@@ -2,20 +2,20 @@
 const express = require('express');
 const router = express.Router();
 const bedrijfController = require('../CONTROLLERS/bedrijfController');
-const { validateBedrijf } = require('../MIDDLEWARE/validation');
 const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
 // ===== PUBLIC ROUTES (no authentication required) =====
-
 // GET /api/bedrijven - Alle bedrijven ophalen
 router.get('/', bedrijfController.getAllBedrijven);
 
-// ===== PROTECTED ROUTES (authentication required) =====
+// GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
+router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
 
+// ===== PROTECTED ROUTES (authentication required) =====
 // GET /api/bedrijf/profile - Eigen bedrijfsgegevens bekijken (alleen voor ingelogde bedrijven)
-router.get('/profile', 
-  authenticateToken, 
-  requireRole(['bedrijf']), 
+router.get('/profile',
+  authenticateToken,
+  requireRole(['bedrijf']),
   bedrijfController.getOwnProfile
 );
 
@@ -23,24 +23,14 @@ router.get('/profile',
 router.put('/profile',
   authenticateToken,
   requireRole(['bedrijf']),
-  validateBedrijf,
   bedrijfController.updateOwnProfile
 );
 
-// ===== END PROTECTED ROUTES (authentication required) =====
-
-// GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
-router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
-
-// ===== END PUBLIC ROUTES (no authentication required) =====
-
 // ===== ADMIN ROUTES (only organisator) =====
-
 // POST /api/bedrijven - Nieuw bedrijf aanmaken (alleen organisator)
 router.post('/',
   authenticateToken,
   requireRole(['organisator']),
-  validateBedrijf,
   bedrijfController.createBedrijf
 );
 
@@ -48,7 +38,6 @@ router.post('/',
 router.put('/:bedrijfsnummer',
   authenticateToken,
   requireRole(['organisator', 'bedrijf']),
-  validateBedrijf,
   bedrijfController.updateBedrijf
 );
 
