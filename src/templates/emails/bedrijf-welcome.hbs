@@ -1,0 +1,100 @@
+<!-- Bedrijf Welcome Email Template -->
+<div class="email-header" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+    <h1>🏢 Welkom Partner!</h1>
+    <p>CareerLaunch - Erasmus Hogeschool Brussel</p>
+</div>
+
+<div class="email-content">
+    <div style="background: #fff5f5; border-left: 4px solid #ff6b6b; padding: 20px; margin: 20px 0; border-radius: 4px;">
+        <h2 style="margin-top: 0; color: #ff6b6b;">Hallo {{contactVoornaam}}! 🤝</h2>
+        <p>Fantastisch! <strong>{{bedrijfNaam}}</strong> is nu officieel partner van CareerLaunch. We waarderen jullie deelname aan ons netwerkevenement en kijken uit naar de waardevolle connecties die jullie zullen maken met onze getalenteerde studenten.</p>
+    </div>
+
+    <h3>
+        Bedrijfsgegevens: 
+        {{#if vatValidated}}
+        <span style="background: #e8f5e8; color: #2e7d32; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;">✓ VAT Geverifieerd</span>
+        {{/if}}
+    </h3>
+    
+    <div class="info-grid">
+        <div class="info-row">
+            <div class="info-item">
+                <div class="info-label">Bedrijfsnaam</div>
+                <div class="info-value">{{bedrijfNaam}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Contactpersoon</div>
+                <div class="info-value">{{contactVoornaam}} {{contactAchternaam}}</div>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{email}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">TVA Nummer</div>
+                <div class="info-value">{{TVA_nummer}}</div>
+            </div>
+        </div>
+        {{#if sector}}
+        <div class="info-row">
+            <div class="info-item">
+                <div class="info-label">Sector</div>
+                <div class="info-value">{{sector}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Locatie</div>
+                <div class="info-value">{{straatnaam}} {{huisnummer}}, {{postcode}} {{gemeente}}</div>
+            </div>
+        </div>
+        {{/if}}
+        {{#if vatCompanyName}}
+        <div class="info-row">
+            <div class="info-item" style="width: 100%;">
+                <div class="info-label">VAT Geregistreerde Naam</div>
+                <div class="info-value">{{vatCompanyName}}</div>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+
+    <div style="background: #e8f5e8; border: 1px solid #c8e6c9; padding: 25px; border-radius: 8px; margin: 25px 0;">
+        <h3 style="margin-top: 0; color: #2e7d32;">🎯 Wat kunt u verwachten van CareerLaunch:</h3>
+        <ul class="list-styled">
+            <li>Direct contact met getalenteerde studenten uit diverse opleidingen</li>
+            <li>Gestructureerde gesprekssessies voor efficiënte netwerkvorming</li>
+            <li>Toegang tot student profielen en projectportfolio's</li>
+            <li>Mogelijkheid om stages, jobs en samenwerkingen aan te bieden</li>
+            <li>Professional netwerk uitbreiding met andere bedrijven</li>
+            <li>Versterking van uw employer branding bij jonge professionals</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{{loginUrl}}" class="button" style="background: #ff6b6b;">🚀 Toegang tot uw account</a>
+    </div>
+
+    <h3>📅 Volgende stappen:</h3>
+    <ol style="padding-left: 20px;">
+        <li><strong>Login</strong> op uw bedrijfsaccount</li>
+        <li><strong>Voltooi</strong> uw bedrijfsprofiel met bedrijfsinformatie</li>
+        <li><strong>Upload</strong> bedrijfsdocumenten (optioneel)</li>
+        <li><strong>Bekijk</strong> het evenement programma op {{eventDate}}</li>
+        <li><strong>Plan</strong> uw gesprekken met interessante studenten</li>
+    </ol>
+
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 30px 0;">
+        <p style="margin: 0;"><strong>💡 Tip:</strong> Bereid een korte bedrijfspresentatie voor en denk na over welke profielen het beste bij uw organisatie passen. Onze studenten zijn enthousiast en hebben vaak verrassende ideeën!</p>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;">
+    
+    <div style="background: #e3f2fd; padding: 20px; border-radius: 6px;">
+        <h4 style="margin-top: 0; color: #1976d2;">📞 Contact Partnership Team</h4>
+        <p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:{{partnershipEmail}}" style="color: #ff6b6b;">{{partnershipEmail}}</a></p>
+        <p style="margin: 5px 0;"><strong>Telefoon:</strong> <a href="tel:{{partnershipPhone}}" style="color: #ff6b6b;">{{partnershipPhone}}</a></p>
+        <p style="margin: 5px 0; font-size: 14px; color: #6c757d;">Voor vragen over het evenement of uw account.</p>
+    </div>
+</div>
