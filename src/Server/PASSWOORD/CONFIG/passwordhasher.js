@@ -1,3 +1,4 @@
+//Server/PASSWOORD/CONFIG/passwordhasher.js
 // Wachtwoord hashing en verificatie systeem voor CareerLaunch
 
 const bcrypt = require('bcrypt');
