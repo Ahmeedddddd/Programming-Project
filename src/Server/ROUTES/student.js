@@ -2,11 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const studentController = require('../CONTROLLERS/studentController');
-const { validateStudent } = require('../MIDDLEWARE/validation');
 const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
 // ===== PUBLIC ROUTES (no authentication required) =====
-
 // GET /api/studenten - Alle studenten ophalen
 router.get('/', studentController.getAllStudents);
 
@@ -17,7 +15,6 @@ router.get('/projecten', studentController.getProjects);
 router.get('/:studentnummer', studentController.getStudent);
 
 // ===== PROTECTED ROUTES (authentication required) =====
-
 // GET /api/student/profile - Eigen studentprofiel bekijken
 router.get('/profile',
   authenticateToken,
@@ -29,17 +26,14 @@ router.get('/profile',
 router.put('/profile',
   authenticateToken,
   requireRole(['student']),
-  validateStudent,
   studentController.updateOwnProfile
 );
 
 // ===== ADMIN ROUTES (only organisator) =====
-
 // POST /api/studenten - Nieuwe student aanmaken (alleen organisator)
 router.post('/',
   authenticateToken,
   requireRole(['organisator']),
-  validateStudent,
   studentController.createStudent
 );
 
@@ -47,7 +41,6 @@ router.post('/',
 router.put('/:studentnummer',
   authenticateToken,
   requireRole(['organisator', 'student']),
-  validateStudent,
   studentController.updateStudent
 );
 
