@@ -9,10 +9,37 @@ const studentController = {
   // GET /api/studenten - Alle studenten ophalen
   async getAllStudents(req, res) {
     try {
-      const students = await Student.getAll();
+      const { search, opleiding, opleidingsrichting, gemeente, hasProject, page = 1, limit = 20 } = req.query;
+      
+      let students;
+      
+      // Gebruik advanced search als er filters zijn
+      if (search || opleiding || opleidingsrichting || gemeente || hasProject !== undefined) {
+        const filters = {
+          searchTerm: search,
+          opleiding,
+          opleidingsrichting,
+          gemeente,
+          hasProject: hasProject ? hasProject === 'true' : undefined
+        };
+        students = await Student.advancedSearch(filters);
+      } else {
+        students = await Student.getAll();
+      }
+
+      // Paginatie toepassen
+      const offset = (page - 1) * limit;
+      const paginatedStudents = students.slice(offset, offset + parseInt(limit));
+
       res.json({
         success: true,
-        data: students,
+        data: paginatedStudents,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: students.length,
+          pages: Math.ceil(students.length / limit)
+        },
         count: students.length
       });
     } catch (error) {
@@ -80,6 +107,133 @@ const studentController = {
     }
   },
 
+  // GET /api/studenten/zonder-project - Studenten zonder project
+  async getStudentsWithoutProjects(req, res) {
+    try {
+      const students = await Student.getWithoutProjects();
+      res.json({
+        success: true,
+        data: students,
+        count: students.length
+      });
+    } catch (error) {
+      console.error('Error fetching students without projects:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch students without projects',
+        message: 'Er ging iets mis bij het ophalen van studenten zonder project'
+      });
+    }
+  },
+
+  // GET /api/studenten/opleiding/:opleiding - Studenten per opleiding
+  async getStudentsByOpleiding(req, res) {
+    try {
+      const { opleiding } = req.params;
+      const students = await Student.getByOpleiding(opleiding);
+      
+      res.json({
+        success: true,
+        data: students,
+        count: students.length,
+        opleiding: opleiding
+      });
+    } catch (error) {
+      console.error('Error fetching students by opleiding:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch students by opleiding',
+        message: 'Er ging iets mis bij het ophalen van studenten per opleiding'
+      });
+    }
+  },
+
+  // GET /api/studenten/opleidingsrichting/:richting - Studenten per opleidingsrichting
+  async getStudentsByOpleidingsrichting(req, res) {
+    try {
+      const { richting } = req.params;
+      const students = await Student.getByOpleidingsrichting(richting);
+      
+      res.json({
+        success: true,
+        data: students,
+        count: students.length,
+        opleidingsrichting: richting
+      });
+    } catch (error) {
+      console.error('Error fetching students by opleidingsrichting:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch students by opleidingsrichting',
+        message: 'Er ging iets mis bij het ophalen van studenten per opleidingsrichting'
+      });
+    }
+  },
+
+  // GET /api/studenten/gemeente/:gemeente - Studenten per gemeente
+  async getStudentsByGemeente(req, res) {
+    try {
+      const { gemeente } = req.params;
+      const students = await Student.getByGemeente(gemeente);
+      
+      res.json({
+        success: true,
+        data: students,
+        count: students.length,
+        gemeente: gemeente
+      });
+    } catch (error) {
+      console.error('Error fetching students by gemeente:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch students by gemeente',
+        message: 'Er ging iets mis bij het ophalen van studenten per gemeente'
+      });
+    }
+  },
+
+  // GET /api/studenten/search/:searchTerm - Zoeken naar studenten
+  async searchStudents(req, res) {
+    try {
+      const { searchTerm } = req.params;
+      const students = await Student.searchByName(searchTerm);
+      
+      res.json({
+        success: true,
+        data: students,
+        count: students.length,
+        searchTerm: searchTerm
+      });
+    } catch (error) {
+      console.error('Error searching students:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to search students',
+        message: 'Er ging iets mis bij het zoeken naar studenten'
+      });
+    }
+  },
+
+  // GET /api/studenten/stats - Student statistieken
+  async getStudentStats(req, res) {
+    try {
+      const stats = await Student.getStats();
+      
+      res.json({
+        success: true,
+        data: stats,
+        generatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching student stats:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch student statistics',
+        message: 'Er ging iets mis bij het ophalen van student statistieken'
+      });
+    }
+  },
+
   // ===== AUTHENTICATED ENDPOINTS =====
 
   // GET /api/student/profile - Eigen studentprofiel bekijken
@@ -105,9 +259,12 @@ const studentController = {
         });
       }
 
+      // Verwijder gevoelige gegevens indien nodig
+      const { ...safeProfile } = student;
+
       res.json({
         success: true,
-        data: student,
+        data: safeProfile,
         message: 'Studentprofiel succesvol opgehaald'
       });
     } catch (error) {
@@ -240,7 +397,12 @@ const studentController = {
         });
       }
 
-      const affectedRows = await Student.update(studentnummer, req.body);
+      // Voorkom wijziging van kritieke velden
+      const updateData = { ...req.body };
+      delete updateData.studentnummer;
+      delete updateData.id;
+
+      const affectedRows = await Student.update(studentnummer, updateData);
       
       if (affectedRows === 0) {
         return res.status(404).json({ 
