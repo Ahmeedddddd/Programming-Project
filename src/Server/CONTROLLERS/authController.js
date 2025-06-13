@@ -1,67 +1,72 @@
 //src/Server/CONTROLLERS/authController.js
-const bcrypt = require('bcrypt');
+const Auth = require('../MODELS/auth'); // ✅ NIEUW: Gebruik nieuwe Auth model
+const { authenticateUser } = require('../CONFIG/passwordhasher'); // ✅ Direct gebruik van jullie functie
 const jwt = require('jsonwebtoken');
-const { pool } = require('../CONFIG/database'); // ✅ FIXED: Correct import
+const { validationResult } = require('express-validator');
+const { pool } = require('../CONFIG/database');
 const config = require('../CONFIG/config');
 
 const authController = {
+
+  // 🔐 LOGIN - VERBETERDE VERSIE van jouw bestaande code
   async login(req, res) {
     try {
-      const { email, password } = req.body;
-
-      // Zoek gebruiker in database (kan student, bedrijf of organisator zijn)
-      const [users] = await pool.query(`
-        SELECT 'student' as userType, studentnummer as id, email, NULL as password_hash
-        FROM STUDENT WHERE email = ?
-        UNION
-        SELECT 'bedrijf' as userType, bedrijfsnummer as id, email, NULL as password_hash
-        FROM BEDRIJF WHERE email = ?
-        UNION
-        SELECT 'organisator' as userType, organisatorId as id, email, lb.passwoord_hash
-        FROM ORGANISATOR o
-        LEFT JOIN LOGINBEHEER lb ON o.gebruikersId = lb.gebruikersId
-        WHERE o.email = ?
-      `, [email, email, email]);
-
-      if (users.length === 0) {
-        return res.status(401).json({ 
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
           success: false,
-          error: 'Invalid credentials',
-          message: 'Email of wachtwoord is incorrect'
+          error: 'Validation failed',
+          details: errors.array()
         });
       }
 
-      const user = users[0];
+      const { email, password } = req.body;
 
-      // Voor organisatoren: check password
-      if (user.userType === 'organisator' && user.password_hash) {
-        const validPassword = await bcrypt.compare(password, user.password_hash);
-        if (!validPassword) {
-          return res.status(401).json({ 
-            success: false,
-            error: 'Invalid credentials',
-            message: 'Email of wachtwoord is incorrect'
-          });
-        }
+      // ✅ Eerst bepalen welk type user dit is
+      const user = await Auth.findUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ 
+          success: false,
+          error: 'Invalid credentials',
+          message: 'Email of wachtwoord is onjuist'
+        });
       }
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user.id, userType: user.userType, email: user.email },
-        config.jwt.secret,
-        { expiresIn: config.jwt.expiresIn }
-      );
+      // ✅ GEBRUIK JULLIE AUTHENTICATEUSER FUNCTIE
+      let identifier = user.userType === 'organisator' ? email : user.id;
+      const authResult = await authenticateUser(user.userType, identifier, password);
+      
+      if (!authResult.success) {
+        return res.status(401).json({ 
+          success: false,
+          error: 'Invalid credentials',
+          message: authResult.message
+        });
+      }
+
+      // ✅ Generate JWT token - blijft hetzelfde als jouw code
+      const tokenPayload = {
+        gebruikersId: authResult.user.gebruikersId,
+        userId: user.id,
+        userType: user.userType,
+        email: email
+      };
+
+      const token = jwt.sign(tokenPayload, config.jwt.secret, { 
+        expiresIn: config.jwt.expiresIn 
+      });
 
       res.json({
         success: true,
-        message: 'Login successful',
-        token,
+        message: 'Login succesvol',
+        token: token,
         user: {
-          id: user.id,
-          type: user.userType,
-          email: user.email
+          userId: user.id,
+          userType: user.userType,
+          email: email
         }
       });
+
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ 
@@ -72,39 +77,262 @@ const authController = {
     }
   },
 
+  // 📝 REGISTER STUDENT - NIEUWE FUNCTIONALITEIT
+  async registerStudent(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { password, ...studentData } = req.body;
+
+      // Check if email already exists
+      const existingUser = await Auth.findUserByEmail(studentData.email);
+      if (existingUser) {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Email already exists',
+          message: 'Er bestaat al een account met dit email adres'
+        });
+      }
+
+      // Check if studentnummer already exists
+      const [existingStudent] = await pool.query(
+        'SELECT studentnummer FROM STUDENT WHERE studentnummer = ?',
+        [studentData.studentnummer]
+      );
+
+      if (existingStudent.length > 0) {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Student number already exists',
+          message: 'Er bestaat al een student met dit studentnummer'
+        });
+      }
+
+      // Register student
+      const userResult = await Auth.registerStudent(studentData, password);
+
+      // Generate token for immediate login
+      const tokenPayload = {
+        gebruikersId: userResult.gebruikersId,
+        userId: userResult.userId,
+        userType: userResult.userType,
+        email: userResult.email
+      };
+
+      const token = jwt.sign(tokenPayload, config.jwt.secret, { 
+        expiresIn: config.jwt.expiresIn 
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Student account succesvol aangemaakt',
+        token: token,
+        user: {
+          userId: userResult.userId,
+          userType: userResult.userType,
+          email: userResult.email
+        }
+      });
+
+    } catch (error) {
+      console.error('Student registration error:', error);
+      
+      if (error.code === 'ER_DUP_ENTRY') {
+        res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met deze gegevens'
+        });
+      } else {
+        res.status(500).json({ 
+          success: false,
+          error: 'Registration failed',
+          message: 'Er ging iets mis bij het aanmaken van je account'
+        });
+      }
+    }
+  },
+
+  // 🏢 REGISTER BEDRIJF - NIEUWE FUNCTIONALITEIT
+  async registerBedrijf(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { password, ...bedrijfData } = req.body;
+
+      // Check if email already exists
+      const existingUser = await Auth.findUserByEmail(bedrijfData.email);
+      if (existingUser) {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Email already exists',
+          message: 'Er bestaat al een account met dit email adres'
+        });
+      }
+
+      // Check if TVA number already exists
+      if (bedrijfData.TVA_nummer) {
+        const [existingTVA] = await pool.query(
+          'SELECT bedrijfsnummer FROM BEDRIJF WHERE TVA_nummer = ?',
+          [bedrijfData.TVA_nummer]
+        );
+
+        if (existingTVA.length > 0) {
+          return res.status(409).json({ 
+            success: false,
+            error: 'TVA number already exists',
+            message: 'Er bestaat al een bedrijf met dit TVA nummer'
+          });
+        }
+      }
+
+      // Register bedrijf
+      const userResult = await Auth.registerBedrijf(bedrijfData, password);
+
+      // Generate token for immediate login
+      const tokenPayload = {
+        gebruikersId: userResult.gebruikersId,
+        userId: userResult.userId,
+        userType: userResult.userType,
+        email: userResult.email
+      };
+
+      const token = jwt.sign(tokenPayload, config.jwt.secret, { 
+        expiresIn: config.jwt.expiresIn 
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Bedrijf account succesvol aangemaakt',
+        token: token,
+        user: {
+          userId: userResult.userId,
+          userType: userResult.userType,
+          email: userResult.email
+        }
+      });
+
+    } catch (error) {
+      console.error('Bedrijf registration error:', error);
+      
+      if (error.code === 'ER_DUP_ENTRY') {
+        res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met deze gegevens'
+        });
+      } else {
+        res.status(500).json({ 
+          success: false,
+          error: 'Registration failed',
+          message: 'Er ging iets mis bij het aanmaken van je account'
+        });
+      }
+    }
+  },
+
+  // 👔 REGISTER ORGANISATOR - NIEUWE FUNCTIONALITEIT (Admin only)
+  async registerOrganisator(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { password, ...organisatorData } = req.body;
+
+      // Check if email already exists
+      const existingUser = await Auth.findUserByEmail(organisatorData.email);
+      if (existingUser) {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Email already exists',
+          message: 'Er bestaat al een account met dit email adres'
+        });
+      }
+
+      // Register organisator
+      const userResult = await Auth.registerOrganisator(organisatorData, password);
+
+      // Generate token for immediate login
+      const tokenPayload = {
+        gebruikersId: userResult.gebruikersId,
+        userId: userResult.userId,
+        userType: userResult.userType,
+        email: userResult.email
+      };
+
+      const token = jwt.sign(tokenPayload, config.jwt.secret, { 
+        expiresIn: config.jwt.expiresIn 
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Organisator account succesvol aangemaakt',
+        token: token,
+        user: {
+          userId: userResult.userId,
+          userType: userResult.userType,
+          email: userResult.email
+        }
+      });
+
+    } catch (error) {
+      console.error('Organisator registration error:', error);
+      
+      if (error.code === 'ER_DUP_ENTRY') {
+        res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met deze gegevens'
+        });
+      } else {
+        res.status(500).json({ 
+          success: false,
+          error: 'Registration failed',
+          message: 'Er ging iets mis bij het aanmaken van je account'
+        });
+      }
+    }
+  },
+
+  // ✅ BESTAANDE REGISTER FUNCTIE - behouden voor backward compatibility
   async register(req, res) {
     try {
       const { email, password, userType, ...userData } = req.body;
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create user based on type
-      let userId;
+      // Redirect to specific registration based on userType
       if (userType === 'student') {
-        const Student = require('../MODELS/student');
-        userId = await Student.create({ email, ...userData });
+        req.body = { password, ...userData };
+        return await authController.registerStudent(req, res);
       } else if (userType === 'bedrijf') {
-        const Bedrijf = require('../MODELS/bedrijf');
-        userId = await Bedrijf.create({ email, ...userData });
+        req.body = { password, ...userData };
+        return await authController.registerBedrijf(req, res);
       } else {
         return res.status(400).json({
           success: false,
-          error: 'Invalid user type'
+          error: 'Invalid user type',
+          message: 'Gebruik /register/student of /register/bedrijf'
         });
       }
-
-      // Create login entry
-      await pool.query(
-        'INSERT INTO LOGINBEHEER (gebruikersId, passwoord_hash) VALUES (?, ?)',
-        [userId, hashedPassword]
-      );
-
-      res.status(201).json({ 
-        success: true,
-        message: 'User registered successfully',
-        userId: userId
-      });
     } catch (error) {
       console.error('Registration error:', error);
       res.status(500).json({ 
@@ -115,7 +343,7 @@ const authController = {
     }
   },
 
-  // GET /api/auth/me - Get current user info
+  // ✅ BESTAANDE GET ME FUNCTIE - onveranderd
   async getMe(req, res) {
     try {
       const userId = req.user.userId;
@@ -155,6 +383,75 @@ const authController = {
         error: 'Failed to get user data'
       });
     }
+  },
+
+  // 🔐 CHANGE PASSWORD - NIEUWE FUNCTIONALITEIT
+  async changePassword(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+      const { gebruikersId, email } = req.user;
+
+      // Get current credentials
+      const userCredentials = await Auth.getLoginCredentials(email);
+      
+      if (!userCredentials) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'User not found'
+        });
+      }
+
+      // Verify current password
+      const passwordValid = await Auth.verifyPassword(currentPassword, userCredentials.passwoord_hash);
+      
+      if (!passwordValid) {
+        return res.status(401).json({ 
+          success: false,
+          error: 'Current password is incorrect',
+          message: 'Het huidige wachtwoord is onjuist'
+        });
+      }
+
+      // Update password
+      const updated = await Auth.updatePassword(gebruikersId, newPassword);
+      
+      if (!updated) {
+        return res.status(500).json({ 
+          success: false,
+          error: 'Failed to update password'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Wachtwoord succesvol gewijzigd'
+      });
+
+    } catch (error) {
+      console.error('Change password error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to change password',
+        message: 'Er ging iets mis bij het wijzigen van het wachtwoord'
+      });
+    }
+  },
+
+  // 🚪 LOGOUT - NIEUWE FUNCTIONALITEIT
+  async logout(req, res) {
+    res.json({
+      success: true,
+      message: 'Logout succesvol'
+    });
   }
 };
 
