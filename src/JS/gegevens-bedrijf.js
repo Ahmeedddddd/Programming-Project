@@ -2,6 +2,34 @@
 
 console.log('🚀 Bedrijf gegevens script geladen');
 
+// 🔔 Notification System
+window.showNotification = function(message, type = 'success') {
+  const container = document.getElementById('notification-container');
+  if (!container) {
+    console.warn('⚠️ Notification container not found');
+    return;
+  }
+  
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  
+  container.appendChild(notification);
+  
+  // Trigger animation
+  setTimeout(() => notification.classList.add('show'), 100);
+  
+  // Auto remove
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      if (container.contains(notification)) {
+        container.removeChild(notification);
+      }
+    }, 300);
+  }, 4000);
+};
+
 class BedrijfGegevens {
   constructor() {
     console.log('📝 BedrijfGegevens constructor aangeroepen');
