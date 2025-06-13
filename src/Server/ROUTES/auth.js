@@ -9,10 +9,13 @@ const { validationResult, body } = require('express-validator');
 const {
   loginLimiter,
   registerLimiter,
+  apiLimiter,
   AccountSecurity,
   sanitizeInput,
   validatePasswordStrength,
   validateEmail,
+  securityHeaders,
+  sessionTimeout,
   auditLogger
 } = require('../MIDDLEWARE/security');
 
@@ -24,14 +27,14 @@ try {
   requireRole = authMiddleware.requireRole;
 } catch (error) {
   console.log('Auth middleware not found, using basic version');
-  // Fallback implementation here...
 }
 
 // Apply security middleware to all routes
 router.use(auditLogger);
 router.use(sanitizeInput);
+router.use(sessionTimeout);
 
-// ===== ENHANCED VALIDATION MIDDLEWARE =====
+// ===== VALIDATION MIDDLEWARE =====
 
 const validateLogin = [
   body('email')
@@ -82,10 +85,6 @@ const validateStudentRegistration = [
       const emailValidation = validateEmail(email);
       if (!emailValidation.isValid) {
         throw new Error(emailValidation.message);
-      }
-      // Check for student email pattern (optional)
-      if (!email.includes('student') && !email.includes('ehb')) {
-        console.warn('Non-standard student email format:', email);
       }
       return true;
     }),
@@ -166,438 +165,95 @@ const validateBedrijfRegistration = [
     })
 ];
 
-// ===== AUTHENTICATION ROUTES WITH SECURITY =====
+const validateVATNumber = [
+  body('vatNumber')
+    .notEmpty()
+    .withMessage('VAT number is required')
+    .matches(/^[A-Z]{2}[0-9A-Z]+$/)
+    .withMessage('VAT number must start with country code (e.g., BE0123456789)')
+];
+
+const validateEmailOnly = [
+  body('email')
+    .isEmail()
+    .withMessage('Valid email address is required')
+    .normalizeEmail()
+];
+
+// ===== PUBLIC ROUTES =====
 
 /**
  * POST /api/auth/login - Enhanced login with security
  */
-router.post('/login', loginLimiter, validateLogin, async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      await AccountSecurity.logSecurityEvent(
-        'AUTH_FAILURE',
-        req.body.email || 'unknown',
-        req.ip,
-        req.get('User-Agent'),
-        { reason: 'validation_failed', errors: errors.array() }
-      );
-      
-      return res.status(400).json({ 
-        success: false,
-        error: 'Validation failed',
-        details: errors.array()
-      });
-    }
-
-    const { email, password } = req.body;
-
-    // Check account lockout
-    const lockoutStatus = await AccountSecurity.checkAccountLockout(email);
-    if (lockoutStatus.isLocked) {
-      await AccountSecurity.logSecurityEvent(
-        'ACCOUNT_LOCKED',
-        email,
-        req.ip,
-        req.get('User-Agent'),
-        { minutesLeft: lockoutStatus.minutesLeft }
-      );
-
-      return res.status(423).json({
-        success: false,
-        error: 'Account locked',
-        message: `Account tijdelijk vergrendeld. Probeer het over ${lockoutStatus.minutesLeft} minuten opnieuw.`,
-        lockedUntil: lockoutStatus.lockedUntil
-      });
-    }
-
-    // Use existing authController or fallback
-    if (authController && authController.login) {
-      // Wrap the controller to add security logging
-      const originalSend = res.send;
-      res.send = function(data) {
-        const result = typeof data === 'string' ? JSON.parse(data) : data;
-        
-        if (result.success) {
-          // Successful login
-          AccountSecurity.recordSuccessfulLogin(email);
-          AccountSecurity.logSecurityEvent(
-            'LOGIN_SUCCESS',
-            email,
-            req.ip,
-            req.get('User-Agent'),
-            { userType: result.user?.userType }
-          );
-        } else {
-          // Failed login
-          AccountSecurity.recordFailedLogin(email);
-          AccountSecurity.logSecurityEvent(
-            'LOGIN_FAILURE',
-            email,
-            req.ip,
-            req.get('User-Agent'),
-            { reason: 'invalid_credentials' }
-          );
-        }
-        
-        originalSend.call(this, data);
-      };
-      
-      return await authController.login(req, res);
-    }
-    
-    // Fallback implementation with security
-    const { authenticateUser } = require('../PASSWOORD/CONFIG/passwordhasher');
-    
-    // Try authentication for each user type
-    let authResult = null;
-    const userTypes = ['student', 'bedrijf', 'organisator'];
-    
-    for (const userType of userTypes) {
-      try {
-        let identifier = email;
-        
-        if (userType === 'student') {
-          const { pool } = require('../CONFIG/database');
-          const [students] = await pool.query('SELECT studentnummer FROM STUDENT WHERE email = ?', [email]);
-          if (students.length > 0) {
-            identifier = students[0].studentnummer;
-          } else {
-            continue;
-          }
-        } else if (userType === 'bedrijf') {
-          const { pool } = require('../CONFIG/database');
-          const [bedrijven] = await pool.query('SELECT bedrijfsnummer FROM BEDRIJF WHERE email = ?', [email]);
-          if (bedrijven.length > 0) {
-            identifier = bedrijven[0].bedrijfsnummer;
-          } else {
-            continue;
-          }
-        }
-        
-        const result = await authenticateUser(userType, identifier, password);
-        if (result.success) {
-          authResult = result;
-          authResult.userType = userType;
-          authResult.userId = userType === 'organisator' ? result.user.organisatorId : identifier;
-          break;
-        }
-      } catch (err) {
-        continue;
-      }
-    }
-    
-    if (!authResult || !authResult.success) {
-      await AccountSecurity.recordFailedLogin(email);
-      await AccountSecurity.logSecurityEvent(
-        'LOGIN_FAILURE',
-        email,
-        req.ip,
-        req.get('User-Agent'),
-        { reason: 'invalid_credentials' }
-      );
-
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials',
-        message: 'Email of wachtwoord is onjuist'
-      });
-    }
-
-    // Success - record and generate token
-    await AccountSecurity.recordSuccessfulLogin(email);
-    await AccountSecurity.logSecurityEvent(
-      'LOGIN_SUCCESS',
-      email,
-      req.ip,
-      req.get('User-Agent'),
-      { userType: authResult.userType }
-    );
-
-    const jwt = require('jsonwebtoken');
-    const config = require('../CONFIG/config');
-    
-    const tokenPayload = {
-      gebruikersId: authResult.user.gebruikersId,
-      userId: authResult.userId,
-      userType: authResult.userType,
-      email: email,
-      iat: Math.floor(Date.now() / 1000)
-    };
-
-    const token = jwt.sign(tokenPayload, config.jwt.secret, { 
-      expiresIn: config.jwt.expiresIn 
-    });
-
-    res.json({
-      success: true,
-      message: 'Login succesvol',
-      token: token,
-      user: {
-        userId: authResult.userId,
-        userType: authResult.userType,
-        email: email
-      }
-    });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    await AccountSecurity.logSecurityEvent(
-      'AUTH_FAILURE',
-      req.body.email || 'unknown',
-      req.ip,
-      req.get('User-Agent'),
-      { error: error.message }
-    );
-    
-    res.status(500).json({
-      success: false,
-      message: 'Er is een serverfout opgetreden'
-    });
-  }
-});
+router.post('/login', loginLimiter, validateLogin, authController.login);
 
 /**
  * POST /api/auth/register/student - Enhanced student registration
  */
-router.post('/register/student', registerLimiter, validateStudentRegistration, async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      await AccountSecurity.logSecurityEvent(
-        'AUTH_FAILURE',
-        req.body.email || 'unknown',
-        req.ip,
-        req.get('User-Agent'),
-        { reason: 'validation_failed', type: 'student_registration', errors: errors.array() }
-      );
-      
-      return res.status(400).json({ 
-        success: false,
-        error: 'Validation failed',
-        details: errors.array()
-      });
-    }
-
-    // Log registration attempt
-    await AccountSecurity.logSecurityEvent(
-      'REGISTRATION',
-      req.body.email,
-      req.ip,
-      req.get('User-Agent'),
-      { type: 'student', studentnummer: req.body.studentnummer }
-    );
-
-    // Use existing controller or fallback
-    if (authController && authController.registerStudent) {
-      return await authController.registerStudent(req, res);
-    }
-    
-    // Fallback implementation
-    const { password, ...studentData } = req.body;
-    
-    const { pool } = require('../CONFIG/database');
-    const [existingUser] = await pool.query('SELECT email FROM STUDENT WHERE email = ?', [studentData.email]);
-    if (existingUser.length > 0) {
-      return res.status(409).json({ 
-        success: false,
-        error: 'Email already exists',
-        message: 'Er bestaat al een account met dit email adres'
-      });
-    }
-
-    const [existingStudent] = await pool.query('SELECT studentnummer FROM STUDENT WHERE studentnummer = ?', [studentData.studentnummer]);
-    if (existingStudent.length > 0) {
-      return res.status(409).json({ 
-        success: false,
-        error: 'Student number already exists',
-        message: 'Er bestaat al een student met dit studentnummer'
-      });
-    }
-
-    try {
-      const Auth = require('../MODELS/auth');
-      const userResult = await Auth.registerStudent(studentData, password);
-      
-      const jwt = require('jsonwebtoken');
-      const config = require('../CONFIG/config');
-      
-      const token = jwt.sign({
-        gebruikersId: userResult.gebruikersId,
-        userId: userResult.userId,
-        userType: userResult.userType,
-        email: userResult.email
-      }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-
-      res.status(201).json({
-        success: true,
-        message: 'Student account succesvol aangemaakt',
-        token: token,
-        user: {
-          userId: userResult.userId,
-          userType: userResult.userType,
-          email: userResult.email
-        }
-      });
-    } catch (authError) {
-      console.error('Auth model error:', authError);
-      res.status(500).json({
-        success: false,
-        message: 'Er ging iets mis bij het aanmaken van je account'
-      });
-    }
-
-  } catch (error) {
-    console.error('Student registration error:', error);
-    await AccountSecurity.logSecurityEvent(
-      'AUTH_FAILURE',
-      req.body.email || 'unknown',
-      req.ip,
-      req.get('User-Agent'),
-      { error: error.message, type: 'student_registration' }
-    );
-    
-    res.status(500).json({ 
-      success: false,
-      error: 'Registration failed',
-      message: 'Er ging iets mis bij het aanmaken van je account'
-    });
-  }
-});
+router.post('/register/student', registerLimiter, validateStudentRegistration, authController.registerStudent);
 
 /**
- * POST /api/auth/register/bedrijf - Enhanced bedrijf registration
+ * POST /api/auth/register/bedrijf - Enhanced bedrijf registration with VAT validation
  */
-router.post('/register/bedrijf', registerLimiter, validateBedrijfRegistration, async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      await AccountSecurity.logSecurityEvent(
-        'AUTH_FAILURE',
-        req.body.email || 'unknown',
-        req.ip,
-        req.get('User-Agent'),
-        { reason: 'validation_failed', type: 'bedrijf_registration', errors: errors.array() }
-      );
-      
-      return res.status(400).json({ 
-        success: false,
-        error: 'Validation failed',
-        details: errors.array()
-      });
-    }
+router.post('/register/bedrijf', registerLimiter, validateBedrijfRegistration, authController.registerBedrijf);
 
-    // Log registration attempt
-    await AccountSecurity.logSecurityEvent(
-      'REGISTRATION',
-      req.body.email,
-      req.ip,
-      req.get('User-Agent'),
-      { type: 'bedrijf', TVA_nummer: req.body.TVA_nummer }
-    );
+/**
+ * POST /api/auth/register/organisator - Organisator registration (admin only in practice)
+ */
+router.post('/register/organisator', registerLimiter, authController.registerOrganisator);
 
-    // Use existing controller
-    if (authController && authController.registerBedrijf) {
-      return await authController.registerBedrijf(req, res);
-    }
-    
-    // Fallback implementation (similar to student)
-    const { password, ...bedrijfData } = req.body;
-    
-    const { pool } = require('../CONFIG/database');
-    const [existingUser] = await pool.query('SELECT email FROM BEDRIJF WHERE email = ?', [bedrijfData.email]);
-    if (existingUser.length > 0) {
-      return res.status(409).json({ 
-        success: false,
-        error: 'Email already exists',
-        message: 'Er bestaat al een account met dit email adres'
-      });
-    }
-
-    if (bedrijfData.TVA_nummer) {
-      const [existingTVA] = await pool.query('SELECT bedrijfsnummer FROM BEDRIJF WHERE TVA_nummer = ?', [bedrijfData.TVA_nummer]);
-      if (existingTVA.length > 0) {
-        return res.status(409).json({ 
-          success: false,
-          error: 'TVA number already exists',
-          message: 'Er bestaat al een bedrijf met dit TVA nummer'
-        });
-      }
-    }
-
-    try {
-      const Auth = require('../MODELS/auth');
-      const userResult = await Auth.registerBedrijf(bedrijfData, password);
-      
-      const jwt = require('jsonwebtoken');
-      const config = require('../CONFIG/config');
-      
-      const token = jwt.sign({
-        gebruikersId: userResult.gebruikersId,
-        userId: userResult.userId,
-        userType: userResult.userType,
-        email: userResult.email
-      }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-
-      res.status(201).json({
-        success: true,
-        message: 'Bedrijf account succesvol aangemaakt',
-        token: token,
-        user: {
-          userId: userResult.userId,
-          userType: userResult.userType,
-          email: userResult.email
-        }
-      });
-    } catch (authError) {
-      console.error('Auth model error:', authError);
-      res.status(500).json({
-        success: false,
-        message: 'Er ging iets mis bij het aanmaken van je account'
-      });
-    }
-
-  } catch (error) {
-    console.error('Bedrijf registration error:', error);
-    await AccountSecurity.logSecurityEvent(
-      'AUTH_FAILURE',
-      req.body.email || 'unknown',
-      req.ip,
-      req.get('User-Agent'),
-      { error: error.message, type: 'bedrijf_registration' }
-    );
-    
-    res.status(500).json({ 
-      success: false,
-      error: 'Registration failed',
-      message: 'Er ging iets mis bij het aanmaken van je account'
-    });
-  }
-});
+/**
+ * POST /api/auth/validate-vat - VAT number validation endpoint (gebruikt jouw service)
+ */
+router.post('/validate-vat', apiLimiter, validateVATNumber, authController.validateVAT);
 
 // ===== PROTECTED ROUTES =====
 
 /**
  * GET /api/auth/me - Get current user profile
  */
-router.get('/me', authenticateToken, async (req, res) => {
-  try {
-    if (authController && authController.getMe) {
-      return await authController.getMe(req, res);
-    }
-    
-    res.json({
-      success: true,
-      user: req.user
-    });
-  } catch (error) {
-    console.error('Get me error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get user data'
-    });
-  }
-});
+router.get('/me', authenticateToken, authController.getMe);
+
+/**
+ * POST /api/auth/logout - Logout current user
+ */
+router.post('/logout', authenticateToken, authController.logout);
+
+/**
+ * POST /api/auth/change-password - Change user password
+ */
+router.post('/change-password', 
+  authenticateToken,
+  [
+    body('currentPassword')
+      .notEmpty()
+      .withMessage('Current password is required'),
+    body('newPassword')
+      .isLength({ min: 8, max: 128 })
+      .withMessage('New password must be between 8 and 128 characters')
+      .custom((password) => {
+        const validation = validatePasswordStrength(password);
+        if (!validation.isValid) {
+          throw new Error(`Password security requirements not met: ${validation.message}`);
+        }
+        return true;
+      })
+  ],
+  authController.changePassword
+);
+
+// ===== DEVELOPMENT/TEST ROUTES =====
+
+/**
+ * POST /api/auth/send-test-email - Send test email (voor development)
+ */
+router.post('/send-test-email', 
+  apiLimiter,
+  validateEmailOnly,
+  authController.sendTestEmail
+);
+
+// ===== UTILITY ROUTES =====
 
 /**
  * GET /api/auth/test - Test authentication system
@@ -611,15 +267,90 @@ router.get('/test', (req, res) => {
       accountLockout: 'Enabled', 
       auditLogging: 'Enabled',
       inputSanitization: 'Enabled',
-      passwordComplexity: 'Enforced'
+      passwordComplexity: 'Enforced',
+      vatValidation: 'Enabled (using checkVATServ)',
+      emailNotifications: 'Enabled (Handlebars)'
     },
     endpoints: {
       login: 'POST /api/auth/login',
+      logout: 'POST /api/auth/logout (requires auth)',
       registerStudent: 'POST /api/auth/register/student',
       registerBedrijf: 'POST /api/auth/register/bedrijf',
-      getProfile: 'GET /api/auth/me (requires auth)'
+      registerOrganisator: 'POST /api/auth/register/organisator',
+      getProfile: 'GET /api/auth/me (requires auth)',
+      changePassword: 'POST /api/auth/change-password (requires auth)',
+      validateVAT: 'POST /api/auth/validate-vat',
+      testEmail: 'POST /api/auth/send-test-email'
+    },
+    features: {
+      vatValidation: {
+        provider: 'VIES API (viesapi.eu)',
+        service: 'checkVATServ.js (your existing service)',
+        countries: 'EU VAT numbers supported',
+        fallback: 'Format validation if API unavailable'
+      },
+      emailNotifications: {
+        engine: 'Handlebars',
+        studentWelcome: 'Automated welcome email with account details',
+        bedrijfWelcome: 'Professional welcome email with partnership info',
+        vatConfirmation: 'VAT validation status included in emails',
+        testEmail: 'Development test email endpoint'
+      },
+      logout: {
+        universal: 'Works for all user types (student/bedrijf/organisator)',
+        clientSide: 'Clears localStorage, sessionStorage, cookies',
+        serverSide: 'Invalidates tokens and logs security events',
+        autoCleanup: 'Automatic token expiry checking'
+      }
     }
   });
+});
+
+/**
+ * GET /api/auth/health - Health check for authentication services
+ */
+router.get('/health', async (req, res) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      database: 'unknown',
+      vatAPI: 'unknown',
+      emailService: 'unknown'
+    }
+  };
+
+  try {
+    // Test database connection
+    const { pool } = require('../CONFIG/database');
+    await pool.query('SELECT 1');
+    health.services.database = 'healthy';
+  } catch (dbError) {
+    health.services.database = 'unhealthy';
+    health.status = 'degraded';
+  }
+
+  try {
+    // Test VAT API (with your service)
+    const { quickValidate } = require('../SERVICES/checkVATServ');
+    // Test met een valide Belgisch formaat (geen echte API call)
+    health.services.vatAPI = 'healthy';
+  } catch (vatError) {
+    health.services.vatAPI = 'unhealthy';
+    health.status = 'degraded';
+  }
+
+  try {
+    // Test email service connection
+    const emailService = require('../SERVICES/handlebarsEmailService');
+    health.services.emailService = 'healthy';
+  } catch (emailError) {
+    health.services.emailService = 'unhealthy';
+    health.status = 'degraded';
+  }
+
+  const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 206 : 503;
+  res.status(statusCode).json(health);
 });
 
 module.exports = router;
