@@ -25,7 +25,6 @@
     </div>
   </div>
 
-
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
   <!-- Geanimeerde achtergrond laag -->
@@ -71,40 +70,26 @@
                 <!-- Profiel Informatie -->
                 <div class="w-full">
                     
-                    <!-- Persoonlijke Gegevens -->
-                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
-                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📝 Persoonlijke Gegevens</h3>
-                    </div>
-
-                    <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld naam">
-                            <strong>Voornaam:</strong> Jan
-                        </div>
-                        <div class="ehbVeld naam">
-                            <strong>Achternaam:</strong> Janssen
-                        </div>
-                    </div>
-
                     <!-- Bedrijf Gegevens -->
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🏢 Bedrijf Informatie</h3>
                     </div>
 
-                    <div class="ehbVeld bedrijf mb-2">
-                        <strong>Bedrijfsnaam:</strong> TechSolutions BV
+                    <div class="ehbVeld bedrijf mb-2" data-field="bedrijfsnummer">
+                        <strong>Bedrijfsnummer:</strong> <span class="field-value">Laden...</span>
+                    </div>
+
+                    <div class="ehbVeld bedrijf mb-2" data-field="bedrijfsnaam">
+                        <strong>Bedrijfsnaam:</strong> <span class="field-value">Laden...</span>
                     </div>
 
                     <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld">
-                            <strong>TVA-nummer:</strong> BE 0123.456.789
+                        <div class="ehbVeld" data-field="tva-nummer">
+                            <strong>TVA-nummer:</strong> <span class="field-value">Laden...</span>
                         </div>
-                        <div class="ehbVeld">
-                            <strong>Sector:</strong> IT & Technology
+                        <div class="ehbVeld" data-field="sector">
+                            <strong>Sector:</strong> <span class="field-value">Laden...</span>
                         </div>
-                    </div>
-
-                    <div class="ehbVeld">
-                        <strong>Website:</strong> https://techsolutions.be
                     </div>
 
                     <!-- Contact Gegevens -->
@@ -113,11 +98,43 @@
                     </div>
 
                     <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld email">
-                            <strong>Email:</strong> jan.janssen@techsolutions.be
+                        <div class="ehbVeld email" data-field="email">
+                            <strong>Email:</strong> <span class="field-value">Laden...</span>
                         </div>
-                        <div class="ehbVeld telefoon">
-                            <strong>Telefoon:</strong> +32 2 123 45 67
+                        <div class="ehbVeld telefoon" data-field="telefoon">
+                            <strong>Telefoon:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+
+                    <!-- Adres Gegevens -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📍 Adres Informatie</h3>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld" data-field="straatnaam">
+                            <strong>Straatnaam:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                        <div class="ehbVeld" data-field="huisnummer">
+                            <strong>Huisnummer:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld" data-field="bus">
+                            <strong>Bus:</strong> <span class="field-value">-</span>
+                        </div>
+                        <div class="ehbVeld" data-field="postcode">
+                            <strong>Postcode:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld" data-field="gemeente">
+                            <strong>Gemeente:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                        <div class="ehbVeld" data-field="land">
+                            <strong>Land:</strong> <span class="field-value">Laden...</span>
                         </div>
                     </div>
 
@@ -131,17 +148,7 @@
                     </div>
 
                     <div class="ehbVeld">
-                        <strong>Laatste login:</strong> Vandaag om 14:32
-                    </div>
-
-                    <!-- Bedrijfsbeschrijving -->
-                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
-                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📋 Over Ons</h3>
-                    </div>
-
-                    <div class="ehbVeld" style="min-height: 100px; padding: 1.5rem;">
-                        <strong>Bedrijfsbeschrijving:</strong><br><br>
-                        TechSolutions BV is een innovatief IT-bedrijf gespecialiseerd in cloudoplossingen en digitale transformatie. We helpen bedrijven hun technologische uitdagingen aan te pakken met op maat gemaakte softwareoplossingen en strategisch advies.
+                        <strong>Laatste login:</strong> <span id="last-login">Laden...</span>
                     </div>
 
                 </div>
@@ -163,17 +170,17 @@
 
                 <!-- Account Status -->
                 <div class="text-center mt-4">
-                    <div class="ehbVeld" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
+                    <div class="ehbVeld" data-field="account-status" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
                         <i class="fas fa-check-circle"></i>
-                        <strong>Account Status:</strong> Actief en Geverifieerd
+                        <strong>Account Status:</strong> <span class="field-value">Laden...</span>
                     </div>
                 </div>
 
                 <!-- Extra Informatie -->
                 <div class="text-center mt-3">
                     <p style="color: #666; font-size: 0.9rem;">
-                        Account aangemaakt op: 15 januari 2024<br>
-                        Laatste update: 3 dagen geleden
+                        <span id="account-created">Account aangemaakt: Laden...</span><br>
+                        <span id="last-updated">Laatste update: Laden...</span>
                     </p>
                 </div>
 
@@ -184,11 +191,98 @@
         <div class="menu-overlay"></div>
         
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-     <script type="module" src="/src/JS/startPage.js"></script>
-     <script type="module" src="/src/JS/gegevens-qol.js"></script>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        display: none;
+    ">
+        <div class="loader" style="
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #881538;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        "></div>
+    </div>
+
+    <!-- Error/Success Notifications -->
+    <div id="notification-container" style="
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 10000;
+    "></div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        
+        .edit-input {
+            width: 100%;
+            max-width: 300px;
+        }
+    </style>
+
+    <script>
+        // Simple notification system
+        window.showNotification = function(message, type = 'success') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => container.removeChild(notification), 300);
+            }, 4000);
+        };
+    </script>
+    
+    <script type="module" src="/src/JS/startPage.js"></script>
+    <script type="module" src="/src/JS/gegevens-qol.js"></script>
+    <script type="module" src="/src/JS/gegevens-bedrijf.js"></script>
 </body>
 </html>
