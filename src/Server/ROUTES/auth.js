@@ -3,7 +3,7 @@
 // API routes voor authenticatie met veilige wachtwoord handling
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const config = require('../config/config');
+const config = require('../CONFIG/config');
 const { 
   authenticateUser, 
   createUserCredentials, 
