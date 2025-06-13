@@ -7,14 +7,14 @@ const { validationResult } = require('express-validator');
 const { pool } = require('../CONFIG/database');
 const config = require('../CONFIG/config');
 
-// Import services
-const { validateVATNumber } = require('../SERVICES/checkVATServ');
+// Import nieuwe services
+const vatValidationService = require('../SERVICES/vatValidationService');
 const handlebarsEmailService = require('../SERVICES/handlebarsEmailService');
 const { AccountSecurity } = require('../MIDDLEWARE/security');
 
 const authController = {
 
-  // 🔐 LOGIN - BESTAANDE FUNCTIE
+  // 🔐 LOGIN - BESTAANDE FUNCTIE (ongewijzigd)
   async login(req, res) {
     try {
       const errors = validationResult(req);
@@ -189,7 +189,7 @@ const authController = {
     }
   },
 
-  // 🏢 REGISTER BEDRIJF
+  // 🏢 REGISTER BEDRIJF - UPDATED met VAT validatie + Handlebars Email
   async registerBedrijf(req, res) {
     try {
       const errors = validationResult(req);
@@ -215,14 +215,13 @@ const authController = {
         });
       }
 
-      // 🔍 VAT nummer validatie via JOUW bestaande service
+      // 🔍 VAT nummer validatie via externe API
       let vatValidationResult = null;
       if (bedrijfData.TVA_nummer) {
-        console.log('🔍 Validating VAT number with your service:', bedrijfData.TVA_nummer);
+        console.log('🔍 Validating VAT number:', bedrijfData.TVA_nummer);
         
         try {
-          // Gebruik jouw validateVATNumber functie
-          vatValidationResult = await validateVATNumber(bedrijfData.TVA_nummer);
+          vatValidationResult = await vatValidationService.validateVATNumber(bedrijfData.TVA_nummer);
           
           if (!vatValidationResult.isValid && !vatValidationResult.fallback) {
             return res.status(400).json({
@@ -235,7 +234,7 @@ const authController = {
 
           // Log VAT validatie resultaat
           if (vatValidationResult.isValid) {
-            console.log('✅ VAT number validated successfully with your service');
+            console.log('✅ VAT number validated successfully');
             if (vatValidationResult.companyName) {
               console.log(`📋 Company name from VAT: ${vatValidationResult.companyName}`);
             }
@@ -246,11 +245,7 @@ const authController = {
         } catch (vatError) {
           console.error('❌ VAT validation error:', vatError);
           // Continue met registratie als VAT API niet beschikbaar is
-          vatValidationResult = { 
-            fallback: true, 
-            isValid: true, // Accept format validation
-            message: 'VAT API temporarily unavailable, using format validation' 
-          };
+          vatValidationResult = { fallback: true, message: 'VAT API temporarily unavailable' };
         }
 
         // Check if TVA number already exists in database
@@ -310,8 +305,7 @@ const authController = {
               vatNumber: bedrijfData.TVA_nummer,
               isValid: vatValidationResult.isValid,
               companyName: vatValidationResult.companyName,
-              fallback: vatValidationResult.fallback,
-              service: 'checkVATServ'
+              fallback: vatValidationResult.fallback
             }
           );
         } catch (logError) {
@@ -348,8 +342,7 @@ const authController = {
         responseData.vatValidation = {
           isValid: vatValidationResult.isValid,
           companyName: vatValidationResult.companyName,
-          fallback: vatValidationResult.fallback,
-          service: 'checkVATServ'
+          fallback: vatValidationResult.fallback
         };
       }
 
@@ -579,7 +572,7 @@ const authController = {
     }
   },
 
-  // 🔍 VAT Validation Endpoint (gebruikt jouw service)
+  // 🔍 VAT Validation Endpoint (voor frontend)
   async validateVAT(req, res) {
     try {
       const { vatNumber } = req.body;
@@ -592,13 +585,11 @@ const authController = {
         });
       }
 
-      // Gebruik jouw validateVATNumber functie
-      const result = await validateVATNumber(vatNumber);
+      const result = await vatValidationService.validateVATNumber(vatNumber);
       
       res.json({
         success: true,
-        data: result,
-        service: 'checkVATServ'
+        data: result
       });
 
     } catch (error) {
@@ -611,7 +602,7 @@ const authController = {
     }
   },
 
-  // 📧 Test Email Endpoint (voor development)
+  // 📧 NEW: Test Email Endpoint (voor development)
   async sendTestEmail(req, res) {
     try {
       const { email } = req.body;
