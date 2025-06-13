@@ -11,7 +11,7 @@ const { pool, testConnection } = require('./CONFIG/database');
 const config = require('./CONFIG/config');
 
 const app = express();
-const port = config.server?.apiPort || process.env.API_PORT || 3001;
+const port = config.server?.apiPort || process.env.API_PORT || 3301;
 
 // Middleware setup
 app.use(cors({
