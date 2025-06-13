@@ -1,8 +1,7 @@
 // Wachtwoord hashing en verificatie systeem voor CareerLaunch
 
 const bcrypt = require('bcrypt');
-const { executeQuery } = require('./database');
-
+const { executeQuery } = require('../../CONFIG/database');
 // Configuratie
 const SALT_ROUNDS = 12; // Verhoogd voor betere security
 const MIN_PASSWORD_LENGTH = 8;

@@ -4,26 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tarieven informatie</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/INFO/tarieven-info.css">
-  
+    
 </head>
 <body>
+    <!-- Navigatie - uses your existing nav styling from style.css -->
     <div class="container">
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar">
+                <a href="/index.html" class="navItem">Home</a>
+                <a href="/programma" class="navItem">Programma</a>
+                <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
+                <a href="/info" class="navItem active">Info</a>
+            </div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+            </div>
+        </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Verborgen sidebar -->
+    <div class="sideMenu" id="sideMenu">
+        <!-- Geanimeerde achtergrond laag -->
+        <div class="menu-bg-animation"></div>
+        <div class="sparkles"></div>
+     
+        <!-- Header met titel -->
+        <div class="sideMenu-header">
+            <div>
+                <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                <p class="sideMenu-subtitle">Menu</p>
+            </div>
+            <button class="sideMenu-closeBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+     
+        <!-- Menu content -->
+        <div class="sideMenu-content">
+            <a href="/login">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </a>
+            <a href="/contacteer">
+                <i class="fas fa-envelope"></i>
+                Contact us
+            </a>
+            <hr class="sideMenu-divider">
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="content-container">
         <h3>Tarieven pakketten</h3>
-    
+   
         <div class="pakket">
             <h4>Bronze Partner <span class="highlight">€180</span></h4>
             <p>Stand: 1,5m x 1,5m, 1 tafel</p>
             <p>Tickets voor 2 informanten</p>
             <p>Enkel geldig voor bedrijven met &lt;20 werknemers.</p>
         </div>
-    
+   
         <div class="pakket">
             <h4>Silver Partner <span class="highlight">€460</span></h4>
             <p>Stand: 2m x 2m, 1 tafel</p>
             <p>Tickets voor 2 informanten</p>
         </div>
-    
+   
         <div class="pakket">
             <h4>Gold Partner <span class="highlight">€690</span></h4>
             <p>Centrale standplaats op het event.</p>
@@ -31,12 +84,19 @@
             <p>Stand: 3m x 2m, 2 tafels</p>
             <p>Tickets voor 4 informanten</p>
         </div>
-    
+   
         <div class="pakket">
             <h4>Start-up <span class="highlight">€130</span></h4>
             <p>Jonger dan 2 jaar</p>
             <p>Stand: 2m x 2m</p>
         </div>
     </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+    
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
 </body>
 </html>
