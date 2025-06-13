@@ -1,0 +1,81 @@
+<!-- Student Welcome Email Template -->
+<div class="email-header">
+    <h1>🎓 Welkom bij CareerLaunch!</h1>
+    <p>Erasmus Hogeschool Brussel - Netwerkevenement</p>
+</div>
+
+<div class="email-content">
+    <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 4px;">
+        <h2 style="margin-top: 0; color: #667eea;">Hallo {{voornaam}}! 👋</h2>
+        <p>Gefeliciteerd! Je account voor CareerLaunch is succesvol aangemaakt. We kijken ernaar uit om je te verwelkomen op ons netwerkevenement waar studenten en bedrijven elkaar ontmoeten.</p>
+    </div>
+
+    <h3>Jouw accountgegevens:</h3>
+    <div class="info-grid">
+        <div class="info-row">
+            <div class="info-item">
+                <div class="info-label">Naam</div>
+                <div class="info-value">{{voornaam}} {{achternaam}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Studentnummer</div>
+                <div class="info-value">{{studentnummer}}</div>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{email}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Opleiding</div>
+                <div class="info-value">{{opleiding}}</div>
+            </div>
+        </div>
+        {{#if opleidingsrichting}}
+        <div class="info-row">
+            <div class="info-item" style="display: table-cell; width: 100%;" colspan="2">
+                <div class="info-label">Opleidingsrichting</div>
+                <div class="info-value">{{opleidingsrichting}}</div>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+
+    <div class="highlight-box">
+        <h3>📋 Volgende stappen:</h3>
+        <ul class="list-styled">
+            <li>Log in op je account met je email en wachtwoord</li>
+            <li>Voltooi je profiel met projectinformatie</li>
+            <li>Bekijk het programma van het evenement op {{eventDate}}</li>
+            <li>Plan je gesprekken met interessante bedrijven</li>
+            <li>Bereid je voor op een geweldige netwerkervaring!</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{{loginUrl}}" class="button">🚀 Inloggen op je account</a>
+    </div>
+
+    <div style="background: #e8f5e8; border: 1px solid #c8e6c9; padding: 20px; border-radius: 6px; margin: 25px 0;">
+        <h4 style="margin-top: 0; color: #2e7d32;">💡 Tips voor een succesvolle deelname:</h4>
+        <ul style="margin: 0; padding-left: 20px;">
+            <li>Zorg dat je CV up-to-date is</li>
+            <li>Bereid een korte pitch voor over jezelf</li>
+            <li>Bekijk vooraf welke bedrijven aanwezig zijn</li>
+            <li>Denk na over welke vragen je wilt stellen</li>
+            <li>Kom professioneel en enthousiast over!</li>
+        </ul>
+    </div>
+
+    <p style="margin-top: 30px;">Heb je vragen? Aarzel niet om contact op te nemen met ons organisatieteam. We helpen je graag verder!</p>
+
+    <hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;">
+    
+    <p style="font-size: 14px; color: #6c757d;">
+        <strong>Belangrijke informatie:</strong><br>
+        • Evenement datum: {{eventDate}}<br>
+        • Locatie: Erasmus Hogeschool Brussel<br>
+        • Meer details volgen binnenkort via je account dashboard
+    </p>
+</div>
