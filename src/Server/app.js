@@ -51,15 +51,15 @@ app.get('/info', (req, res) => {
 });
 
 app.get('/infoStudent', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/info-student.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/informatie-studenten.html'));
 });
 
 app.get('/infoBedrijf', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/info-bedrijven.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/informatie-bedrijven.html'));
 });
 
 app.get('/infoCareerLaunch', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/info-career-launch.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/INFO/informatie-career-launch.html'));
 });
 
 app.get('/contacteer', (req, res) => {
