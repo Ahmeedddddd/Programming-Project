@@ -1,10 +1,26 @@
+//src/Server/ROUTES/registratie.js
 const express = require('express');
 const router = express.Router();
-
-// Let op het juiste pad!
 const { validateBedrijf } = require('../MIDDLEWARE/validation');
-const bedrijfController = require('../CONTROLLERS/bedrijfController');
 
+// Redirect to new auth routes instead
+router.post('/auth/register/bedrijf', (req, res) => {
+  res.status(301).json({
+    success: false,
+    message: 'Endpoint moved',
+    newEndpoint: 'POST /api/auth/register/bedrijf',
+    note: 'Please use the new auth routes'
+  });
+});
 
-// POST /api/auth/register/bedrijf - Registreer een nieuw bedrijf
-router.post('/auth/register/bedrijf', validateBedrijf, bedrijfController.register);
+// Fallback for old route
+router.post('/register/bedrijf', (req, res) => {
+  res.status(301).json({
+    success: false,
+    message: 'Endpoint moved',
+    newEndpoint: 'POST /api/auth/register/bedrijf',
+    note: 'Please use the new auth routes'
+  });
+});
+
+module.exports = router;
