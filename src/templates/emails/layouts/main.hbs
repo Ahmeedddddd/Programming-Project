@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{subject}}</title>
+    <style>
+        /* Reset styles */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        /* Main styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .email-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+
+        .email-header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .email-content {
+            padding: 40px 30px;
+        }
+
+        .email-footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .email-footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: #ffffff !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .button:hover {
+            background: #5a6fd8;
+        }
+
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin: 25px 0;
+        }
+
+        .info-row {
+            display: table-row;
+        }
+
+        .info-item {
+            display: table-cell;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 5px;
+            vertical-align: top;
+            width: 50%;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333333;
+        }
+
+        .highlight-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .highlight-box h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+
+        .list-styled {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list-styled li {
+            margin: 10px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .list-styled li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .email-content, .email-header, .email-footer {
+                padding: 30px 20px;
+            }
+            .info-item {
+                display: block;
+                margin-bottom: 15px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        {{{body}}}
+        
+        <div class="email-footer">
+            <p><strong>CareerLaunch</strong> - Erasmus Hogeschool Brussel</p>
+            <p>
+                <a href="mailto:careerlaunch@ehb.be">careerlaunch@ehb.be</a> |
+                <a href="https://www.ehb.be">www.ehb.be</a>
+            </p>
+            <p style="margin-top: 15px; font-size: 12px;">
+                © {{currentYear}} Erasmus Hogeschool Brussel. Alle rechten voorbehouden.
+            </p>
+            <p style="margin-top: 5px; font-size: 12px;">
+                Deze email is automatisch gegenereerd. Gelieve niet te antwoorden op deze email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
