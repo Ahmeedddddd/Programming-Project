@@ -2,14 +2,14 @@
 // Script om bestaande plain text wachtwoorden te hashen
 // Gebruikt de nieuwe password hasher en database setup
 
-const { pool } = require('./database');
-const { hashPassword, hashExistingPasswords } = require('./passwordhasher');
 
+const { pool } = require('../CONFIG/database');
+const { hashPassword, hashExistingPasswords } = require('./CONFIG/passwordhasher');
 // Configuratie
 const CONFIG = {
-  hashExistingPasswords: false,  //true om bestaande passwords te hashen
-  addNewUsers: true,            //true om nieuwe users toe te voegen
-  testAuthentication: false     //true om login te testen
+  hashExistingPasswords: true,  //true om bestaande passwords te hashen
+  addNewUsers: false,            //true om nieuwe users toe te voegen
+  testAuthentication: true     //true om login te testen
 };
 
 // Data voor nieuwe gebruikers
@@ -202,7 +202,7 @@ async function addStudenten(studenten) {
 async function testUserAuthentication() {
   console.log('\n🔐 === AUTHENTICATIE TESTEN ===');
   
-  const { authenticateUser } = require('./passwordhasher');
+  const { authenticateUser } = require('./CONFIG/passwordhasher');
   
   // Test cases
   const testCases = [
@@ -324,7 +324,7 @@ async function runMigration() {
 // UTILITY FUNCTIES
 // Genereer random wachtwoorden voor bulk import
 function generateBulkPasswords(userType, startId, count) {
-  const { generateStrongPassword } = require('./passwordhasher');
+  const { generateStrongPassword } = require('./CONFIG/passwordhasher');
   const users = [];
   
   for (let i = 0; i < count; i++) {
