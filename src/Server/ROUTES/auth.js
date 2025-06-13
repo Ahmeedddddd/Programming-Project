@@ -9,7 +9,7 @@ const {
   createUserCredentials, 
   updatePassword,
   validatePasswordStrength 
-} = require('../config/passwordhasher');
+} = require('../config/passwordhasher.js');
 
 const router = express.Router();
 

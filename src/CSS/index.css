@@ -570,6 +570,78 @@ h2 {
   box-shadow: 0 25px 50px rgba(238, 90, 36, 0.4);
 }
 
+/* ===== KLIKBARE CARDS AANVULLING - Voeg toe aan index.css ===== */
+
+/* Klikbare links styling voor preview cards */
+a.preview-card {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Klikbare links styling voor project cards */
+a.project-card {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Enhanced hover effects voor klikbare cards */
+a.preview-card:hover,
+a.project-card:hover {
+  transform: translateY(-8px); /* Iets meer lift dan bestaande hover */
+  box-shadow: 0 15px 35px rgba(136, 21, 56, 0.15); /* EHB rood shadow */
+}
+
+/* Hover effect voor titels in klikbare cards */
+a.preview-card:hover .card-title,
+a.project-card:hover .project-title {
+  color: #881538; /* EHB rood */
+  transition: color 0.3s ease;
+}
+
+/* Pijl effecten verwijderd */
+
+/* Focus states voor accessibility */
+a.preview-card:focus-visible,
+a.project-card:focus-visible {
+  outline: 3px solid #881538;
+  outline-offset: 3px;
+  border-radius: 18px;
+}
+
+/* Zorg ervoor dat links in buttons ook klikbaar blijven */
+.btn-center a.btn,
+.center-btn a.main-cta-btn {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Active state voor click feedback */
+a.preview-card:active,
+a.project-card:active {
+  transform: translateY(-5px) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* Responsive aanpassingen voor mobile */
+@media (max-width: 768px) {
+  /* Pijl effecten verwijderd */
+}
+
+@media (max-width: 480px) {
+  /* Pijl effecten verwijderd */
+  
+  a.preview-card:hover,
+  a.project-card:hover {
+    transform: translateY(-5px); /* Minder lift op mobile */
+  }
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 
 /* Tablet */
