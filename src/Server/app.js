@@ -150,6 +150,10 @@ app.get('/mijnProject', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/mijn-project.html'));
 });
 
+const registratieRoutes = require('./ROUTES/registratie');
+app.use('/api', registratieRoutes);
+
+
 // Email service endpoint - Check if SERVICES folder exists
 app.post('/api/send-invoice', async (req, res) => {
   try {

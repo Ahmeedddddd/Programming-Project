@@ -285,4 +285,15 @@ const bedrijfController = {
   }
 };
 
+exports.register = async (req, res) => {
+  try {
+    // Hier je registratie-logica
+    const bedrijfData = req.body;
+    // Bijvoorbeeld: const nieuwBedrijf = await BedrijfModel.create(bedrijfData);
+    res.status(201).json({ message: 'Bedrijf succesvol geregistreerd', bedrijf: bedrijfData });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = bedrijfController;
