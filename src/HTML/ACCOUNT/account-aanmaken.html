@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Aanmaken</title>
+    <title>Account Aanmaken - CareerLaunch</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/ACCOUNT/account-aanmaken.css">
 </head>
 <body>
-    <!-- Register Form -->
-        <div id="registerForm" class="hidden">
+    <!-- Registration Container -->
+    <div class="registration-container">
+        <!-- Register Form -->
+        <div id="registerForm">
             <h2 id="registerTitle">Account Aanmaken als Bedrijf</h2>
             
             <div class="user-type-toggle">
@@ -21,57 +23,58 @@
                 </div>
             </div>
 
-            <form>
+            <form id="registrationForm">
                 <!-- Bedrijf velden -->
                 <div id="bedrijfFields">
                     <div class="form-group">
                         <label for="bedrijfNaam" class="required">Naam bedrijf</label>
-                        <input type="text" id="bedrijfNaam" placeholder="Naam bedrijf" required>
+                        <input type="text" id="bedrijfNaam" name="bedrijfNaam" placeholder="Naam bedrijf" required>
                     </div>
                     <div class="form-group">
-                        <label for="voornaam" class="required">Voornaam</label>
-                        <input type="text" id="voornaam" placeholder="Voornaam" required>
+                        <label for="voornaam" class="required">Voornaam contactpersoon</label>
+                        <input type="text" id="voornaam" name="voornaam" placeholder="Voornaam" required>
                     </div>
                     <div class="form-group">
-                        <label for="achternaam" class="required">Achternaam</label>
-                        <input type="text" id="achternaam" placeholder="Achternaam" required>
+                        <label for="achternaam" class="required">Achternaam contactpersoon</label>
+                        <input type="text" id="achternaam" name="achternaam" placeholder="Achternaam" required>
                     </div>
                     <div class="form-group">
                         <label for="btwNummer" class="required">BTW-nummer</label>
-                        <input type="text" id="btwNummer" placeholder="BTW-nummer" required>
+                        <input type="text" id="btwNummer" name="btwNummer" placeholder="BE0123456789" required>
+                        <small>Formaat: BE + 10 cijfers</small>
                     </div>
                     <div class="form-group">
                         <label for="emailContactpersoon" class="required">Email-adres contactpersoon</label>
-                        <input type="email" id="emailContactpersoon" placeholder="Email-adres contactpersoon" required>
+                        <input type="email" id="emailContactpersoon" name="emailContactpersoon" placeholder="contact@bedrijf.be" required>
                     </div>
                     <div class="form-group">
                         <label for="straat" class="required">Straat</label>
-                        <input type="text" id="straat" placeholder="Straat" required>
+                        <input type="text" id="straat" name="straat" placeholder="Straatnaam" required>
                     </div>
                     <div class="form-group">
-                        <label for="nummer" class="required">Nummer</label>
-                        <input type="text" id="nummer" placeholder="Nummer" required>
+                        <label for="nummer" class="required">Huisnummer</label>
+                        <input type="text" id="nummer" name="nummer" placeholder="123" required>
                     </div>
                     <div class="form-group">
                         <label for="postcode" class="required">Postcode</label>
-                        <input type="text" id="postcode" placeholder="Postcode" required>
+                        <input type="text" id="postcode" name="postcode" placeholder="1000" required>
                     </div>
                     <div class="form-group">
                         <label for="gemeente" class="required">Gemeente</label>
-                        <input type="text" id="gemeente" placeholder="Gemeente" required>
+                        <input type="text" id="gemeente" name="gemeente" placeholder="Brussel" required>
                     </div>
                     <div class="form-group">
                         <label for="telefoonnummer" class="required">Telefoonnummer</label>
-                        <input type="text" id="telefoonnummer" placeholder="Telefoonnummer" required>
+                        <input type="tel" id="telefoonnummer" name="telefoonnummer" placeholder="+32 2 123 45 67" required>
                     </div>
                     <div class="form-group">
-                        <label for="websiteLinkedin">Website of LinkedIn</label>
-                        <input type="text" id="websiteLinkedin" placeholder="Website of LinkedIn">
+                        <label for="websiteLinkedin">Website of LinkedIn (optioneel)</label>
+                        <input type="url" id="websiteLinkedin" name="websiteLinkedin" placeholder="https://www.bedrijf.be">
                     </div>
                     <div class="form-group">
-                        <label for="bedrijfslogo">Upload bedrijfslogo</label>
+                        <label for="bedrijfslogo">Upload bedrijfslogo (optioneel)</label>
                         <div class="file-upload-container">
-                            <input type="file" id="bedrijfslogo" accept="image/*" class="file-input">
+                            <input type="file" id="bedrijfslogo" name="bedrijfslogo" accept="image/*" class="file-input">
                             <label for="bedrijfslogo" class="file-upload-label">
                                 <span class="file-upload-text">Kies bestand</span>
                                 <span class="file-upload-icon">📁</span>
@@ -84,20 +87,21 @@
                 <!-- Student velden -->
                 <div id="studentFields" class="hidden">
                     <div class="form-group">
-                        <label for="studentNaam" class="required">Naam</label>
-                        <input type="text" id="studentNaam" placeholder="Naam" required>
+                        <label for="studentNaam" class="required">Voornaam</label>
+                        <input type="text" id="studentNaam" name="studentNaam" placeholder="Voornaam" required>
                     </div>
                     <div class="form-group">
                         <label for="studentAchternaam" class="required">Achternaam</label>
-                        <input type="text" id="studentAchternaam" placeholder="Achternaam" required>
+                        <input type="text" id="studentAchternaam" name="studentAchternaam" placeholder="Achternaam" required>
                     </div>
                     <div class="form-group">
-                        <label for="studentennummer" class="required">Unieke studentennummer</label>
-                        <input type="text" id="studentennummer" placeholder="Unieke studentennummer" required>
+                        <label for="studentennummer" class="required">Studentennummer</label>
+                        <input type="text" id="studentennummer" name="studentennummer" placeholder="123456" required>
+                        <small>Uw unieke studentennummer van de school</small>
                     </div>
                     <div class="form-group">
                         <label for="opleiding" class="required">Opleiding</label>
-                        <select id="opleiding" required>
+                        <select id="opleiding" name="opleiding" required>
                             <option value="">Kies een opleiding</option>
                             <option value="dagtraject-toegepaste-informatica">Dagtraject Toegepaste Informatica</option>
                             <option value="graduaat">Graduaat</option>
@@ -106,47 +110,309 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="studentMail" class="required">Mail</label>
-                        <input type="email" id="studentMail" placeholder="Student email" required>
+                        <label for="studentMail" class="required">E-mailadres</label>
+                        <input type="email" id="studentMail" name="studentMail" placeholder="student@student.ehb.be" required>
+                        <small>Bij voorkeur je school e-mailadres</small>
                     </div>
                     <div class="form-group">
                         <label for="gsmNummer" class="required">GSM nummer</label>
-                        <input type="text" id="gsmNummer" placeholder="GSM nummer" required>
+                        <input type="tel" id="gsmNummer" name="gsmNummer" placeholder="+32 4 123 45 67" required>
                     </div>
                 </div>
 
                 <!-- Gemeenschappelijke velden -->
                 <div class="form-group">
-                    <label for="registerPassword" class="required">Wachtwoord (minimaal 8 karakters)</label>
-                    <input type="password" id="registerPassword" placeholder="Kies een sterk wachtwoord" required>
+                    <label for="registerPassword" class="required">Wachtwoord</label>
+                    <input type="password" id="registerPassword" name="registerPassword" placeholder="Minimaal 8 karakters" required>
+                    <small>Minimaal 8 karakters, bij voorkeur met hoofdletters, cijfers en speciale tekens</small>
                 </div>
-                <div class="form-group" id="bedrijfPasswordRepeat">
+                <div class="form-group">
                     <label for="confirmPassword" class="required">Herhaal wachtwoord</label>
-                    <input type="password" id="confirmPassword" placeholder="Herhaal je wachtwoord" required>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Herhaal je wachtwoord" required>
                 </div>
 
+                <!-- Terms agreement -->
                 <div class="checkbox-group">
-                    <input type="checkbox" id="agreeTerms" required>
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
                     <label for="agreeTerms">
-                        Ik ga akkoord met de <a href="#" target="_blank">algemene voorwaarden</a>
+                        Ik ga akkoord met de <a href="#" target="_blank">algemene voorwaarden</a> en het <a href="#" target="_blank">privacy beleid</a>
                     </label>
                 </div>
 
-                <button type="submit" class="btn" id="registerButton">Account Aanmaken</button>
+                <!-- Submit button -->
+                <button type="submit" class="btn primary" id="registerButton">
+                    Bedrijfsaccount Aanmaken
+                </button>
             </form>
             
+            <!-- Link to login -->
             <div class="toggle-link">
                 <span>Heb je al een account? </span>
-                <a href="/src/HTML/ACCOUNT/login.html" onclick="showLoginForm()">Log hier in</a>
+                <a href="/login" onclick="showLoginForm()">Log hier in</a>
             </div>
         </div>
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display: none;">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <p>Account aanmaken...</p>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="message success" style="display: none;">
+        <h3>✅ Account Succesvol Aangemaakt!</h3>
+        <p>Je wordt automatisch doorgestuurd naar je dashboard...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="message error" style="display: none;">
+        <h3>❌ Fout bij Registratie</h3>
+        <p id="errorText">Er is een fout opgetreden. Probeer het opnieuw.</p>
+        <button onclick="hideErrorMessage()" class="btn secondary">Sluiten</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/src/JS/ACCOUNT/register.js"></script>
+    <script type="module" src="/src/JS/UTILS/sendInvoice.js"></script>
+    <script type="module" src="/src/JS/UTIL/startPage.js"></script>
+
+    <style>
+        /* Additional styles for improved UX */
+        .hidden { display: none !important; }
+        
+        .registration-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group .required::after {
+            content: ' *';
+            color: red;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .user-type-toggle {
+            display: flex;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .toggle-option {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-option:hover {
+            background: #e9ecef;
+        }
+        
+        .toggle-option.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .checkbox-group {
+            margin: 20px 0;
+        }
+        
+        .checkbox-group input {
+            width: auto !important;
+            margin-right: 10px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn.primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn.primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .toggle-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+        
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loader-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10000;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .file-upload-container {
+            position: relative;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-label:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .file-name {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+
+    <script>
+        // Hide error message function
+        function hideErrorMessage() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            if (successMsg.style.display !== 'none') {
+                successMsg.style.display = 'none';
+            }
+            if (errorMsg.style.display !== 'none') {
+                errorMsg.style.display = 'none';
+            }
+        }, 5000);
+    </script>
 </body>
-<script type="module" src="/src/JS/UTILS/sendInvoice.js"></script>
-<script src="/src/JS/ACCOUNT/register.js"></script>
-<script type="module" src="/src/JS/UTIL/startPage.js"></script>
 </html>
