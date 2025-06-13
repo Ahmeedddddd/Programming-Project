@@ -125,7 +125,7 @@ app.get('/reservatie', (req, res) => {
 });
 
 app.get('/gesprekkenOverzicht', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/gesprekken-overzicht.html'));
+  res.sendFile(path.join(__dirname, '../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html'));
 });
 
   //STUDENTEN
