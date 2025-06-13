@@ -1,6 +1,6 @@
 //src/Server/CONTROLLERS/authController.js
-const Auth = require('../MODELS/auth'); // ✅ NIEUW: Gebruik nieuwe Auth model
-const { authenticateUser } = require('../CONFIG/passwordhasher'); // ✅ Direct gebruik van jullie functie
+const Auth = require('../MODELS/auth');
+const { authenticateUser } = require('../PASSWOORD/CONFIG/passwordhasher');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { pool } = require('../CONFIG/database');
@@ -311,35 +311,6 @@ const authController = {
           message: 'Er ging iets mis bij het aanmaken van je account'
         });
       }
-    }
-  },
-
-  // ✅ BESTAANDE REGISTER FUNCTIE - behouden voor backward compatibility
-  async register(req, res) {
-    try {
-      const { email, password, userType, ...userData } = req.body;
-
-      // Redirect to specific registration based on userType
-      if (userType === 'student') {
-        req.body = { password, ...userData };
-        return await authController.registerStudent(req, res);
-      } else if (userType === 'bedrijf') {
-        req.body = { password, ...userData };
-        return await authController.registerBedrijf(req, res);
-      } else {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid user type',
-          message: 'Gebruik /register/student of /register/bedrijf'
-        });
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      res.status(500).json({ 
-        success: false,
-        error: 'Registration failed',
-        message: 'Er ging iets mis bij het registreren'
-      });
     }
   },
 
