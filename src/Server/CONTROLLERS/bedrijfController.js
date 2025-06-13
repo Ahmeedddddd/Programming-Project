@@ -66,7 +66,6 @@ const bedrijfController = {
   // GET /api/bedrijf/profile - Eigen bedrijfsgegevens bekijken
   async getOwnProfile(req, res) {
     try {
-      // req.user.userId bevat het bedrijfsnummer voor bedrijven
       const bedrijfsnummer = req.user.userId;
       
       if (!bedrijfsnummer) {
@@ -105,15 +104,6 @@ const bedrijfController = {
   // PUT /api/bedrijf/profile - Eigen bedrijfsgegevens bijwerken
   async updateOwnProfile(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Validation failed',
-          details: errors.array()
-        });
-      }
-
       const bedrijfsnummer = req.user.userId;
       
       if (!bedrijfsnummer) {
@@ -138,7 +128,6 @@ const bedrijfController = {
         });
       }
 
-      // Haal updated data op
       const updatedBedrijf = await Bedrijf.getById(bedrijfsnummer);
 
       res.json({ 
@@ -161,12 +150,25 @@ const bedrijfController = {
   // POST /api/bedrijven - Nieuw bedrijf aanmaken (alleen organisator)
   async createBedrijf(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      // Basic validation - check if required fields exist
+      const { naam, email, sector } = req.body;
+      
+      if (!naam || !email || !sector) {
         return res.status(400).json({ 
           success: false,
-          error: 'Validation failed',
-          details: errors.array()
+          error: 'Missing required fields',
+          message: 'Naam, email en sector zijn verplicht',
+          required: ['naam', 'email', 'sector']
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid email format',
+          message: 'Ongeldig email adres'
         });
       }
 
@@ -202,17 +204,15 @@ const bedrijfController = {
   // PUT /api/bedrijven/:bedrijfsnummer - Bedrijf bijwerken (organisator of bedrijf zelf)
   async updateBedrijf(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      const { bedrijfsnummer } = req.params;
+      
+      if (!bedrijfsnummer || isNaN(bedrijfsnummer)) {
         return res.status(400).json({ 
           success: false,
-          error: 'Validation failed',
-          details: errors.array()
+          error: 'Invalid bedrijfsnummer provided'
         });
       }
 
-      const { bedrijfsnummer } = req.params;
-      
       // Check of bedrijf zichzelf wil updaten of organisator is
       if (req.user.userType === 'bedrijf' && req.user.userId !== parseInt(bedrijfsnummer)) {
         return res.status(403).json({ 
@@ -222,7 +222,12 @@ const bedrijfController = {
         });
       }
 
-      const affectedRows = await Bedrijf.update(bedrijfsnummer, req.body);
+      // Don't allow changing bedrijfsnummer
+      const updateData = { ...req.body };
+      delete updateData.bedrijfsnummer;
+      delete updateData.id;
+
+      const affectedRows = await Bedrijf.update(bedrijfsnummer, updateData);
       
       if (affectedRows === 0) {
         return res.status(404).json({ 

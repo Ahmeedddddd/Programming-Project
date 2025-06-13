@@ -117,19 +117,20 @@ const reservatieController = {
   // POST /api/reservaties - Nieuwe reservatie aanmaken
   async createReservatie(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      const { studentnummer, bedrijfsnummer, startTijd, eindTijd, opmerkingen } = req.body;
+      
+      // Basic validation
+      if (!studentnummer || !bedrijfsnummer || !startTijd || !eindTijd) {
         return res.status(400).json({ 
           success: false,
-          error: 'Validation failed',
-          details: errors.array()
+          error: 'Missing required fields',
+          message: 'Studentnummer, bedrijfsnummer, startTijd en eindTijd zijn verplicht',
+          required: ['studentnummer', 'bedrijfsnummer', 'startTijd', 'eindTijd']
         });
       }
 
-      const { studentnummer, bedrijfsnummer, startTijd, eindTijd, opmerkingen } = req.body;
-      
       // Check if user can create this reservation
-      if (req.user.userType === 'student' && req.user.userId !== parseInt(studentnummer)) {
+      if (req.user.userType === 'student' && req.user.userId !== studentnummer) {
         return res.status(403).json({
           success: false,
           error: 'Students can only create reservations for themselves'
@@ -160,9 +161,7 @@ const reservatieController = {
         startTijd,
         eindTijd,
         opmerkingen: opmerkingen || null,
-        status: 'aangevraagd',
-        aangemaakt_door: req.user.userId,
-        aangemaakt_door_type: req.user.userType
+        status: 'aangevraagd'
       };
 
       const reservatieId = await Reservatie.create(reservatieData);
@@ -191,12 +190,27 @@ const reservatieController = {
       const { id } = req.params;
       const { status, opmerkingen } = req.body;
       
-      const validStatuses = ['aangevraagd', 'bevestigd', 'geweigerd', 'geannuleerd', 'voltooid'];
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid reservation ID provided'
+        });
+      }
+
+      if (!status) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Status is required'
+        });
+      }
+      
+      const validStatuses = ['aangevraagd', 'bevestigd', 'geweigerd', 'geannuleerd', 'afgewerkt', 'no-show'];
       
       if (!validStatuses.includes(status)) {
         return res.status(400).json({
           success: false,
           error: 'Invalid status',
+          message: `Status moet een van de volgende zijn: ${validStatuses.join(', ')}`,
           validStatuses: validStatuses
         });
       }
@@ -212,7 +226,7 @@ const reservatieController = {
 
       // Check permissions
       const canUpdate = req.user.userType === 'organisator' ||
-                       (req.user.userType === 'bedrijf' && reservatie.bedrijfsnummer === req.user.userId) ||
+                       (req.user.userType === 'bedrijf' && reservatie.bedrijfsnummer == req.user.userId) ||
                        (req.user.userType === 'student' && reservatie.studentnummer === req.user.userId && status === 'geannuleerd');
 
       if (!canUpdate) {
@@ -225,8 +239,7 @@ const reservatieController = {
 
       const updateData = { 
         status,
-        opmerkingen: opmerkingen || reservatie.opmerkingen,
-        bijgewerkt_op: new Date()
+        opmerkingen: opmerkingen || reservatie.opmerkingen
       };
 
       const affectedRows = await Reservatie.updateStatus(id, updateData);
@@ -261,20 +274,18 @@ const reservatieController = {
     try {
       const { id } = req.params;
       
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid reservation ID provided'
+        });
+      }
+
       // Alleen organisator kan volledige updates doen
       if (req.user.userType !== 'organisator') {
         return res.status(403).json({
           success: false,
           error: 'Only organisators can fully update reservations'
-        });
-      }
-
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Validation failed',
-          details: errors.array()
         });
       }
 
@@ -306,6 +317,13 @@ const reservatieController = {
     try {
       const { id } = req.params;
       
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid reservation ID provided'
+        });
+      }
+
       // Alleen organisator kan reservaties verwijderen
       if (req.user.userType !== 'organisator') {
         return res.status(403).json({

@@ -179,12 +179,25 @@ const studentController = {
   // POST /api/studenten - Nieuwe student aanmaken (alleen organisator)
   async createStudent(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      // Basic validation - check if required fields exist
+      const { studentnummer, voornaam, achternaam, email } = req.body;
+      
+      if (!studentnummer || !voornaam || !achternaam || !email) {
         return res.status(400).json({ 
           success: false,
-          error: 'Validation failed',
-          details: errors.array()
+          error: 'Missing required fields',
+          message: 'Studentnummer, voornaam, achternaam en email zijn verplicht',
+          required: ['studentnummer', 'voornaam', 'achternaam', 'email']
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid email format',
+          message: 'Ongeldig email adres'
         });
       }
 
@@ -195,6 +208,7 @@ const studentController = {
         message: 'Student created successfully',
         data: {
           studentnummer: req.body.studentnummer,
+          id: studentId,
           ...req.body
         }
       });
@@ -220,17 +234,15 @@ const studentController = {
   // PUT /api/studenten/:studentnummer - Student bijwerken (organisator of student zelf)
   async updateStudent(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      const { studentnummer } = req.params;
+      
+      if (!studentnummer) {
         return res.status(400).json({ 
           success: false,
-          error: 'Validation failed',
-          details: errors.array()
+          error: 'Invalid studentnummer provided'
         });
       }
 
-      const { studentnummer } = req.params;
-      
       // Check of student zichzelf wil updaten of organisator is
       if (req.user.userType === 'student' && req.user.userId !== studentnummer) {
         return res.status(403).json({ 
@@ -240,7 +252,12 @@ const studentController = {
         });
       }
 
-      const affectedRows = await Student.update(studentnummer, req.body);
+      // Don't allow changing studentnummer
+      const updateData = { ...req.body };
+      delete updateData.studentnummer;
+      delete updateData.id;
+
+      const affectedRows = await Student.update(studentnummer, updateData);
       
       if (affectedRows === 0) {
         return res.status(404).json({ 
