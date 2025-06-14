@@ -480,66 +480,143 @@ const authController = {
     }
   },
 
-  // 🔐 CHANGE PASSWORD - BESTAANDE FUNCTIE (ongewijzigd)
-  async changePassword(req, res) {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Validation failed',
-          details: errors.array()
-        });
-      }
+// 🔐 CHANGE PASSWORD - UPDATED met PasswordManager en stored procedure
+async changePassword(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
 
-      const { currentPassword, newPassword } = req.body;
-      const { gebruikersId, email } = req.user;
+    const { currentPassword, newPassword } = req.body;
+    const { gebruikersId, email } = req.user;
 
-      // Get current credentials
-      const userCredentials = await Auth.getLoginCredentials(email);
+    console.log(`🔐 Password change request for user ${gebruikersId} (${email})`);
+
+    // Validatie
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'Huidig en nieuw wachtwoord zijn verplicht'
+      });
+    }
+    
+    // Controleer of nieuwe wachtwoord anders is dan huidige
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Same password',
+        message: 'Nieuw wachtwoord moet verschillen van het huidige wachtwoord'
+      });
+    }
+
+    // ✅ Controleer huidig wachtwoord via PasswordManager
+    const isCurrentPasswordValid = await passwordManager.verifyCurrentPassword(
+      gebruikersId, 
+      currentPassword
+    );
+    
+    if (!isCurrentPasswordValid) {
+      console.log(`❌ Invalid current password for user ${gebruikersId}`);
       
-      if (!userCredentials) {
-        return res.status(404).json({ 
-          success: false,
-          error: 'User not found'
-        });
+      // Log failed password change attempt
+      try {
+        await AccountSecurity.logSecurityEvent(
+          'PASSWORD_CHANGE_FAILED',
+          email,
+          req.ip,
+          req.get('User-Agent'),
+          { reason: 'Invalid current password' }
+        );
+      } catch (logError) {
+        console.error('Failed to log security event:', logError);
       }
-
-      // Verify current password
-      const passwordValid = await Auth.verifyPassword(currentPassword, userCredentials.passwoord_hash);
       
-      if (!passwordValid) {
-        return res.status(401).json({ 
-          success: false,
-          error: 'Current password is incorrect',
-          message: 'Het huidige wachtwoord is onjuist'
-        });
-      }
-
-      // Update password
-      const updated = await Auth.updatePassword(gebruikersId, newPassword);
+      return res.status(401).json({ 
+        success: false,
+        error: 'Current password is incorrect',
+        message: 'Het huidige wachtwoord is onjuist'
+      });
+    }
+    
+    // ✅ Controleer of wachtwoord recent gebruikt is
+    const isPasswordReused = await passwordManager.checkPasswordReuse(
+      gebruikersId, 
+      newPassword
+    );
+    
+    if (isPasswordReused) {
+      console.log(`⚠️  Password reuse detected for user ${gebruikersId}`);
       
-      if (!updated) {
-        return res.status(500).json({ 
-          success: false,
-          error: 'Failed to update password'
-        });
+      // Log password reuse attempt
+      try {
+        await AccountSecurity.logSecurityEvent(
+          'PASSWORD_REUSE_BLOCKED',
+          email,
+          req.ip,
+          req.get('User-Agent'),
+          { gebruikersId: gebruikersId }
+        );
+      } catch (logError) {
+        console.error('Failed to log security event:', logError);
       }
-
+      
+      return res.status(400).json({
+        success: false,
+        error: 'Password reuse detected',
+        message: 'Dit wachtwoord is recent gebruikt. Kies een ander wachtwoord.'
+      });
+    }
+    
+    // 🚀 Update wachtwoord via PasswordManager (stored procedure call gebeurt hier!)
+    const result = await passwordManager.updatePassword(gebruikersId, newPassword);
+    
+    if (result.success) {
+      console.log(`✅ Password successfully changed for user ${gebruikersId}`);
+      
+      // Log successful password change
+      try {
+        await AccountSecurity.logSecurityEvent(
+          'PASSWORD_CHANGED',
+          email,
+          req.ip,
+          req.get('User-Agent'),
+          { 
+            gebruikersId: gebruikersId,
+            timestamp: new Date().toISOString()
+          }
+        );
+      } catch (logError) {
+        console.error('Failed to log security event:', logError);
+      }
+      
       res.json({
         success: true,
         message: 'Wachtwoord succesvol gewijzigd'
       });
-
-    } catch (error) {
-      console.error('Change password error:', error);
-      res.status(500).json({ 
+    } else {
+      console.log(`❌ Password change failed for user ${gebruikersId}: ${result.message}`);
+      res.status(500).json({
         success: false,
-        error: 'Failed to change password',
-        message: 'Er ging iets mis bij het wijzigen van het wachtwoord'
+        error: 'Password update failed',
+        message: result.message || 'Er ging iets mis bij het wijzigen van het wachtwoord'
       });
     }
-  },
+
+  } catch (error) {
+    console.error('❌ Change password error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to change password',
+      message: 'Er ging iets mis bij het wijzigen van het wachtwoord'
+    });
+  }
+},
 
   // 🚪 LOGOUT - NIEUWE FUNCTIE
   async logout(req, res) {
