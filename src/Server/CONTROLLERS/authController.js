@@ -10,7 +10,7 @@ const PasswordManager = require('../PASSWOORD/passwordManager');
 const passwordManager = new PasswordManager();
 
 // Import nieuwe services
-const vatValidationService = require('../SERVICES/vatValidationService');
+const vatValidationService = require('../SERVICES/checkVATServ');
 const handlebarsEmailService = require('../SERVICES/handlebarsEmailService');
 const { AccountSecurity } = require('../MIDDLEWARE/security');
 
