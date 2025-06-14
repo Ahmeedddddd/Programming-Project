@@ -14,6 +14,7 @@ const vatValidationService = require('../SERVICES/vatValidationService');
 const handlebarsEmailService = require('../SERVICES/handlebarsEmailService');
 const { AccountSecurity } = require('../MIDDLEWARE/security');
 
+
 const authController = {
 
   // 🔐 LOGIN - BESTAANDE FUNCTIE (ongewijzigd)
