@@ -1,6 +1,8 @@
-// src/JS/password-change.js
+// src/JS/UTILS/password-change.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔐 Password change page loaded');
+    
     const form = document.getElementById('change-password-form');
     const messageDiv = document.getElementById('message');
     const submitBtn = document.getElementById('submit-btn');
@@ -10,13 +12,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    console.log('🔐 Password change form initialized');
+    console.log('✅ Password change form initialized');
     
-    // Real-time password strength indicator
+    // Get form elements
+    const currentPasswordInput = document.getElementById('current-password');
     const newPasswordInput = document.getElementById('new-password');
     const confirmPasswordInput = document.getElementById('confirm-password');
     const strengthIndicator = document.getElementById('password-strength');
     
+    // Real-time password strength indicator
     if (newPasswordInput && strengthIndicator) {
         newPasswordInput.addEventListener('input', function() {
             const password = this.value;
@@ -26,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Real-time confirm password validation
-    if (confirmPasswordInput) {
+    if (confirmPasswordInput && newPasswordInput) {
         confirmPasswordInput.addEventListener('input', function() {
             const newPassword = newPasswordInput.value;
             const confirmPassword = this.value;
@@ -41,11 +45,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Form submission
+    // Form submission - Calls your working API!
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const currentPassword = document.getElementById('current-password').value;
+        console.log('🚀 Password change form submitted');
+        
+        const currentPassword = currentPasswordInput.value;
         const newPassword = newPasswordInput.value;
         const confirmPassword = confirmPasswordInput.value;
         
@@ -57,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (newPassword !== confirmPassword) {
             showMessage('Nieuwe wachtwoorden komen niet overeen', 'error');
+            confirmPasswordInput.classList.add('invalid');
             return;
         }
         
@@ -67,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (newPassword.length < 8) {
             showMessage('Nieuw wachtwoord moet minimaal 8 karakters zijn', 'error');
+            newPasswordInput.classList.add('invalid');
             return;
         }
         
@@ -74,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const strength = checkPasswordStrength(newPassword);
         if (strength.score < 3) {
             showMessage(`Wachtwoord is te zwak: ${strength.feedback}`, 'error');
+            newPasswordInput.classList.add('invalid');
             return;
         }
         
@@ -81,15 +90,15 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoadingState(true);
         
         try {
-            console.log('🚀 Submitting password change request');
+            console.log('📡 Sending password change request to /api/auth/change-password');
             
             const response = await fetch('/api/auth/change-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Include authorization header if you store tokens
                     'Authorization': `Bearer ${getAuthToken()}`
                 },
+                credentials: 'include', // Include cookies
                 body: JSON.stringify({
                     currentPassword,
                     newPassword
@@ -99,23 +108,48 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             
             if (result.success) {
-                console.log('✅ Password changed successfully');
-                showMessage('Wachtwoord succesvol gewijzigd!', 'success');
+                console.log('✅ Password changed successfully via stored procedure');
+                console.log('Method used:', result.method);
+                
+                showMessage(`Wachtwoord succesvol gewijzigd! 🎉`, 'success');
                 form.reset();
+                
+                // Clear strength indicator
+                if (strengthIndicator) {
+                    strengthIndicator.innerHTML = '';
+                }
                 
                 // Optional: redirect after success
                 setTimeout(() => {
-                    window.location.href = '/dashboard'; // Of waar je naartoe wilt
-                }, 2000);
+                    if (confirm('Wachtwoord gewijzigd! Wil je terug naar je account?')) {
+                        window.location.href = '../ACCOUNT/'; // Pas aan naar jouw account pagina
+                    }
+                }, 3000);
             } else {
                 console.log('❌ Password change failed:', result.message);
                 showMessage(result.message || 'Er ging iets mis', 'error');
+                
+                // Highlight relevant field based on error
+                if (result.message && result.message.includes('huidige wachtwoord')) {
+                    currentPasswordInput.classList.add('invalid');
+                } else if (result.message && result.message.includes('recent gebruikt')) {
+                    newPasswordInput.classList.add('invalid');
+                }
             }
         } catch (error) {
             console.error('❌ Network error:', error);
-            showMessage('Netwerkfout. Controleer je internetverbinding.', 'error');
+            showMessage('Netwerkfout. Controleer je internetverbinding en probeer opnieuw.', 'error');
         } finally {
             setLoadingState(false);
+        }
+    });
+    
+    // Remove invalid class on input
+    [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
         }
     });
     
@@ -126,11 +160,11 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.className = `message ${type}`;
         messageDiv.style.display = 'block';
         
-        // Auto-hide after 5 seconds for success messages
+        // Auto-hide success messages
         if (type === 'success') {
             setTimeout(() => {
                 messageDiv.style.display = 'none';
-            }, 5000);
+            }, 8000);
         }
         
         // Scroll to message
@@ -140,7 +174,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function setLoadingState(loading) {
         if (submitBtn) {
             submitBtn.disabled = loading;
-            submitBtn.textContent = loading ? 'Wijzigen...' : 'Wachtwoord Wijzigen';
+            if (loading) {
+                submitBtn.textContent = '';
+            } else {
+                submitBtn.textContent = 'Wachtwoord Wijzigen';
+            }
         }
         
         // Disable form inputs
@@ -181,7 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateStrengthIndicator(strength) {
         if (!strengthIndicator) return;
         
-        const colors = ['#ff4444', '#ff8800', '#ffbb00', '#88cc00', '#00cc44'];
+        // Bordeaux color scheme
+        const colors = ['#dc3545', '#fd7e14', '#ffc107', '#881538', '#28a745'];
         const color = colors[strength.score] || colors[0];
         
         strengthIndicator.innerHTML = `
@@ -193,10 +232,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function getAuthToken() {
-        // Get token from localStorage, sessionStorage, or cookies
+        // Get token from various storage methods
         return localStorage.getItem('authToken') || 
+               localStorage.getItem('token') ||
+               localStorage.getItem('jwt') ||
                sessionStorage.getItem('authToken') || 
-               getCookie('authToken') || '';
+               sessionStorage.getItem('token') ||
+               sessionStorage.getItem('jwt') ||
+               getCookie('authToken') || 
+               getCookie('token') || 
+               getCookie('jwt') || '';
     }
     
     function getCookie(name) {
