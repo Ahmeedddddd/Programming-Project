@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { pool } = require('../CONFIG/database');
 const config = require('../CONFIG/config');
-const PasswordManager = require('../PASSWORD/passwordManager');
+const PasswordManager = require('../PASSWOORD/passwordManager');
 const passwordManager = new PasswordManager();
 
 // Import nieuwe services
