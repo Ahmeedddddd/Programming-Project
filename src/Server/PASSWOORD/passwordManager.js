@@ -1,4 +1,4 @@
-// src/Server/PASSWORD/passwordManager.js
+// src/Server/PASSWOORD/paswordManager.js
 const bcrypt = require('bcrypt');
 const { executeQuery } = require('../CONFIG/database');
 
