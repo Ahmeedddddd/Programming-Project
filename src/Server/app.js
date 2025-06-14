@@ -150,6 +150,10 @@ app.get('/mijnProject', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/mijn-project.html'));
 });
 
+app.get('/change-password', (req, res) => {
+    res.sendFile(path.join(__dirname, '../HTML/ACCOUNT/change-password.html'));
+});
+
 const registratieRoutes = require('./ROUTES/registratie');
 app.use('/api', registratieRoutes);
 
