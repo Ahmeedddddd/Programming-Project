@@ -4,9 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alle Studenten</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/CSS/style.css" as="style">
+    <link rel="preload" href="/src/CSS/RESULTS/STUDENTEN/alle-studenten.css" as="style">
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/STUDENTEN/alle-studenten.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        /* Additional styles for dynamic content */
+        .studentTegel {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .studentTegel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 45px rgba(136, 21, 56, 0.3);
+        }
+
+        .student-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .specialization-tag,
+        .year-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .specialization-tag {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .year-tag {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .project-preview {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 3px solid #881538;
+            font-size: 0.85rem;
+        }
+
+        .student-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .location-tag,
+        .email-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px;
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+        }
+
+        .error-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            border-left: 4px solid #dc2626;
+        }
+
+        .retry-btn {
+            background: #881538;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .retry-btn:hover {
+            background: #A91B47;
+            transform: translateY(-2px);
+        }
+
+        /* Loading states */
+        .loading-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+        }
+
+        /* Animation for new cards */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .studentTegel {
+            animation: slideInUp 0.6s ease-out;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigatie -->
@@ -16,7 +147,7 @@
     <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
   </div>
   <div class="navBar">
-    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/index.html" class="navItem">Home</a>
     <a href="/programma" class="navItem">Programma</a>
     <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
     <a href="/info" class="navItem">Info</a>
@@ -25,7 +156,6 @@
     <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
-
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
@@ -90,96 +220,35 @@
 
         <!-- Stats Bar -->
         <div class="stats-bar">
-            <p class="stats-text">🎓 10 studenten beschikbaar voor netwerkgesprekken</p>
+            <p class="stats-text">🎓 Studenten worden geladen...</p>
+            <button class="refresh-btn" style="margin-left: 1rem; padding: 0.5rem 1rem; background: #881538; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt"></i> Vernieuwen
+            </button>
         </div>
 
         <!-- Main Content -->
         <main class="studentTegels">
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">John Doe</h2>
-                <p class="studentBeschrijving">
-                    Ik ben John Doe, ik spreek Engels en ben derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel, altijd op zoek naar de volgende technische uitdaging. Mijn drijfveer is om complexe problemen hands-on op te lossen, of dat nu in de werkplaats is of tijdens groepsprojecten. Als nieuwsgierige teamspeler geniet ik ervan om ideeën uit te wisselen en samen prototypes te bouwen.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Ben Huur</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Ben Huur, ik spreek Engels en ben derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een passie voor backend ontwikkeling en automatisatie. Binnen projecten focus ik op API-integraties en het uitdenken van schaalbare oplossingen. Ik werk graag in team, waar ik technische uitdagingen mee help vertalen naar efficiënte code.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Jeretom Carnomina</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Jeretom Carnomina, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel met een voorliefde voor multidisciplinaire hardware-software integratie. In mijn vrije tijd experimenteer ik graag met 3D-geprinte robotonderdelen en optimaliseer ik realtime besturingsalgoritmes. Mijn 'About Me' wordt gekenmerkt door een hands-on mentaliteit.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Elina Verstegen</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Elina Verstegen, student Toegepaste Informatica aan de Erasmushogeschool Brussel met een focus op cybersecurity en cloudtechnologie. In mijn vrije tijd bouw ik veilige testomgevingen en automatiseer ik infrastructuur met tools als Terraform en Azure CLI. Mijn sterkte ligt in het combineren van een analytische blik met een hands-on aanpak.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Anatoly Kaas</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Anatoly Kaas, een gepassioneerde student met interesse in machine learning en data science. Mijn focus ligt op het ontwikkelen van intelligent algoritmes en het optimaliseren van grote datasets. Ik combineer theoretische kennis met praktische implementaties in Python en R voor real-world toepassingen.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Bella Swan</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Bella Swan, student met een passie voor UX/UI design en frontend development. Ik focus op het creëren van intuïtieve gebruikerservaringen en moderne webinterfaces. Met een achtergrond in zowel design als development help ik teams bij het overbruggen van de kloof tussen creativiteit en technologie.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Lucas Hortier</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Lucas Hortier, een dedicated student in Industriële Wetenschappen met specialisatie in IoT en embedded systems. Mijn interesse ligt in het ontwikkelen van slimme sensorsystemen en real-time data processing. Ik werk graag aan projecten die de fysieke en digitale wereld verbinden.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Anakin Volto</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Anakin Volto, een ambitieuze student met focus op blockchain technologie en decentralized applications. Mijn passie ligt in het ontwikkelen van veilige, transparante systemen en smart contracts. Ik ben altijd op zoek naar innovatieve manieren om blockchain toe te passen in verschillende industrieën.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Mies Vedero</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Mies Vedero, student met een sterke interesse in game development en computer graphics. Ik werk met Unity, Unreal Engine en custom graphics engines om immersive experiences te creëren. Mijn doel is om technologie en creativiteit te combineren in interactieve digitale werelden.
-                </p>
-            </article>
-            
-            <article class="studentTegel">
-                <button class="connect-btn">💬 Connect</button>
-                <h2 class="studentNaam">Persephone Dienst</h2>
-                <p class="studentBeschrijving">
-                    Ik ben Persephone Dienst, een gedreven student in cybersecurity en ethical hacking. Mijn focus ligt op het identificeren van kwetsbaarheden en het ontwikkelen van robuuste beveiligingsoplossingen. Ik help organisaties bij het beschermen van hun digitale assets door proactieve security assessments.
-                </p>
-            </article>
+            <!-- Content wordt dynamisch geladen door JavaScript -->
+            <div class="loading-state">
+                <div class="loader"></div>
+                <p style="margin-top: 1rem; color: #666;">Studenten worden geladen...</p>
+            </div>
         </main>
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-  <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
+        <!-- Notifications will be added here by JavaScript -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script src="/src/JS/RESULTS/STUDENTEN/alle-studenten.js"></script>
 </body>
 </html>
