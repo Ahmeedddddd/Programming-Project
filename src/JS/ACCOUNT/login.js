@@ -1,4 +1,4 @@
-// src/JS/ACCOUNT/login.js - Complete login system
+// src/JS/ACCOUNT/login.js
 
 // Configuration
 const API_BASE_URL = 'http://localhost:3301';
@@ -41,7 +41,7 @@ function initializeLoginSystem() {
     console.log('🔐 Login system initialized');
 }
 
-// Main login handler
+// Main login handler - FIXED VERSION
 async function handleLogin(event) {
     event.preventDefault();
     
@@ -62,22 +62,51 @@ async function handleLogin(event) {
         
         console.log('🔄 Attempting login for:', email);
         
-        // Send login request
+        // ✅ FIXED: Proper userType and identifier determination
+        let userType, identifier;
+        
+        if (email.includes('@student.ehb.be')) {
+            userType = 'student';
+            // ✅ For students, we need studentnummer, not email
+            // Since we only have email, we'll send email and let backend handle it
+            identifier = email;
+        } else if (email.includes('@ehb.be')) {
+            userType = 'organisator';
+            identifier = email;
+        } else {
+            userType = 'bedrijf';
+            // ✅ For bedrijven, we need bedrijfsnummer, but since we only have email, send email
+            identifier = email;
+        }
+        
+        // ✅ FIXED: Send the format the backend expects
+        const loginData = {
+            email: email,           // Always send email
+            password: password,
+            userType: userType      // Add userType for backend processing
+        };
+        
+        console.log('🔄 Login data being sent:', {
+            email: email.substring(0, 10) + '...',
+            userType: userType,
+            hasPassword: !!password
+        });
+        
         const response = await fetch(LOGIN_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                email: email,
-                password: password
-            })
+            body: JSON.stringify(loginData)
         });
         
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+        
         const data = await response.json();
+        console.log('📨 Response data:', data);
         
         if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
+            throw new Error(data.message || `HTTP ${response.status}: Login failed`);
         }
         
         // Success! Handle login response
@@ -95,33 +124,71 @@ async function handleLogin(event) {
 async function handleLoginSuccess(data) {
     console.log('✅ Login successful:', data);
     
-    // Store authentication data
+    // Store authentication data - FIXED structure
     if (data.token) {
         localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userType', data.user.userType);
-        localStorage.setItem('userId', data.user.userId);
-        localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('userType', data.userType || data.user?.userType);
+        localStorage.setItem('userId', data.userId || data.user?.userId || data.user?.id);
+        localStorage.setItem('userEmail', data.email || data.user?.email);
         
-        console.log('🔑 Auth data stored');
+        console.log('🔑 Auth data stored:', {
+            userType: data.userType,
+            userId: data.userId,
+            email: data.email
+        });
     }
     
-    // Show success message
-    showSuccessMessage('Login succesvol! Je wordt doorgestuurd...');
-    
-    // Redirect based on user type
-    setTimeout(() => {
-        redirectTodashboard(data.user.userType);
-    }, 1500);
+    // ✅ Test token before redirecting
+    try {
+        const testResponse = await fetch(`${API_BASE_URL}/api/user-info`, {
+            headers: {
+                'Authorization': `Bearer ${data.token}`
+            }
+        });
+        
+        if (testResponse.ok) {
+            const userData = await testResponse.json();
+            console.log('✅ Token verification successful:', userData);
+            
+            // Show success message
+            showSuccessMessage('Login succesvol! Je wordt doorgestuurd...');
+            
+            // Redirect based on user type
+            setTimeout(() => {
+                redirectToDashboard(data.userType || data.user?.userType);
+            }, 1500);
+        } else {
+            throw new Error('Token verification failed');
+        }
+        
+    } catch (tokenError) {
+        console.error('❌ Token verification failed:', tokenError);
+        showErrorMessage('Login succesvol, maar er is een probleem met de verificatie. Probeer opnieuw in te loggen.');
+        
+        // Clear stored data
+        clearAuthData();
+    }
 }
 
-// Handle login errors
+// Handle login errors - ENHANCED
 function handleLoginError(error) {
     let errorMessage = 'Er ging iets mis bij het inloggen. Probeer het opnieuw.';
     
-    if (error.message.includes('credentials') || error.message.includes('wachtwoord')) {
+    // ✅ More specific error handling based on HTTP status and message
+    if (error.message.includes('400')) {
+        errorMessage = 'Ongeldige logingegevens. Controleer je email en wachtwoord.';
+    } else if (error.message.includes('401') || error.message.includes('credentials') || error.message.includes('wachtwoord')) {
         errorMessage = 'Onjuist email adres of wachtwoord.';
+    } else if (error.message.includes('403')) {
+        errorMessage = 'Je account heeft geen toegang. Contacteer de administrator.';
+    } else if (error.message.includes('404')) {
+        errorMessage = 'De loginservice is niet beschikbaar. Probeer later opnieuw.';
+    } else if (error.message.includes('500')) {
+        errorMessage = 'Server probleem. Contacteer de administrator.';
     } else if (error.message.includes('network') || error.message.includes('fetch')) {
         errorMessage = 'Verbindingsprobleem. Controleer je internetverbinding.';
+    } else if (error.message.includes('Unknown column')) {
+        errorMessage = 'Er is een database probleem. Contacteer de administrator.';
     } else if (error.message) {
         errorMessage = error.message;
     }
@@ -129,7 +196,7 @@ function handleLoginError(error) {
     showErrorMessage(errorMessage);
 }
 
-// Input validation
+// Input validation - ENHANCED
 function validateInput(email, password) {
     let isValid = true;
     
@@ -140,6 +207,9 @@ function validateInput(email, password) {
     } else if (!isValidEmail(email)) {
         showFieldError('loginEmail', 'Voer een geldig email adres in');
         isValid = false;
+    } else if (!email.includes('@ehb.be') && !email.includes('@student.ehb.be')) {
+        // ✅ Allow external emails for bedrijven, but warn about proper format
+        console.log('ℹ️ External email detected - assuming bedrijf login');
     }
     
     // Password validation
@@ -174,7 +244,7 @@ function checkExistingLogin() {
 // Verify existing token
 async function verifyTokenAndRedirect(token, userType) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        const response = await fetch(`${API_BASE_URL}/api/user-info`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -183,23 +253,29 @@ async function verifyTokenAndRedirect(token, userType) {
         });
         
         if (response.ok) {
-            console.log('✅ Valid token found, redirecting...');
-            showInfoMessage('Je bent al ingelogd. Je wordt doorgestuurd...');
-            setTimeout(() => {
-                redirectTodashboard(userType);
-            }, 1000);
-        } else {
-            // Token is invalid, clear it
-            clearAuthData();
+            const userData = await response.json();
+            if (userData.isLoggedIn) {
+                console.log('✅ Valid token found, redirecting...');
+                showInfoMessage('Je bent al ingelogd. Je wordt doorgestuurd...');
+                setTimeout(() => {
+                    redirectToDashboard(userType);
+                }, 1000);
+                return;
+            }
         }
+        
+        // Token is invalid, clear it
+        console.log('⚠️ Token invalid, clearing...');
+        clearAuthData();
+        
     } catch (error) {
-        console.log('Token verification failed, continuing with login');
+        console.log('⚠️ Token verification failed, continuing with login');
         clearAuthData();
     }
 }
 
 // Redirect to appropriate dashboard
-function redirectTodashboard(userType) {
+function redirectToDashboard(userType) {
     const redirectUrls = {
         'student': '/accountStudent',
         'bedrijf': '/accountBedrijf', 
@@ -208,7 +284,9 @@ function redirectTodashboard(userType) {
     
     const url = redirectUrls[userType] || '/';
     console.log(`🚀 Redirecting to ${userType} dashboard: ${url}`);
-    window.location.href = url;
+    
+    // Use window.location.replace to prevent back button issues
+    window.location.replace(url);
 }
 
 // Clear authentication data
@@ -217,9 +295,10 @@ function clearAuthData() {
     localStorage.removeItem('userType');
     localStorage.removeItem('userId');
     localStorage.removeItem('userEmail');
+    console.log('🧹 Auth data cleared');
 }
 
-// UI Helper Functions
+// UI Helper Functions (unchanged)
 function showLoading(show) {
     if (loadingOverlay) {
         loadingOverlay.style.display = show ? 'flex' : 'none';
@@ -259,6 +338,19 @@ function showMessage(message, type = 'info') {
         <button onclick="this.parentElement.remove()" class="close-btn">&times;</button>
     `;
     
+    // Add some basic styling
+    messageDiv.style.cssText = `
+        padding: 12px 16px;
+        margin: 10px 0;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        ${type === 'success' ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : ''}
+        ${type === 'error' ? 'background: #f8d7da; color: #721c24; border: 1px solid #f1aeb5;' : ''}
+        ${type === 'info' ? 'background: #cce7ff; color: #004085; border: 1px solid #99d1ff;' : ''}
+    `;
+    
     // Insert before form
     if (loginForm) {
         loginForm.parentNode.insertBefore(messageDiv, loginForm);
@@ -286,10 +378,12 @@ function showFieldError(fieldId, message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'field-error';
     errorDiv.textContent = message;
+    errorDiv.style.cssText = 'color: #dc3545; font-size: 14px; margin-top: 4px;';
     field.parentNode.appendChild(errorDiv);
     
     // Add error styling to field
     field.classList.add('error');
+    field.style.borderColor = '#dc3545';
 }
 
 function clearErrorMessages() {
@@ -303,25 +397,42 @@ function clearErrorMessages() {
     
     // Remove error styling from fields
     const errorFields = document.querySelectorAll('.error');
-    errorFields.forEach(field => field.classList.remove('error'));
+    errorFields.forEach(field => {
+        field.classList.remove('error');
+        field.style.borderColor = '';
+    });
 }
 
-// Test function for development
-window.testLogin = function() {
-    console.log('🧪 Testing login system...');
+// ✅ Enhanced debug function
+window.debugLogin = function() {
+    console.log('🧪 Debug Login Info:');
+    console.log('Auth Token:', localStorage.getItem('authToken'));
+    console.log('User Type:', localStorage.getItem('userType'));
+    console.log('User ID:', localStorage.getItem('userId'));
+    console.log('Email:', localStorage.getItem('userEmail'));
     
-    // Test with demo credentials
-    emailInput.value = 'test.console@ehb.be';
-    passwordInput.value = 'test123456';
+    // Test current token
+    if (localStorage.getItem('authToken')) {
+        fetch(`${API_BASE_URL}/api/user-info`, {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('authToken') }
+        })
+        .then(r => r.json())
+        .then(data => console.log('Token test:', data))
+        .catch(e => console.error('Token test failed:', e));
+    }
     
-    console.log('Demo credentials filled. Click login button to test.');
+    // Test backend connectivity
+    fetch(`${API_BASE_URL}/api/health`)
+        .then(r => r.json())
+        .then(data => console.log('Backend health:', data))
+        .catch(e => console.error('Backend not reachable:', e));
 };
 
 // Export functions for external use
 window.loginSystem = {
     clearAuthData,
     checkExistingLogin,
-    redirectToDashboard: redirectTodashboard,
+    redirectToDashboard: redirectToDashboard,
     isLoggedIn: () => !!localStorage.getItem('authToken'),
     getUserType: () => localStorage.getItem('userType'),
     getAuthToken: () => localStorage.getItem('authToken')

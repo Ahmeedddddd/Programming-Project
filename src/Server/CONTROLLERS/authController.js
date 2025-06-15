@@ -17,74 +17,122 @@ const { AccountSecurity } = require('../MIDDLEWARE/security');
 
 const authController = {
 
-  // 🔐 LOGIN - BESTAANDE FUNCTIE (ongewijzigd)
-  async login(req, res) {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Validation failed',
-          details: errors.array()
-        });
-      }
-
-      const { email, password } = req.body;
-
-      // Eerst bepalen welk type user dit is
-      const user = await Auth.findUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ 
-          success: false,
-          error: 'Invalid credentials',
-          message: 'Email of wachtwoord is onjuist'
-        });
-      }
-
-      // Gebruik bestaande authenticateUser functie
-      let identifier = user.userType === 'organisator' ? email : user.id;
-      const authResult = await authenticateUser(user.userType, identifier, password);
-      
-      if (!authResult.success) {
-        return res.status(401).json({ 
-          success: false,
-          error: 'Invalid credentials',
-          message: authResult.message
-        });
-      }
-
-      // Generate JWT token
-      const tokenPayload = {
-        gebruikersId: authResult.user.gebruikersId,
-        userId: user.id,
-        userType: user.userType,
-        email: email
-      };
-
-      const token = jwt.sign(tokenPayload, config.jwt.secret, { 
-        expiresIn: config.jwt.expiresIn 
-      });
-
-      res.json({
-        success: true,
-        message: 'Login succesvol',
-        token: token,
-        user: {
-          userId: user.id,
-          userType: user.userType,
-          email: email
-        }
-      });
-
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ 
+  // 🔐 LOGIN - FIXED EMAIL-BASED VERSION
+async login(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
         success: false,
-        error: 'Login failed',
-        message: 'Er ging iets mis bij het inloggen'
+        error: 'Validation failed',
+        details: errors.array()
       });
     }
-  },
+
+    const { email, password } = req.body;
+
+    console.log(`🔐 Login attempt for email: ${email}`);
+
+    // ✅ Email naar identifier mapping functie
+    async function emailToIdentifier(email) {
+      try {
+        // Check in STUDENT table
+        const [students] = await pool.query(
+          'SELECT studentnummer, email FROM STUDENT WHERE email = ?',
+          [email]
+        );
+        if (students.length > 0) {
+          console.log(`📚 Found student: ${students[0].studentnummer}`);
+          return { userType: 'student', identifier: students[0].studentnummer };
+        }
+
+        // Check in BEDRIJF table  
+        const [bedrijven] = await pool.query(
+          'SELECT bedrijfsnummer, email FROM BEDRIJF WHERE email = ?',
+          [email]
+        );
+        if (bedrijven.length > 0) {
+          console.log(`🏢 Found bedrijf: ${bedrijven[0].bedrijfsnummer}`);
+          return { userType: 'bedrijf', identifier: bedrijven[0].bedrijfsnummer };
+        }
+
+        // Check in ORGANISATOR table
+        const [organisators] = await pool.query(
+          'SELECT email FROM ORGANISATOR WHERE email = ?',
+          [email]
+        );
+        if (organisators.length > 0) {
+          console.log(`👔 Found organisator: ${email}`);
+          return { userType: 'organisator', identifier: email };
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Error in emailToIdentifier:', error);
+        return null;
+      }
+    }
+
+    // ✅ Zoek user type en identifier op basis van email
+    const userLookup = await emailToIdentifier(email);
+    if (!userLookup) {
+      return res.status(401).json({ 
+        success: false,
+        error: 'Invalid credentials',
+        message: 'Geen account gevonden met dit email adres'
+      });
+    }
+
+    console.log(`🎯 Authenticating ${userLookup.userType} with identifier: ${userLookup.identifier}`);
+
+    // ✅ Gebruik bestaande authenticateUser functie met correcte identifier
+    const authResult = await authenticateUser(userLookup.userType, userLookup.identifier, password);
+    
+    if (!authResult.success) {
+      console.log(`❌ Authentication failed: ${authResult.message}`);
+      return res.status(401).json({ 
+        success: false,
+        error: 'Invalid credentials',
+        message: 'Email of wachtwoord is onjuist'
+      });
+    }
+
+    console.log(`✅ Authentication successful for ${authResult.user.email || email}`);
+
+    // Generate JWT token met juiste payload
+    const tokenPayload = {
+      gebruikersId: authResult.user.gebruikersId,
+      userId: userLookup.identifier,
+      userType: userLookup.userType,
+      email: email
+    };
+
+    const token = jwt.sign(tokenPayload, config.jwt.secret, { 
+      expiresIn: config.jwt.expiresIn 
+    });
+
+    // ✅ Consistent response format
+    res.json({
+      success: true,
+      message: 'Login succesvol',
+      token: token,
+      user: {
+        userId: userLookup.identifier,
+        userType: userLookup.userType,
+        email: email,
+        ...authResult.user  // Include additional user data
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Login error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Login failed',
+      message: 'Er ging iets mis bij het inloggen'
+    });
+  }
+},
 
   // 📝 REGISTER STUDENT - UPDATED met Handlebars Email
   async registerStudent(req, res) {
