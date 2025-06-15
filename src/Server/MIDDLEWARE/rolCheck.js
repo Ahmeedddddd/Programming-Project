@@ -1,8 +1,15 @@
+<<<<<<< Updated upstream
 //src/Server/MIDDLEWARE/rolCheck.js
+=======
+<<<<<<< Updated upstream
+=======
+// src/Server/MIDDLEWARE/rolCheck.js
+>>>>>>> Stashed changes
 
 const jwt = require('jsonwebtoken');
 const config = require('../CONFIG/config');
 const path = require('path');
+<<<<<<< Updated upstream
 
 /**
  * ===== SERVER-SIDE MIDDLEWARE =====
@@ -10,6 +17,11 @@ const path = require('path');
  */
 
 // Check of gebruiker ingelogd is (optioneel)
+=======
+const { pool } = require('../CONFIG/database');
+
+// Get current user from token
+>>>>>>> Stashed changes
 const getCurrentUser = (req) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -24,8 +36,13 @@ const getCurrentUser = (req) => {
   }
 };
 
+<<<<<<< Updated upstream
 // Middleware om juiste homepage te serveren
 const serveRoleBasedHomepage = (req, res, next) => {
+=======
+// ✅ ENHANCED: Middleware om juiste homepage te serveren
+const serveRoleBasedHomepage = async (req, res, next) => {
+>>>>>>> Stashed changes
   // Alleen voor homepage requests
   if (req.path !== '/' && req.path !== '/index.html') {
     return next();
@@ -39,24 +56,43 @@ const serveRoleBasedHomepage = (req, res, next) => {
     return res.sendFile(path.join(__dirname, '../../public/index.html'));
   }
 
+<<<<<<< Updated upstream
   // Gebaseerd op userType, serve verschillende bestanden
+=======
+  // 🔥 ENHANCED: Gebaseerd op userType, serve verschillende bestanden
+>>>>>>> Stashed changes
   let homepageFile;
   switch (user.userType) {
     case 'student':
       homepageFile = path.join(__dirname, '../../src/HTML/STUDENTEN/student-homepage.html');
+<<<<<<< Updated upstream
       break;
     case 'bedrijf':
       homepageFile = path.join(__dirname, '../../src/HTML/BEDRIJVEN/bedrijf-homepage.html');
       break;
     case 'organisator':
       homepageFile = path.join(__dirname, '../../src/HTML/ORGANISATOR/organisator-homepage.html');
+=======
+      console.log('🎓 Serving student homepage');
+      break;
+    case 'bedrijf':
+      homepageFile = path.join(__dirname, '../../src/HTML/BEDRIJVEN/bedrijf-homepage.html');
+      console.log('🏢 Serving bedrijf homepage');
+      break;
+    case 'organisator':
+      homepageFile = path.join(__dirname, '../../src/HTML/ORGANISATOR/organisator-homepage.html');
+      console.log('👔 Serving organisator homepage');
+>>>>>>> Stashed changes
       break;
     default:
       homepageFile = path.join(__dirname, '../../public/index.html');
   }
 
+<<<<<<< Updated upstream
   console.log(`🎯 Serving ${user.userType} homepage: ${path.basename(homepageFile)}`);
 
+=======
+>>>>>>> Stashed changes
   // Check of bestand bestaat, anders fallback naar guest
   const fs = require('fs');
   if (fs.existsSync(homepageFile)) {
@@ -67,6 +103,7 @@ const serveRoleBasedHomepage = (req, res, next) => {
   }
 };
 
+<<<<<<< Updated upstream
 // Middleware om role-based account pagina's te serveren  
 const serveRoleBasedAccountPage = (req, res, next) => {
   // Voor account gerelateerde routes
@@ -108,6 +145,8 @@ const serveRoleBasedAccountPage = (req, res, next) => {
   }
 };
 
+=======
+>>>>>>> Stashed changes
 // API endpoint om user info te krijgen voor frontend
 const getUserInfo = async (req, res) => {
   try {
@@ -121,6 +160,7 @@ const getUserInfo = async (req, res) => {
       });
     }
 
+<<<<<<< Updated upstream
     // Try to get additional user data from database if available
     let userData = {
       userId: user.userId,
@@ -155,6 +195,44 @@ const getUserInfo = async (req, res) => {
     } catch (modelError) {
       // Models might not exist, use basic user data
       console.warn('⚠️ Could not load additional user data:', modelError.message);
+=======
+    // Get live user data from database
+    let userData = {
+      email: user.email,
+      userType: user.userType,
+      userId: user.userId,
+      naam: user.naam || ''
+    };
+
+    try {
+      // Load fresh user data based on type
+      if (user.userType === 'student') {
+        const [students] = await pool.query('SELECT * FROM STUDENT WHERE email = ?', [user.email]);
+        if (students.length > 0) {
+          userData = { 
+            ...userData, 
+            ...students[0],
+            naam: `${students[0].voornaam} ${students[0].achternaam}`
+          };
+        }
+      } else if (user.userType === 'bedrijf') {
+        const [bedrijven] = await pool.query('SELECT * FROM BEDRIJF WHERE email = ?', [user.email]);
+        if (bedrijven.length > 0) {
+          userData = { ...userData, ...bedrijven[0] };
+        }
+      } else if (user.userType === 'organisator') {
+        const [organisators] = await pool.query('SELECT * FROM ORGANISATOR WHERE email = ?', [user.email]);
+        if (organisators.length > 0) {
+          userData = { 
+            ...userData, 
+            ...organisators[0],
+            naam: `${organisators[0].voornaam} ${organisators[0].achternaam}`
+          };
+        }
+      }
+    } catch (dbError) {
+      console.warn('⚠️ Could not load additional user data:', dbError.message);
+>>>>>>> Stashed changes
     }
 
     res.json({
@@ -169,21 +247,32 @@ const getUserInfo = async (req, res) => {
   }
 };
 
+<<<<<<< Updated upstream
 /**
  * ===== AUTHENTICATION MIDDLEWARE =====
  */
 
+=======
+>>>>>>> Stashed changes
 // Require authentication (any logged in user)
 const requireAuth = (req, res, next) => {
   const user = getCurrentUser(req);
   if (!user) {
     return res.redirect('/login');
   }
+<<<<<<< Updated upstream
   req.user = user; // Add user to request object
   next();
 };
 
 // ✅ ADDED: Require specific roles
+=======
+  req.user = user;
+  next();
+};
+
+// Require specific roles
+>>>>>>> Stashed changes
 const requireRole = (allowedRoles) => {
   return (req, res, next) => {
     const user = getCurrentUser(req);
@@ -197,18 +286,27 @@ const requireRole = (allowedRoles) => {
       console.log(`❌ Access denied: ${user.userType} not in [${allowedRoles.join(', ')}]`);
       return res.status(403).json({ 
         error: 'Access denied',
+<<<<<<< Updated upstream
         message: `Required role: ${allowedRoles.join(' or ')}, but you are: ${user.userType}`,
         userType: user.userType,
         requiredRoles: allowedRoles
+=======
+        message: `Required role: ${allowedRoles.join(' or ')}, but you are: ${user.userType}`
+>>>>>>> Stashed changes
       });
     }
     
     console.log(`✅ Access granted: ${user.userType} accessing ${req.path}`);
+<<<<<<< Updated upstream
     req.user = user; // Add user to request object
+=======
+    req.user = user;
+>>>>>>> Stashed changes
     next();
   };
 };
 
+<<<<<<< Updated upstream
 /**
  * ===== CLIENT-SIDE SCRIPT GENERATION =====
  */
@@ -221,11 +319,23 @@ const generateClientSideScript = async () => {
     let stats = {
       totalStudents: 252,
       totalCompanies: 84,
+=======
+// Generate dynamic client-side script with live data
+const generateClientSideScript = async () => {
+  try {
+    console.log('🔥 Generating enhanced role manager script with live data...');
+    
+    // Get live stats from database
+    let stats = {
+      totalStudents: 0,
+      totalCompanies: 0,
+>>>>>>> Stashed changes
       totalProjects: 187,
       totalReservations: 0,
       lastUpdated: new Date().toISOString()
     };
     
+<<<<<<< Updated upstream
     // Try to get real stats
     try {
       // You can add real database calls here later
@@ -269,6 +379,47 @@ class RoleManager {
   constructor() {
     this.currentUser = null;
     this.config = window.SERVER_CONFIG;
+=======
+    try {
+      const [studentCount] = await pool.query('SELECT COUNT(*) as count FROM STUDENT');
+      const [bedrijfCount] = await pool.query('SELECT COUNT(*) as count FROM BEDRIJF');
+      
+      let afspraakCount = [{ count: 0 }];
+      try {
+        [afspraakCount] = await pool.query('SELECT COUNT(*) as count FROM AFSPRAAK');
+      } catch (e) {
+        console.log('AFSPRAAK table not available');
+      }
+
+      stats = {
+        totalStudents: studentCount[0]?.count || 0,
+        totalCompanies: bedrijfCount[0]?.count || 0,
+        totalProjects: 187,
+        totalReservations: afspraakCount[0]?.count || 0,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      console.log('📊 Live stats loaded:', stats);
+    } catch (dbError) {
+      console.warn('⚠️ Using fallback stats:', dbError.message);
+    }
+
+    return `
+/**
+ * 🚀 ENHANCED CAREERLAUNCH ROLE MANAGER WITH LIVE DATA
+ * Generated at: ${new Date().toISOString()}
+ */
+
+// ===== SERVER DATA INJECTION =====
+window.LIVE_STATS = ${JSON.stringify(stats, null, 2)};
+
+console.log('🔥 Role Manager: Live server data loaded');
+console.log('📊 Live stats:', window.LIVE_STATS);
+
+class EnhancedRoleManager {
+  constructor() {
+    this.currentUser = null;
+>>>>>>> Stashed changes
     this.stats = window.LIVE_STATS;
     this.init();
   }
@@ -279,12 +430,17 @@ class RoleManager {
       await this.loadUserInfo();
       this.setupUI();
       this.updateLiveStats();
+<<<<<<< Updated upstream
       
       if (this.config.features.realTimeUpdates) {
         this.startAutoRefresh();
       }
       
       console.log('✅ Role Manager initialized successfully');
+=======
+      this.startAutoRefresh();
+      console.log('✅ Enhanced Role Manager initialized successfully');
+>>>>>>> Stashed changes
     } catch (error) {
       console.error('❌ Role Manager initialization failed:', error);
       this.currentUser = { isLoggedIn: false, userType: 'guest' };
@@ -294,7 +450,11 @@ class RoleManager {
   
   async loadUserInfo() {
     try {
+<<<<<<< Updated upstream
       const response = await fetch(\`\${this.config.apiBaseUrl}/api/user-info\`, {
+=======
+      const response = await fetch('/api/user-info', {
+>>>>>>> Stashed changes
         headers: {
           'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || '')
         }
@@ -302,10 +462,14 @@ class RoleManager {
       
       if (response.ok) {
         this.currentUser = await response.json();
+<<<<<<< Updated upstream
         
         if (this.config.features.debugMode) {
           console.log('🔍 Current user loaded:', this.currentUser);
         }
+=======
+        console.log('🔍 Current user loaded:', this.currentUser);
+>>>>>>> Stashed changes
       } else {
         throw new Error(\`HTTP \${response.status}\`);
       }
@@ -316,6 +480,7 @@ class RoleManager {
   }
   
   updateLiveStats() {
+<<<<<<< Updated upstream
     // Update student/company counts on page
     const countElements = document.querySelectorAll('[data-count]');
     countElements.forEach(el => {
@@ -333,13 +498,43 @@ class RoleManager {
     if (this.config.features.debugMode) {
       console.log('📊 Live stats updated in UI');
     }
+=======
+    // Update elements with data-count attributes
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const countType = el.getAttribute('data-count');
+      
+      switch(countType) {
+        case 'students':
+          el.textContent = this.stats.totalStudents;
+          break;
+        case 'companies':
+        case 'bedrijven':
+          el.textContent = this.stats.totalCompanies;
+          break;
+        case 'projects':
+        case 'projecten':
+          el.textContent = this.stats.totalProjects;
+          break;
+        case 'reservations':
+        case 'afspraken':
+          el.textContent = this.stats.totalReservations;
+          break;
+      }
+    });
+    
+    console.log('📊 Live stats updated in UI');
+>>>>>>> Stashed changes
   }
   
   setupUI() {
     this.updateNavigation();
     this.updateSideMenu();
     this.updateContent();
+<<<<<<< Updated upstream
     this.updateActions();
+=======
+    this.addNavigationInterceptors();
+>>>>>>> Stashed changes
   }
   
   updateNavigation() {
@@ -358,30 +553,51 @@ class RoleManager {
           navItems = [
             { href: '/', text: 'Home', active: true },
             { href: '/programma', text: 'Programma' },
+<<<<<<< Updated upstream
             { href: '/gesprekkenOverzicht', text: 'Mijn gesprekken' },
             { href: '/mijnProject', text: 'Mijn Project' },
             { href: '/account', text: 'Account' }
           ];
           break;
           
+=======
+            { href: '/mijnProject', text: 'Mijn Project' },
+            { href: '/alleBedrijven', text: 'Bedrijven' },
+            { href: '/accountStudent', text: 'Account' }
+          ];
+          break;
+>>>>>>> Stashed changes
         case 'bedrijf':
           navItems = [
             { href: '/', text: 'Home', active: true },
             { href: '/programma', text: 'Programma' },
+<<<<<<< Updated upstream
             { href: '/gesprekkenOverzicht', text: 'Gesprekken' },
             { href: '/alleStudenten', text: 'Studenten' },
             { href: '/account', text: 'Account' }
           ];
           break;
           
+=======
+            { href: '/alleStudenten', text: 'Studenten' },
+            { href: '/accountBedrijf', text: 'Account' }
+          ];
+          break;
+>>>>>>> Stashed changes
         case 'organisator':
           navItems = [
             { href: '/', text: 'Dashboard', active: true },
             { href: '/adminPanel', text: 'Admin Panel' },
+<<<<<<< Updated upstream
             { href: '/overzichtOrganisator', text: 'Overzicht' },
             { href: '/alleStudenten', text: 'Studenten' },
             { href: '/alleBedrijven', text: 'Bedrijven' },
             { href: '/account', text: 'Account' }
+=======
+            { href: '/alleStudenten', text: 'Studenten' },
+            { href: '/alleBedrijven', text: 'Bedrijven' },
+            { href: '/accountOrganisator', text: 'Account' }
+>>>>>>> Stashed changes
           ];
           break;
       }
@@ -402,10 +618,13 @@ class RoleManager {
       link.className = 'navItem' + (item.active ? ' active' : '');
       navbar.appendChild(link);
     });
+<<<<<<< Updated upstream
     
     if (this.config.features.debugMode) {
       console.log(\`🧭 Navigation updated for \${this.currentUser.userType}\`);
     }
+=======
+>>>>>>> Stashed changes
   }
   
   updateSideMenu() {
@@ -419,6 +638,7 @@ class RoleManager {
     let menuItems = [];
     
     if (this.currentUser.isLoggedIn) {
+<<<<<<< Updated upstream
       menuItems = [
         { href: '/account', icon: 'fas fa-user', text: 'Mijn Account' }
       ];
@@ -434,13 +654,41 @@ class RoleManager {
       
       menuItems.push(
         { href: '/change-password', icon: 'fas fa-key', text: 'Wachtwoord wijzigen' },
+=======
+      switch (this.currentUser.userType) {
+        case 'student':
+          menuItems = [
+            { href: '/accountStudent', icon: 'fas fa-user', text: 'Mijn Account' },
+            { href: '/mijnProject', icon: 'fas fa-project-diagram', text: 'Mijn Project' }
+          ];
+          break;
+        case 'bedrijf':
+          menuItems = [
+            { href: '/accountBedrijf', icon: 'fas fa-user', text: 'Mijn Account' },
+            { href: '/alleStudenten', icon: 'fas fa-users', text: 'Studenten' }
+          ];
+          break;
+        case 'organisator':
+          menuItems = [
+            { href: '/accountOrganisator', icon: 'fas fa-user', text: 'Mijn Account' },
+            { href: '/adminPanel', icon: 'fas fa-cogs', text: 'Admin Panel' }
+          ];
+          break;
+      }
+      
+      menuItems.push(
+>>>>>>> Stashed changes
         { href: '#', icon: 'fas fa-sign-out-alt', text: 'Uitloggen', onclick: 'logout()' }
       );
     } else {
       menuItems = [
         { href: '/login', icon: 'fas fa-sign-in-alt', text: 'Login' },
+<<<<<<< Updated upstream
         { href: '/register', icon: 'fas fa-user-plus', text: 'Registreren' },
         { href: '/contacteer', icon: 'fas fa-envelope', text: 'Contact us' }
+=======
+        { href: '/register', icon: 'fas fa-user-plus', text: 'Registreren' }
+>>>>>>> Stashed changes
       ];
     }
     
@@ -454,6 +702,7 @@ class RoleManager {
       link.innerHTML = \`<i class="\${item.icon}"></i> \${item.text}\`;
       sideMenuContent.appendChild(link);
     });
+<<<<<<< Updated upstream
     
     // Ensure divider exists
     let divider = sideMenuContent.querySelector('.sideMenu-divider');
@@ -466,6 +715,12 @@ class RoleManager {
   
   updateContent() {
     // Update welcome messages based on user data
+=======
+  }
+  
+  updateContent() {
+    // Update welcome messages
+>>>>>>> Stashed changes
     if (this.currentUser.isLoggedIn && this.currentUser.user) {
       const welcomeElement = document.querySelector('.aboutTitle');
       if (welcomeElement) {
@@ -492,6 +747,7 @@ class RoleManager {
     }
   }
   
+<<<<<<< Updated upstream
   updateActions() {
     // Update action buttons based on role
     const actionButtons = document.querySelectorAll('.section-btn, .cta-btn');
@@ -499,10 +755,20 @@ class RoleManager {
     actionButtons.forEach(button => {
       if (this.currentUser.isLoggedIn) {
         this.updateButtonForRole(button);
+=======
+  addNavigationInterceptors() {
+    // Intercept home navigation to ensure correct homepage
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && (link.getAttribute('href') === '/' || link.getAttribute('href') === '/index.html')) {
+        // Let the server handle this - it will serve the correct homepage
+        console.log('🏠 Navigating to role-based homepage...');
+>>>>>>> Stashed changes
       }
     });
   }
   
+<<<<<<< Updated upstream
   updateButtonForRole(button) {
     const originalHref = button.getAttribute('href');
     
@@ -537,6 +803,23 @@ class RoleManager {
       }
       this.loadUserInfo().then(() => this.setupUI());
     }, 5 * 60 * 1000);
+=======
+  startAutoRefresh() {
+    // Refresh every 2 minutes
+    setInterval(async () => {
+      console.log('🔄 Auto-refreshing live data...');
+      
+      try {
+        const response = await fetch('/api/stats/live');
+        if (response.ok) {
+          this.stats = await response.json();
+          this.updateLiveStats();
+        }
+      } catch (error) {
+        console.warn('Failed to refresh stats:', error);
+      }
+    }, 2 * 60 * 1000);
+>>>>>>> Stashed changes
   }
   
   // Public API methods
@@ -552,18 +835,28 @@ class RoleManager {
     return this.currentUser ? this.currentUser.userType : 'guest';
   }
   
+<<<<<<< Updated upstream
   getServerConfig() {
     return this.config;
   }
   
+=======
+>>>>>>> Stashed changes
   getLiveStats() {
     return this.stats;
   }
   
   async refresh() {
+<<<<<<< Updated upstream
     console.log('🔄 Refreshing role manager...');
     await this.loadUserInfo();
     this.setupUI();
+=======
+    console.log('🔄 Refreshing enhanced role manager...');
+    await this.loadUserInfo();
+    this.setupUI();
+    this.updateLiveStats();
+>>>>>>> Stashed changes
   }
 }
 
@@ -586,6 +879,7 @@ window.logout = async function() {
     console.error('❌ Logout error:', error);
   } finally {
     // Clear all stored data
+<<<<<<< Updated upstream
     localStorage.removeItem('authToken');
     localStorage.removeItem('userType');
     localStorage.removeItem('userId');
@@ -596,6 +890,10 @@ window.logout = async function() {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
     });
     
+=======
+    localStorage.clear();
+    sessionStorage.clear();
+>>>>>>> Stashed changes
     console.log('🚪 User logged out successfully');
     window.location.href = '/login';
   }
@@ -604,23 +902,38 @@ window.logout = async function() {
 // Utility functions
 window.checkAuthStatus = () => window.roleManager ? window.roleManager.isLoggedIn() : false;
 window.getUserType = () => window.roleManager ? window.roleManager.getUserType() : 'guest';
+<<<<<<< Updated upstream
 window.getServerConfig = () => window.roleManager ? window.roleManager.getServerConfig() : window.SERVER_CONFIG;
+=======
+>>>>>>> Stashed changes
 window.getLiveStats = () => window.roleManager ? window.roleManager.getLiveStats() : window.LIVE_STATS;
 window.refreshRoleUI = () => window.roleManager && window.roleManager.refresh();
 
 // ===== INITIALIZATION =====
 function initializeRoleManager() {
   try {
+<<<<<<< Updated upstream
     console.log('🚀 Initializing Role Manager...');
     window.roleManager = new RoleManager();
   } catch (error) {
     console.error('❌ Role Manager initialization failed:', error);
     // Fallback
+=======
+    console.log('🚀 Initializing Enhanced Role Manager...');
+    window.roleManager = new EnhancedRoleManager();
+  } catch (error) {
+    console.error('❌ Role Manager initialization failed:', error);
+>>>>>>> Stashed changes
     window.roleManager = {
       getCurrentUser: () => ({ isLoggedIn: false, userType: 'guest' }),
       isLoggedIn: () => false,
       getUserType: () => 'guest',
+<<<<<<< Updated upstream
       refresh: () => console.warn('Role Manager not properly initialized')
+=======
+      refresh: () => console.warn('Role Manager not properly initialized'),
+      getLiveStats: () => window.LIVE_STATS || {}
+>>>>>>> Stashed changes
     };
   }
 }
@@ -632,6 +945,7 @@ if (document.readyState === 'loading') {
   initializeRoleManager();
 }
 
+<<<<<<< Updated upstream
 // Handle page navigation
 window.addEventListener('pageshow', function(event) {
   if (event.persisted && window.roleManager && window.roleManager.refresh) {
@@ -697,3 +1011,25 @@ module.exports = {
   isLoggedIn: (req) => getCurrentUser(req) !== null,
   getUserType: (req) => getCurrentUser(req)?.userType || 'guest'
 };
+=======
+console.log('✅ Enhanced Role Manager loaded successfully');
+`;
+
+  } catch (error) {
+    console.error('❌ Error generating enhanced client script:', error);
+    return `console.error('Failed to generate role manager');`;
+  }
+};
+
+module.exports = {
+  serveRoleBasedHomepage,
+  getUserInfo,
+  getCurrentUser,
+  requireAuth,
+  requireRole,
+  generateClientSideScript,
+  isLoggedIn: (req) => getCurrentUser(req) !== null,
+  getUserType: (req) => getCurrentUser(req)?.userType || 'guest'
+};
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes

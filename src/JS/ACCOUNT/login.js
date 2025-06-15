@@ -1,8 +1,16 @@
+<<<<<<< Updated upstream
 // src/JS/ACCOUNT/login.js
+=======
+<<<<<<< Updated upstream
+// src/JS/ACCOUNT/login.js - Complete login system
+=======
+// src/JS/ACCOUNT/login.js - SIMPLIFIED FINAL VERSION (SYNTAX FIXED)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
 // Configuration
 const API_BASE_URL = 'http://localhost:3301';
-const LOGIN_ENDPOINT = `${API_BASE_URL}/api/auth/login`;
+const LOGIN_ENDPOINT = API_BASE_URL + '/api/auth/login';
 
 // DOM Elements
 let loginForm;
@@ -38,15 +46,22 @@ function initializeLoginSystem() {
         passwordInput.addEventListener('input', clearErrorMessages);
     }
     
-    console.log('🔐 Login system initialized');
+    console.log('🔐 Simplified login system initialized');
 }
 
+<<<<<<< Updated upstream
 // Main login handler - FIXED VERSION
+=======
+<<<<<<< Updated upstream
+// Main login handler
+=======
+// 🎯 MAIN LOGIN HANDLER - Simplified for email-first auth
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 async function handleLogin(event) {
     event.preventDefault();
     
     try {
-        // Show loading state
         showLoading(true);
         clearErrorMessages();
         
@@ -54,14 +69,20 @@ async function handleLogin(event) {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         
-        // Client-side validation
-        if (!validateInput(email, password)) {
-            showLoading(false);
+        // Basic validation
+        if (!email || !password) {
+            showErrorMessage('Email en wachtwoord zijn verplicht');
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            showErrorMessage('Voer een geldig email adres in');
             return;
         }
         
         console.log('🔄 Attempting login for:', email);
         
+<<<<<<< Updated upstream
         // ✅ FIXED: Proper userType and identifier determination
         let userType, identifier;
         
@@ -92,12 +113,27 @@ async function handleLogin(event) {
             hasPassword: !!password
         });
         
+=======
+<<<<<<< Updated upstream
+        // Send login request
+=======
+        // 📨 SIMPLE LOGIN REQUEST - just email and password
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         const response = await fetch(LOGIN_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+<<<<<<< Updated upstream
             body: JSON.stringify(loginData)
+=======
+<<<<<<< Updated upstream
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+>>>>>>> Stashed changes
         });
         
         console.log(`📡 Response status: ${response.status} ${response.statusText}`);
@@ -106,10 +142,25 @@ async function handleLogin(event) {
         console.log('📨 Response data:', data);
         
         if (!response.ok) {
+<<<<<<< Updated upstream
             throw new Error(data.message || `HTTP ${response.status}: Login failed`);
+=======
+            throw new Error(data.message || 'Login failed');
+=======
+            body: JSON.stringify({ email: email, password: password })
+        });
+        
+        console.log('📡 Response status: ' + response.status);
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed: ' + response.status);
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         }
         
-        // Success! Handle login response
+        // ✅ SUCCESS
         await handleLoginSuccess(data);
         
     } catch (error) {
@@ -124,7 +175,12 @@ async function handleLogin(event) {
 async function handleLoginSuccess(data) {
     console.log('✅ Login successful:', data);
     
+<<<<<<< Updated upstream
     // Store authentication data - FIXED structure
+=======
+<<<<<<< Updated upstream
+    // Store authentication data
+>>>>>>> Stashed changes
     if (data.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userType', data.userType || data.user?.userType);
@@ -138,6 +194,7 @@ async function handleLoginSuccess(data) {
         });
     }
     
+<<<<<<< Updated upstream
     // ✅ Test token before redirecting
     try {
         const testResponse = await fetch(`${API_BASE_URL}/api/user-info`, {
@@ -168,12 +225,46 @@ async function handleLoginSuccess(data) {
         // Clear stored data
         clearAuthData();
     }
+=======
+    // Show success message
+    showSuccessMessage('Login succesvol! Je wordt doorgestuurd...');
+    
+    // Redirect based on user type
+    setTimeout(() => {
+        redirectTodashboard(data.user.userType);
+    }, 1500);
+=======
+    // 💾 Store authentication data
+    if (data.token && data.user) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userType', data.user.userType);
+        localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('userName', data.user.naam || '');
+        localStorage.setItem('userId', data.user.userId || '');
+        
+        console.log('🔑 Auth data stored:', {
+            userType: data.user.userType,
+            email: data.user.email,
+            naam: data.user.naam
+        });
+    }
+    
+    // Show success message
+    showSuccessMessage('Login succesvol! Je wordt doorgestuurd naar je homepage...');
+    
+    // 🚀 REDIRECT to homepage (which will automatically serve the correct role-based page)
+    setTimeout(function() {
+        window.location.href = '/';
+    }, 1000);
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }
 
 // Handle login errors - ENHANCED
 function handleLoginError(error) {
     let errorMessage = 'Er ging iets mis bij het inloggen. Probeer het opnieuw.';
     
+<<<<<<< Updated upstream
     // ✅ More specific error handling based on HTTP status and message
     if (error.message.includes('400')) {
         errorMessage = 'Ongeldige logingegevens. Controleer je email en wachtwoord.';
@@ -185,6 +276,19 @@ function handleLoginError(error) {
         errorMessage = 'De loginservice is niet beschikbaar. Probeer later opnieuw.';
     } else if (error.message.includes('500')) {
         errorMessage = 'Server probleem. Contacteer de administrator.';
+=======
+<<<<<<< Updated upstream
+    if (error.message.includes('credentials') || error.message.includes('wachtwoord')) {
+        errorMessage = 'Onjuist email adres of wachtwoord.';
+=======
+    if (error.message.includes('401') || error.message.includes('credentials') || error.message.includes('wachtwoord')) {
+        errorMessage = 'Onjuist email adres of wachtwoord.';
+    } else if (error.message.includes('404') || error.message.includes('niet gevonden')) {
+        errorMessage = 'Geen account gevonden met dit email adres.';
+    } else if (error.message.includes('500')) {
+        errorMessage = 'Server probleem. Contacteer de administrator.';
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     } else if (error.message.includes('network') || error.message.includes('fetch')) {
         errorMessage = 'Verbindingsprobleem. Controleer je internetverbinding.';
     } else if (error.message.includes('Unknown column')) {
@@ -196,7 +300,12 @@ function handleLoginError(error) {
     showErrorMessage(errorMessage);
 }
 
+<<<<<<< Updated upstream
 // Input validation - ENHANCED
+=======
+<<<<<<< Updated upstream
+// Input validation
+>>>>>>> Stashed changes
 function validateInput(email, password) {
     let isValid = true;
     
@@ -230,6 +339,8 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
+=======
+>>>>>>> Stashed changes
 // Check if user is already logged in
 function checkExistingLogin() {
     const token = localStorage.getItem('authToken');
@@ -244,15 +355,24 @@ function checkExistingLogin() {
 // Verify existing token
 async function verifyTokenAndRedirect(token, userType) {
     try {
+<<<<<<< Updated upstream
         const response = await fetch(`${API_BASE_URL}/api/user-info`, {
+=======
+<<<<<<< Updated upstream
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+=======
+        const response = await fetch(API_BASE_URL + '/api/auth/me', {
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             }
         });
         
         if (response.ok) {
+<<<<<<< Updated upstream
             const userData = await response.json();
             if (userData.isLoggedIn) {
                 console.log('✅ Valid token found, redirecting...');
@@ -262,6 +382,28 @@ async function verifyTokenAndRedirect(token, userType) {
                 }, 1000);
                 return;
             }
+=======
+<<<<<<< Updated upstream
+            console.log('✅ Valid token found, redirecting...');
+            showInfoMessage('Je bent al ingelogd. Je wordt doorgestuurd...');
+            setTimeout(() => {
+                redirectTodashboard(userType);
+            }, 1000);
+        } else {
+            // Token is invalid, clear it
+            clearAuthData();
+=======
+            const userData = await response.json();
+            if (userData.success) {
+                console.log('✅ Valid token found, redirecting to homepage...');
+                showInfoMessage('Je bent al ingelogd. Je wordt doorgestuurd naar je homepage...');
+                setTimeout(function() {
+                    window.location.href = '/';
+                }, 1000);
+                return;
+            }
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         }
         
         // Token is invalid, clear it
@@ -274,6 +416,7 @@ async function verifyTokenAndRedirect(token, userType) {
     }
 }
 
+<<<<<<< Updated upstream
 // Redirect to appropriate dashboard
 function redirectToDashboard(userType) {
     const redirectUrls = {
@@ -289,25 +432,46 @@ function redirectToDashboard(userType) {
     window.location.replace(url);
 }
 
+=======
+>>>>>>> Stashed changes
 // Clear authentication data
 function clearAuthData() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userType');
     localStorage.removeItem('userId');
     localStorage.removeItem('userEmail');
+<<<<<<< Updated upstream
     console.log('🧹 Auth data cleared');
 }
 
 // UI Helper Functions (unchanged)
+=======
+<<<<<<< Updated upstream
+}
+
+// UI Helper Functions
+=======
+    localStorage.removeItem('userName');
+    console.log('🧹 Auth data cleared');
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 function showLoading(show) {
     if (loadingOverlay) {
         loadingOverlay.style.display = show ? 'flex' : 'none';
     }
     
-    // Disable form during loading
     if (loginForm) {
         const inputs = loginForm.querySelectorAll('input, button');
-        inputs.forEach(input => {
+        inputs.forEach(function(input) {
             input.disabled = show;
         });
     }
@@ -325,19 +489,21 @@ function showInfoMessage(message) {
     showMessage(message, 'info');
 }
 
-function showMessage(message, type = 'info') {
+function showMessage(message, type) {
+    if (!type) type = 'info';
+    
     // Remove existing messages
     const existingMessages = document.querySelectorAll('.login-message');
-    existingMessages.forEach(msg => msg.remove());
+    existingMessages.forEach(function(msg) {
+        msg.remove();
+    });
     
     // Create message element
     const messageDiv = document.createElement('div');
-    messageDiv.className = `login-message ${type}`;
-    messageDiv.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" class="close-btn">&times;</button>
-    `;
+    messageDiv.className = 'login-message ' + type;
+    messageDiv.innerHTML = '<span>' + message + '</span><button onclick="this.parentElement.remove()" class="close-btn">&times;</button>';
     
+<<<<<<< Updated upstream
     // Add some basic styling
     messageDiv.style.cssText = `
         padding: 12px 16px;
@@ -351,19 +517,45 @@ function showMessage(message, type = 'info') {
         ${type === 'info' ? 'background: #cce7ff; color: #004085; border: 1px solid #99d1ff;' : ''}
     `;
     
+=======
+<<<<<<< Updated upstream
+=======
+    // Add styling
+    let backgroundColor, textColor, borderColor;
+    if (type === 'success') {
+        backgroundColor = '#d4edda';
+        textColor = '#155724';
+        borderColor = '#c3e6cb';
+    } else if (type === 'error') {
+        backgroundColor = '#f8d7da';
+        textColor = '#721c24';
+        borderColor = '#f1aeb5';
+    } else {
+        backgroundColor = '#cce7ff';
+        textColor = '#004085';
+        borderColor = '#99d1ff';
+    }
+    
+    messageDiv.style.cssText = 'padding: 12px 16px; margin: 10px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: ' + backgroundColor + '; color: ' + textColor + '; border: 1px solid ' + borderColor + ';';
+    
+    messageDiv.querySelector('.close-btn').style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; padding: 0; margin-left: 10px; color: inherit;';
+    
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     // Insert before form
     if (loginForm) {
         loginForm.parentNode.insertBefore(messageDiv, loginForm);
     }
     
     // Auto-remove after 5 seconds
-    setTimeout(() => {
+    setTimeout(function() {
         if (messageDiv.parentNode) {
             messageDiv.remove();
         }
     }, 5000);
 }
 
+<<<<<<< Updated upstream
 function showFieldError(fieldId, message) {
     const field = document.getElementById(fieldId);
     if (!field) return;
@@ -386,13 +578,11 @@ function showFieldError(fieldId, message) {
     field.style.borderColor = '#dc3545';
 }
 
+=======
+>>>>>>> Stashed changes
 function clearErrorMessages() {
-    // Clear all error messages
-    const errorMessages = document.querySelectorAll('.field-error');
-    errorMessages.forEach(error => error.remove());
-    
-    // Clear message notifications
     const messages = document.querySelectorAll('.login-message');
+<<<<<<< Updated upstream
     messages.forEach(msg => msg.remove());
     
     // Remove error styling from fields
@@ -437,3 +627,36 @@ window.loginSystem = {
     getUserType: () => localStorage.getItem('userType'),
     getAuthToken: () => localStorage.getItem('authToken')
 };
+=======
+    messages.forEach(function(msg) {
+        msg.remove();
+    });
+}
+
+// Global logout function for consistency
+window.logout = async function() {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            await fetch(API_BASE_URL + '/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+    } finally {
+        // Clear all stored data
+        clearAuthData();
+        sessionStorage.clear();
+        
+        console.log('🚪 User logged out successfully');
+        window.location.href = '/login';
+    }
+};
+
+console.log('✅ Simplified login system loaded - Ready for email-first authentication');
+>>>>>>> Stashed changes
