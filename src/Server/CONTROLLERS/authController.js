@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 
 const authController = {
 
-  // 🔐 EMAIL-FIRST LOGIN
+  // 🔐 EMAIL-FIRST LOGIN - FIXED
   async login(req, res) {
     try {
       const errors = validationResult(req);
@@ -24,8 +24,8 @@ const authController = {
       const { email, password } = req.body;
       console.log(`🔐 Login attempt for email: ${email}`);
 
-      // 🎯 SINGLE EMAIL-TO-USER LOOKUP FUNCTION
-      const userResult = await this.findUserByEmailAndValidatePassword(email, password);
+      // 🎯 FIXED: Use authController instead of this
+      const userResult = await authController.findUserByEmailAndValidatePassword(email, password);
       
       if (!userResult.success) {
         console.log(`❌ Authentication failed: ${userResult.message}`);
@@ -75,7 +75,7 @@ const authController = {
     }
   },
 
-  // 🔍 MAIN EMAIL-TO-USER LOOKUP WITH PASSWORD VALIDATION
+  // 🔍 MAIN EMAIL-TO-USER LOOKUP WITH PASSWORD VALIDATION - FIXED
   async findUserByEmailAndValidatePassword(email, password) {
     try {
       let userInfo = null;
@@ -186,8 +186,8 @@ const authController = {
 
       const { password, ...studentData } = req.body;
 
-      // Check if email already exists
-      const existingUser = await this.checkEmailExists(studentData.email);
+      // FIXED: Use authController instead of this
+      const existingUser = await authController.checkEmailExists(studentData.email);
       if (existingUser) {
         return res.status(409).json({ 
           success: false,
@@ -247,8 +247,8 @@ const authController = {
 
       const { password, ...bedrijfData } = req.body;
 
-      // Check if email already exists
-      const existingUser = await this.checkEmailExists(bedrijfData.email);
+      // FIXED: Use authController instead of this
+      const existingUser = await authController.checkEmailExists(bedrijfData.email);
       if (existingUser) {
         return res.status(409).json({ 
           success: false,
@@ -308,8 +308,8 @@ const authController = {
 
       const { password, ...organisatorData } = req.body;
 
-      // Check if email already exists
-      const existingUser = await this.checkEmailExists(organisatorData.email);
+      // FIXED: Use authController instead of this
+      const existingUser = await authController.checkEmailExists(organisatorData.email);
       if (existingUser) {
         return res.status(409).json({ 
           success: false,
@@ -545,8 +545,8 @@ const authController = {
     try {
       const { email, userType } = req.user;
 
-      // Get fresh user data from database
-      const userResult = await this.getUserDataByEmail(email, userType);
+      // FIXED: Use authController instead of this
+      const userResult = await authController.getUserDataByEmail(email, userType);
       
       if (!userResult) {
         return res.status(404).json({
