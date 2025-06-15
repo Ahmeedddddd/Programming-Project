@@ -14,6 +14,14 @@ const organisatorController = {
     try {
       const organisatorId = req.user.userId;
       
+      if (!organisatorId) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'OrganisatorId not found in token',
+          message: 'Uw sessie is ongeldig, log opnieuw in'
+        });
+      }
+
       const organisator = await Organisator.getById(organisatorId);
       
       if (!organisator) {
@@ -24,12 +32,13 @@ const organisatorController = {
         });
       }
 
-      // Verwijder gevoelige gegevens
-      const { passwoord_hash, ...safeProfile } = organisator;
+      // Remove sensitive data
+      const { gebruikersId, ...safeProfile } = organisator;
 
       res.json({
         success: true,
-        data: safeProfile
+        data: safeProfile,
+        message: 'Organisatorprofiel succesvol opgehaald'
       });
     } catch (error) {
       console.error('Error fetching organisator profile:', error);
@@ -49,30 +58,55 @@ const organisatorController = {
         return res.status(400).json({ 
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
+          message: 'Er zijn validatiefouten in uw gegevens'
         });
       }
 
       const organisatorId = req.user.userId;
       
-      // Voorkom wijziging van kritieke velden
+      if (!organisatorId) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'OrganisatorId not found in token',
+          message: 'Uw sessie is ongeldig'
+        });
+      }
+
+      // Prevent modification of critical fields
       const updateData = { ...req.body };
       delete updateData.organisatorId;
       delete updateData.gebruikersId;
-      delete updateData.passwoord_hash;
+
+      // Validate the data using model validation
+      const validationErrors = Organisator.validateOrganisatorData(updateData);
+      if (validationErrors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Validation failed',
+          details: validationErrors,
+          message: 'Er zijn fouten in uw gegevens'
+        });
+      }
 
       const affectedRows = await Organisator.update(organisatorId, updateData);
       
       if (affectedRows === 0) {
         return res.status(404).json({ 
           success: false,
-          error: 'Organisator not found'
+          error: 'Organisator not found',
+          message: 'Uw profiel werd niet gevonden'
         });
       }
 
+      // Get updated data to return
+      const updatedOrganisator = await Organisator.getById(organisatorId);
+      const { gebruikersId, ...safeProfile } = updatedOrganisator;
+
       res.json({ 
         success: true,
-        message: 'Profile updated successfully'
+        message: 'Profiel succesvol bijgewerkt',
+        data: safeProfile
       });
     } catch (error) {
       console.error('Error updating organisator profile:', error);
@@ -89,7 +123,7 @@ const organisatorController = {
   // GET /api/organisator/dashboard - Dashboard gegevens
   async getDashboard(req, res) {
     try {
-      // Haal alle statistieken op
+      // Get all statistics
       const [
         studentStats,
         bedrijfStats,
@@ -120,7 +154,8 @@ const organisatorController = {
 
       res.json({
         success: true,
-        data: dashboard
+        data: dashboard,
+        message: 'Dashboard succesvol geladen'
       });
     } catch (error) {
       console.error('Error fetching dashboard:', error);
@@ -135,7 +170,6 @@ const organisatorController = {
   // Helper function voor recent activities
   async getRecentActivities() {
     try {
-      // Haal recente activiteiten op (dit is een placeholder - pas aan naar je database structure)
       const activities = [];
       
       // Recent aangemaakte studenten
@@ -160,21 +194,25 @@ const organisatorController = {
         });
       });
 
-      // Recent aangemaakte reservaties
-      const recentReservaties = await Reservatie.getRecent(10);
-      recentReservaties.forEach(reservatie => {
-        activities.push({
-          type: 'reservatie_created',
-          message: `Nieuwe reservatie: ${reservatie.studentNaam} - ${reservatie.bedrijfNaam}`,
-          timestamp: reservatie.created_at || reservatie.startTijd,
-          data: reservatie
+      // Recent aangemaakte reservaties (if Reservatie model has getRecent method)
+      try {
+        const recentReservaties = await Reservatie.getRecent(10);
+        recentReservaties.forEach(reservatie => {
+          activities.push({
+            type: 'reservatie_created',
+            message: `Nieuwe reservatie: ${reservatie.studentNaam} - ${reservatie.bedrijfNaam}`,
+            timestamp: reservatie.created_at || reservatie.startTijd,
+            data: reservatie
+          });
         });
-      });
+      } catch (reservatieError) {
+        console.warn('Recent reservations not available:', reservatieError.message);
+      }
 
-      // Sorteer op timestamp (nieuwste eerst)
+      // Sort by timestamp (newest first)
       activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       
-      return activities.slice(0, 20); // Laatste 20 activiteiten
+      return activities.slice(0, 20); // Last 20 activities
     } catch (error) {
       console.error('Error fetching recent activities:', error);
       return [];
@@ -191,7 +229,7 @@ const organisatorController = {
       let users = [];
       
       if (!type || type === 'all') {
-        // Haal alle gebruikers op
+        // Get all users
         const [studenten, bedrijven, organisatoren] = await Promise.all([
           Student.getAll(),
           Bedrijf.getAll(),
@@ -214,7 +252,7 @@ const organisatorController = {
         users = organisatoren.map(o => ({ ...o, userType: 'organisator' }));
       }
 
-      // Filter op search term
+      // Filter on search term
       if (search) {
         const searchLower = search.toLowerCase();
         users = users.filter(user => 
@@ -225,7 +263,7 @@ const organisatorController = {
         );
       }
 
-      // Paginatie
+      // Pagination
       const offset = (page - 1) * limit;
       const paginatedUsers = users.slice(offset, offset + parseInt(limit));
 
@@ -237,7 +275,8 @@ const organisatorController = {
           limit: parseInt(limit),
           total: users.length,
           pages: Math.ceil(users.length / limit)
-        }
+        },
+        message: 'Gebruikers succesvol opgehaald'
       });
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -257,15 +296,17 @@ const organisatorController = {
       if (!['student', 'bedrijf', 'organisator'].includes(type)) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid user type'
+          error: 'Invalid user type',
+          message: 'Ongeldig gebruikerstype'
         });
       }
 
-      // Voorkom dat organisator zichzelf verwijdert
+      // Prevent organisator from deleting themselves
       if (type === 'organisator' && parseInt(id) === req.user.userId) {
         return res.status(400).json({
           success: false,
-          error: 'Cannot delete your own account'
+          error: 'Cannot delete your own account',
+          message: 'U kunt uw eigen account niet verwijderen'
         });
       }
 
@@ -282,13 +323,14 @@ const organisatorController = {
       if (affectedRows === 0) {
         return res.status(404).json({
           success: false,
-          error: 'User not found'
+          error: 'User not found',
+          message: 'Gebruiker niet gevonden'
         });
       }
 
       res.json({ 
         success: true,
-        message: `${type} deleted successfully`
+        message: `${type} succesvol verwijderd`
       });
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -311,7 +353,7 @@ const organisatorController = {
         uptime: process.uptime(),
         memory: process.memoryUsage(),
         database: {
-          connected: true, // TODO: Implementeer database health check
+          connected: true, // TODO: Implement database health check
           tables: ['STUDENT', 'BEDRIJF', 'ORGANISATOR', 'AFSPRAAK', 'FACTUUR']
         },
         features: [
@@ -321,19 +363,21 @@ const organisatorController = {
           'Data Export',
           'Email Notifications'
         ],
-        lastBackup: null, // TODO: Implementeer backup systeem
+        lastBackup: null, // TODO: Implement backup system
         timestamp: new Date().toISOString()
       };
 
       res.json({
         success: true,
-        data: systemInfo
+        data: systemInfo,
+        message: 'Systeeminformatie succesvol opgehaald'
       });
     } catch (error) {
       console.error('Error fetching system info:', error);
       res.status(500).json({ 
         success: false,
-        error: 'Failed to fetch system information'
+        error: 'Failed to fetch system information',
+        message: 'Er ging iets mis bij het ophalen van systeeminformatie'
       });
     }
   },
@@ -358,15 +402,19 @@ const organisatorController = {
       } else if (type === 'reservaties') {
         data = await Reservatie.getAll();
         filename = `reservaties_export_${new Date().toISOString().split('T')[0]}`;
+      } else if (type === 'organisatoren') {
+        data = await Organisator.getAll();
+        filename = `organisatoren_export_${new Date().toISOString().split('T')[0]}`;
       } else {
         return res.status(400).json({
           success: false,
-          error: 'Invalid export type'
+          error: 'Invalid export type',
+          message: 'Ongeldig export type'
         });
       }
 
       if (format === 'csv') {
-        // TODO: Implementeer CSV export
+        // TODO: Implement CSV export
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
         res.send('CSV export not implemented yet');

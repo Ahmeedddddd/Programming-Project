@@ -1,76 +1,10 @@
-// src/Server/MODELS/organisator.js
-
-const { executeQuery } = require('../CONFIG/database');
+//src/Server/MODELS/organisator.js
+const { pool } = require('../CONFIG/database');
 
 class Organisator {
-  
-  // ✅ FIXED: Remove gsm_nummer from SELECT
-  static async getById(organisatorId) {
-    try {
-      const query = `
-        SELECT 
-          o.organisatorId,
-          o.voornaam,
-          o.achternaam, 
-          o.email,
-          o.gebruikersId
-        FROM ORGANISATOR o
-        WHERE o.organisatorId = ?
-      `;
-      
-      const results = await executeQuery(query, [organisatorId]);
-      return results.length > 0 ? results[0] : null;
-    } catch (error) {
-      console.error('Error fetching organisator by id:', error);
-      throw error;
-    }
-  }
-
-  static async getByEmail(email) {
-    try {
-      const query = `
-        SELECT 
-          o.organisatorId,
-          o.voornaam,
-          o.achternaam, 
-          o.email,
-          o.gebruikersId
-        FROM ORGANISATOR o
-        WHERE o.email = ?
-      `;
-      
-      const results = await executeQuery(query, [email]);
-      return results.length > 0 ? results[0] : null;
-    } catch (error) {
-      console.error('Error fetching organisator by email:', error);
-      throw error;
-    }
-  }
-
-  static async getByGebruikersId(gebruikersId) {
-    try {
-      const query = `
-        SELECT 
-          o.organisatorId,
-          o.voornaam,
-          o.achternaam, 
-          o.email,
-          o.gebruikersId
-        FROM ORGANISATOR o
-        WHERE o.gebruikersId = ?
-      `;
-      
-      const results = await executeQuery(query, [gebruikersId]);
-      return results.length > 0 ? results[0] : null;
-    } catch (error) {
-      console.error('Error fetching organisator by gebruikersId:', error);
-      throw error;
-    }
-  }
-
   static async getAll() {
     try {
-      const query = `
+      const [rows] = await pool.query(`
         SELECT 
           o.organisatorId,
           o.voornaam,
@@ -79,51 +13,47 @@ class Organisator {
           o.gebruikersId
         FROM ORGANISATOR o
         ORDER BY o.achternaam, o.voornaam
-      `;
-      
-      const results = await executeQuery(query);
-      return results;
+      `);
+      return rows;
     } catch (error) {
       console.error('Error fetching all organisators:', error);
-      throw error;
+      return [];
     }
   }
 
-  //Statistics method for role manager
-  static async getStats() {
+  static async getById(organisatorId) {
     try {
-      const query = `
+      const [rows] = await pool.query(`
         SELECT 
-          COUNT(*) as total,
-          COUNT(CASE WHEN o.organisatorId IS NOT NULL THEN 1 END) as active
+          o.organisatorId,
+          o.voornaam,
+          o.achternaam, 
+          o.email,
+          o.gebruikersId
         FROM ORGANISATOR o
-      `;
-      
-      const results = await executeQuery(query);
-      const stats = results[0];
-      
-      return {
-        total: stats.total,
-        active: stats.active,
-        growth: Math.floor(stats.total * 0.02) // 2% growth estimate
-      };
+        WHERE o.organisatorId = ?
+      `, [organisatorId]);
+      return rows[0];
     } catch (error) {
-      console.error('Error getting organisator stats:', error);
-      return { total: 3, active: 3, growth: 0 };
+      console.error('Error fetching organisator by id:', error);
+      return null;
     }
   }
 
-  //Create new organisator
   static async create(organisatorData) {
     try {
-      const { voornaam, achternaam, email, gebruikersId } = organisatorData;
-      
-      const query = `
+      const {
+        voornaam,
+        achternaam,
+        email,
+        gebruikersId
+      } = organisatorData;
+
+      const [result] = await pool.query(`
         INSERT INTO ORGANISATOR (voornaam, achternaam, email, gebruikersId)
         VALUES (?, ?, ?, ?)
-      `;
+      `, [voornaam, achternaam, email, gebruikersId]);
       
-      const result = await executeQuery(query, [voornaam, achternaam, email, gebruikersId]);
       return result.insertId;
     } catch (error) {
       console.error('Error creating organisator:', error);
@@ -131,47 +61,172 @@ class Organisator {
     }
   }
 
-  //Update organisator
-  static async update(organisatorId, updateData) {
+  static async update(organisatorId, organisatorData) {
     try {
-      const { voornaam, achternaam, email } = updateData;
+      // Filter out undefined values and only allow certain fields
+      const allowedFields = ['voornaam', 'achternaam', 'email'];
+      const filteredData = {};
       
-      const query = `
-        UPDATE ORGANISATOR 
-        SET voornaam = ?, achternaam = ?, email = ?
-        WHERE organisatorId = ?
-      `;
+      Object.keys(organisatorData).forEach(key => {
+        if (allowedFields.includes(key) && organisatorData[key] !== undefined) {
+          filteredData[key] = organisatorData[key];
+        }
+      });
+
+      if (Object.keys(filteredData).length === 0) {
+        console.warn('No valid fields to update');
+        return 0;
+      }
+
+      const fields = Object.keys(filteredData);
+      const values = Object.values(filteredData);
+      const setClause = fields.map(field => `${field} = ?`).join(', ');
       
-      const result = await executeQuery(query, [voornaam, achternaam, email, organisatorId]);
-      return result.affectedRows > 0;
+      const [result] = await pool.query(
+        `UPDATE ORGANISATOR SET ${setClause} WHERE organisatorId = ?`,
+        [...values, organisatorId]
+      );
+      
+      return result.affectedRows;
     } catch (error) {
       console.error('Error updating organisator:', error);
       throw error;
     }
   }
 
-  //Delete organisator
   static async delete(organisatorId) {
     try {
-      const query = `DELETE FROM ORGANISATOR WHERE organisatorId = ?`;
-      const result = await executeQuery(query, [organisatorId]);
-      return result.affectedRows > 0;
+      const [result] = await pool.query(
+        'DELETE FROM ORGANISATOR WHERE organisatorId = ?',
+        [organisatorId]
+      );
+      return result.affectedRows;
     } catch (error) {
       console.error('Error deleting organisator:', error);
       throw error;
     }
   }
 
-  //Count for stats
-  static async count() {
+  static async getStats() {
     try {
-      const query = `SELECT COUNT(*) as total FROM ORGANISATOR`;
-      const results = await executeQuery(query);
-      return results[0].total;
+      const [totalRows] = await pool.query('SELECT COUNT(*) as total FROM ORGANISATOR');
+      
+      // Additional statistics
+      const [recentActivity] = await pool.query(`
+        SELECT COUNT(*) as recent_count 
+        FROM ORGANISATOR 
+        WHERE organisatorId IN (
+          SELECT organisatorId 
+          FROM ORGANISATOR 
+          ORDER BY organisatorId DESC 
+          LIMIT 5
+        )
+      `);
+      
+      return {
+        total: totalRows[0].total,
+        recentActivity: recentActivity[0].recent_count
+      };
     } catch (error) {
-      console.error('Error counting organisators:', error);
-      return 3; // Fallback
+      console.error('Error getting organisator stats:', error);
+      return { total: 0, recentActivity: 0 };
     }
+  }
+
+  static async getRecent(limit = 5) {
+    try {
+      const [rows] = await pool.query(`
+        SELECT organisatorId, voornaam, achternaam, email
+        FROM ORGANISATOR 
+        ORDER BY organisatorId DESC 
+        LIMIT ?
+      `, [limit]);
+      return rows;
+    } catch (error) {
+      console.error('Error getting recent organisators:', error);
+      return [];
+    }
+  }
+
+  // ✅ NEW: Additional utility methods for consistency with bedrijf model
+  static async getByEmail(email) {
+    try {
+      const [rows] = await pool.query(`
+        SELECT 
+          o.organisatorId,
+          o.voornaam,
+          o.achternaam, 
+          o.email,
+          o.gebruikersId
+        FROM ORGANISATOR o
+        WHERE o.email = ?
+      `, [email]);
+      return rows[0];
+    } catch (error) {
+      console.error('Error fetching organisator by email:', error);
+      return null;
+    }
+  }
+
+  static async searchByName(searchTerm) {
+    try {
+      const [rows] = await pool.query(`
+        SELECT organisatorId, voornaam, achternaam, email
+        FROM ORGANISATOR 
+        WHERE voornaam LIKE ? OR achternaam LIKE ? OR email LIKE ?
+        ORDER BY achternaam, voornaam
+        LIMIT 20
+      `, [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]);
+      return rows;
+    } catch (error) {
+      console.error('Error searching organisators:', error);
+      return [];
+    }
+  }
+
+  // ✅ NEW: Method to check if organisator exists by gebruikersId
+  static async getByGebruikersId(gebruikersId) {
+    try {
+      const [rows] = await pool.query(`
+        SELECT 
+          o.organisatorId,
+          o.voornaam,
+          o.achternaam, 
+          o.email,
+          o.gebruikersId
+        FROM ORGANISATOR o
+        WHERE o.gebruikersId = ?
+      `, [gebruikersId]);
+      return rows[0];
+    } catch (error) {
+      console.error('Error fetching organisator by gebruikersId:', error);
+      return null;
+    }
+  }
+
+  // ✅ NEW: Validation helper
+  static validateOrganisatorData(data) {
+    const errors = [];
+    
+    if (!data.voornaam || data.voornaam.trim().length < 2) {
+      errors.push('Voornaam moet minstens 2 karakters bevatten');
+    }
+    
+    if (!data.achternaam || data.achternaam.trim().length < 2) {
+      errors.push('Achternaam moet minstens 2 karakters bevatten');
+    }
+    
+    if (!data.email || !this.isValidEmail(data.email)) {
+      errors.push('Geldig emailadres is vereist');
+    }
+    
+    return errors;
+  }
+
+  // Helper methods
+  static isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 }
 
