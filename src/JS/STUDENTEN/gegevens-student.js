@@ -36,26 +36,10 @@ class StudentGegevens {
     this.token = localStorage.getItem('authToken');
     this.studentData = null;
     this.editMode = false;
+    this.form = document.getElementById('studentForm');
     
-    // Check if init method exists
-    if (typeof this.init === 'function') {
-      this.init();
-    } else {
-      console.error('❌ Init method not found');
-      this.setupBasicFunctionality();
-    }
-  }
-  
-  setupBasicFunctionality() {
-    console.log('🔧 Setting up basic functionality');
-    if (!this.token) {
-      console.warn('⚠️ No token found, redirecting to login');
-      this.redirectToLogin();
-      return;
-    }
-    
-    this.loadStudentGegevens();
-    this.setupEventListeners();
+    // Initialize
+    this.init();
   }
   
   async init() {
@@ -69,6 +53,7 @@ class StudentGegevens {
     try {
       await this.loadStudentGegevens();
       this.setupEventListeners();
+      this.setupFormHandling();
     } catch (error) {
       console.error('❌ Initialisatie mislukt:', error);
       this.showError('Er ging iets mis bij het laden van je gegevens');
@@ -189,11 +174,13 @@ class StudentGegevens {
     
     // Account info
     this.updateField('account-status', 'Actief en Geverifieerd');
-    this.updateField('inschrijvingsjaar', new Date().getFullYear());
     this.updateField('last-login', 'Vandaag om ' + new Date().toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'}));
     
-    // Update page title
-    document.title = `${data.voornaam} ${data.achternaam} - Student Gegevens`;
+    // Update extra info
+    const accountCreated = document.getElementById('account-created');
+    const lastUpdated = document.getElementById('last-updated');
+    if (accountCreated) accountCreated.textContent = `Account aangemaakt: ${new Date().getFullYear()}`;
+    if (lastUpdated) lastUpdated.textContent = `Laatste update: ${new Date().toLocaleDateString('nl-BE')}`;
     
     console.log('✅ UI updated successfully');
   }
@@ -201,82 +188,76 @@ class StudentGegevens {
   updateField(fieldId, value) {
     const field = document.querySelector(`[data-field="${fieldId}"]`);
     if (field) {
-      const valueSpan = field.querySelector('.field-value') || field;
-      const displayValue = value || 'Niet ingevuld';
-      
-      // Handle different field types
-      if (fieldId === 'project-beschrijving' || fieldId === 'over-mezelf') {
-        // For longer text fields, handle them specially
-        const strongTag = field.querySelector('strong');
-        if (strongTag) {
-          field.innerHTML = `<strong>${strongTag.textContent}</strong><br><br>${displayValue}`;
-        } else {
-          valueSpan.textContent = displayValue;
-        }
-      } else if (valueSpan.tagName === 'SPAN') {
+      const valueSpan = field.querySelector('.field-value');
+      if (valueSpan) {
+        const displayValue = value || 'Niet ingevuld';
         valueSpan.textContent = displayValue;
-      } else {
-        // For direct text updates
-        const strongContent = field.querySelector('strong')?.outerHTML || '';
-        field.innerHTML = strongContent + ' ' + displayValue;
+        console.log(`📝 Updated field ${fieldId}:`, displayValue);
       }
-      
-      console.log(`📝 Updated field ${fieldId}:`, displayValue);
     } else {
       console.warn(`⚠️ Field not found: ${fieldId}`);
     }
   }
   
-  // ✏️ Edit Mode
+  // ✏️ Edit Mode Management
   enableEditMode() {
     console.log('✏️ Enabling edit mode');
     this.editMode = true;
-    this.createEditForm();
-    this.updateEditButtons(true);
+    
+    // Hide view controls, show edit controls
+    document.getElementById('viewControls').style.display = 'none';
+    document.getElementById('editControls').style.display = 'flex';
+    
+    // Convert fields to inputs
+    this.createEditableFields();
   }
   
-  createEditForm() {
-    console.log('📝 Creating edit form');
-    const editableFields = [
-      { id: 'voornaam', type: 'text', label: 'Voornaam', field: 'voornaam' },
-      { id: 'achternaam', type: 'text', label: 'Achternaam', field: 'achternaam' },
-      { id: 'email', type: 'email', label: 'Email', field: 'email' },
-      { id: 'telefoon', type: 'tel', label: 'Telefoon', field: 'gsm_nummer' },
-      { id: 'opleiding', type: 'text', label: 'Opleiding', field: 'opleiding' },
-      { id: 'opleidingsrichting', type: 'text', label: 'Opleidingsrichting', field: 'opleidingsrichting' },
-      { id: 'project-titel', type: 'text', label: 'Project Titel', field: 'projectTitel' },
-      { id: 'project-beschrijving', type: 'textarea', label: 'Project Beschrijving', field: 'projectBeschrijving' },
-      { id: 'over-mezelf', type: 'textarea', label: 'Over Mezelf', field: 'overMezelf' },
-      { id: 'straatnaam', type: 'text', label: 'Straatnaam', field: 'straatnaam' },
-      { id: 'huisnummer', type: 'text', label: 'Huisnummer', field: 'huisnummer' },
-      { id: 'bus', type: 'text', label: 'Bus', field: 'bus' },
-      { id: 'postcode', type: 'text', label: 'Postcode', field: 'postcode' },
-      { id: 'gemeente', type: 'text', label: 'Gemeente', field: 'gemeente' }
-    ];
+  disableEditMode() {
+    console.log('❌ Disabling edit mode');
+    this.editMode = false;
     
+    // Show view controls, hide edit controls
+    document.getElementById('viewControls').style.display = 'flex';
+    document.getElementById('editControls').style.display = 'none';
+    
+    // Restore field display
+    this.displayStudentGegevens();
+  }
+  
+  createEditableFields() {
+    console.log('📝 Creating editable fields');
+    
+    const editableFields = document.querySelectorAll('.editable-field');
     editableFields.forEach(field => {
-      const element = document.querySelector(`[data-field="${field.id}"]`);
-      if (element && this.studentData) {
-        const currentValue = this.studentData[field.field] || '';
+      const fieldId = field.getAttribute('data-field');
+      const valueSpan = field.querySelector('.field-value');
+      const strongElement = field.querySelector('strong');
+      
+      if (valueSpan && fieldId && this.studentData) {
+        const currentValue = this.getFieldValue(fieldId);
+        const labelText = strongElement ? strongElement.textContent : fieldId;
         
-        if (field.type === 'textarea') {
-          element.innerHTML = `
-            <strong>${field.label}:</strong><br><br>
+        if (fieldId === 'project-beschrijving' || fieldId === 'over-mezelf') {
+          // Create textarea for longer text fields
+          field.innerHTML = `
+            <strong>${labelText}</strong><br><br>
             <textarea 
-              id="edit-${field.id}" 
+              id="edit-${fieldId}" 
               class="edit-input"
-              style="width: 100%; min-height: 80px; margin-top: 0.5rem; padding: 0.5rem; border: 1px solid #881538; border-radius: 4px; font-family: inherit; resize: vertical;"
+              style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #881538; border-radius: 8px; font-family: inherit; resize: vertical;"
             >${currentValue}</textarea>
           `;
         } else {
-          element.innerHTML = `
-            <strong>${field.label}:</strong>
+          // Create input for regular fields
+          const inputType = this.getInputType(fieldId);
+          field.innerHTML = `
+            <strong>${labelText}</strong>
             <input 
-              type="${field.type}" 
-              id="edit-${field.id}" 
+              type="${inputType}" 
+              id="edit-${fieldId}" 
               value="${currentValue}"
               class="edit-input"
-              style="margin-left: 0.5rem; padding: 0.25rem; border: 1px solid #881538; border-radius: 4px;"
+              style="margin-left: 0.5rem; padding: 0.5rem; border: 2px solid #881538; border-radius: 8px; width: 250px;"
             >
           `;
         }
@@ -284,53 +265,63 @@ class StudentGegevens {
     });
   }
   
-  disableEditMode() {
-    console.log('❌ Disabling edit mode');
-    this.editMode = false;
-    this.displayStudentGegevens();
-    this.updateEditButtons(false);
+  getFieldValue(fieldId) {
+    const mapping = {
+      'voornaam': 'voornaam',
+      'achternaam': 'achternaam',
+      'email': 'email',
+      'telefoon': 'gsm_nummer',
+      'opleiding': 'opleiding',
+      'opleidingsrichting': 'opleidingsrichting',
+      'project-titel': 'projectTitel',
+      'project-beschrijving': 'projectBeschrijving',
+      'over-mezelf': 'overMezelf',
+      'straatnaam': 'straatnaam',
+      'huisnummer': 'huisnummer',
+      'bus': 'bus',
+      'postcode': 'postcode',
+      'gemeente': 'gemeente'
+    };
+    
+    const dataField = mapping[fieldId];
+    return dataField ? (this.studentData[dataField] || '') : '';
   }
   
-  updateEditButtons(editMode) {
-    const editBtn = document.querySelector('.ehbBtn.bewerken');
-    const actionBtns = document.querySelector('.mt-4');
-    
-    if (editMode) {
-      editBtn.textContent = 'Annuleren';
-      editBtn.onclick = () => this.disableEditMode();
-      
-      // Add save button
-      const saveBtn = document.createElement('button');
-      saveBtn.className = 'ehbBtn';
-      saveBtn.style.background = 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)';
-      saveBtn.innerHTML = '<i class="fas fa-save"></i> Opslaan';
-      saveBtn.onclick = () => this.saveChanges();
-      
-      actionBtns.insertBefore(saveBtn, editBtn.nextSibling);
-    } else {
-      editBtn.textContent = 'Gegevens Bewerken';
-      editBtn.onclick = () => this.enableEditMode();
-      
-      // Remove save button
-      const saveBtn = actionBtns.querySelector('.ehbBtn[style*="22c55e"]');
-      if (saveBtn) saveBtn.remove();
+  getInputType(fieldId) {
+    const typeMapping = {
+      'email': 'email',
+      'telefoon': 'tel',
+      'postcode': 'text',
+      'huisnummer': 'text'
+    };
+    return typeMapping[fieldId] || 'text';
+  }
+  
+  // 📝 Form Handling
+  setupFormHandling() {
+    if (this.form) {
+      this.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleFormSubmit();
+      });
     }
   }
   
-  async saveChanges() {
-    console.log('💾 Saving changes');
-    const formData = {};
+  async handleFormSubmit() {
+    console.log('💾 Handling form submit');
     
-    // Gather all input values
-    document.querySelectorAll('.edit-input').forEach(input => {
-      const fieldName = input.id.replace('edit-', '');
-      const mappedField = this.getFieldMapping(fieldName);
+    const formData = {};
+    const editInputs = document.querySelectorAll('.edit-input');
+    
+    editInputs.forEach(input => {
+      const fieldId = input.id.replace('edit-', '');
+      const mappedField = this.getFieldMapping(fieldId);
       if (mappedField) {
         formData[mappedField] = input.value.trim();
       }
     });
     
-    console.log('📦 Form data to save:', formData);
+    console.log('📦 Form data to submit:', formData);
     await this.updateStudentGegevens(formData);
   }
   
@@ -357,10 +348,17 @@ class StudentGegevens {
   // 🎯 Event Listeners
   setupEventListeners() {
     console.log('👂 Setting up event listeners');
+    
     // Edit button
-    const editBtn = document.querySelector('.ehbBtn.bewerken');
+    const editBtn = document.getElementById('editBtn');
     if (editBtn) {
-      editBtn.onclick = () => this.enableEditMode();
+      editBtn.addEventListener('click', () => this.enableEditMode());
+    }
+    
+    // Cancel button
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => this.disableEditMode());
     }
   }
   
@@ -397,25 +395,16 @@ class StudentGegevens {
   }
 }
 
-// 🚀 Initialize
-let studentGegevensManager;
-
+// 🚀 Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🎯 DOM Content Loaded, initializing StudentGegevens');
   try {
-    studentGegevensManager = new StudentGegevens();
+    window.studentGegevensManager = new StudentGegevens();
     console.log('✅ StudentGegevens initialized successfully');
   } catch (error) {
     console.error('❌ Failed to initialize StudentGegevens:', error);
   }
 });
 
-// Global functions voor HTML onclick events
-function enableEditMode() {
-  console.log('🖱️ enableEditMode called from HTML');
-  if (studentGegevensManager) {
-    studentGegevensManager.enableEditMode();
-  } else {
-    console.error('❌ studentGegevensManager not initialized');
-  }
-}
+// Export for module usage
+export default StudentGegevens;
