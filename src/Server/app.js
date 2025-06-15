@@ -121,6 +121,26 @@ app.get('/alleBedrijven', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html'));
 });
 
+// Bedrijf detail route - accepts ID as query parameter
+app.get('/resultaatBedrijf', (req, res) => {
+  const bedrijfId = req.query.id;
+  
+  if (!bedrijfId) {
+    console.log('❓ No bedrijf ID provided, redirecting to alle bedrijven');
+    return res.redirect('/alleBedrijven');
+  }
+  
+  console.log('🏢 Serving bedrijf detail page for ID:', bedrijfId);
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html'));
+});
+
+// Alternative route for backwards compatibility
+app.get('/bedrijf/:id', (req, res) => {
+  const bedrijfId = req.params.id;
+  console.log('🔄 Redirecting legacy bedrijf route to new format:', bedrijfId);
+  res.redirect(`/resultaatBedrijf?id=${bedrijfId}`);
+});
+
 app.get('/resultaatBedrijf', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html'));
 });
@@ -246,11 +266,12 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    version: '2.0.0',
+    version: '2.0.1', // 🔄 MINOR VERSION BUMP
     features: {
       enhancedHomepages: 'Enabled',
       liveDataIntegration: 'Enabled',
-      emailFirstAuth: 'Enabled'
+      emailFirstAuth: 'Enabled',
+      bedrijfDetailPages: 'Enabled' // 🆕 NEW FEATURE
     }
   });
 });
@@ -269,6 +290,11 @@ app.use((req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
+  // Check if it's a potential bedrijf detail route without ID
+  if (req.path === '/resultaatBedrijf') {
+    return res.redirect('/alleBedrijven');
+  }
+  
   res.redirect('/');
 });
 
@@ -279,8 +305,12 @@ app.listen(port, () => {
   console.log('   ✅ Live database integration - Real-time stats');
   console.log('   ✅ Email-first authentication');
   console.log('   ✅ Navigation interceptors');
+  console.log('   🆕 Bedrijf detail pages with dynamic routing'); // 🆕 NEW
   console.log('🔧 API Endpoints:');
   console.log('   - User Info: http://localhost:' + port + '/api/user-info');
   console.log('   - Role Manager: http://localhost:' + port + '/js/role-manager.js');
   console.log('   - Live Stats: http://localhost:' + port + '/api/stats/live');
+  console.log('🔗 New Routes:'); // 🆕 NEW SECTION
+  console.log('   - All Companies: http://localhost:' + port + '/alleBedrijven');
+  console.log('   - Company Detail: http://localhost:' + port + '/resultaatBedrijf?id={bedrijfId}');
 });
