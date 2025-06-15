@@ -19,14 +19,47 @@ const {
   auditLogger
 } = require('../MIDDLEWARE/security');
 
-// Import existing middleware
+// Import auth middleware with better error handling
 let authenticateToken, requireRole;
+
 try {
   const authMiddleware = require('../MIDDLEWARE/auth');
   authenticateToken = authMiddleware.authenticateToken;
   requireRole = authMiddleware.requireRole;
+  
+  // Verify that the functions are actually imported
+  if (typeof authenticateToken !== 'function') {
+    throw new Error('authenticateToken is not a function');
+  }
+  if (typeof requireRole !== 'function') {
+    throw new Error('requireRole is not a function');
+  }
+  
+  console.log('✅ Auth middleware loaded successfully');
 } catch (error) {
-  console.log('Auth middleware not found, using basic version');
+  console.error('❌ Error loading auth middleware:', error.message);
+  console.error('Full error:', error);
+  
+  // Create fallback middleware functions
+  authenticateToken = (req, res, next) => {
+    res.status(500).json({
+      success: false,
+      error: 'Authentication middleware not available',
+      message: 'Server configuration error'
+    });
+  };
+  
+  requireRole = (roles) => {
+    return (req, res, next) => {
+      res.status(500).json({
+        success: false,
+        error: 'Authorization middleware not available',
+        message: 'Server configuration error'
+      });
+    };
+  };
+  
+  console.log('⚠️ Using fallback middleware functions');
 }
 
 // Apply security middleware to all routes
@@ -262,6 +295,10 @@ router.get('/test', (req, res) => {
   res.json({
     message: 'Enhanced authentication system is working',
     timestamp: new Date().toISOString(),
+    middleware: {
+      authMiddleware: typeof authenticateToken === 'function' ? 'Loaded' : 'Failed',
+      securityMiddleware: 'Enabled'
+    },
     security: {
       rateLimiting: 'Enabled',
       accountLockout: 'Enabled', 
@@ -316,7 +353,8 @@ router.get('/health', async (req, res) => {
     services: {
       database: 'unknown',
       vatAPI: 'unknown',
-      emailService: 'unknown'
+      emailService: 'unknown',
+      authMiddleware: typeof authenticateToken === 'function' ? 'healthy' : 'unhealthy'
     }
   };
 
@@ -346,6 +384,10 @@ router.get('/health', async (req, res) => {
     health.services.emailService = 'healthy';
   } catch (emailError) {
     health.services.emailService = 'unhealthy';
+    health.status = 'degraded';
+  }
+
+  if (health.services.authMiddleware === 'unhealthy') {
     health.status = 'degraded';
   }
 
