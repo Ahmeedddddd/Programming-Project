@@ -294,6 +294,199 @@ main {
     animation: fadeInUp 0.8s ease-out;
 }
 
+/* ===============================================
+   DYNAMIC FUNCTIONALITY - Toegevoegd voor JavaScript interacties
+   =============================================== */
+
+/* ⏳ Loading Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 🔄 Loading Overlay */
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+}
+
+#loadingOverlay .loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #881538;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+/* 📱 Notification System */
+#notification-container {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 10000;
+}
+
+.notification {
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* ===== EDIT MODE STYLING ===== */
+
+/* Bewerk input styling */
+.edit-input {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #881538;
+    border-radius: 8px;
+    background-color: white;
+    color: #333;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 0.5rem;
+}
+
+.edit-input:focus {
+    border-color: #A91B47;
+    box-shadow: 0 0 0 3px rgba(169, 27, 71, 0.2);
+    outline: none;
+}
+
+/* Styling voor bewerkbare velden */
+.editable-field {
+    position: relative;
+}
+
+.editable-field::after {
+    content: "✏️";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.editable-field:hover::after {
+    opacity: 0.5;
+}
+
+/* Styling voor actie knoppen */
+#viewControls, #editControls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+/* Animatie klassen */
+.animatie-fade-up {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* ===============================================
+   DYNAMIC FUNCTIONALITY - Toegevoegd voor JavaScript interacties
+   =============================================== */
+
+/* ⏳ Loading Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 🔄 Loading Overlay */
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+}
+
+.loader {
+    border: 4px solid rgba(136, 21, 56, 0.2);
+    border-top: 4px solid #881538;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+/* 📱 Notification System */
+#notification-container {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 10000;
+}
+
+.notification {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    color: white;
+    max-width: 400px;
+    transform: translateX(50px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+}
+
+.notification.info {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 
 @media (max-width: 768px) {
@@ -324,6 +517,25 @@ main {
     
     .organisatieNaam {
         font-size: 1.1rem;
+    }
+    
+    .edit-input {
+        max-width: 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+        display: block;
+    }
+    
+    .notification {
+        left: 1rem;
+        right: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    #notification-container {
+        top: 1rem;
+        left: 1rem;
+        right: 1rem;
     }
 }
 
