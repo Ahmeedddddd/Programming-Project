@@ -311,7 +311,9 @@ function initializeQualityOfLife() {
       if (btn.href && !btn.href.startsWith('#')) {
         btn.style.opacity = '0.7';
         btn.style.pointerEvents = 'none';
-        btn.innerHTML += ' <span style="margin-left: 8px;">⏳</span>';
+        if (!btn.innerHTML.includes('⏳')) {
+  btn.innerHTML += ' <span style="margin-left: 8px;">⏳</span>';
+}
         
         setTimeout(() => {
           btn.style.opacity = '1';
