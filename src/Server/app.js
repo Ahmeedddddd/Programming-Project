@@ -52,6 +52,10 @@ app.get('/student-homepage', (req, res) => {
 });
 
 
+app.get('/test', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/test.html'));
+});
+
 
 // ===== PUBLIC ROUTES =====
 
@@ -86,7 +90,7 @@ app.get('/accountStudent', requireRole(['student']), (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/account-student.html'));
 });
 
-app.get('/mijnProject', requireRole(['student']), (req, res) => {
+app.get('/mijnProject', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/mijn-project.html'));
 });
 
