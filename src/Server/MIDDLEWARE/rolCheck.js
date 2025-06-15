@@ -1,7 +1,12 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 //src/Server/MIDDLEWARE/rolCheck.js
 =======
 <<<<<<< Updated upstream
+=======
+// src/Server/MIDDLEWARE/rolCheck.js
+>>>>>>> Stashed changes
+=======
 =======
 // src/Server/MIDDLEWARE/rolCheck.js
 >>>>>>> Stashed changes
@@ -10,6 +15,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../CONFIG/config');
 const path = require('path');
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 /**
  * ===== SERVER-SIDE MIDDLEWARE =====
@@ -17,6 +23,11 @@ const path = require('path');
  */
 
 // Check of gebruiker ingelogd is (optioneel)
+=======
+const { pool } = require('../CONFIG/database');
+
+// Get current user from token
+>>>>>>> Stashed changes
 =======
 const { pool } = require('../CONFIG/database');
 
@@ -37,8 +48,13 @@ const getCurrentUser = (req) => {
 };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Middleware om juiste homepage te serveren
 const serveRoleBasedHomepage = (req, res, next) => {
+=======
+// ✅ ENHANCED: Middleware om juiste homepage te serveren
+const serveRoleBasedHomepage = async (req, res, next) => {
+>>>>>>> Stashed changes
 =======
 // ✅ ENHANCED: Middleware om juiste homepage te serveren
 const serveRoleBasedHomepage = async (req, res, next) => {
@@ -57,7 +73,11 @@ const serveRoleBasedHomepage = async (req, res, next) => {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // Gebaseerd op userType, serve verschillende bestanden
+=======
+  // 🔥 ENHANCED: Gebaseerd op userType, serve verschillende bestanden
+>>>>>>> Stashed changes
 =======
   // 🔥 ENHANCED: Gebaseerd op userType, serve verschillende bestanden
 >>>>>>> Stashed changes
@@ -66,6 +86,7 @@ const serveRoleBasedHomepage = async (req, res, next) => {
     case 'student':
       homepageFile = path.join(__dirname, '../../src/HTML/STUDENTEN/student-homepage.html');
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       break;
     case 'bedrijf':
       homepageFile = path.join(__dirname, '../../src/HTML/BEDRIJVEN/bedrijf-homepage.html');
@@ -73,6 +94,8 @@ const serveRoleBasedHomepage = async (req, res, next) => {
     case 'organisator':
       homepageFile = path.join(__dirname, '../../src/HTML/ORGANISATOR/organisator-homepage.html');
 =======
+=======
+>>>>>>> Stashed changes
       console.log('🎓 Serving student homepage');
       break;
     case 'bedrijf':
@@ -82,6 +105,9 @@ const serveRoleBasedHomepage = async (req, res, next) => {
     case 'organisator':
       homepageFile = path.join(__dirname, '../../src/HTML/ORGANISATOR/organisator-homepage.html');
       console.log('👔 Serving organisator homepage');
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       break;
     default:
@@ -89,8 +115,11 @@ const serveRoleBasedHomepage = async (req, res, next) => {
   }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   console.log(`🎯 Serving ${user.userType} homepage: ${path.basename(homepageFile)}`);
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   // Check of bestand bestaat, anders fallback naar guest
@@ -103,6 +132,7 @@ const serveRoleBasedHomepage = async (req, res, next) => {
   }
 };
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 // Middleware om role-based account pagina's te serveren  
 const serveRoleBasedAccountPage = (req, res, next) => {
@@ -147,6 +177,8 @@ const serveRoleBasedAccountPage = (req, res, next) => {
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 // API endpoint om user info te krijgen voor frontend
 const getUserInfo = async (req, res) => {
   try {
@@ -160,6 +192,7 @@ const getUserInfo = async (req, res) => {
       });
     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     // Try to get additional user data from database if available
     let userData = {
@@ -196,6 +229,8 @@ const getUserInfo = async (req, res) => {
       // Models might not exist, use basic user data
       console.warn('⚠️ Could not load additional user data:', modelError.message);
 =======
+=======
+>>>>>>> Stashed changes
     // Get live user data from database
     let userData = {
       email: user.email,
@@ -232,6 +267,9 @@ const getUserInfo = async (req, res) => {
       }
     } catch (dbError) {
       console.warn('⚠️ Could not load additional user data:', dbError.message);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     }
 
@@ -248,10 +286,13 @@ const getUserInfo = async (req, res) => {
 };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /**
  * ===== AUTHENTICATION MIDDLEWARE =====
  */
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 // Require authentication (any logged in user)
@@ -261,17 +302,23 @@ const requireAuth = (req, res, next) => {
     return res.redirect('/login');
   }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   req.user = user; // Add user to request object
   next();
 };
 
 // ✅ ADDED: Require specific roles
 =======
+=======
+>>>>>>> Stashed changes
   req.user = user;
   next();
 };
 
 // Require specific roles
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 const requireRole = (allowedRoles) => {
   return (req, res, next) => {
@@ -287,9 +334,13 @@ const requireRole = (allowedRoles) => {
       return res.status(403).json({ 
         error: 'Access denied',
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         message: `Required role: ${allowedRoles.join(' or ')}, but you are: ${user.userType}`,
         userType: user.userType,
         requiredRoles: allowedRoles
+=======
+        message: `Required role: ${allowedRoles.join(' or ')}, but you are: ${user.userType}`
+>>>>>>> Stashed changes
 =======
         message: `Required role: ${allowedRoles.join(' or ')}, but you are: ${user.userType}`
 >>>>>>> Stashed changes
@@ -298,7 +349,11 @@ const requireRole = (allowedRoles) => {
     
     console.log(`✅ Access granted: ${user.userType} accessing ${req.path}`);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     req.user = user; // Add user to request object
+=======
+    req.user = user;
+>>>>>>> Stashed changes
 =======
     req.user = user;
 >>>>>>> Stashed changes
@@ -306,6 +361,7 @@ const requireRole = (allowedRoles) => {
   };
 };
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 /**
  * ===== CLIENT-SIDE SCRIPT GENERATION =====
@@ -320,6 +376,8 @@ const generateClientSideScript = async () => {
       totalStudents: 252,
       totalCompanies: 84,
 =======
+=======
+>>>>>>> Stashed changes
 // Generate dynamic client-side script with live data
 const generateClientSideScript = async () => {
   try {
@@ -329,12 +387,16 @@ const generateClientSideScript = async () => {
     let stats = {
       totalStudents: 0,
       totalCompanies: 0,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       totalProjects: 187,
       totalReservations: 0,
       lastUpdated: new Date().toISOString()
     };
     
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     // Try to get real stats
     try {
@@ -380,6 +442,8 @@ class RoleManager {
     this.currentUser = null;
     this.config = window.SERVER_CONFIG;
 =======
+=======
+>>>>>>> Stashed changes
     try {
       const [studentCount] = await pool.query('SELECT COUNT(*) as count FROM STUDENT');
       const [bedrijfCount] = await pool.query('SELECT COUNT(*) as count FROM BEDRIJF');
@@ -419,6 +483,9 @@ console.log('📊 Live stats:', window.LIVE_STATS);
 class EnhancedRoleManager {
   constructor() {
     this.currentUser = null;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     this.stats = window.LIVE_STATS;
     this.init();
@@ -431,12 +498,17 @@ class EnhancedRoleManager {
       this.setupUI();
       this.updateLiveStats();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       
       if (this.config.features.realTimeUpdates) {
         this.startAutoRefresh();
       }
       
       console.log('✅ Role Manager initialized successfully');
+=======
+      this.startAutoRefresh();
+      console.log('✅ Enhanced Role Manager initialized successfully');
+>>>>>>> Stashed changes
 =======
       this.startAutoRefresh();
       console.log('✅ Enhanced Role Manager initialized successfully');
@@ -451,7 +523,11 @@ class EnhancedRoleManager {
   async loadUserInfo() {
     try {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       const response = await fetch(\`\${this.config.apiBaseUrl}/api/user-info\`, {
+=======
+      const response = await fetch('/api/user-info', {
+>>>>>>> Stashed changes
 =======
       const response = await fetch('/api/user-info', {
 >>>>>>> Stashed changes
@@ -463,10 +539,14 @@ class EnhancedRoleManager {
       if (response.ok) {
         this.currentUser = await response.json();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         
         if (this.config.features.debugMode) {
           console.log('🔍 Current user loaded:', this.currentUser);
         }
+=======
+        console.log('🔍 Current user loaded:', this.currentUser);
+>>>>>>> Stashed changes
 =======
         console.log('🔍 Current user loaded:', this.currentUser);
 >>>>>>> Stashed changes
@@ -480,6 +560,7 @@ class EnhancedRoleManager {
   }
   
   updateLiveStats() {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     // Update student/company counts on page
     const countElements = document.querySelectorAll('[data-count]');
@@ -499,6 +580,8 @@ class EnhancedRoleManager {
       console.log('📊 Live stats updated in UI');
     }
 =======
+=======
+>>>>>>> Stashed changes
     // Update elements with data-count attributes
     document.querySelectorAll('[data-count]').forEach(el => {
       const countType = el.getAttribute('data-count');
@@ -523,6 +606,9 @@ class EnhancedRoleManager {
     });
     
     console.log('📊 Live stats updated in UI');
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   }
   
@@ -531,7 +617,11 @@ class EnhancedRoleManager {
     this.updateSideMenu();
     this.updateContent();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     this.updateActions();
+=======
+    this.addNavigationInterceptors();
+>>>>>>> Stashed changes
 =======
     this.addNavigationInterceptors();
 >>>>>>> Stashed changes
@@ -554,6 +644,7 @@ class EnhancedRoleManager {
             { href: '/', text: 'Home', active: true },
             { href: '/programma', text: 'Programma' },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             { href: '/gesprekkenOverzicht', text: 'Mijn gesprekken' },
             { href: '/mijnProject', text: 'Mijn Project' },
             { href: '/account', text: 'Account' }
@@ -561,16 +652,22 @@ class EnhancedRoleManager {
           break;
           
 =======
+=======
+>>>>>>> Stashed changes
             { href: '/mijnProject', text: 'Mijn Project' },
             { href: '/alleBedrijven', text: 'Bedrijven' },
             { href: '/accountStudent', text: 'Account' }
           ];
           break;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         case 'bedrijf':
           navItems = [
             { href: '/', text: 'Home', active: true },
             { href: '/programma', text: 'Programma' },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             { href: '/gesprekkenOverzicht', text: 'Gesprekken' },
             { href: '/alleStudenten', text: 'Studenten' },
@@ -579,20 +676,31 @@ class EnhancedRoleManager {
           break;
           
 =======
+=======
+>>>>>>> Stashed changes
             { href: '/alleStudenten', text: 'Studenten' },
             { href: '/accountBedrijf', text: 'Account' }
           ];
           break;
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         case 'organisator':
           navItems = [
             { href: '/', text: 'Dashboard', active: true },
             { href: '/adminPanel', text: 'Admin Panel' },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             { href: '/overzichtOrganisator', text: 'Overzicht' },
             { href: '/alleStudenten', text: 'Studenten' },
             { href: '/alleBedrijven', text: 'Bedrijven' },
             { href: '/account', text: 'Account' }
+=======
+            { href: '/alleStudenten', text: 'Studenten' },
+            { href: '/alleBedrijven', text: 'Bedrijven' },
+            { href: '/accountOrganisator', text: 'Account' }
+>>>>>>> Stashed changes
 =======
             { href: '/alleStudenten', text: 'Studenten' },
             { href: '/alleBedrijven', text: 'Bedrijven' },
@@ -619,10 +727,13 @@ class EnhancedRoleManager {
       navbar.appendChild(link);
     });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     
     if (this.config.features.debugMode) {
       console.log(\`🧭 Navigation updated for \${this.currentUser.userType}\`);
     }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   }
@@ -638,6 +749,7 @@ class EnhancedRoleManager {
     let menuItems = [];
     
     if (this.currentUser.isLoggedIn) {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       menuItems = [
         { href: '/account', icon: 'fas fa-user', text: 'Mijn Account' }
@@ -655,6 +767,8 @@ class EnhancedRoleManager {
       menuItems.push(
         { href: '/change-password', icon: 'fas fa-key', text: 'Wachtwoord wijzigen' },
 =======
+=======
+>>>>>>> Stashed changes
       switch (this.currentUser.userType) {
         case 'student':
           menuItems = [
@@ -677,6 +791,9 @@ class EnhancedRoleManager {
       }
       
       menuItems.push(
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         { href: '#', icon: 'fas fa-sign-out-alt', text: 'Uitloggen', onclick: 'logout()' }
       );
@@ -684,8 +801,12 @@ class EnhancedRoleManager {
       menuItems = [
         { href: '/login', icon: 'fas fa-sign-in-alt', text: 'Login' },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         { href: '/register', icon: 'fas fa-user-plus', text: 'Registreren' },
         { href: '/contacteer', icon: 'fas fa-envelope', text: 'Contact us' }
+=======
+        { href: '/register', icon: 'fas fa-user-plus', text: 'Registreren' }
+>>>>>>> Stashed changes
 =======
         { href: '/register', icon: 'fas fa-user-plus', text: 'Registreren' }
 >>>>>>> Stashed changes
@@ -703,6 +824,7 @@ class EnhancedRoleManager {
       sideMenuContent.appendChild(link);
     });
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     
     // Ensure divider exists
     let divider = sideMenuContent.querySelector('.sideMenu-divider');
@@ -716,10 +838,15 @@ class EnhancedRoleManager {
   updateContent() {
     // Update welcome messages based on user data
 =======
+=======
+>>>>>>> Stashed changes
   }
   
   updateContent() {
     // Update welcome messages
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     if (this.currentUser.isLoggedIn && this.currentUser.user) {
       const welcomeElement = document.querySelector('.aboutTitle');
@@ -748,6 +875,7 @@ class EnhancedRoleManager {
   }
   
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   updateActions() {
     // Update action buttons based on role
     const actionButtons = document.querySelectorAll('.section-btn, .cta-btn');
@@ -756,6 +884,8 @@ class EnhancedRoleManager {
       if (this.currentUser.isLoggedIn) {
         this.updateButtonForRole(button);
 =======
+=======
+>>>>>>> Stashed changes
   addNavigationInterceptors() {
     // Intercept home navigation to ensure correct homepage
     document.addEventListener('click', (e) => {
@@ -763,11 +893,15 @@ class EnhancedRoleManager {
       if (link && (link.getAttribute('href') === '/' || link.getAttribute('href') === '/index.html')) {
         // Let the server handle this - it will serve the correct homepage
         console.log('🏠 Navigating to role-based homepage...');
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       }
     });
   }
   
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   updateButtonForRole(button) {
     const originalHref = button.getAttribute('href');
@@ -804,6 +938,8 @@ class EnhancedRoleManager {
       this.loadUserInfo().then(() => this.setupUI());
     }, 5 * 60 * 1000);
 =======
+=======
+>>>>>>> Stashed changes
   startAutoRefresh() {
     // Refresh every 2 minutes
     setInterval(async () => {
@@ -819,6 +955,9 @@ class EnhancedRoleManager {
         console.warn('Failed to refresh stats:', error);
       }
     }, 2 * 60 * 1000);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   }
   
@@ -836,10 +975,13 @@ class EnhancedRoleManager {
   }
   
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   getServerConfig() {
     return this.config;
   }
   
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   getLiveStats() {
@@ -848,14 +990,20 @@ class EnhancedRoleManager {
   
   async refresh() {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     console.log('🔄 Refreshing role manager...');
     await this.loadUserInfo();
     this.setupUI();
 =======
+=======
+>>>>>>> Stashed changes
     console.log('🔄 Refreshing enhanced role manager...');
     await this.loadUserInfo();
     this.setupUI();
     this.updateLiveStats();
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   }
 }
@@ -880,6 +1028,7 @@ window.logout = async function() {
   } finally {
     // Clear all stored data
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     localStorage.removeItem('authToken');
     localStorage.removeItem('userType');
     localStorage.removeItem('userId');
@@ -894,6 +1043,10 @@ window.logout = async function() {
     localStorage.clear();
     sessionStorage.clear();
 >>>>>>> Stashed changes
+=======
+    localStorage.clear();
+    sessionStorage.clear();
+>>>>>>> Stashed changes
     console.log('🚪 User logged out successfully');
     window.location.href = '/login';
   }
@@ -903,7 +1056,10 @@ window.logout = async function() {
 window.checkAuthStatus = () => window.roleManager ? window.roleManager.isLoggedIn() : false;
 window.getUserType = () => window.roleManager ? window.roleManager.getUserType() : 'guest';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 window.getServerConfig = () => window.roleManager ? window.roleManager.getServerConfig() : window.SERVER_CONFIG;
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 window.getLiveStats = () => window.roleManager ? window.roleManager.getLiveStats() : window.LIVE_STATS;
@@ -913,23 +1069,34 @@ window.refreshRoleUI = () => window.roleManager && window.roleManager.refresh();
 function initializeRoleManager() {
   try {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     console.log('🚀 Initializing Role Manager...');
     window.roleManager = new RoleManager();
   } catch (error) {
     console.error('❌ Role Manager initialization failed:', error);
     // Fallback
 =======
+=======
+>>>>>>> Stashed changes
     console.log('🚀 Initializing Enhanced Role Manager...');
     window.roleManager = new EnhancedRoleManager();
   } catch (error) {
     console.error('❌ Role Manager initialization failed:', error);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     window.roleManager = {
       getCurrentUser: () => ({ isLoggedIn: false, userType: 'guest' }),
       isLoggedIn: () => false,
       getUserType: () => 'guest',
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       refresh: () => console.warn('Role Manager not properly initialized')
+=======
+      refresh: () => console.warn('Role Manager not properly initialized'),
+      getLiveStats: () => window.LIVE_STATS || {}
+>>>>>>> Stashed changes
 =======
       refresh: () => console.warn('Role Manager not properly initialized'),
       getLiveStats: () => window.LIVE_STATS || {}
@@ -945,6 +1112,7 @@ if (document.readyState === 'loading') {
   initializeRoleManager();
 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 // Handle page navigation
 window.addEventListener('pageshow', function(event) {
@@ -1012,6 +1180,8 @@ module.exports = {
   getUserType: (req) => getCurrentUser(req)?.userType || 'guest'
 };
 =======
+=======
+>>>>>>> Stashed changes
 console.log('✅ Enhanced Role Manager loaded successfully');
 `;
 
@@ -1032,4 +1202,7 @@ module.exports = {
   getUserType: (req) => getCurrentUser(req)?.userType || 'guest'
 };
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

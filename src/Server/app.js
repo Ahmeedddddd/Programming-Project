@@ -1,7 +1,10 @@
 // src/Server/app.js
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 // Deze server is verantwoordelijk voor het bedienen van de frontend bestanden
 =======
 >>>>>>> Stashed changes
@@ -13,6 +16,7 @@ const port = 8383
 const path = require('path');
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 //Import the enhanced role-based system with requireRole
 const {
   serveRoleBasedHomepage,
@@ -20,9 +24,14 @@ const {
 =======
 <<<<<<< Updated upstream
 =======
+>>>>>>> Stashed changes
+=======
 // Import the enhanced role-based system
 const {
   serveRoleBasedHomepage,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   getUserInfo,
   requireAuth,
@@ -31,6 +40,9 @@ const {
 } = require('./MIDDLEWARE/rolCheck');
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
@@ -45,6 +57,7 @@ app.use('/src/CSS', express.static(path.join(__dirname, '../CSS')));
 app.use('/src/JS', express.static(path.join(__dirname, '../JS')));
 app.use('/images', express.static(path.join(__dirname, '../../public/images')));
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 // ===== ENHANCED ROLE-BASED ROUTES =====
 
@@ -75,6 +88,8 @@ app.get('/js/role-manager.js', async (req, res) => {
   }
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/index.html'));
 >>>>>>> Stashed changes
@@ -190,6 +205,9 @@ app.get('/js/role-manager.js', async (req, res) => {
 // ===== PUBLIC ROUTES =====
 
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/ACCOUNT/login.html'));
@@ -200,10 +218,13 @@ app.get('/register', (req, res) => {
 });
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // ✅ FIXED: Bedrijf routes with correct role checking
 app.get('/accountBedrijf', requireRole(['bedrijf']), (req, res) => {
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 //BEDRIJVEN
 app.get('/accountBedrijf', (req, res) => {
 >>>>>>> Stashed changes
@@ -238,6 +259,9 @@ app.get('/overzichtOrganisator', requireRole(['organisator']), (req, res) => {
 //INFO
 =======
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 app.get('/info', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/INFO/info.html'));
@@ -256,9 +280,12 @@ app.get('/alleStudenten', (req, res) => {
 });
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // ===== API ROUTES =====
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 app.get('/zoekbalkStudenten', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html'));
 });
@@ -429,5 +456,8 @@ app.listen(port, () => {
   console.log('   - Role Manager: http://localhost:' + port + '/js/role-manager.js');
   console.log('   - Live Stats: http://localhost:' + port + '/api/stats/live');
 >>>>>>> Stashed changes
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 });

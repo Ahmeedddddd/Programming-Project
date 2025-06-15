@@ -10,6 +10,7 @@ const bcrypt = require('bcrypt');
 const authController = {
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // 🔐 LOGIN - FIXED EMAIL-BASED VERSION
 async login(req, res) {
   try {
@@ -18,6 +19,8 @@ async login(req, res) {
       return res.status(400).json({ 
 =======
 <<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
   // 🔐 LOGIN - BESTAANDE FUNCTIE (ongewijzigd)
 =======
   // 🔐 EMAIL-FIRST LOGIN
@@ -255,7 +258,66 @@ async login(req, res) {
       });
     }
   },
+=======
+      }
 
+<<<<<<< Updated upstream
+=======
+      const { email, password } = req.body;
+      console.log(`🔐 Login attempt for email: ${email}`);
+
+      // 🎯 SINGLE EMAIL-TO-USER LOOKUP FUNCTION
+      const userResult = await this.findUserByEmailAndValidatePassword(email, password);
+      
+      if (!userResult.success) {
+        console.log(`❌ Authentication failed: ${userResult.message}`);
+        return res.status(401).json({ 
+          success: false,
+          error: 'Invalid credentials',
+          message: userResult.message || 'Email of wachtwoord is onjuist'
+        });
+      }
+
+      console.log(`✅ Authentication successful for ${userResult.user.email}`);
+
+      // 🎫 Generate JWT token - CONSISTENT payload
+      const tokenPayload = {
+        email: userResult.user.email,
+        userType: userResult.user.userType,
+        userId: userResult.user.userId, 
+        gebruikersId: userResult.user.gebruikersId,
+        naam: userResult.user.naam
+      };
+
+      const token = jwt.sign(tokenPayload, config.jwt.secret, { 
+        expiresIn: config.jwt.expiresIn || '7d'
+      });
+
+      // ✅ CONSISTENT response format
+      res.json({
+        success: true,
+        message: 'Login succesvol',
+        token: token,
+        user: {
+          email: userResult.user.email,
+          userType: userResult.user.userType,
+          userId: userResult.user.userId,
+          naam: userResult.user.naam,
+          ...userResult.user
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Login failed',
+        message: 'Er ging iets mis bij het inloggen'
+      });
+    }
+  },
+
+>>>>>>> Stashed changes
   // 🔍 MAIN EMAIL-TO-USER LOOKUP WITH PASSWORD VALIDATION
   async findUserByEmailAndValidatePassword(email, password) {
     try {
