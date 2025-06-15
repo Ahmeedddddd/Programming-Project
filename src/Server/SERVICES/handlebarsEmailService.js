@@ -1,57 +1,30 @@
 //src/Server/SERVICES/handlebarsEmailService.js
-
 const nodemailer = require('nodemailer');
-const hbs = require('nodemailer-express-handlebars');
-const path = require('path');
 const config = require('../CONFIG/config');
 
 class HandlebarsEmailService {
   constructor() {
-    // Create transporter
-    this.transporter = nodemailer.createTransporter({
-      host: config.email.host,
-      port: config.email.port,
-      secure: false,
-      auth: {
-        user: config.email.user,
-        pass: config.email.password
-      }
-    });
-
-    // Configure handlebars
-    this.transporter.use('compile', hbs({
-      viewEngine: {
-        extName: '.hbs',
-        partialsDir: path.join(__dirname, '../TEMPLATES/emails/partials'),
-        layoutsDir: path.join(__dirname, '../TEMPLATES/emails/layouts'),
-        defaultLayout: 'main',
-        helpers: {
-          // Custom helpers
-          formatDate: function(date) {
-            return new Date(date).toLocaleDateString('nl-NL');
-          },
-          uppercase: function(str) {
-            return str.toUpperCase();
-          },
-          eq: function(a, b) {
-            return a === b;
-          }
-        }
-      },
-      viewPath: path.join(__dirname, '../TEMPLATES/emails'),
-      extName: '.hbs'
-    }));
-
-    // Verify connection
-    this.verifyConnection();
+    this.transporter = null;
+    this.initializeTransporter();
   }
 
-  async verifyConnection() {
+  initializeTransporter() {
     try {
-      await this.transporter.verify();
-      console.log('✅ Email server connection verified');
+      //createTransport instead of createTransporter
+      this.transporter = nodemailer.createTransport({
+        host: config.email.host,
+        port: config.email.port,
+        secure: false,
+        auth: {
+          user: config.email.user,
+          pass: config.email.password
+        }
+      });
+
+      console.log('✅ Email transporter initialized');
     } catch (error) {
-      console.error('❌ Email server connection failed:', error);
+      console.error('❌ Email transporter failed to initialize:', error);
+      this.transporter = null;
     }
   }
 
@@ -60,6 +33,65 @@ class HandlebarsEmailService {
    */
   async sendStudentWelcomeEmail(studentData) {
     try {
+      if (!this.transporter) {
+        console.warn('📧 Email service not available, skipping email');
+        return { success: false, error: 'Email service not configured' };
+      }
+
+      const emailContent = `
+        <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #881538 0%, #A91B47 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">🎓 Welkom bij CareerLaunch!</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Erasmus Hogeschool Brussels</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #881538; font-size: 24px; margin-bottom: 20px;">Hallo ${studentData.voornaam}!</h2>
+            
+            <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+              Je account is succesvol aangemaakt voor CareerLaunch EHB. Je bent nu klaar om deel te nemen aan dit geweldige evenement!
+            </p>
+            
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; margin: 25px 0;">
+              <h3 style="color: #881538; margin-top: 0;">📋 Jouw accountgegevens:</h3>
+              <ul style="color: #666; line-height: 1.8;">
+                <li><strong>Studentnummer:</strong> ${studentData.studentnummer}</li>
+                <li><strong>Email:</strong> ${studentData.email}</li>
+                <li><strong>Opleiding:</strong> ${studentData.opleiding}</li>
+                ${studentData.opleidingsrichting ? `<li><strong>Richting:</strong> ${studentData.opleidingsrichting}</li>` : ''}
+              </ul>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 25px; margin: 25px 0;">
+              <h3 style="color: #881538; margin-top: 0;">🚀 Wat kun je nu doen?</h3>
+              <ul style="color: #666; line-height: 1.8;">
+                <li>Inloggen op het platform</li>
+                <li>Je project uploaden en beschrijven</li>
+                <li>Bedrijven ontdekken en gesprekken plannen</li>
+                <li>Het programma bekijken</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="http://localhost:8383/login" style="background: linear-gradient(135deg, #881538, #A91B47); color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow: 0 4px 15px rgba(136, 21, 56, 0.4);">
+                🔑 Inloggen op CareerLaunch
+              </a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+              <strong>Evenement datum:</strong> Donderdag 13 Maart 2025<br>
+              <strong>Locatie:</strong> Erasmus Hogeschool Brussels
+            </p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #eee;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              © ${new Date().getFullYear()} Erasmus Hogeschool Brussels - CareerLaunch
+            </p>
+          </div>
+        </div>
+      `;
+
       const mailOptions = {
         from: {
           name: 'CareerLaunch EHB',
@@ -67,18 +99,7 @@ class HandlebarsEmailService {
         },
         to: studentData.email,
         subject: '🎓 Welkom bij CareerLaunch EHB!',
-        template: 'student-welcome',
-        context: {
-          voornaam: studentData.voornaam,
-          achternaam: studentData.achternaam,
-          studentnummer: studentData.studentnummer,
-          email: studentData.email,
-          opleiding: studentData.opleiding,
-          opleidingsrichting: studentData.opleidingsrichting || '',
-          loginUrl: 'http://localhost:3301/login',
-          currentYear: new Date().getFullYear(),
-          eventDate: '25 juni 2025'
-        }
+        html: emailContent
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -104,6 +125,52 @@ class HandlebarsEmailService {
    */
   async sendBedrijfWelcomeEmail(bedrijfData, vatInfo = null) {
     try {
+      if (!this.transporter) {
+        console.warn('📧 Email service not available, skipping email');
+        return { success: false, error: 'Email service not configured' };
+      }
+
+      let vatStatus = '';
+      if (vatInfo) {
+        vatStatus = vatInfo.isValid 
+          ? `<div style="color: #28a745; font-weight: 600;">✅ TVA nummer gevalideerd</div>`
+          : `<div style="color: #ffc107; font-weight: 600;">⚠️ TVA nummer verificatie pending</div>`;
+      }
+
+      const emailContent = `
+        <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #881538 0%, #A91B47 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">🏢 Welkom bij CareerLaunch!</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Partnership Bevestiging</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #881538; font-size: 24px; margin-bottom: 20px;">Welkom ${bedrijfData.naam}!</h2>
+            
+            <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+              Uw bedrijfsaccount is succesvol aangemaakt voor CareerLaunch EHB. We kijken er naar uit om samen talent te ontdekken!
+            </p>
+            
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; margin: 25px 0;">
+              <h3 style="color: #881538; margin-top: 0;">📋 Bedrijfsgegevens:</h3>
+              <ul style="color: #666; line-height: 1.8;">
+                <li><strong>Bedrijfsnaam:</strong> ${bedrijfData.naam}</li>
+                <li><strong>Email:</strong> ${bedrijfData.email}</li>
+                <li><strong>Sector:</strong> ${bedrijfData.sector || 'Niet opgegeven'}</li>
+                <li><strong>TVA nummer:</strong> ${bedrijfData.TVA_nummer} ${vatStatus}</li>
+                <li><strong>Locatie:</strong> ${bedrijfData.gemeente}, ${bedrijfData.postcode}</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="http://localhost:8383/login" style="background: linear-gradient(135deg, #881538, #A91B47); color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow: 0 4px 15px rgba(136, 21, 56, 0.4);">
+                🔑 Inloggen op Platform
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
       const mailOptions = {
         from: {
           name: 'CareerLaunch Partnership Team',
@@ -111,26 +178,7 @@ class HandlebarsEmailService {
         },
         to: bedrijfData.email,
         subject: '🏢 Welkom bij CareerLaunch EHB - Partnership Bevestigd!',
-        template: 'bedrijf-welcome',
-        context: {
-          bedrijfNaam: bedrijfData.naam,
-          contactVoornaam: bedrijfData.voornaam || 'Contactpersoon',
-          contactAchternaam: bedrijfData.achternaam || '',
-          email: bedrijfData.email,
-          TVA_nummer: bedrijfData.TVA_nummer,
-          sector: bedrijfData.sector || '',
-          gemeente: bedrijfData.gemeente,
-          straatnaam: bedrijfData.straatnaam,
-          huisnummer: bedrijfData.huisnummer,
-          postcode: bedrijfData.postcode,
-          vatValidated: vatInfo?.isValid || false,
-          vatCompanyName: vatInfo?.companyName || null,
-          loginUrl: 'http://localhost:3301/login',
-          currentYear: new Date().getFullYear(),
-          eventDate: '25 juni 2025',
-          partnershipEmail: 'partnerships@ehb.be',
-          partnershipPhone: '+32 2 418 61 11'
-        }
+        html: emailContent
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -152,10 +200,14 @@ class HandlebarsEmailService {
   }
 
   /**
-   * Verstuur test email (voor development)
+   * Test email functie
    */
   async sendTestEmail(toEmail) {
     try {
+      if (!this.transporter) {
+        return { success: false, error: 'Email service not configured' };
+      }
+
       const mailOptions = {
         from: {
           name: 'CareerLaunch Test',
@@ -163,12 +215,11 @@ class HandlebarsEmailService {
         },
         to: toEmail,
         subject: '🧪 Test Email - CareerLaunch',
-        template: 'test-email',
-        context: {
-          testMessage: 'Dit is een test email van het CareerLaunch systeem.',
-          timestamp: new Date().toISOString(),
-          currentYear: new Date().getFullYear()
-        }
+        html: `
+          <h2>Test Email Successful!</h2>
+          <p>This is a test email from the CareerLaunch system.</p>
+          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+        `
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -189,53 +240,94 @@ class HandlebarsEmailService {
     }
   }
 
-  /**
-   * Bestaande functionaliteit voor backwards compatibility
-   */
+  // Backward compatibility met jouw bestaande emailService.js
   async sendWelcomeEmail(userEmail, userName) {
-    const mailOptions = {
-      from: config.email.user,
-      to: userEmail,
-      subject: 'Welkom bij CareerLaunch!',
-      template: 'generic-welcome',
-      context: {
-        userName: userName,
-        currentYear: new Date().getFullYear()
+    try {
+      if (!this.transporter) {
+        console.warn('📧 Email service not available');
+        return { success: false, error: 'Email service not configured' };
       }
-    };
-    return await this.transporter.sendMail(mailOptions);
+
+      const mailOptions = {
+        from: config.email.user,
+        to: userEmail,
+        subject: 'Welkom bij CareerLaunch!',
+        html: `
+          <h1>Welkom ${userName}!</h1>
+          <p>Je account is succesvol aangemaakt voor CareerLaunch.</p>
+          <p>Je kunt nu inloggen en deelnemen aan het evenement.</p>
+        `
+      };
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('❌ Failed to send welcome email:', error);
+      return { success: false, error: error.message };
+    }
   }
 
   async sendInvoice(invoiceData) {
-    const { email, naam, factuurId } = invoiceData;
-   
-    const mailOptions = {
-      from: config.email.user,
-      to: email,
-      subject: `CareerLaunch Factuur #${factuurId}`,
-      template: 'invoice',
-      context: {
-        naam: naam,
-        factuurId: factuurId,
-        currentYear: new Date().getFullYear()
+    try {
+      if (!this.transporter) {
+        console.warn('📧 Email service not available');
+        return { success: false, error: 'Email service not configured' };
       }
-    };
-    return await this.transporter.sendMail(mailOptions);
+
+      const { email, naam, factuurId } = invoiceData;
+     
+      const mailOptions = {
+        from: config.email.user,
+        to: email,
+        subject: `CareerLaunch Factuur #${factuurId}`,
+        html: `
+          <h1>Factuur CareerLaunch</h1>
+          <p>Beste ${naam},</p>
+          <p>Bedankt voor je deelname aan CareerLaunch!</p>
+          <p>Factuur nummer: ${factuurId}</p>
+        `
+      };
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('❌ Failed to send invoice:', error);
+      return { success: false, error: error.message };
+    }
   }
 
   async sendAppointmentConfirmation(studentEmail, bedrijfNaam, startTijd) {
-    const mailOptions = {
-      from: config.email.user,
-      to: studentEmail,
-      subject: 'Afspraak bevestiging - CareerLaunch',
-      template: 'appointment-confirmation',
-      context: {
-        bedrijfNaam: bedrijfNaam,
-        startTijd: new Date(startTijd).toLocaleString('nl-NL'),
-        currentYear: new Date().getFullYear()
+    try {
+      if (!this.transporter) {
+        console.warn('📧 Email service not available');
+        return { success: false, error: 'Email service not configured' };
       }
-    };
-    return await this.transporter.sendMail(mailOptions);
+
+      const mailOptions = {
+        from: config.email.user,
+        to: studentEmail,
+        subject: 'Afspraak bevestiging - CareerLaunch',
+        html: `
+          <h1>Afspraak bevestigd!</h1>
+          <p>Je afspraak met ${bedrijfNaam} is bevestigd.</p>
+          <p>Tijd: ${new Date(startTijd).toLocaleString('nl-NL')}</p>
+        `
+      };
+      return await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('❌ Failed to send appointment confirmation:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Check if email service is working
+  async isEmailServiceWorking() {
+    try {
+      if (!this.transporter) {
+        return false;
+      }
+      await this.transporter.verify();
+      return true;
+    } catch (error) {
+      console.error('❌ Email service not working:', error.message);
+      return false;
+    }
   }
 }
 
