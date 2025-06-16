@@ -1,31 +1,34 @@
-//src/Server/ROUTERS/student.js
+//src/Server/ROUTES/student.js
 const express = require('express');
 const router = express.Router();
 const studentController = require('../CONTROLLERS/studentController');
 const { validateStudent } = require('../MIDDLEWARE/validation');
 const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
-// ===== PUBLIC ROUTES (no authentication required) =====
+// ===== IMPORTANT: SPECIFIC ROUTES FIRST, PARAMETER ROUTES LAST =====
 
-// GET /api/studenten - Alle studenten ophalen
-router.get('/', studentController.getAllStudents);
+// PUBLIC ROUTES (no authentication required)
 
-// GET /api/studenten/projecten - Alle projecten ophalen
+// SPECIFIC routes - deze moeten VOOR de parameter routes komen
 router.get('/projecten', studentController.getProjects);
+router.get('/zonder-project', studentController.getStudentsWithoutProjects);
+router.get('/stats', studentController.getStudentStats);
 
-// GET /api/studenten/:studentnummer - Specifieke student ophalen
-router.get('/:studentnummer', studentController.getStudent);
+// SEARCH routes
+router.get('/search/:searchTerm', studentController.searchStudents);
 
-// ===== PROTECTED ROUTES (authentication required) =====
+// FILTER routes
+router.get('/opleiding/:opleiding', studentController.getStudentsByOpleiding);
+router.get('/opleidingsrichting/:richting', studentController.getStudentsByOpleidingsrichting);
+router.get('/gemeente/:gemeente', studentController.getStudentsByGemeente);
 
-// GET /api/student/profile - Eigen studentprofiel bekijken
+// PROTECTED ROUTES (authentication required)
 router.get('/profile',
   authenticateToken,
   requireRole(['student']),
   studentController.getOwnProfile
 );
 
-// PUT /api/student/profile - Eigen studentprofiel bijwerken
 router.put('/profile',
   authenticateToken,
   requireRole(['student']),
@@ -33,9 +36,7 @@ router.put('/profile',
   studentController.updateOwnProfile
 );
 
-// ===== ADMIN ROUTES (only organisator) =====
-
-// POST /api/studenten - Nieuwe student aanmaken (alleen organisator)
+// ADMIN ROUTES
 router.post('/',
   authenticateToken,
   requireRole(['organisator']),
@@ -43,7 +44,6 @@ router.post('/',
   studentController.createStudent
 );
 
-// PUT /api/studenten/:studentnummer - Student bijwerken (organisator of student zelf)
 router.put('/:studentnummer',
   authenticateToken,
   requireRole(['organisator', 'student']),
@@ -51,11 +51,19 @@ router.put('/:studentnummer',
   studentController.updateStudent
 );
 
-// DELETE /api/studenten/:studentnummer - Student verwijderen (alleen organisator)
 router.delete('/:studentnummer',
   authenticateToken,
   requireRole(['organisator']),
   studentController.deleteStudent
 );
+
+// ===== PARAMETER ROUTES LAST - Deze moeten als LAATSTE komen =====
+
+// GET /api/studenten - Alle studenten ophalen (met filtering en search)
+router.get('/', studentController.getAllStudents);
+
+// GET /api/studenten/:studentnummer - Specifieke student ophalen
+// DIT MOET ALS LAATSTE omdat :studentnummer alles kan matchen
+router.get('/:studentnummer', studentController.getStudent);
 
 module.exports = router;

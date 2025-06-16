@@ -6,7 +6,7 @@ class Bedrijf {
     const [rows] = await pool.query(`
       SELECT
         bedrijfsnummer, TVA_nummer, naam, email, gsm_nummer, sector,
-        huisnummer, straatnaam, gemeente, postcode, bus, land
+        huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
       FROM BEDRIJF
       ORDER BY naam
     `);
@@ -24,19 +24,19 @@ class Bedrijf {
   static async create(bedrijfData) {
     const {
       TVA_nummer, naam, email, gsm_nummer, sector,
-      huisnummer, straatnaam, gemeente, postcode, bus, land
+      huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
     } = bedrijfData;
 
     const [result] = await pool.query(`
       INSERT INTO BEDRIJF (
         TVA_nummer, naam, email, gsm_nummer, sector,
-        huisnummer, straatnaam, gemeente, postcode, bus, land
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       TVA_nummer, naam, email, gsm_nummer, sector,
-      huisnummer, straatnaam, gemeente, postcode, bus, land
+      huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
     ]);
-   
+
     return result.insertId;
   }
 
@@ -44,12 +44,12 @@ class Bedrijf {
     const fields = Object.keys(bedrijfData);
     const values = Object.values(bedrijfData);
     const setClause = fields.map(field => `${field} = ?`).join(', ');
-   
+
     const [result] = await pool.query(
       `UPDATE BEDRIJF SET ${setClause} WHERE bedrijfsnummer = ?`,
       [...values, bedrijfsnummer]
     );
-   
+
     return result.affectedRows;
   }
 
@@ -61,7 +61,7 @@ class Bedrijf {
     return result.affectedRows;
   }
 
-  // ✅ NEW: Missing methods for statistics
+  // Missing methods for statistics
   static async getStats() {
     try {
       const [totalRows] = await pool.query('SELECT COUNT(*) as total FROM BEDRIJF');
@@ -72,7 +72,7 @@ class Bedrijf {
         GROUP BY sector
         ORDER BY count DESC
       `);
-      
+
       return {
         total: totalRows[0].total,
         bySector: sectorStats.reduce((acc, stat) => {
@@ -102,7 +102,7 @@ class Bedrijf {
     }
   }
 
-  // ✅ NEW: Additional utility methods
+  // Additional utility methods
   static async getBySector(sector) {
     try {
       const [rows] = await pool.query(

@@ -1,3 +1,4 @@
+//Server/MODELS/afspraaks.js
 const { pool } = require('../CONFIG/database');
 
 class Afspraak {

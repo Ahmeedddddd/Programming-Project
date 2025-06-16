@@ -17,7 +17,7 @@
   <div class="navBar">
     <a href="/index.html" class="navItem active">Home</a>
     <a href="/programma" class="navItem">Programma</a>
-    <a href="#" class="navItem">Mijn gesprekken</a>
+    <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
     <a href="/info" class="navItem">Info</a>
   </div>
   <div class="pfpContainer">
@@ -68,42 +68,23 @@
                 </div>
 
                 <!-- Profiel Informatie -->
-                <div class="w-full">
+                <form id="studentForm" class="w-full">
                     
                     <!-- Persoonlijke Gegevens -->
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">👤 Persoonlijke Gegevens</h3>
                     </div>
 
-                    <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld naam">
-                            <strong>Voornaam:</strong> John
-                        </div>
-                        <div class="ehbVeld naam">
-                            <strong>Achternaam:</strong> Doe
-                        </div>
-                    </div>
-
-                    <!-- Studie Informatie -->
-                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
-                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🎓 Studie Informatie</h3>
+                    <div class="ehbVeld mb-2" data-field="studentnummer">
+                        <strong>Studentnummer:</strong> <span class="field-value">Laden...</span>
                     </div>
 
                     <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld">
-                            <strong>Studentennummer:</strong> 2024001234
+                        <div class="ehbVeld naam editable-field" data-field="voornaam">
+                            <strong>Voornaam:</strong> <span class="field-value">Laden...</span>
                         </div>
-                        <div class="ehbVeld">
-                            <strong>Opleiding:</strong> Toegepaste Informatica
-                        </div>
-                    </div>
-
-                    <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld">
-                            <strong>Academiejaar:</strong> 2024-2025
-                        </div>
-                        <div class="ehbVeld">
-                            <strong>Leerjaar:</strong> 3de Bachelor
+                        <div class="ehbVeld naam editable-field" data-field="achternaam">
+                            <strong>Achternaam:</strong> <span class="field-value">Laden...</span>
                         </div>
                     </div>
 
@@ -113,12 +94,76 @@
                     </div>
 
                     <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld email">
-                            <strong>Email:</strong> john.doe@student.ehb.be
+                        <div class="ehbVeld email editable-field" data-field="email">
+                            <strong>Email:</strong> <span class="field-value">Laden...</span>
                         </div>
-                        <div class="ehbVeld telefoon">
-                            <strong>Telefoon:</strong> +32 468 12 34 56
+                        <div class="ehbVeld telefoon editable-field" data-field="telefoon">
+                            <strong>Telefoon:</strong> <span class="field-value">Laden...</span>
                         </div>
+                    </div>
+
+                    <!-- Studie Informatie -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🎓 Studie Informatie</h3>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld editable-field" data-field="opleiding">
+                            <strong>Opleiding:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                        <div class="ehbVeld editable-field" data-field="opleidingsrichting">
+                            <strong>Opleidingsrichting:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+
+                    <div class="ehbVeld mb-2" data-field="academiejaar">
+                        <strong>Academiejaar:</strong> <span class="field-value">2024-2025</span>
+                    </div>
+
+                    <!-- Project Informatie -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">💼 Project Informatie</h3>
+                    </div>
+
+                    <div class="ehbVeld mb-2 editable-field" data-field="project-titel">
+                        <strong>Project Titel:</strong> <span class="field-value">Laden...</span>
+                    </div>
+
+                    <div class="ehbVeld mb-2 editable-field" data-field="project-beschrijving" style="min-height: 100px; padding: 1.5rem;">
+                        <strong>Project Beschrijving:</strong><br><br>
+                        <span class="field-value">Laden...</span>
+                    </div>
+
+                    <div class="ehbVeld mb-2 editable-field" data-field="over-mezelf" style="min-height: 100px; padding: 1.5rem;">
+                        <strong>Over Mezelf:</strong><br><br>
+                        <span class="field-value">Laden...</span>
+                    </div>
+
+                    <!-- Adres Gegevens -->
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📍 Adres Informatie</h3>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld editable-field" data-field="straatnaam">
+                            <strong>Straatnaam:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                        <div class="ehbVeld editable-field" data-field="huisnummer">
+                            <strong>Huisnummer:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld editable-field" data-field="bus">
+                            <strong>Bus:</strong> <span class="field-value">-</span>
+                        </div>
+                        <div class="ehbVeld editable-field" data-field="postcode">
+                            <strong>Postcode:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+
+                    <div class="ehbVeld mb-2 editable-field" data-field="gemeente">
+                        <strong>Gemeente:</strong> <span class="field-value">Laden...</span>
                     </div>
 
                     <!-- Beveiliging -->
@@ -130,29 +175,16 @@
                         <strong>Wachtwoord:</strong> ••••••••••••
                     </div>
 
-                    <div class="ehbVeld">
-                        <strong>Laatste login:</strong> Vandaag om 10:15
+                    <div class="ehbVeld" data-field="last-login">
+                        <strong>Laatste login:</strong> <span class="field-value">Laden...</span>
                     </div>
 
-                    <!-- Interesses -->
-                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
-                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🎯 Carrière Interesses</h3>
-                    </div>
+                </form>
 
-                    <div class="ehbVeld" style="min-height: 80px; padding: 1.5rem;">
-                        <strong>Interesse gebieden:</strong><br><br>
-                        Web Development, Mobile Apps, AI & Machine Learning, Cybersecurity
-                    </div>
-
-                    <div class="ehbVeld">
-                        <strong>Gewenste stage sector:</strong> IT & Technology
-                    </div>
-
-                </div>
-
-                <!-- Actie Buttons -->
-                <div class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap;">
-                    <button class="ehbBtn bewerken" onclick="enableEditMode()">
+                <!-- View Controls -->
+                <div id="viewControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap;">
+                    <button id="editBtn" class="ehbBtn bewerken">
+                        <i class="fas fa-pencil-alt"></i>
                         Gegevens Bewerken
                     </button>
                     <button class="ehbBtn secundair">
@@ -164,20 +196,32 @@
                         CV Downloaden
                     </button>
                 </div>
+                
+                <!-- Edit Controls (hidden by default) -->
+                <div id="editControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap; display: none;">
+                    <button type="submit" form="studentForm" class="ehbBtn primair">
+                        <i class="fas fa-save"></i>
+                        Bewaren
+                    </button>
+                    <button id="cancelBtn" class="ehbBtn secundair">
+                        <i class="fas fa-times"></i>
+                        Annuleren
+                    </button>
+                </div>
 
                 <!-- Account Status -->
                 <div class="text-center mt-4">
-                    <div class="ehbVeld" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
+                    <div class="ehbVeld" data-field="account-status" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
                         <i class="fas fa-check-circle"></i>
-                        <strong>Account Status:</strong> Actief en Geverifieerd
+                        <strong>Account Status:</strong> <span class="field-value">Laden...</span>
                     </div>
                 </div>
 
                 <!-- Extra Informatie -->
                 <div class="text-center mt-3">
                     <p style="color: #666; font-size: 0.9rem;">
-                        Account aangemaakt op: 1 september 2024<br>
-                        Laatste update: 2 dagen geleden
+                        <span id="account-created">Account aangemaakt: Laden...</span><br>
+                        <span id="last-updated">Laatste update: Laden...</span>
                     </p>
                 </div>
 
@@ -188,11 +232,22 @@
         <div class="menu-overlay"></div>
         
     </div>
+    
     <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-     <script type="module" src="/src/JS/startPage.js"></script>
-     <script type="module" src="/src/JS/gegevens-qol.js"></script>
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Error/Success Notifications -->
+    <div id="notification-container" style="
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 10000;
+    "></div>
+
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script type="module" src="/src/JS/ACCOUNT/gegevens-qol.js"></script>
+    <script type="module" src="/src/JS/STUDENTEN/gegevens-student.js"></script>
 </body>
 </html>

@@ -3,12 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vital'O Network - Bedrijfsdetails</title>
+    <title>Bedrijfsdetails - CareerLaunch</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/CSS/style.css" as="style">
+    <link rel="preload" href="/src/CSS/RESULTS/BEDRIJVEN/resultaat-bedrijf.css" as="style">
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/BEDRIJVEN/resultaat-bedrijf.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        /* Additional styles for dynamic content */
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #881538;
+            color: #881538;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-button:hover {
+            background: #881538;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+        }
+
+        .contact-info-extended {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid #881538;
+        }
+
+        .contact-info-extended strong {
+            color: #881538;
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .skeleton-title {
+            height: 2rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        /* Error state */
+        .error-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            margin: 2rem;
+        }
+
+        .error-state h2 {
+            color: #881538;
+            margin-bottom: 1rem;
+        }
+
+        .error-state p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .retry-btn {
+            background: #881538;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            background: #A91B47;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced action buttons */
+        .action-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .back-button {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 1rem;
+                display: inline-block;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Back Button -->
+    <a href="/alleBedrijven" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Terug naar alle bedrijven
+    </a>
+
     <!-- Navigatie -->
 <div class="container">
   <div class="nav">
@@ -16,16 +156,15 @@
     <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
   </div>
   <div class="navBar">
-    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/index.html" class="navItem">Home</a>
     <a href="/programma" class="navItem">Programma</a>
-    <a href="#" class="navItem">Mijn gesprekken</a>
+    <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
     <a href="/info" class="navItem">Info</a>
   </div>
   <div class="pfpContainer">
     <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
-
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
@@ -59,29 +198,34 @@
     <hr class="sideMenu-divider">
   </div>
 </div>
+
         <!-- Main Content -->
         <main class="bedrijf-detail">
             <!-- Left Column - Company Info -->
             <div class="bedrijf-info">
                 <div class="bedrijf-header">
                     <div class="logo-container">
-                        V'O
+                        <!-- Logo/initials will be inserted by JavaScript -->
+                        <div class="skeleton skeleton-text" style="width: 60px; height: 60px; border-radius: 50%;"></div>
                     </div>
                     <div class="bedrijf-titel">
-                        <h1 class="bedrijf-naam">Vital'O Network</h1>
-                        <p class="bedrijf-type">Health-Tech Scale-up</p>
+                        <h1 class="bedrijf-naam">
+                            <div class="skeleton skeleton-title" style="width: 300px;"></div>
+                        </h1>
+                        <p class="bedrijf-type">
+                            <div class="skeleton skeleton-text" style="width: 200px;"></div>
+                        </p>
                     </div>
                 </div>
 
                 <div class="bedrijf-beschrijving">
-                    Wij zijn Vital'O Network, een toonaangevende health-tech scale-up gespecialiseerd in end-to-end interoperability van medische datastromen.<br/><br/>
-                    Ons platform maakt gebruik van FHIR-API's en HL7-integration engines om real-time patiëntmonitoring en EHR-synchronisatie te waarborgen.<br/><br/>
-                    Met edge-computing nodes uitgerust met ARM-based microcontrollers en Trusted Execution Environments (TEEs) verwerken we vitale signalen direct aan de bron.<br/><br/>
-                    Vanuit onze engineering hub in Roodebeek werken we met CI/CD-pipelines (GitLab, Docker, Kubernetes) en Infrastructure as Code (Terraform) aan schaalbare en maintainable health-tech oplossingen.
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
                 </div>
 
                 <div class="tafel-highlight">
-                    Bezoek ons op Tafel 2 tijdens het evenement
+                    <div class="skeleton skeleton-text" style="background: rgba(255,255,255,0.3);"></div>
                 </div>
             </div>
 
@@ -91,9 +235,9 @@
                 <div class="contact-card">
                     <h3 class="card-title">Locatie & Contact</h3>
                     <div class="adres-info">
-                        <strong>Vital'O Network</strong><br/>
-                        Driesstraat, Roodebeek<br/>
-                        1200 Sint-Lambrechts-Woluwe
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text" style="width: 70%;"></div>
                     </div>
                 </div>
 
@@ -102,9 +246,11 @@
                     <h3 class="card-title">Acties</h3>
                     <div class="action-buttons">
                         <button class="action-btn contact-btn">
+                            <i class="fas fa-envelope"></i>
                             Contacteer bedrijf
                         </button>
                         <button class="action-btn favoriet-btn">
+                            <i class="fas fa-star"></i>
                             Favoriet (reserveren)
                         </button>
                     </div>
@@ -112,16 +258,81 @@
 
                 <!-- User Info -->
                 <div class="user-card">
-                    <img src="/public/images/mystery man avatar.webp" alt="Profile" class="user-avatar">
-                    <div class="user-name">John Doe</div>
+                    <img src="/images/mystery man avatar.webp" alt="Profile" class="user-avatar">
+                    <div class="user-name">Bezoeker</div>
                 </div>
             </div>
         </main>
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-  <script type="module" src="/src/JS/startPage.js"></script>
+
+    <!-- Error State Template (hidden by default) -->
+    <div id="errorState" class="error-state" style="display: none;">
+        <h2><i class="fas fa-exclamation-triangle"></i> Bedrijf niet gevonden</h2>
+        <p>Het gevraagde bedrijf kon niet worden geladen. Dit kan komen door een verkeerde link of tijdelijke technische problemen.</p>
+        <button class="retry-btn" onclick="window.location.reload()">
+            <i class="fas fa-redo"></i>
+            Probeer opnieuw
+        </button>
+        <br><br>
+        <a href="/alleBedrijven" class="back-button" style="position: relative; top: 0; left: 0;">
+            <i class="fas fa-arrow-left"></i>
+            Terug naar alle bedrijven
+        </a>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
+        <!-- Notifications will be added here by JavaScript -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script src="/src/JS/RESULTS/BEDRIJVEN/resultaat-bedrijf.js"></script>
+
+    <style>
+        /* Notification styles */
+        .notification {
+            background: white;
+            border-left: 4px solid #881538;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .notification.success {
+            border-left-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .notification.info {
+            border-left-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        /* Hide skeleton elements when content is loaded */
+        .content-loaded .skeleton {
+            display: none;
+        }
+    </style>
 </body>
 </html>

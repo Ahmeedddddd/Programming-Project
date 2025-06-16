@@ -1,5 +1,4 @@
 // src/Server/backend.js
-// Complete working backend based on successful debug version
 
 require('dotenv').config();
 const express = require('express');
@@ -9,9 +8,10 @@ const path = require('path');
 // Import database and config
 const { pool, testConnection } = require('./CONFIG/database');
 const config = require('./CONFIG/config');
+const errorHandler = require('./MIDDLEWARE/errorHandler');
 
 const app = express();
-const port = config.server?.apiPort || process.env.API_PORT || 3001;
+const port = config.server?.apiPort || process.env.API_PORT || 3301;
 
 // Middleware setup
 app.use(cors({
@@ -31,11 +31,11 @@ app.use(express.urlencoded({ extended: true }));
 // Logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+  }
   next();
 });
-
-// Test database connection bij opstarten
-console.log('🔍 Testing database connection...');
 
 // ===== HEALTH & TEST ENDPOINTS =====
 
@@ -59,9 +59,10 @@ app.get('/api/test', async (req, res) => {
       message: 'Backend API Test successful!',
       timestamp: new Date().toISOString(),
       database: 'Connected ✅',
-      structure: 'MVC Architecture',
+      structure: 'MVC Architecture with Authentication',
       features: [
-        'Authentication with JWT',
+        'User Registration (Student & Bedrijf)',
+        'Authentication with JWT & Password Hashing',
         'Role-based access control',
         'Database connection pooling',
         'Error handling middleware',
@@ -77,18 +78,18 @@ app.get('/api/test', async (req, res) => {
   }
 });
 
-// ===== LOAD ROUTES (same order as debug version that worked) =====
+// ===== LOAD ROUTES IN CORRECT ORDER =====
 
 console.log('🔍 Loading routes...');
 
-// 1. Load auth routes
+// 1. ✅ PRIORITY: Load authentication routes FIRST
 try {
-  console.log('Loading auth routes...');
+  console.log('Loading authentication routes...');
   const authRoutes = require('./ROUTES/auth');
   app.use('/api/auth', authRoutes);
-  console.log('✅ Auth routes loaded successfully');
+  console.log('✅ Authentication routes loaded successfully');
 } catch (error) {
-  console.log('❌ Auth routes failed:', error.message);
+  console.log('❌ Authentication routes failed:', error.message);
 }
 
 // 2. Load student routes
@@ -133,6 +134,10 @@ try {
   console.log('❌ Reservatie routes failed:', error.message);
 }
 
+// ❌ REMOVE conflicting registratie routes - we use auth routes now
+// const registratieRoutes = require('./ROUTES/registratie');
+// app.use('/api', registratieRoutes);
+
 console.log('✅ All routes loaded');
 
 // ===== ADDITIONAL ENDPOINTS =====
@@ -151,10 +156,19 @@ app.get('/api/stats', async (req, res) => {
       console.log('AFSPRAAK table not available:', e.message);
     }
 
+    // Try to get login count
+    let loginCount = [{ count: 0 }];
+    try {
+      [loginCount] = await pool.query('SELECT COUNT(*) as count FROM LOGINBEHEER');
+    } catch (e) {
+      console.log('LOGINBEHEER table not available:', e.message);
+    }
+
     res.json({
       studenten: studentCount[0].count,
       bedrijven: bedrijfCount[0].count,
       afspraken: afspraakCount[0].count,
+      registeredUsers: loginCount[0].count,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -163,9 +177,20 @@ app.get('/api/stats', async (req, res) => {
       error: 'Failed to fetch statistics',
       studenten: 0,
       bedrijven: 0,
-      afspraken: 0
+      afspraken: 0,
+      registeredUsers: 0
     });
   }
+});
+
+// Test registration endpoint
+app.post('/api/test-registration', async (req, res) => {
+  res.json({
+    message: 'Registration test endpoint reached',
+    receivedData: req.body,
+    timestamp: new Date().toISOString(),
+    note: 'Use /api/auth/register/student or /api/auth/register/bedrijf for actual registration'
+  });
 });
 
 // ===== ERROR HANDLING =====
@@ -179,8 +204,11 @@ app.use('/api/*', (req, res) => {
     availableRoutes: {
       'Authentication': [
         'POST /api/auth/login',
-        'POST /api/auth/register',
-        'GET /api/auth/me'
+        'POST /api/auth/register/student',
+        'POST /api/auth/register/bedrijf',
+        'GET /api/auth/me (requires auth)',
+        'PUT /api/auth/change-password (requires auth)',
+        'POST /api/auth/refresh (requires auth)'
       ],
       'Companies': [
         'GET /api/bedrijven',
@@ -209,14 +237,7 @@ app.use('/api/*', (req, res) => {
 });
 
 // Global error handler - must be last
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  
-  res.status(error.status || 500).json({
-    error: error.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-  });
-});
+app.use(errorHandler);
 
 // ===== SERVER STARTUP =====
 
@@ -238,15 +259,23 @@ const startServer = async () => {
       console.log(`   Health Check: http://localhost:${port}/api/health`);
       console.log(`   Test: http://localhost:${port}/api/test`);
       console.log(`   Stats: http://localhost:${port}/api/stats`);
+      console.log('\n🔐 Authentication endpoints:');
       console.log(`   Login: POST http://localhost:${port}/api/auth/login`);
+      console.log(`   Register Student: POST http://localhost:${port}/api/auth/register/student`);
+      console.log(`   Register Bedrijf: POST http://localhost:${port}/api/auth/register/bedrijf`);
+      console.log(`   Get Profile: GET http://localhost:${port}/api/auth/me`);
+      console.log('\n📊 Data endpoints:');
       console.log(`   Companies: GET http://localhost:${port}/api/bedrijven`);
       console.log(`   Students: GET http://localhost:${port}/api/studenten`);
       console.log(`   Company Profile: GET http://localhost:${port}/api/bedrijf/profile`);
-      console.log('\n🏗️  Architecture: MVC with Controllers, Routes, Models, Services');
+      console.log('\n🏗️  Architecture: MVC with Authentication, Password Hashing & JWT');
       console.log(`🎓 Frontend Server: http://localhost:8383\n`);
       
-      console.log('🎯 Key Feature: Bedrijven kunnen nu hun eigen gegevens bekijken!');
-      console.log('   Usage: GET /api/bedrijf/profile (with JWT token)');
+      console.log('🎯 New Features:');
+      console.log('   ✅ Student & Company Registration with Password Hashing');
+      console.log('   ✅ JWT Authentication');
+      console.log('   ✅ Protected Profile Endpoints');
+      console.log('   ✅ Role-based Access Control');
     });
 
   } catch (error) {

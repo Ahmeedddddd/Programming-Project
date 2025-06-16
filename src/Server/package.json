@@ -12,7 +12,7 @@
     "start:backend": "node backend.js",
     "test:backend": "curl http://localhost:3001/api/health || echo 'Backend not responding'",
     "test:frontend": "curl http://localhost:8383 || echo 'Frontend not responding'",
-    "install:all": "npm install express@4.19.2 cors dotenv mysql2 bcrypt jsonwebtoken express-validator nodemailer nodemailer-express-handlebars npm-run-all bcrypt && npm install --save-dev nodemon concurrently && npm audit fix"
+    "install:all": "npm install express@4.19.2 cors dotenv mysql2 bcrypt jsonwebtoken express-validator nodemailer nodemailer-express-handlebars npm-run-all bcrypt express-validator helmet express-rate-limit validator && npm install --save-dev nodemon concurrently && npm audit fix"
   },
   "keywords": [
     "careerlaunch",
@@ -31,12 +31,16 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.3",
     "nodemailer-express-handlebars": "^7.0.0",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "validator": "^13.15.15"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

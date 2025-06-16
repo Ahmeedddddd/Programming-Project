@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factuur {{invoice_number}}</title>
+  <style>
+    /* Reset en basis styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Arial', 'Helvetica', sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      background-color: #f8f9fa;
+    }
+    
+    .invoice-container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #ffffff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    /* Header styling */
+    .invoice-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    .company-name {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .invoice-title {
+      font-size: 18px;
+      font-weight: 300;
+      opacity: 0.9;
+    }
+    
+    /* Content styling */
+    .invoice-content {
+      padding: 40px;
+    }
+    
+    .greeting {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+    
+    /* Invoice info grid */
+    .invoice-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .info-section h3 {
+      color: #2c3e50;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+    
+    .info-item {
+      margin-bottom: 8px;
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #555;
+      display: inline-block;
+      width: 120px;
+    }
+    
+    .info-value {
+      color: #333;
+    }
+    
+    /* Status badge */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-paid {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-overdue {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    /* Bedrijfsgegevens */
+    .company-details {
+      background: #ffffff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    
+    .detail-section h4 {
+      color: #2c3e50;
+      font-size: 16px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 5px;
+    }
+    
+    /* Invoice items table */
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .table-header {
+      background: #2c3e50;
+      color: white;
+    }
+    
+    .table-header th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 12px;
+    }
+    
+    .table-header th:last-child {
+      text-align: right;
+    }
+    
+    .invoice-table td {
+      padding: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .invoice-table tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .item-description {
+      font-weight: 500;
+      color: #2c3e50;
+    }
+    
+    .item-details {
+      font-size: 14px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+    
+    .amount {
+      text-align: right;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    /* Totals section */
+    .totals-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    
+    .totals-table {
+      width: 100%;
+      max-width: 300px;
+      margin-left: auto;
+    }
+    
+    .totals-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    .totals-table .total-label {
+      font-weight: 500;
+      color: #6c757d;
+    }
+    
+    .totals-table .total-amount {
+      text-align: right;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    .grand-total {
+      border-top: 2px solid #667eea !important;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .grand-total .total-label,
+    .grand-total .total-amount {
+      color: #2c3e50;
+      font-size: 18px;
+    }
+    
+    /* Payment button */
+    .payment-section {
+      text-align: center;
+      margin: 40px 0;
+    }
+    
+    .payment-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 40px;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .payment-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Footer */
+    .invoice-footer {
+      background: #2c3e50;
+      color: white;
+      padding: 30px 40px;
+      text-align: center;
+    }
+    
+    .footer-text {
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+    
+    .support-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .support-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .invoice-container {
+        margin: 10px;
+      }
+      
+      .invoice-header,
+      .invoice-content,
+      .invoice-footer {
+        padding: 20px;
+      }
+      
+      .invoice-info,
+      .details-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .invoice-table {
+        font-size: 14px;
+      }
+      
+      .table-header th,
+      .invoice-table td {
+        padding: 10px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Header -->
+    <div class="invoice-header">
+      <div class="company-name">{{ product_name }}</div>
+      <div class="invoice-title">Factuur</div>
+    </div>
+    
+    <!-- Content -->
+    <div class="invoice-content">
+      <!-- Greeting -->
+      <div class="greeting">
+        Hallo {{customer_name}},
+      </div>
+      
+      <!-- Invoice Information -->
+      <div class="invoice-info">
+        <div class="info-section">
+          <h3>Factuurgegevens</h3>
+          <div class="info-item">
+            <span class="info-label">Factuurnummer:</span>
+            <span class="info-value">{{invoice_number}}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Factuurdatum:</span>
+            <span class="info-value">{{invoice_date}}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Vervaldatum:</span>
+            <span class="info-value">{{due_date}}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Status:</span>
+            <span class="status-badge status-{{status}}">{{status_text}}</span>
+          </div>
+        </div>
+        
+        <div class="info-section">
+          <h3>Betalingsgegevens</h3>
+          <div class="info-item">
+            <span class="info-label">Totaalbedrag:</span>
+            <span class="info-value">€{{total_amount}}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">BTW:</span>
+            <span class="info-value">{{vat_rate}}%</span>
+          </div>
+          {{#if payment_method}}
+          <div class="info-item">
+            <span class="info-label">Betaalmethode:</span>
+            <span class="info-value">{{payment_method}}</span>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+      
+      <!-- Company Details -->
+      <div class="company-details">
+        <div class="details-grid">
+          <div class="detail-section">
+            <h4>Van:</h4>
+            <div>{{ company_name }}</div>
+            <div>{{ company_address }}</div>
+            <div>{{ company_postal_code }} {{ company_city }}</div>
+            {{#if company_country}}<div>{{ company_country }}</div>{{/if}}
+            {{#if company_vat_number}}<div>BTW: {{ company_vat_number }}</div>{{/if}}
+            {{#if company_kvk_number}}<div>KvK: {{ company_kvk_number }}</div>{{/if}}
+          </div>
+          
+          <div class="detail-section">
+            <h4>Aan:</h4>
+            <div>{{ customer_company_name }}</div>
+            <div>{{ customer_name }}</div>
+            <div>{{ customer_address }}</div>
+            <div>{{ customer_postal_code }} {{ customer_city }}</div>
+            {{#if customer_country}}<div>{{ customer_country }}</div>{{/if}}
+            {{#if customer_vat_number}}<div>BTW: {{ customer_vat_number }}</div>{{/if}}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Invoice Items -->
+      <table class="invoice-table">
+        <thead class="table-header">
+          <tr>
+            <th>Omschrijving</th>
+            <th>Periode</th>
+            <th>Hoeveelheid</th>
+            <th>Prijs</th>
+            <th>Bedrag</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each invoice_items}}
+          <tr>
+            <td>
+              <div class="item-description">{{description}}</div>
+              {{#if details}}<div class="item-details">{{details}}</div>{{/if}}
+            </td>
+            <td>{{period}}</td>
+            <td>{{quantity}}</td>
+            <td class="amount">€{{unit_price}}</td>
+            <td class="amount">€{{line_total}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      
+      <!-- Totals -->
+      <div class="totals-section">
+        <table class="totals-table">
+          <tr>
+            <td class="total-label">Subtotaal:</td>
+            <td class="total-amount">€{{subtotal}}</td>
+          </tr>
+          {{#if discount_amount}}
+          <tr>
+            <td class="total-label">Korting:</td>
+            <td class="total-amount">-€{{discount_amount}}</td>
+          </tr>
+          {{/if}}
+          <tr>
+            <td class="total-label">BTW ({{vat_rate}}%):</td>
+            <td class="total-amount">€{{vat_amount}}</td>
+          </tr>
+          <tr class="grand-total">
+            <td class="total-label">Totaal:</td>
+            <td class="total-amount">€{{total_amount}}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <!-- Payment Section -->
+      {{#unless is_paid}}
+      <div class="payment-section">
+        <a href="{{payment_url}}" class="payment-button">Betaal Nu</a>
+      </div>
+      {{/unless}}
+      
+      <!-- Additional Information -->
+      {{#if notes}}
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+        <h4 style="color: #2c3e50; margin-bottom: 10px;">Opmerkingen:</h4>
+        <p style="color: #6c757d; line-height: 1.6;">{{notes}}</p>
+      </div>
+      {{/if}}
+      
+      <!-- Terms -->
+      <div style="font-size: 14px; color: #6c757d; line-height: 1.6;">
+        <h4 style="color: #2c3e50; margin-bottom: 10px;">Betalingsvoorwaarden:</h4>
+        <p>Betaling dient te geschieden binnen {{payment_terms_days}} dagen na factuurdatum. 
+        Bij overschrijding van de betalingstermijn kunnen wij wettelijke rente en incassokosten in rekening brengen.</p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="invoice-footer">
+      <div class="footer-text">
+        Vragen over deze factuur? Neem contact met ons op via 
+        <a href="mailto:{{support_email}}" class="support-link">{{support_email}}</a> 
+        of bezoek onze <a href="{{support_url}}" class="support-link">helpdesk</a>.
+      </div>
+      <div class="footer-text">
+        Met vriendelijke groet,<br>
+        Het {{ product_name }} Team
+      </div>
+      
+      <!-- Backup payment URL -->
+      {{#unless is_paid}}
+      <div style="margin-top: 20px; font-size: 12px; opacity: 0.8;">
+        <p>Problemen met de betaalknop? Kopieer deze link naar je browser:</p>
+        <p style="word-break: break-all;">{{payment_url}}</p>
+      </div>
+      {{/unless}}
+    </div>
+  </div>
+</body>
+</html>

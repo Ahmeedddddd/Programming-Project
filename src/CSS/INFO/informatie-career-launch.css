@@ -1,0 +1,92 @@
+.watKaart {
+    width: 98%;
+    max-width: 1300px;
+    background: #f7f6f6;
+    border-radius: 40px;
+    box-shadow: 0 6px 24px rgba(220,38,38,0.09), 0 1.5px 6px rgba(0,0,0,0.03);
+    margin: 48px auto;
+    padding: 0 0 36px 0;
+    overflow: hidden;
+    font-family: 'Inter', Arial, sans-serif;
+    border-left: 2.5px solid #A91B47;
+  border-right: 2.5px solid #A91B47;
+  border-bottom: 2.5px solid #A91B47;
+  border-top: none;
+
+
+  }
+  
+  .watTitel {
+    background: linear-gradient(90deg, #A91B47 0%, #881538 100%);
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    padding: 32px 20px 24px 20px;
+    border-radius: 40px 40px 0 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 8px rgba(169,27,71,0.09);
+  }
+  
+  .watText {
+    font-size: 1.13rem;
+    color: #222;
+    line-height: 1.7;
+    padding: 42px 80px 0 80px;
+  }
+  
+  
+  .watList {
+    margin: 10px 0 0 18px;
+    padding-left: 26px;
+    list-style: disc;
+    color: #A91B47;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  .watList li {
+    color: #232323;
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+  .watSubtitelInline {
+    font-weight: 700;
+    color: #A91B47;
+    margin-top: 30px;
+    margin-bottom: 6px;
+    font-size: 1.13rem;
+    letter-spacing: 0.02em;
+    background: none;
+    display: block;
+    padding: 0;
+  }
+  
+  
+  @media (max-width: 900px) {
+    .watKaart {
+      border-radius: 16px;
+      padding: 0 0 10px 0;
+    }
+    .watTitel {
+      font-size: 1.4rem;
+      padding: 16px 10px 14px 10px;
+      border-radius: 16px 16px 0 0;
+    }
+    .watText {
+      padding: 24px 10px 0 10px;
+    }
+   
+  }
+  
+  @media (max-width: 480px) {
+    .watKaart {
+      border-radius: 8px;
+      padding: 0 0 6px 0;
+    }
+    .watText {
+      padding: 12px 3vw 0 3vw;
+    }
+  }
+  
