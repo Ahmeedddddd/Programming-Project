@@ -6,7 +6,102 @@
     <title>Alle Projecten</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/PROJECTEN/alle-projecten.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        /* Additional styles for dynamic content */
+        .projectTegel {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .projectTegel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 45px rgba(136, 21, 56, 0.3);
+        }
+
+        .student-info {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dee2e6;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .student-info span {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .student-info span:first-child {
+            font-weight: 600;
+            color: #881538;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+        }
+
+        .error-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            border-left: 4px solid #dc2626;
+        }
+
+        .retry-btn {
+            background: #881538;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .retry-btn:hover {
+            background: #A91B47;
+            transform: translateY(-2px);
+        }
+
+        /* Loading states */
+        .loading-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+        }
+
+        /* Animation for new cards */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .projectTegel {
+            animation: slideInUp 0.6s ease-out;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigatie -->
@@ -25,7 +120,6 @@
     <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
-
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
@@ -89,107 +183,34 @@
 
         <!-- Stats Bar -->
         <div class="stats-bar">
-            <p class="stats-text">🚀 10 innovatieve projecten beschikbaar voor gesprekken</p>
+            <p class="stats-text">🚀 Projecten worden geladen...</p>
+            <button class="refresh-btn" style="margin-left: 1rem; padding: 0.5rem 1rem; background: #881538; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt"></i> Vernieuwen
+            </button>
         </div>
 
-        <!-- Main Content -->
+        <!-- Main Content - Nu dynamisch geladen door JavaScript -->
         <main class="projectTegels">
-            <article class="projectTegel">
-                <h2 class="projectTitel">Kokende AI Robot</h2>
-                <p class="projectBeschrijving">
-                    De Kokende AI Robot is een slimme, zelfdenkende keukenrobot die volledig autonoom heerlijke
-                    maaltijden bereidt op maat van jouw voorkeuren en allergieën. Geïnteresseerd in spraakgestuurde AI,
-                    embedded systemen of robotica in het dagelijks leven? Kom zeker een kijkje nemen of een gesprek
-                    starten!
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">SmartLine Inspector</h2>
-                <p class="projectBeschrijving">
-                    SmartLine Inspector is een vision-gebaseerd edge-systeem voor kwaliteitscontrole in productielijnen.
-                    Door gebruik te maken van edge computing en AI worden defecte producten automatisch herkend en uit
-                    de stroom gehaald.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">NeuroTrack</h2>
-                <p class="projectBeschrijving">
-                    NeuroTrack is een draagbare EEG-headset die hersenactiviteit in realtime meet tijdens
-                    sportprestaties of meditatie. Het toestel analyseert focus, stressniveau en cognitieve belasting via
-                    biosignalen en geeft live feedback via LED-indicatoren.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">ARchitect Viewer</h2>
-                <p class="projectBeschrijving">
-                    ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op
-                    een bouwlocatie kunnen projecteren via een tablet of AR-bril. Klanten kunnen virtueel rondwandelen
-                    in hun toekomstige woning en feedback geven nog voor de bouw start.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">Geïntegreerd campus-beheer via Cisco DNA Center</h2>
-                <p class="projectBeschrijving">
-                    Een geavanceerd netwerk management systeem dat gebruik maakt van Cisco's DNA Center voor geautomatiseerde
-                    campus-infrastructuur beheer. Het project implementeert SD-WAN technologie en AI-gedreven
-                    netwerk optimalisatie voor moderne onderwijsinstellingen.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">High-Performance Web-API in Rust</h2>
-                <p class="projectBeschrijving">
-                    Een blazend snelle web-API gebouwd in Rust met focus op memory safety en concurrency. Het project
-                    demonstreert moderne backend architectuur patronen en achieve sub-millisecond response times
-                    voor kritieke business operaties.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">AI-gestuurd Gezondheidscoach-Platform</h2>
-                <p class="projectBeschrijving">
-                    Een intelligente gezondheidsplatform dat machine learning gebruikt om gepersonaliseerde fitness
-                    en voedingsadvies te geven. Het systeem analyseert gebruikersdata en past automatisch
-                    trainingsschema's en dieetplannen aan.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">Secure File Sync Service</h2>
-                <p class="projectBeschrijving">
-                    Een end-to-end versleutelde file synchronisatie service die enterprise-grade security combineert
-                    met gebruiksvriendelijkheid. Implementeert zero-knowledge architectuur en real-time
-                    collaboration features voor teams.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">ROS-gebaseerde Autonome Service-Robot</h2>
-                <p class="projectBeschrijving">
-                    Een autonome service robot gebouwd op ROS (Robot Operating System) die kan navigeren in
-                    complexe omgevingen. Uitgerust met LIDAR, computer vision en machine learning
-                    voor object detectie en pad planning.
-                </p>
-            </article>
-            
-            <article class="projectTegel">
-                <h2 class="projectTitel">Real-Time Audio DSP Engine</h2>
-                <p class="projectBeschrijving">
-                    Een real-time audio processing engine met low-latency DSP algoritmes voor professionele
-                    audio applicaties. Implementeert geavanceerde filtering, reverb en spectral analysis
-                    technieken voor studio-quality sound processing.
-                </p>
-            </article>
+            <!-- Content wordt dynamisch geladen door JavaScript -->
+            <div class="loading-state">
+                <div class="loader"></div>
+                <p style="margin-top: 1rem; color: #666;">Projecten worden geladen...</p>
+            </div>
         </main>
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-  <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
+        <!-- Notifications will be added here by JavaScript -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script src="/src/JS/RESULTS/PROJECTEN/alle-projecten.js"></script>
 </body>
 </html>
