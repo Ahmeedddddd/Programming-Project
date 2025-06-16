@@ -706,10 +706,361 @@ a.project-card:active {
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
+/* ===== ENHANCED CAROUSEL & DATABASE PROJECT STYLES ===== */
+/* Add this to your existing CSS files */
+
+/* Enhanced error notifications with action buttons */
+.error-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 1px solid #f87171;
+    border-radius: 12px;
+    padding: 1rem;
+    max-width: 450px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    animation: slideInFromRight 0.5s ease-out;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+}
+
+.error-content {
+    flex: 1;
+}
+
+.error-content strong {
+    color: #991b1b;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.error-content p {
+    color: #7f1d1d;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.error-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.error-retry,
+.error-debug {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.error-retry:hover,
+.error-debug:hover {
+    background: #b91c1c;
+    transform: scale(1.05);
+}
+
+.error-debug {
+    background: #6b7280;
+}
+
+.error-debug:hover {
+    background: #4b5563;
+}
+
+.error-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #991b1b;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.error-close:hover {
+    background: rgba(153, 27, 27, 0.1);
+}
+
+/* Enhanced project cards with student info */
+.project-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 30px;
+    color: #333;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.project-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(136, 21, 56, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.project-card:hover::after {
+    left: 100%;
+}
+
+.project-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(136, 21, 56, 0.2);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.project-title {
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.project-description {
+    font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.project-student {
+    font-size: 0.85rem;
+    color: #881538;
+    font-weight: 600;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(136, 21, 56, 0.2);
+    font-style: italic;
+}
+
+/* Enhanced loading states */
+.no-data {
+    text-align: center;
+    padding: 2.5rem;
+    color: #666;
+    font-style: italic;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    margin: 1rem 0;
+    border: 2px dashed #ddd;
+    animation: fadeInUp 0.5s ease;
+}
+
+/* Enhanced carousel card animations */
+.carousel-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* Staggered animation delays for smoother loading */
+.carousel-card:nth-child(1) { animation-delay: 0s; }
+.carousel-card:nth-child(2) { animation-delay: 0.1s; }
+.carousel-card:nth-child(3) { animation-delay: 0.2s; }
+.carousel-card:nth-child(4) { animation-delay: 0.3s; }
+
+/* Enhanced card grid transitions */
+.card-grid,
+.projects-grid {
+    transition: opacity 0.4s ease;
+}
+
+/* Scroll to top button - Old style enhanced */
+#scrollToTopBtn {
+    position: fixed !important;
+    bottom: 25px !important;
+    right: 25px !important;
+    background: #881538 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(136, 21, 56, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#scrollToTopBtn:hover {
+    background: #A91B47 !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 16px rgba(136, 21, 56, 0.6) !important;
+}
+
+#scrollToTopBtn.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Enhanced data counter animations */
+[data-count] {
+    display: inline-block;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    color: #881538;
+    position: relative;
+}
+
+[data-count]:hover {
+    color: #A91B47;
+    transform: scale(1.05);
+}
+
+[data-count]::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #881538;
+    transition: width 0.3s ease;
+}
+
+[data-count]:hover::after {
+    width: 100%;
+}
+
+/* Enhanced loading overlay */
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+}
+
+.loader {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #881538;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+#loadingOverlay::after {
+    content: 'Gegevens laden...';
+    color: #881538;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Enhanced section containers */
+.section-container {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.section-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #881538 0%, #A91B47 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.section-container:hover::before {
+    transform: scaleX(1);
+}
+
+.section-container:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(136, 21, 56, 0.15);
+}
+
+/* Enhanced section icons */
+.section-icon {
+    transition: all 0.3s ease;
+}
+
+.section-container:hover .section-icon {
+    transform: scale(1.1) rotate(5deg);
+    background: linear-gradient(135deg, #A91B47, #881538);
+}
+
+/* Debug mode indicator */
+.debug-mode::before {
+    content: '🐛 DEBUG';
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: #dc2626;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    z-index: 10001;
+    opacity: 0.8;
+}
+
+/* Success states */
+.data-loaded {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 6px;
+    animation: slideInFromLeft 0.5s ease;
+}
+
+/* Enhanced animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
     }
     to {
         opacity: 1;
@@ -717,24 +1068,177 @@ a.project-card:active {
     }
 }
 
-/* Data counter animations */
-[data-count] {
-    display: inline-block;
-    font-weight: bold;
-    transition: all 0.3s ease;
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-[data-count]:hover {
-    color: #cd4e4e;
-    transform: scale(1.1);
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
-/* Success states */
-.data-loaded {
-    border-left: 4px solid #10b981;
-    background: #f0f9ff;
-    padding: 0.5rem;
-    margin: 0.5rem 0;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* Improved responsive design */
+@media (max-width: 768px) {
+    .error-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        margin: 0;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    
+    .error-retry,
+    .error-debug {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .no-data {
+        padding: 2rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    #scrollToTopBtn {
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 18px !important;
+    }
+    
+    .project-card {
+        padding: 20px;
+    }
+    
+    .project-student {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-notification {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .error-content strong {
+        font-size: 0.9rem;
+    }
+    
+    .error-content p {
+        font-size: 0.85rem;
+    }
+    
+    #scrollToTopBtn {
+        bottom: 15px !important;
+        right: 15px !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 16px !important;
+    }
+    
+    .project-card {
+        padding: 15px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .preview-card,
+    .project-card {
+        border: 2px solid #000;
+    }
+    
+    .error-notification {
+        border: 2px solid #000;
+        background: #fff;
+    }
+    
+    .error-content strong,
+    .error-content p {
+        color: #000;
+    }
+    
+    .project-student {
+        color: #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .carousel-card,
+    .preview-card,
+    .project-card,
+    .section-container,
+    .error-notification {
+        animation: none;
+        transition: none;
+    }
+    
+    #scrollToTopBtn {
+        transition: opacity 0.3s ease;
+    }
+    
+    .loader {
+        animation: none;
+        border-top-color: #881538;
+    }
+}
+
+/* Focus improvements for accessibility */
+.error-retry:focus,
+.error-debug:focus,
+.error-close:focus {
+    outline: 2px solid #881538;
+    outline-offset: 2px;
+}
+
+#scrollToTopBtn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .error-notification,
+    #scrollToTopBtn,
+    #loadingOverlay {
+        display: none !important;
+    }
 }
 
 /* Responsive improvements */
