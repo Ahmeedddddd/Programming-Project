@@ -80,56 +80,56 @@ class Auth {
 
   // 📝 Register new student - aangepast voor jouw database schema
   static async registerStudent(studentData, password) {
-    const connection = await pool.getConnection();
-    try {
-      await connection.beginTransaction();
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
 
-      // 1. Create student record - using your exact schema
-      const {
-        studentnummer, voornaam, achternaam, email, gsm_nummer,
-        opleiding, opleidingsrichting = '', projectTitel = '', projectBeschrijving = '',
-        overMezelf = '', huisnummer = '', straatnaam = '', gemeente = '', postcode = '', bus = '', 
-        evenementId = 1, leerjaar = 3, tafelNr = 1
-      } = studentData;
+    const {
+      voornaam, achternaam, email, gsm_nummer,
+      opleiding, opleidingsrichting = '', projectTitel = '', projectBeschrijving = '',
+      overMezelf = '', huisnummer = '', straatnaam = '', gemeente = '', postcode = '', bus = '', 
+      evenementId = 1, leerjaar = 3, tafelNr = 1
+    } = studentData;
 
-      await connection.query(`
-        INSERT INTO STUDENT (
-          studentnummer, evenementId, voornaam, achternaam, email, gsm_nummer,
-          opleiding, projectTitel, projectBeschrijving, opleidingsrichting,
-          huisnummer, straatnaam, gemeente, postcode, bus, overMezelf,
-          leerjaar, tafelNr
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        studentnummer, evenementId, voornaam, achternaam, email, gsm_nummer,
+    const [result] = await connection.query(`
+      INSERT INTO STUDENT (
+        evenementId, voornaam, achternaam, email, gsm_nummer,
         opleiding, projectTitel, projectBeschrijving, opleidingsrichting,
         huisnummer, straatnaam, gemeente, postcode, bus, overMezelf,
         leerjaar, tafelNr
-      ]);
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      evenementId, voornaam, achternaam, email, gsm_nummer,
+      opleiding, projectTitel, projectBeschrijving, opleidingsrichting,
+      huisnummer, straatnaam, gemeente, postcode, bus, overMezelf,
+      leerjaar, tafelNr
+    ]);
 
-      await connection.commit();
-      
-      // 2. Gebruik jouw createUserCredentials functie
-      const credentialsResult = await createUserCredentials('student', studentnummer, password);
-      
-      if (!credentialsResult.success) {
-        throw new Error(credentialsResult.message);
-      }
-      
-      return {
-        gebruikersId: credentialsResult.gebruikersId,
-        userId: studentnummer,
-        userType: 'student',
-        email: email
-      };
+    const studentnummer = result.insertId;
 
-    } catch (error) {
-      await connection.rollback();
-      console.error('Error registering student:', error);
-      throw error;
-    } finally {
-      connection.release();
+    // Maak credentials aan met studentnummer
+    const credentialsResult = await createUserCredentials('student', studentnummer, password);
+    
+    if (!credentialsResult.success) {
+      throw new Error(credentialsResult.message);
     }
+    
+    await connection.commit();
+    return {
+      gebruikersId: credentialsResult.gebruikersId,
+      userId: studentnummer,
+      userType: 'student',
+      email: email
+    };
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error registering student:', error);
+    throw error;
+  } finally {
+    connection.release();
   }
+}
 
   // 🏢 Register new bedrijf - aangepast voor jouw database schema
   static async registerBedrijf(bedrijfData, password) {
