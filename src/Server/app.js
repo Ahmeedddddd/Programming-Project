@@ -54,6 +54,9 @@ app.get('/student-homepage', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/student-homepage.html'));
 });
 
+app.get('/bedrijf-homepage', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJVEN/homepage-bedrijf.html'));
+});
 app.get('/test', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/test.html'));
 });
@@ -120,6 +123,11 @@ app.get('/programmaNamidag', (req, res) => {
 app.get('/alleBedrijven', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html'));
 });
+
+app.get('/programmaBedrijven', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJVEN/programmaBedrijven.html'));
+});
+
 
 // Bedrijf detail route - accepts ID as query parameter
 app.get('/resultaatBedrijf', (req, res) => {
