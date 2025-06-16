@@ -1,356 +1,201 @@
 // migrate-passwords.js
-// Script om bestaande plain text wachtwoorden te hashen
-// Gebruikt de nieuwe password hasher en database setup
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const { pool } = require('../CONFIG/database');
-const { hashPassword, hashExistingPasswords } = require('./CONFIG/passwordhasher');
-// Configuratie
-const CONFIG = {
-  hashExistingPasswords: true,  //true om bestaande passwords te hashen
-  addNewUsers: false,            //true om nieuwe users toe te voegen
-  testAuthentication: true     //true om login te testen
-};
+// 🚩 Belangrijk: gebruik altijd de centrale databaseconfig en pool
+const { pool, dbConfig } = require('../CONFIG/database');
 
-// Data voor nieuwe gebruikers
-const NEW_USERS_DATA = {
-  organisatoren: [
-    { email: 'jan.devos@ehb.be', password: 'AdminPass123!' },
-    { email: 'sarah.devries@ehb.be', password: 'AdminPass456!' },
-    { email: 'arthur.geslaagd@ehb.be', password: 'AdminPass789!' }
-  ],
-  
-  bedrijven: [
-    { bedrijfsnummer: 84, password: 'BedrijfPass123!' },
-    { bedrijfsnummer: 85, password: 'BedrijfPass456!' },
-    { bedrijfsnummer: 86, password: 'BedrijfPass789!' }
-    // Voeg meer bedrijven toe als nodig
-  ],
-  
-  studenten: [
-    { studentnummer: 232, password: 'StudentPass123!' },
-    { studentnummer: 233, password: 'StudentPass456!' },
-    { studentnummer: 234, password: 'StudentPass789!' }
-    // Voeg meer studenten toe als nodig
-  ]
-};
+// 🚩 Laad altijd passwordManager uit dezelfde map als dit script
+let passwordManager;
+try {
+    passwordManager = require('./passwordManager').passwordManager;
+    console.log('✅ Loaded passwordManager from same directory');
+} catch (error) {
+    console.error('❌ Cannot load passwordManager from ./passwordManager');
+    throw new Error('Password manager not found');
+}
 
+// 🚩 Forceer dat passwordManager pool gebruikt van de backend config
+if (passwordManager && pool) {
+    passwordManager.pool = pool;
+    passwordManager.dbConfig = dbConfig;
+    console.log('✅ passwordManager uses backend pool & dbConfig');
+}
 
-// NIEUWE GEBRUIKERS TOEVOEGEN
-async function addOrganisatoren(organisatoren) {
-  console.log('\n👥 === ORGANISATOREN TOEVOEGEN ===');
-  let success = 0, errors = 0;
-  
-  for (const org of organisatoren) {
+class PasswordMigration {
+    constructor() {
+        this.fixedCount = 0;
+        this.errorCount = 0;
+        this.skipCount = 0;
+    }
+
+    async run() {
+        try {
+            console.log('🔐 Starting Enhanced Password Migration...');
+            console.log('='.repeat(50));
+
+            const dbOK = await this.testDatabaseConnection();
+            if (!dbOK) {
+                console.log('🛑 Cannot proceed without database connection');
+                return;
+            }
+
+            await this.analyzeDatabase();
+            console.log('\n⚠️  WARNING: This will modify passwords in the database!');
+            console.log('💾 Make sure you have a backup!');
+            console.log('\nPress Ctrl+C to cancel, or wait 5 seconds to continue...');
+            await this.sleep(5000);
+
+            await this.migratePasswords();
+            await this.verifyMigration();
+            await this.printSummary();
+
+        } catch (error) {
+            console.error('❌ Migration failed:', error);
+        }
+    }
+
+    async testDatabaseConnection() {
+        try {
+            console.log('🔌 Testing database connection...');
+            const testUser = await passwordManager.checkEmailExists('test@example.com');
+            console.log('✅ Database connection successful');
+            return true;
+        } catch (error) {
+            console.error('❌ Database connection failed:', error.message);
+            console.log('\n🔧 Troubleshooting:');
+            console.log('1. Is MySQL/MariaDB running?');
+            console.log('2. Check CONFIG/database.js settings');
+            console.log('3. Probeer opnieuw met: node PASSWOORD/migrate-passwords.js vanuit de Server map');
+            return false;
+        }
+    }
+
+    async analyzeDatabase() {
+        console.log('\n📊 Analyzing database...');
+        try {
+            const result = await passwordManager.migrateAllPasswords();
+            console.log('📈 Analysis complete:');
+            console.log(`   Total passwords to migrate: ${result.total}`);
+            console.log(`   Already secure: ${result.total === 0 ? 'All passwords' : 'Some passwords'}`);
+            if (result.total === 0) {
+                console.log('🎉 All passwords are already secure (bcrypt)!');
+                console.log('💡 No migration needed');
+            }
+            return result;
+        } catch (error) {
+            console.error('❌ Analysis failed:', error);
+            throw error;
+        }
+    }
+
+    async migratePasswords() {
+        console.log('\n🔄 Starting password migration...');
+        try {
+            const result = await passwordManager.migrateAllPasswords();
+            this.fixedCount = result.success;
+            this.errorCount = result.errors;
+            console.log(`🎯 Migration completed: ${result.success}/${result.total} passwords migrated`);
+        } catch (error) {
+            console.error('❌ Migration failed:', error);
+            throw error;
+        }
+    }
+
+    async verifyMigration() {
+        console.log('\n🔍 Verifying migration...');
+        try {
+            const testEmails = [
+                'jan.devos@ehb.be',
+                'john.doew@student.ehb.be',
+                'info@bilalaicorp.be',
+                'sarah.devries@ehb.be'
+            ];
+            console.log('🧪 Testing sample accounts:');
+            for (const email of testEmails) {
+                try {
+                    const user = await passwordManager.findUserByEmail(email);
+                    if (user) {
+                        const hashType = passwordManager.detectHashType(user.passwoord_hash);
+                        console.log(`   ${email}: ${hashType}`);
+                    } else {
+                        console.log(`   ${email}: not found`);
+                    }
+                } catch (error) {
+                    console.log(`   ${email}: error checking`);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Verification failed:', error);
+        }
+    }
+
+    async printSummary() {
+        console.log('\n' + '='.repeat(50));
+        console.log('📋 MIGRATION SUMMARY');
+        console.log('='.repeat(50));
+        console.log(`✅ Successfully migrated: ${this.fixedCount}`);
+        console.log(`❌ Failed: ${this.errorCount}`);
+        console.log(`⏭️ Skipped: ${this.skipCount}`);
+        console.log('='.repeat(50));
+        if (this.errorCount === 0) {
+            console.log('🎉 Migration completed successfully!');
+            console.log('💡 All users can now login with their original passwords');
+            console.log('🔒 All passwords are now securely hashed with bcrypt');
+            console.log('');
+            console.log('🔐 ENHANCED SECURITY FEATURES:');
+            console.log('  ✅ Uppercase letters required');
+            console.log('  ✅ Lowercase letters required');
+            console.log('  ✅ Numbers required');
+            console.log('  ✅ Special characters required');
+            console.log('  ✅ Common patterns blocked');
+            console.log('  ✅ Password history tracking');
+        } else {
+            console.log('⚠️ Migration completed with some errors');
+            console.log('🔧 Check the logs above for failed users');
+        }
+    }
+
+    async sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+}
+
+// CLI interface
+async function main() {
+    const args = process.argv.slice(2);
+    const migration = new PasswordMigration();
     try {
-      console.log(`Verwerken organisator: ${org.email}...`);
-      
-      // Check of organisator bestaat in ORGANISATOR tabel
-      const [orgCheck] = await pool.execute(
-        'SELECT organisatorId FROM ORGANISATOR WHERE email = ?',
-        [org.email]
-      );
-      
-      if (orgCheck.length === 0) {
-        console.log(`⚠️  Organisator ${org.email} niet gevonden in ORGANISATOR tabel`);
-        errors++;
-        continue;
-      }
-      
-      // Check of al login credentials heeft
-      const [loginCheck] = await pool.execute(
-        'SELECT l.gebruikersId FROM LOGINBEHEER l INNER JOIN ORGANISATOR o ON l.gebruikersId = o.gebruikersId WHERE o.email = ?',
-        [org.email]
-      );
-      
-      if (loginCheck.length > 0) {
-        console.log(`⏭️  Organisator ${org.email} heeft al login credentials`);
-        continue;
-      }
-      
-      // Hash wachtwoord en voeg toe
-      const hashedPassword = await hashPassword(org.password);
-      
-      // Insert in LOGINBEHEER
-      const [result] = await pool.execute(
-        'INSERT INTO LOGINBEHEER (bedrijfsnummer, studentnummer, passwoord_hash) VALUES (NULL, NULL, ?)',
-        [hashedPassword]
-      );
-      
-      // Update ORGANISATOR met gebruikersId
-      await pool.execute(
-        'UPDATE ORGANISATOR SET gebruikersId = ? WHERE email = ?',
-        [result.insertId, org.email]
-      );
-      
-      console.log(`✅ ${org.email} toegevoegd (Login ID: ${result.insertId})`);
-      success++;
-      
+        if (args[0] === 'analyze') {
+            console.log('🔍 Analysis mode only');
+            await migration.testDatabaseConnection();
+            await migration.analyzeDatabase();
+        } else if (args[0] === 'migrate') {
+            console.log('🚀 Migration mode');
+            await migration.run();
+        } else {
+            console.log('🔐 ENHANCED PASSWORD MIGRATION TOOL');
+            console.log('='.repeat(40));
+            console.log('Usage:');
+            console.log('  node migrate-passwords.js analyze               - Analyze database only');
+            console.log('  node migrate-passwords.js migrate               - Run full migration');
+            console.log('');
+            console.log('Voorbeeld:');
+            console.log('  node migrate-passwords.js analyze');
+            console.log('  node migrate-passwords.js migrate');
+            console.log('');
+            console.log('⚠️  IMPORTANT: Maak een database backup voor je migrate uitvoert!');
+        }
     } catch (error) {
-      console.error(`❌ Fout bij ${org.email}:`, error.message);
-      errors++;
+        console.error('❌ Script error:', error);
     }
-  }
-  
-  return { success, errors };
 }
 
-async function addBedrijven(bedrijven) {
-  console.log('\n🏢 === BEDRIJVEN TOEVOEGEN ===');
-  let success = 0, errors = 0;
-  
-  for (const bedrijf of bedrijven) {
-    try {
-      console.log(`Verwerken bedrijf ${bedrijf.bedrijfsnummer}...`);
-      
-      // Check of bedrijf bestaat
-      const [bedrijfCheck] = await pool.execute(
-        'SELECT bedrijfsnummer FROM BEDRIJF WHERE bedrijfsnummer = ?',
-        [bedrijf.bedrijfsnummer]
-      );
-      
-      if (bedrijfCheck.length === 0) {
-        console.log(`⚠️  Bedrijf ${bedrijf.bedrijfsnummer} niet gevonden in BEDRIJF tabel`);
-        errors++;
-        continue;
-      }
-      
-      // Check of al login credentials heeft
-      const [loginCheck] = await pool.execute(
-        'SELECT gebruikersId FROM LOGINBEHEER WHERE bedrijfsnummer = ?',
-        [bedrijf.bedrijfsnummer]
-      );
-      
-      if (loginCheck.length > 0) {
-        console.log(`⏭️  Bedrijf ${bedrijf.bedrijfsnummer} heeft al login credentials`);
-        continue;
-      }
-      
-      // Hash wachtwoord en voeg toe
-      const hashedPassword = await hashPassword(bedrijf.password);
-      
-      const [result] = await pool.execute(
-        'INSERT INTO LOGINBEHEER (bedrijfsnummer, studentnummer, passwoord_hash) VALUES (?, NULL, ?)',
-        [bedrijf.bedrijfsnummer, hashedPassword]
-      );
-      
-      console.log(`✅ Bedrijf ${bedrijf.bedrijfsnummer} toegevoegd (Login ID: ${result.insertId})`);
-      success++;
-      
-    } catch (error) {
-      console.error(`❌ Fout bij bedrijf ${bedrijf.bedrijfsnummer}:`, error.message);
-      errors++;
-    }
-  }
-  
-  return { success, errors };
-}
+// Export for use in other scripts
+module.exports = PasswordMigration;
 
-async function addStudenten(studenten) {
-  console.log('\n🎓 === STUDENTEN TOEVOEGEN ===');
-  let success = 0, errors = 0;
-  
-  for (const student of studenten) {
-    try {
-      console.log(`Verwerken student ${student.studentnummer}...`);
-      
-      // Check of student bestaat
-      const [studentCheck] = await pool.execute(
-        'SELECT studentnummer FROM STUDENT WHERE studentnummer = ?',
-        [student.studentnummer]
-      );
-      
-      if (studentCheck.length === 0) {
-        console.log(`⚠️  Student ${student.studentnummer} niet gevonden in STUDENT tabel`);
-        errors++;
-        continue;
-      }
-      
-      // Check of al login credentials heeft
-      const [loginCheck] = await pool.execute(
-        'SELECT gebruikersId FROM LOGINBEHEER WHERE studentnummer = ?',
-        [student.studentnummer]
-      );
-      
-      if (loginCheck.length > 0) {
-        console.log(`⏭️  Student ${student.studentnummer} heeft al login credentials`);
-        continue;
-      }
-      
-      // Hash wachtwoord en voeg toe
-      const hashedPassword = await hashPassword(student.password);
-      
-      const [result] = await pool.execute(
-        'INSERT INTO LOGINBEHEER (bedrijfsnummer, studentnummer, passwoord_hash) VALUES (NULL, ?, ?)',
-        [student.studentnummer, hashedPassword]
-      );
-      
-      console.log(`✅ Student ${student.studentnummer} toegevoegd (Login ID: ${result.insertId})`);
-      success++;
-      
-    } catch (error) {
-      console.error(`❌ Fout bij student ${student.studentnummer}:`, error.message);
-      errors++;
-    }
-  }
-  
-  return { success, errors };
-}
-
-
-// AUTHENTICATIE TESTEN
-async function testUserAuthentication() {
-  console.log('\n🔐 === AUTHENTICATIE TESTEN ===');
-  
-  const { authenticateUser } = require('./CONFIG/passwordhasher');
-  
-  // Test cases
-  const testCases = [
-    { type: 'organisator', id: 'jan.devos@ehb.be', password: 'AdminPass123!' },
-    { type: 'bedrijf', id: 84, password: 'BedrijfPass123!' },
-    { type: 'student', id: 232, password: 'StudentPass123!' }
-  ];
-  
-  for (const testCase of testCases) {
-    try {
-      console.log(`Testing ${testCase.type}: ${testCase.id}...`);
-      
-      const result = await authenticateUser(testCase.type, testCase.id, testCase.password);
-      
-      if (result.success) {
-        console.log(`✅ ${testCase.type} ${testCase.id}: Login succesvol`);
-        console.log(`   User data:`, {
-          id: result.user.gebruikersId,
-          type: result.userType,
-          name: result.user.naam || `${result.user.voornaam} ${result.user.achternaam}` || 'N/A'
-        });
-      } else {
-        console.log(`❌ ${testCase.type} ${testCase.id}: ${result.message}`);
-      }
-      
-    } catch (error) {
-      console.error(`💥 Error testing ${testCase.type} ${testCase.id}:`, error.message);
-    }
-  }
-}
-
-
-// DATABASE STATUS CHECK
-async function checkDatabaseStatus() {
-  try {
-    console.log('📊 === DATABASE STATUS ===');
-    
-    // Count records in each table
-    const [organisatoren] = await pool.execute('SELECT COUNT(*) as count FROM ORGANISATOR');
-    const [bedrijven] = await pool.execute('SELECT COUNT(*) as count FROM BEDRIJF');
-    const [studenten] = await pool.execute('SELECT COUNT(*) as count FROM STUDENT');
-    const [loginRecords] = await pool.execute('SELECT COUNT(*) as count FROM LOGINBEHEER');
-    
-    console.log(`👥 Organisatoren: ${organisatoren[0].count}`);
-    console.log(`🏢 Bedrijven: ${bedrijven[0].count}`);
-    console.log(`🎓 Studenten: ${studenten[0].count}`);
-    console.log(`🔐 Login records: ${loginRecords[0].count}`);
-    
-    // Check voor plain text passwords
-    const [plainPasswords] = await pool.execute(
-      'SELECT COUNT(*) as count FROM LOGINBEHEER WHERE LENGTH(passwoord_hash) < 50'
-    );
-    
-    if (plainPasswords[0].count > 0) {
-      console.log(`⚠️  Gevonden ${plainPasswords[0].count} plain text wachtwoorden`);
-    } else {
-      console.log(`✅ Alle wachtwoorden zijn gehashed`);
-    }
-    
-  } catch (error) {
-    console.error('Error checking database status:', error.message);
-  }
-}
-
-
-// MAIN FUNCTIE
-async function runMigration() {
-  try {
-    console.log('🚀 Starting password migration...\n');
-    
-    // Check database status
-    await checkDatabaseStatus();
-    
-    let totalSuccess = 0;
-    let totalErrors = 0;
-    
-    // Hash bestaande plain text passwords
-    if (CONFIG.hashExistingPasswords) {
-      console.log('\n🔒 Hashing existing plain text passwords...');
-      const result = await hashExistingPasswords();
-      totalSuccess += result.success;
-      totalErrors += result.errors;
-    }
-    
-    // Voeg nieuwe gebruikers toe
-    if (CONFIG.addNewUsers) {
-      const orgResult = await addOrganisatoren(NEW_USERS_DATA.organisatoren);
-      const bedResult = await addBedrijven(NEW_USERS_DATA.bedrijven);
-      const studResult = await addStudenten(NEW_USERS_DATA.studenten);
-      
-      totalSuccess += orgResult.success + bedResult.success + studResult.success;
-      totalErrors += orgResult.errors + bedResult.errors + studResult.errors;
-    }
-    
-    // Test authenticatie
-    if (CONFIG.testAuthentication) {
-      await testUserAuthentication();
-    }
-    
-    // Final status
-    console.log('\n' + '='.repeat(50));
-    console.log('📊 MIGRATION SAMENVATTING:');
-    console.log(`✅ Succesvol verwerkt: ${totalSuccess}`);
-    console.log(`❌ Fouten: ${totalErrors}`);
-    console.log('='.repeat(50));
-    
-    await checkDatabaseStatus();
-    
-  } catch (error) {
-    console.error('💥 Migration error:', error.message);
-  } finally {
-    // Sluit database connectie
-    await pool.end();
-    console.log('🔌 Database connectie gesloten.');
-  }
-}
-
-
-// UTILITY FUNCTIES
-// Genereer random wachtwoorden voor bulk import
-function generateBulkPasswords(userType, startId, count) {
-  const { generateStrongPassword } = require('./CONFIG/passwordhasher');
-  const users = [];
-  
-  for (let i = 0; i < count; i++) {
-    const id = startId + i;
-    users.push({
-      [userType === 'organisator' ? 'email' : userType === 'bedrijf' ? 'bedrijfsnummer' : 'studentnummer']: 
-        userType === 'organisator' ? `user${id}@ehb.be` : id,
-      password: generateStrongPassword(12)
-    });
-  }
-  
-  return users;
-}
-
-// Export voor gebruik in andere scripts
-module.exports = {
-  runMigration,
-  addOrganisatoren,
-  addBedrijven,
-  addStudenten,
-  testUserAuthentication,
-  checkDatabaseStatus,
-  generateBulkPasswords
-};
-
-// Run script als het direct uitgevoerd wordt
+// Run if called directly
 if (require.main === module) {
-  runMigration();
+    main().catch(console.error);
 }
