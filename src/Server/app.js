@@ -6,6 +6,7 @@ const express = require("express");
 const app = express();
 const port = 8383;
 const path = require("path");
+const cors = require("cors");
 
 // Import the enhanced role-based system
 const {
@@ -23,6 +24,13 @@ app.get("/js/navigation-manager.js", async (req, res) => {
   const script = await generateClientSideScript();
   res.send(script);
 });
+
+//CORS
+app.use(
+  cors({
+    origin: "http://localhost:8383",
+  })
+);
 
 // Middleware voor JSON parsing
 app.use(express.json());
@@ -74,7 +82,9 @@ app.get("/test", (req, res) => {
 });
 
 // ===== PUBLIC ROUTES =====
-
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/favicon.ico"));
+});
 //ACCOUNT
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
