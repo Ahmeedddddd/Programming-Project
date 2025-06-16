@@ -628,6 +628,129 @@ a.project-card:active {
   transition: all 0.1s ease;
 }
 
+/* Data Fetching Enhancement Styles */
+/* Add this to your existing CSS file */
+
+/* Loading states */
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.error-message {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    text-align: center;
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+/* Loading overlay improvements */
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #cd4e4e;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced card animations for dynamically loaded content */
+.preview-card,
+.project-card {
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.preview-card:hover,
+.project-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Data counter animations */
+[data-count] {
+    display: inline-block;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+[data-count]:hover {
+    color: #cd4e4e;
+    transform: scale(1.1);
+}
+
+/* Success states */
+.data-loaded {
+    border-left: 4px solid #10b981;
+    background: #f0f9ff;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .error-message {
+        margin: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .no-data {
+        padding: 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
 /* Responsive aanpassingen voor mobile */
 @media (max-width: 768px) {
   /* Pijl effecten verwijderd */

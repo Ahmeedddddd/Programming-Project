@@ -217,9 +217,7 @@ function initializeQualityOfLifeFeatures() {
   
   // 11. Error Boundary
   initializeErrorHandling();
-  
-  // 12. Time-based Features
-  initializeTimeBasedFeatures();
+
   
   // 13. Accessibility Tools
   initializeAccessibilityTools();

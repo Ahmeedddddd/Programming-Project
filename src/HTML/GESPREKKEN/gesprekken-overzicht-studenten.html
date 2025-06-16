@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gesprekken overzicht bedrijven</title>
-  <link rel="stylesheet" href="/src/CSS/style.css">
-  <link rel="stylesheet" href="/src/CSS/GESPREKKEN/gesprekken-overzicht-studenten.css">
-</head>
-<body>
-  <div class="container">
-    <div class="nav">
-      <div class="logo">
-        <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-      </div>
-      <div class="navBarStudenten">
-        <a href="/student-homepage" class="navItem active">Home</a>
-        <a href="/programmaStudenten" class="navItem">Programma</a>
-        <a href="/gesprekkenOverzichtStudenten" class="navItem">Mijn gesprekken</a>
-        <a href="/info" class="navItem">Info</a>
-      </div>
-      <div class="pfpContainer">
-        <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle" />
-      </div>
-    </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gesprekken overzicht bedrijven</title>
+    <link rel="stylesheet" href="/src/CSS/style.css" />
+    <link
+      rel="stylesheet"
+      href="/src/CSS/GESPREKKEN/gesprekken-overzicht-studenten.css"
+    />
+    <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
 
-    <section class="gesprekkenKaart">
+    <!-- 🚀 NAVIGATION MANAGER SCRIPT -->
+    <script src="/js/navigation-manager.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="nav">
+        <div class="logo">
+          <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+        </div>
+        <div class="navBarStudenten"></div>
+        <div class="pfpContainer">
+          <img
+            src="/images/mystery man avatar.webp"
+            alt="Profiel"
+            class="profile-pic"
+            id="burgerToggle"
+          />
+        </div>
+      </div>
+
+      <section class="gesprekkenKaart">
         <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
         <div class="gesprekkenTable">
           <div class="gesprekkenTableHeader">
@@ -61,11 +68,6 @@
           </div>
         </div>
       </section>
-      
-    
-  </div>
-
-
-  
-</body>
+    </div>
+  </body>
 </html>
