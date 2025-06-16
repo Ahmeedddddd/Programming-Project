@@ -159,8 +159,12 @@ app.get('/reservatie', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/reservatie.html'));
 });
 
-app.get('/gesprekkenOverzicht', (req, res) => {
+app.get('/gesprekkenOverzichtBedrijven', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html'));
+});
+
+app.get('/gesprekkenOverzichtStudenten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html'));
 });
 
   //STUDENTEN
@@ -170,6 +174,10 @@ app.get('/alleStudenten', (req, res) => {
 
 app.get('/zoekbalkStudenten', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html'));
+});
+
+app.get('/programmaStudenten', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/programmaStudenten.html'));
 });
 
 // ===== PROTECTED ROUTES =====

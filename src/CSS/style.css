@@ -175,7 +175,7 @@ h2 {
 }
 
 /* Navigatie Bar - Gecentreerd */
-.navBar {
+.navBar, .navBarStudenten {
   display: flex;
   align-items: center;
   gap: 0.5rem;
