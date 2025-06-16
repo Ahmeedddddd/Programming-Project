@@ -51,7 +51,7 @@ function setRequiredFields(type) {
         });
     } else if (type === 'student') {
         const studentRequiredFields = [
-            'studentNaam', 'studentAchternaam', 'studentennummer',
+            'studentNaam', 'studentAchternaam',
             'opleiding', 'studentMail', 'gsmNummer'
         ];
         studentRequiredFields.forEach(fieldId => {
@@ -115,7 +115,6 @@ async function handleRegistration(event) {
             registrationData = {
                 voornaam: document.getElementById('studentNaam').value,
                 achternaam: document.getElementById('studentAchternaam').value,
-                studentnummer: document.getElementById('studentennummer').value,
                 opleiding: document.getElementById('opleiding').value,
                 email: document.getElementById('studentMail').value,
                 gsm_nummer: document.getElementById('gsmNummer').value,

@@ -594,17 +594,6 @@ function initializeErrorHandling() {
   });
 }
 
-// 🕐 Time-based Features
-function initializeTimeBasedFeatures() {
-  const hour = new Date().getHours();
-  
-  
-  // Dark mode suggestions in evening
-  if (hour > 20 || hour < 6) {
-    showNotification('🌙 Tip: Overweeg dark mode voor betere oogcomfort in de avond!', 'info', 6000);
-  }
-}
-
 // ♿ Accessibility Tools
 function initializeAccessibilityTools() {
   // Font size controls

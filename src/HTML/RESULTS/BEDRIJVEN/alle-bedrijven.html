@@ -4,9 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alle Bedrijven</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/CSS/style.css" as="style">
+    <link rel="preload" href="/src/CSS/RESULTS/BEDRIJVEN/alle-bedrijven.css" as="style">
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/BEDRIJVEN/alle-bedrijven.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        /* Additional styles for dynamic content */
+        .bedrijfTegel {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .bedrijfTegel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 45px rgba(136, 21, 56, 0.3);
+        }
+
+        .bedrijfSector {
+            color: #A91B47;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bedrijf-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .bedrijf-locatie,
+        .bedrijf-tafel {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+        }
+
+        .no-results h3 {
+            color: #881538;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results p {
+            color: #666;
+        }
+
+        /* Loading states */
+        .bedrijfTegel.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Enhanced search input */
+        .search-input:focus {
+            transform: scale(1.02);
+        }
+
+        /* Better mobile responsiveness */
+        @media (max-width: 768px) {
+            .bedrijf-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Animation for new cards */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bedrijfTegel {
+            animation: slideInUp 0.6s ease-out;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigatie -->
@@ -16,7 +115,7 @@
     <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
   </div>
   <div class="navBar">
-    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/index.html" class="navItem">Home</a>
     <a href="/programma" class="navItem">Programma</a>
     <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
     <a href="/info" class="navItem">Info</a>
@@ -25,7 +124,6 @@
     <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
-
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
@@ -68,92 +166,82 @@
 
         <!-- Filter Bar -->
         <div class="filter-bar">
-            <input type="text" class="search-input" placeholder="Zoek bedrijven...">
-            <button class="filter-btn">Filter</button>
+            <input type="text" class="search-input" placeholder="Zoek bedrijven op naam, sector of locatie...">
+            <button class="filter-btn">
+                <i class="fas fa-filter"></i>
+                Filter
+            </button>
         </div>
 
         <!-- Stats Bar -->
         <div class="stats-bar">
-            <p class="stats-text">💼 10 bedrijven beschikbaar voor gesprekken</p>
+            <p class="stats-text">💼 Bedrijven worden geladen...</p>
+            <button class="refresh-btn" style="margin-left: 1rem; padding: 0.5rem 1rem; background: #881538; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" onclick="refreshBedrijven()">
+                <i class="fas fa-sync-alt"></i> Vernieuwen
+            </button>
         </div>
 
         <!-- Main Content -->
         <main class="bedrijfTegels">
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">BilalAICorp</h2>
-                <p class="bedrijfBeschrijving">
-                    BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan de gebruiker - ideaal voor zorg, onderwijs en industrie. Met geavanceerde robots en edge-AI maken ze technologie persoonlijker én efficiënter.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">Vital'O Network</h2>
-                <p class="bedrijfBeschrijving">
-                    Vital'O Network verbindt medische systemen met elkaar voor vlotte en veilige datastromen. Hun innovatieve platform maakt zorg slimmer via FHIR-API's en moderne IT-oplossingen.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">PixelPioniers</h2>
-                <p class="bedrijfBeschrijving">
-                    PixelPioniers bouwt schaalbare Cisco-netwerken met focus op SD-WAN, DNA Center en geautomatiseerde provisioning. Ze combineren netwerksecurity en NetDevOps om bedrijven future-proof te verbinden.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">QuantumOps</h2>
-                <p class="bedrijfBeschrijving">
-                    QuantumOps is een IT-consultancybedrijf dat cloudinfrastructuur, moderne werkplekken en datagedreven inzichten levert. Hun oplossingen helpen bedrijven groeien met veilige, flexibele en intelligente IT-architectuur.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">JeremStarInc</h2>
-                <p class="bedrijfBeschrijving">
-                    JeremStarInc specialiseert zich in innovatieve software development en digitale transformatie. Ze helpen startups en enterprises bij het bouwen van schaalbare applicaties en cloud-native oplossingen.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">TomDKRobotics</h2>
-                <p class="bedrijfBeschrijving">
-                    TomDKRobotics ontwikkelt autonome robotsystemen voor industriële automatisering. Hun geavanceerde sensortechnologie en machine learning algoritmes optimaliseren productieprocessen wereldwijd.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">ROI Aeronautics</h2>
-                <p class="bedrijfBeschrijving">
-                    ROI Aeronautics innoveert in de luchtvaartindustrie met duurzame vliegtuigtechnologieën en smart aviation systems. Ze werken aan de toekomst van elektrische vlucht en autonome drones.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">Microsoft</h2>
-                <p class="bedrijfBeschrijving">
-                    Microsoft leidt wereldwijd in cloud computing, productiviteitstools en AI-innovatie. Van Azure tot Office 365, ze empoweren organisaties om meer te bereiken in een cloud-first wereld.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">Figma</h2>
-                <p class="bedrijfBeschrijving">
-                    Figma revolutioneert collaborative design met hun cloud-based design platform. Teams wereldwijd gebruiken Figma voor prototyping, design systems en real-time samenwerking.
-                </p>
-            </article>
-            
-            <article class="bedrijfTegel">
-                <h2 class="bedrijfNaam">Letterboxd</h2>
-                <p class="bedrijfBeschrijving">
-                    Letterboxd heeft de filmliefhebberscommunity getransformeerd met hun sociale platform voor filmrecensies en ontdekking. Ze combineren technologie met filmpassie op een unieke manier.
-                </p>
-            </article>
+            <!-- Content wordt dynamisch geladen door JavaScript -->
+            <div class="loading-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <div class="loader" style="margin: 0 auto;"></div>
+                <p style="margin-top: 1rem; color: #666;">Bedrijven worden geladen...</p>
+            </div>
         </main>
+
+        <!-- Back to top button (will be added by JavaScript) -->
+        
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-  <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
+        <!-- Notifications will be added here by JavaScript -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script src="/src/JS/RESULTS/BEDRIJVEN/alle-bedrijven.js"></script>
+
+    <style>
+        /* Notification styles */
+        .notification {
+            background: white;
+            border-left: 4px solid #881538;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .notification.success {
+            border-left-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .notification.info {
+            border-left-color: #2563eb;
+            background: #eff6ff;
+        }
+    </style>
 </body>
 </html>
