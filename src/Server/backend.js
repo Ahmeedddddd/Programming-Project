@@ -44,7 +44,7 @@ app.get('/api/health', (req, res) => {
     message: 'CareerLaunch Backend API is healthy',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    version: '1.0.0',
+    version: '1.1.0', // 🔄 VERSION BUMP for project functionality
     database: 'Connected'
   });
 });
@@ -67,7 +67,10 @@ app.get('/api/test', async (req, res) => {
         'Database connection pooling',
         'Error handling middleware',
         'Input validation',
-        'CORS enabled'
+        'CORS enabled',
+        '🆕 Project management system', // 🆕 NEW FEATURE
+        '🆕 Project detail pages', // 🆕 NEW FEATURE
+        '🆕 Project search & filtering' // 🆕 NEW FEATURE
       ]
     });
   } catch (error) {
@@ -92,7 +95,17 @@ try {
   console.log('❌ Authentication routes failed:', error.message);
 }
 
-// 2. Load student routes
+// 2. 🆕 NEW: Load project routes
+try {
+  console.log('Loading project routes...');
+  const projectRoutes = require('./ROUTES/project');
+  app.use('/api/projecten', projectRoutes);
+  console.log('✅ Project routes loaded successfully');
+} catch (error) {
+  console.log('❌ Project routes failed:', error.message);
+}
+
+// 3. Load student routes
 try {
   console.log('Loading student routes...');
   const studentRoutes = require('./ROUTES/student');
@@ -103,7 +116,7 @@ try {
   console.log('❌ Student routes failed:', error.message);
 }
 
-// 3. Load bedrijf routes
+// 4. Load bedrijf routes
 try {
   console.log('Loading bedrijf routes...');
   const bedrijfRoutes = require('./ROUTES/bedrijf');
@@ -114,7 +127,7 @@ try {
   console.log('❌ Bedrijf routes failed:', error.message);
 }
 
-// 4. Load organisator routes
+// 5. Load organisator routes
 try {
   console.log('Loading organisator routes...');
   const organisatorRoutes = require('./ROUTES/organisator');
@@ -124,7 +137,7 @@ try {
   console.log('❌ Organisator routes failed:', error.message);
 }
 
-// 5. Load reservaties routes
+// 6. Load reservaties routes
 try {
   console.log('Loading reservaties routes...');
   const reservatieRoutes = require('./ROUTES/reservaties');
@@ -134,19 +147,21 @@ try {
   console.log('❌ Reservatie routes failed:', error.message);
 }
 
-// ❌ REMOVE conflicting registratie routes - we use auth routes now
-// const registratieRoutes = require('./ROUTES/registratie');
-// app.use('/api', registratieRoutes);
-
 console.log('✅ All routes loaded');
 
 // ===== ADDITIONAL ENDPOINTS =====
 
-// Quick stats endpoint
+// Quick stats endpoint - Enhanced with project stats
 app.get('/api/stats', async (req, res) => {
   try {
     const [studentCount] = await pool.query('SELECT COUNT(*) as count FROM STUDENT');
     const [bedrijfCount] = await pool.query('SELECT COUNT(*) as count FROM BEDRIJF');
+    
+    // 🆕 NEW: Get project count
+    const [projectCount] = await pool.query(`
+      SELECT COUNT(*) as count FROM STUDENT 
+      WHERE projectTitel IS NOT NULL AND projectTitel != ''
+    `);
     
     // Try to get reservation count, fallback to 0 if table doesn't exist
     let afspraakCount = [{ count: 0 }];
@@ -167,6 +182,7 @@ app.get('/api/stats', async (req, res) => {
     res.json({
       studenten: studentCount[0].count,
       bedrijven: bedrijfCount[0].count,
+      projecten: projectCount[0].count, // 🆕 NEW
       afspraken: afspraakCount[0].count,
       registeredUsers: loginCount[0].count,
       timestamp: new Date().toISOString()
@@ -177,6 +193,7 @@ app.get('/api/stats', async (req, res) => {
       error: 'Failed to fetch statistics',
       studenten: 0,
       bedrijven: 0,
+      projecten: 0, // 🆕 NEW
       afspraken: 0,
       registeredUsers: 0
     });
@@ -210,6 +227,13 @@ app.use('/api/*', (req, res) => {
         'PUT /api/auth/change-password (requires auth)',
         'POST /api/auth/refresh (requires auth)'
       ],
+      'Projects': [ // 🆕 NEW SECTION
+        'GET /api/projecten',
+        'GET /api/projecten/:id',
+        'GET /api/projecten/search/:searchTerm',
+        'GET /api/projecten/category/:category',
+        'GET /api/projecten/stats'
+      ],
       'Companies': [
         'GET /api/bedrijven',
         'GET /api/bedrijf/profile (requires auth)',
@@ -220,7 +244,8 @@ app.use('/api/*', (req, res) => {
         'GET /api/studenten', 
         'GET /api/student/profile (requires auth)',
         'PUT /api/student/profile (requires auth)',
-        'GET /api/studenten/:id'
+        'GET /api/studenten/:id',
+        'GET /api/studenten/projecten'
       ],
       'Reservations': [
         'GET /api/reservaties',
@@ -267,6 +292,8 @@ const startServer = async () => {
       console.log('\n📊 Data endpoints:');
       console.log(`   Companies: GET http://localhost:${port}/api/bedrijven`);
       console.log(`   Students: GET http://localhost:${port}/api/studenten`);
+      console.log(`   Projects: GET http://localhost:${port}/api/projecten`);
+      console.log(`   Project Detail: GET http://localhost:${port}/api/projecten/:id`); 
       console.log(`   Company Profile: GET http://localhost:${port}/api/bedrijf/profile`);
       console.log('\n🏗️  Architecture: MVC with Authentication, Password Hashing & JWT');
       console.log(`🎓 Frontend Server: http://localhost:8383\n`);
@@ -276,6 +303,9 @@ const startServer = async () => {
       console.log('   ✅ JWT Authentication');
       console.log('   ✅ Protected Profile Endpoints');
       console.log('   ✅ Role-based Access Control');
+      console.log('   ✅ Project Management System'); 
+      console.log('   ✅ Project Detail Pages with Dynamic Routing'); 
+      console.log('   ✅ Project Search & Filtering'); 
     });
 
   } catch (error) {
