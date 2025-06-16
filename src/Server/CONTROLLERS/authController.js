@@ -128,7 +128,29 @@ const authController = {
     }
   },
 
-  // ✅ EXISTING FUNCTIONS (unchanged)
+  // 📧 FIXED EMAIL CHECK - Direct database query instead of passwordManager
+  async checkEmailExists(email) {
+    try {
+      // Check in STUDENT table
+      const [students] = await pool.query('SELECT email FROM STUDENT WHERE email = ?', [email]);
+      if (students.length > 0) return true;
+
+      // Check in BEDRIJF table
+      const [bedrijven] = await pool.query('SELECT email FROM BEDRIJF WHERE email = ?', [email]);
+      if (bedrijven.length > 0) return true;
+
+      // Check in ORGANISATOR table
+      const [organisators] = await pool.query('SELECT email FROM ORGANISATOR WHERE email = ?', [email]);
+      if (organisators.length > 0) return true;
+
+      return false;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  },
+
+  // ✅ FIXED STUDENT REGISTRATION
   async registerStudent(req, res) {
     try {
       const errors = validationResult(req);
@@ -142,9 +164,9 @@ const authController = {
 
       const { password, ...studentData } = req.body;
 
-      // 🎯 USE UNIFIED PASSWORD MANAGER for email check
-      const emailCheck = await passwordManager.checkEmailExists(studentData.email);
-      if (emailCheck.exists) {
+      // 🎯 FIXED EMAIL CHECK - Direct database query
+      const emailExists = await authController.checkEmailExists(studentData.email);
+      if (emailExists) {
         return res.status(409).json({ 
           success: false,
           error: 'Email already exists',
@@ -152,7 +174,9 @@ const authController = {
         });
       }
 
-      // Use existing Auth model for registration
+      console.log(`📝 Registering student: ${studentData.email}`);
+
+      // Use Auth model for registration - no more passwordManager conflicts
       const Auth = require('../MODELS/auth');
       const userResult = await Auth.registerStudent(studentData, password);
 
@@ -169,6 +193,8 @@ const authController = {
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
+      console.log(`✅ Student registered successfully: ${studentData.email}`);
+
       res.status(201).json({
         success: true,
         message: 'Student account succesvol aangemaakt',
@@ -177,12 +203,23 @@ const authController = {
           email: studentData.email,
           userType: 'student',
           userId: userResult.userId,
-          naam: `${studentData.voornaam} ${studentData.achternaam}`
+          naam: `${studentData.voornaam} ${studentData.achternaam}`,
+          gebruikersId: userResult.gebruikersId
         }
       });
 
     } catch (error) {
       console.error('Student registration error:', error);
+      
+      // More specific error handling
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met dit email adres of telefoonnummer'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Registration failed',
@@ -191,6 +228,7 @@ const authController = {
     }
   },
 
+  // ✅ FIXED BEDRIJF REGISTRATION
   async registerBedrijf(req, res) {
     try {
       const errors = validationResult(req);
@@ -204,9 +242,9 @@ const authController = {
 
       const { password, ...bedrijfData } = req.body;
 
-      // 🎯 USE UNIFIED PASSWORD MANAGER for email check
-      const emailCheck = await passwordManager.checkEmailExists(bedrijfData.email);
-      if (emailCheck.exists) {
+      // 🎯 FIXED EMAIL CHECK - Direct database query
+      const emailExists = await authController.checkEmailExists(bedrijfData.email);
+      if (emailExists) {
         return res.status(409).json({ 
           success: false,
           error: 'Email already exists',
@@ -214,7 +252,9 @@ const authController = {
         });
       }
 
-      // Use existing Auth model for registration
+      console.log(`📝 Registering bedrijf: ${bedrijfData.email}`);
+
+      // Use Auth model for registration - no more passwordManager conflicts
       const Auth = require('../MODELS/auth');
       const userResult = await Auth.registerBedrijf(bedrijfData, password);
 
@@ -231,6 +271,8 @@ const authController = {
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
+      console.log(`✅ Bedrijf registered successfully: ${bedrijfData.email}`);
+
       res.status(201).json({
         success: true,
         message: 'Bedrijf account succesvol aangemaakt',
@@ -239,12 +281,23 @@ const authController = {
           email: bedrijfData.email,
           userType: 'bedrijf',
           userId: userResult.userId,
-          naam: bedrijfData.naam
+          naam: bedrijfData.naam,
+          gebruikersId: userResult.gebruikersId
         }
       });
 
     } catch (error) {
       console.error('Bedrijf registration error:', error);
+      
+      // More specific error handling
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met dit email adres, telefoonnummer of BTW nummer'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Registration failed',
@@ -253,6 +306,7 @@ const authController = {
     }
   },
 
+  // ✅ FIXED ORGANISATOR REGISTRATION
   async registerOrganisator(req, res) {
     try {
       const errors = validationResult(req);
@@ -266,9 +320,9 @@ const authController = {
 
       const { password, ...organisatorData } = req.body;
 
-      // 🎯 USE UNIFIED PASSWORD MANAGER for email check
-      const emailCheck = await passwordManager.checkEmailExists(organisatorData.email);
-      if (emailCheck.exists) {
+      // 🎯 FIXED EMAIL CHECK - Direct database query
+      const emailExists = await authController.checkEmailExists(organisatorData.email);
+      if (emailExists) {
         return res.status(409).json({ 
           success: false,
           error: 'Email already exists',
@@ -276,7 +330,9 @@ const authController = {
         });
       }
 
-      // Use existing Auth model for registration
+      console.log(`📝 Registering organisator: ${organisatorData.email}`);
+
+      // Use Auth model for registration - no more passwordManager conflicts
       const Auth = require('../MODELS/auth');
       const userResult = await Auth.registerOrganisator(organisatorData, password);
 
@@ -293,6 +349,8 @@ const authController = {
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
+      console.log(`✅ Organisator registered successfully: ${organisatorData.email}`);
+
       res.status(201).json({
         success: true,
         message: 'Organisator account succesvol aangemaakt',
@@ -301,24 +359,29 @@ const authController = {
           email: organisatorData.email,
           userType: 'organisator',
           userId: userResult.userId,
-          naam: `${organisatorData.voornaam} ${organisatorData.achternaam}`
+          naam: `${organisatorData.voornaam} ${organisatorData.achternaam}`,
+          gebruikersId: userResult.gebruikersId
         }
       });
 
     } catch (error) {
       console.error('Organisator registration error:', error);
+      
+      // More specific error handling
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met dit email adres'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Registration failed',
         message: 'Er ging iets mis bij het aanmaken van je account'
       });
     }
-  },
-
-  // 🎯 SIMPLIFIED CHECK EMAIL using unified password manager
-  async checkEmailExists(email) {
-    const result = await passwordManager.checkEmailExists(email);
-    return result.exists;
   },
 
   async getMe(req, res) {
@@ -508,5 +571,5 @@ const authController = {
 
 module.exports = authController;
 
-console.log('🔐 AuthController updated to use Unified Password Manager');
-console.log('✅ No longer uses conflicting password utilities');
+console.log('🔐 AuthController FIXED - No more transaction conflicts');
+console.log('✅ Direct database queries for email checking');

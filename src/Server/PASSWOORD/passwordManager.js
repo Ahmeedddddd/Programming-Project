@@ -1,29 +1,18 @@
-// src/Server/PASSWOORD/passwordManager.js
-
 const path = require('path');
 
 // 🚩 Laad altijd .env ALS ALLEREERSTE (gegarandeerd juiste variabelen)
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const bcrypt = require('bcrypt');
-
-// 🚩 Importeer altijd uit 1 plek, GEEN fallback meer nodig!
 const { pool, dbConfig } = require('../CONFIG/database');
 
-// 🚩 Debug: Print altijd de host waarmee je verbindt!
 console.log('🔧 PasswordManager gebruikt database host:', dbConfig.host);
 
-/**
- * UNIFIED PASSWORD MANAGER with ENHANCED SECURITY
- */
 class UnifiedPasswordManager {
-    
     constructor() {
         this.saltRounds = 12;
         this.minPasswordLength = 8;
         this.maxPasswordLength = 128;
-        
-        // 🔒 SECURITY: Password complexity requirements
         this.securityConfig = {
             requireUppercase: true,
             requireLowercase: true,
@@ -36,15 +25,11 @@ class UnifiedPasswordManager {
                 /welcome/i, /login/i, /changeme/i
             ]
         };
-        
         console.log('🔐 Unified Password Manager initialized with enhanced security');
     }
 
     // ===== ENHANCED SECURITY FUNCTIONS =====
 
-    /**
-     * 🔒 ENHANCED password strength validation with security requirements
-     */
     validatePasswordStrength(password) {
         const requirements = {
             minLength: password.length >= this.minPasswordLength,
@@ -58,7 +43,6 @@ class UnifiedPasswordManager {
             minSpecialChars: (password.match(/[!@#$%^&*(),.?":{}|<>]/g) || []).length >= this.securityConfig.minSpecialChars
         };
 
-        // 🔒 SECURITY: Enforce all requirements
         const securityScore = [
             requirements.hasUppercase,
             requirements.hasLowercase, 
@@ -107,9 +91,6 @@ class UnifiedPasswordManager {
         return 'CRITICAL';
     }
 
-    /**
-     * 🔒 ENHANCED password generation with security requirements
-     */
     generateSecurePassword(length = 12) {
         if (length < this.minPasswordLength) {
             length = this.minPasswordLength;
@@ -121,31 +102,23 @@ class UnifiedPasswordManager {
         const special = '!@#$%^&*(),.?":{}|<>';
         
         let password = '';
-        
-        // Ensure at least one of each required type
         password += uppercase[Math.floor(Math.random() * uppercase.length)];
         password += lowercase[Math.floor(Math.random() * lowercase.length)];
         password += numbers[Math.floor(Math.random() * numbers.length)];
         password += special[Math.floor(Math.random() * special.length)];
         
-        // Fill the rest randomly
         const allChars = uppercase + lowercase + numbers + special;
         for (let i = password.length; i < length; i++) {
             password += allChars[Math.floor(Math.random() * allChars.length)];
         }
         
-        // Shuffle the password
         return password.split('').sort(() => Math.random() - 0.5).join('');
     }
 
-    // ===== CORE PASSWORD FUNCTIONS (Enhanced Security) =====
+    // ===== CORE PASSWORD FUNCTIONS =====
 
-    /**
-     * Hash a password using bcrypt with security validation
-     */
     async hashPassword(plainPassword) {
         try {
-            // 🔒 SECURITY: Validate password strength first
             const validation = this.validatePasswordStrength(plainPassword);
             if (!validation.isValid) {
                 throw new Error(`Beveiligingsfout: ${validation.message}`);
@@ -168,10 +141,6 @@ class UnifiedPasswordManager {
         }
     }
 
-    /**
-     * Verify password against hash - SUPPORTS BOTH OLD AND NEW FORMATS
-     * This is the key function that fixes your login issues
-     */
     async verifyPassword(plainPassword, storedHash) {
         try {
             if (!plainPassword || !storedHash) {
@@ -181,25 +150,21 @@ class UnifiedPasswordManager {
 
             console.log(`🔍 Verifying password... Hash type: ${this.detectHashType(storedHash)}`);
 
-            // METHOD 1: Modern bcrypt hashes
             if (storedHash.startsWith('$2b$') || storedHash.startsWith('$2a$')) {
                 const result = await bcrypt.compare(plainPassword, storedHash);
                 console.log(`🔒 Bcrypt verification: ${result ? 'SUCCESS' : 'FAILED'}`);
                 return result;
             }
 
-            // METHOD 2: Legacy plain text passwords (for migration)
             if (storedHash.length < 50) {
                 const result = plainPassword === storedHash;
                 if (result) {
                     console.log('⚠️ Plain text password match - NEEDS SECURITY UPGRADE');
-                    // Don't upgrade here, let the authController handle it
                 }
                 console.log(`📝 Plain text verification: ${result ? 'SUCCESS' : 'FAILED'}`);
                 return result;
             }
 
-            // METHOD 3: Try bcrypt anyway for edge cases
             try {
                 const result = await bcrypt.compare(plainPassword, storedHash);
                 console.log(`🔒 Fallback bcrypt verification: ${result ? 'SUCCESS' : 'FAILED'}`);
@@ -215,9 +180,6 @@ class UnifiedPasswordManager {
         }
     }
 
-    /**
-     * Detect password hash type
-     */
     detectHashType(hash) {
         if (!hash) return 'NULL';
         if (hash.startsWith('$2b$')) return 'bcrypt_modern';
@@ -229,14 +191,10 @@ class UnifiedPasswordManager {
 
     // ===== DATABASE USER FUNCTIONS =====
 
-    /**
-     * Find user by email across all tables (unified approach)
-     */
     async findUserByEmail(email) {
         try {
             console.log(`🔍 Finding user by email: ${email}`);
 
-            // Check STUDENT table
             const [students] = await pool.query(`
                 SELECT 
                     s.studentnummer as userId, s.email, s.voornaam, s.achternaam,
@@ -256,7 +214,6 @@ class UnifiedPasswordManager {
                 };
             }
 
-            // Check BEDRIJF table
             const [bedrijven] = await pool.query(`
                 SELECT 
                     b.bedrijfsnummer as userId, b.email, b.naam,
@@ -273,7 +230,6 @@ class UnifiedPasswordManager {
                 return user;
             }
 
-            // Check ORGANISATOR table
             const [organisators] = await pool.query(`
                 SELECT 
                     o.organisatorId as userId, o.email, o.voornaam, o.achternaam,
@@ -302,14 +258,10 @@ class UnifiedPasswordManager {
         }
     }
 
-    /**
-     * 🔒 ENHANCED authenticate user with security logging
-     */
     async authenticateUser(email, password) {
         try {
             console.log(`🔐 Authenticating user: ${email}`);
 
-            // Find user
             const user = await this.findUserByEmail(email);
             if (!user) {
                 console.log('🔒 Security: Authentication failed - user not found');
@@ -319,13 +271,11 @@ class UnifiedPasswordManager {
                 };
             }
 
-            // 🔒 SECURITY: Check for insecure password storage
             const hashType = this.detectHashType(user.passwoord_hash);
             if (hashType === 'plain_text_INSECURE') {
                 console.log('🚨 SECURITY WARNING: Plain text password detected for user:', email);
             }
 
-            // Verify password
             const isValidPassword = await this.verifyPassword(password, user.passwoord_hash);
             if (!isValidPassword) {
                 console.log('🔒 Security: Authentication failed - invalid password');
@@ -335,7 +285,6 @@ class UnifiedPasswordManager {
                 };
             }
 
-            // Remove password hash from response
             const { passwoord_hash, ...userWithoutPassword } = user;
 
             console.log(`✅ Authentication successful for ${email} (Security Level: ${hashType})`);
@@ -358,16 +307,56 @@ class UnifiedPasswordManager {
         }
     }
 
-    // ===== PASSWORD UPDATE FUNCTIONS (Enhanced Security) =====
+    // ===== REGISTER CREDENTIALS (toegevoegd!) =====
 
-    /**
-     * 🔒 ENHANCED password update with security validation
-     */
+    async createUserCredentials(userType, userIdentifier, plainPassword) {
+        try {
+            const hashedPassword = await this.hashPassword(plainPassword);
+
+            let column, value;
+            if (userType === 'student') {
+                column = 'studentnummer';
+                value = userIdentifier;
+            } else if (userType === 'bedrijf') {
+                column = 'bedrijfsnummer';
+                value = userIdentifier;
+            } else if (userType === 'organisator') {
+                column = 'gebruikersId';
+                value = userIdentifier;
+            } else {
+                return { success: false, message: 'Onbekend userType in createUserCredentials' };
+            }
+
+            const [result] = await pool.query(
+                `INSERT INTO LOGINBEHEER (${column}, passwoord_hash) VALUES (?, ?)
+                 ON DUPLICATE KEY UPDATE passwoord_hash = VALUES(passwoord_hash)`,
+                [value, hashedPassword]
+            );
+
+            let gebruikersId;
+            if (result.insertId) {
+                gebruikersId = result.insertId;
+            } else {
+                const [rows] = await pool.query(
+                    `SELECT gebruikersId FROM LOGINBEHEER WHERE ${column} = ?`,
+                    [value]
+                );
+                gebruikersId = rows[0]?.gebruikersId;
+            }
+
+            return { success: true, gebruikersId };
+        } catch (error) {
+            console.error('Error in createUserCredentials:', error);
+            return { success: false, message: error.message };
+        }
+    }
+
+    // ===== PASSWORD UPDATE FUNCTIONS =====
+
     async updatePassword(gebruikersId, newPassword, currentPassword = null) {
         try {
             console.log(`🔄 Updating password for user ${gebruikersId}`);
 
-            // 🔒 SECURITY: Validate new password strength
             const validation = this.validatePasswordStrength(newPassword);
             if (!validation.isValid) {
                 console.log(`🔒 Security: Password rejected - ${validation.message}`);
@@ -376,7 +365,6 @@ class UnifiedPasswordManager {
 
             console.log(`🔒 Security: New password meets requirements (Level: ${validation.securityLevel})`);
 
-            // If current password provided, verify it first
             if (currentPassword) {
                 const [currentUser] = await pool.query(
                     'SELECT passwoord_hash FROM LOGINBEHEER WHERE gebruikersId = ?',
@@ -393,14 +381,11 @@ class UnifiedPasswordManager {
                     throw new Error('Huidig wachtwoord is onjuist');
                 }
 
-                // Store old password in history
                 await this.addPasswordToHistory(gebruikersId, currentUser[0].passwoord_hash);
             }
 
-            // Hash new password with enhanced security
             const newHashedPassword = await this.hashPassword(newPassword);
 
-            // Update in database
             const [result] = await pool.query(
                 `UPDATE LOGINBEHEER 
                  SET passwoord_hash = ?, 
@@ -429,8 +414,6 @@ class UnifiedPasswordManager {
             };
         }
     }
-
-    // ===== REST OF THE FUNCTIONS (keeping existing functionality) =====
 
     async upgradePasswordToHash(gebruikersId, plainPassword) {
         try {
@@ -515,9 +498,6 @@ class UnifiedPasswordManager {
         }
     }
 
-    /**
-     * 🔒 FIXED: Migration function with proper database connection
-     */
     async migrateAllPasswords() {
         try {
             console.log('🔄 Starting secure password migration...');
@@ -544,7 +524,6 @@ class UnifiedPasswordManager {
                 try {
                     console.log(`🔄 Migrating user ${user.gebruikersId}...`);
                     
-                    // 🔒 SECURITY: The old plain text password will be upgraded to secure bcrypt
                     const hashedPassword = await bcrypt.hash(user.passwoord_hash, this.saltRounds);
                     
                     await pool.query(
@@ -571,17 +550,11 @@ class UnifiedPasswordManager {
     }
 }
 
-// ===== EXPORT AND SINGLETON =====
-
-// Create singleton instance
 const passwordManager = new UnifiedPasswordManager();
 
-// Export both the class and instance
 module.exports = {
     UnifiedPasswordManager,
     passwordManager,
-    
-    // Export individual functions for backward compatibility
     hashPassword: (password) => passwordManager.hashPassword(password),
     verifyPassword: (password, hash) => passwordManager.verifyPassword(password, hash),
     authenticateUser: (email, password) => passwordManager.authenticateUser(email, password),
@@ -590,14 +563,12 @@ module.exports = {
     validatePasswordStrength: (password) => passwordManager.validatePasswordStrength(password),
     generateStrongPassword: (length) => passwordManager.generateSecurePassword(length),
     checkEmailExists: (email) => passwordManager.checkEmailExists(email),
-    
     // Constants
     SALT_ROUNDS: 12,
     MIN_PASSWORD_LENGTH: 8,
     MAX_PASSWORD_LENGTH: 128
 };
 
-// Log initialization
 console.log('🔐 Enhanced Password Manager initialized');
 console.log('📝 This replaces: passwordManager.js, passwordhasher.js');
 console.log('✅ Compatible with new authController.js');

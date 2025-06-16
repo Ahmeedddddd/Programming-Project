@@ -1,19 +1,11 @@
-//src/Server/MODELS/auth.js - Past bij jouw projectstructuur
+// src/Server/MODELS/auth.js
 
 const { pool } = require('../CONFIG/database');
 
-// Import jouw bestaande password hasher
-const {
-  hashPassword,
-  verifyPassword,
-  authenticateUser,
-  findUser,
-  createUserCredentials,
-  updatePassword
-} = require('../PASSWOORD/CONFIG/passwordhasher');
+// Importeer het unified passwordManager-object
+const { passwordManager } = require('../PASSWOORD/passwordManager');
 
 class Auth {
-  
   // 🔍 Find user by email (across all user types)
   static async findUserByEmail(email) {
     try {
@@ -45,21 +37,20 @@ class Auth {
     }
   }
 
-  // 🔐 Get login credentials (gebruik jouw authenticateUser)
+  // 🔐 Get login credentials (gebruik jouw passwordManager.findUser)
   static async getLoginCredentials(email) {
     try {
       const user = await this.findUserByEmail(email);
       if (!user) return null;
 
-      // Gebruik jouw findUser functie
+      // Gebruik je unified passwordManager
       let userCredentials;
-      
       if (user.userType === 'student') {
-        userCredentials = await findUser('student', user.id);
+        userCredentials = await passwordManager.findUser('student', user.id);
       } else if (user.userType === 'bedrijf') {
-        userCredentials = await findUser('bedrijf', user.id);
+        userCredentials = await passwordManager.findUser('bedrijf', user.id);
       } else if (user.userType === 'organisator') {
-        userCredentials = await findUser('organisator', user.email);
+        userCredentials = await passwordManager.findUser('organisator', user.email);
       }
 
       if (userCredentials) {
@@ -78,72 +69,81 @@ class Auth {
     }
   }
 
-  // 📝 Register new student - aangepast voor jouw database schema
+  // 📝 Register new student - FIXED VERSION
   static async registerStudent(studentData, password) {
-  const connection = await pool.getConnection();
-  try {
-    await connection.beginTransaction();
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-    const {
-      voornaam, achternaam, email, gsm_nummer,
-      opleiding, opleidingsrichting = '', projectTitel = '', projectBeschrijving = '',
-      overMezelf = '', huisnummer = '', straatnaam = '', gemeente = '', postcode = '', bus = '', 
-      evenementId = 1, leerjaar = 3, tafelNr = 1
-    } = studentData;
+      const {
+        voornaam, achternaam, email, gsm_nummer,
+        opleiding, opleidingsrichting = '', projectTitel = '', projectBeschrijving = '',
+        overMezelf = '', huisnummer = '', straatnaam = '', gemeente = '', postcode = '', bus = '', 
+        evenementId = 1, leerjaar = 3, tafelNr = 1
+      } = studentData;
 
-    const [result] = await connection.query(`
-      INSERT INTO STUDENT (
+      // 1. First insert the student record
+      const [result] = await connection.query(`
+        INSERT INTO STUDENT (
+          evenementId, voornaam, achternaam, email, gsm_nummer,
+          opleiding, projectTitel, projectBeschrijving, opleidingsrichting,
+          huisnummer, straatnaam, gemeente, postcode, bus, overMezelf,
+          leerjaar, tafelNr
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
         evenementId, voornaam, achternaam, email, gsm_nummer,
         opleiding, projectTitel, projectBeschrijving, opleidingsrichting,
         huisnummer, straatnaam, gemeente, postcode, bus, overMezelf,
         leerjaar, tafelNr
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      evenementId, voornaam, achternaam, email, gsm_nummer,
-      opleiding, projectTitel, projectBeschrijving, opleidingsrichting,
-      huisnummer, straatnaam, gemeente, postcode, bus, overMezelf,
-      leerjaar, tafelNr
-    ]);
+      ]);
 
-    const studentnummer = result.insertId;
+      const studentnummer = result.insertId;
 
-    // Maak credentials aan met studentnummer
-    const credentialsResult = await createUserCredentials('student', studentnummer, password);
-    
-    if (!credentialsResult.success) {
-      throw new Error(credentialsResult.message);
+      // 2. Hash the password
+      const hashedPassword = await passwordManager.hashPassword(password);
+
+      // 3. Insert into LOGINBEHEER using the SAME connection
+      const [loginResult] = await connection.query(`
+        INSERT INTO LOGINBEHEER (studentnummer, passwoord_hash, created_at, password_changed_at) 
+        VALUES (?, ?, NOW(), NOW())
+      `, [studentnummer, hashedPassword]);
+
+      const gebruikersId = loginResult.insertId;
+
+      // 4. Commit the transaction
+      await connection.commit();
+      
+      console.log(`✅ Student registered successfully: ID ${studentnummer}, GebruikersId ${gebruikersId}`);
+      
+      return {
+        gebruikersId: gebruikersId,
+        userId: studentnummer,
+        userType: 'student',
+        email: email
+      };
+
+    } catch (error) {
+      await connection.rollback();
+      console.error('Error registering student:', error);
+      throw error;
+    } finally {
+      connection.release();
     }
-    
-    await connection.commit();
-    return {
-      gebruikersId: credentialsResult.gebruikersId,
-      userId: studentnummer,
-      userType: 'student',
-      email: email
-    };
-
-  } catch (error) {
-    await connection.rollback();
-    console.error('Error registering student:', error);
-    throw error;
-  } finally {
-    connection.release();
   }
-}
 
-  // 🏢 Register new bedrijf - aangepast voor jouw database schema
+  // 🏢 Register new bedrijf - FIXED VERSION
   static async registerBedrijf(bedrijfData, password) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
 
-      // 1. Create bedrijf record - using your exact schema
       const {
         naam, email, gsm_nummer, sector = '', TVA_nummer,
         huisnummer, straatnaam, gemeente, postcode, bus = '',
-        land = 'België', tafelNr = 1, bechrijving = '' // Note: "bechrijving" typo in your schema
+        land = 'België', tafelNr = 1, bechrijving = ''
       } = bedrijfData;
 
+      // 1. First insert the bedrijf record
       const [bedrijfResult] = await connection.query(`
         INSERT INTO BEDRIJF (
           TVA_nummer, naam, email, gsm_nummer, sector,
@@ -158,17 +158,24 @@ class Auth {
 
       const bedrijfsnummer = bedrijfResult.insertId;
 
+      // 2. Hash the password
+      const hashedPassword = await passwordManager.hashPassword(password);
+
+      // 3. Insert into LOGINBEHEER using the SAME connection
+      const [loginResult] = await connection.query(`
+        INSERT INTO LOGINBEHEER (bedrijfsnummer, passwoord_hash, created_at, password_changed_at) 
+        VALUES (?, ?, NOW(), NOW())
+      `, [bedrijfsnummer, hashedPassword]);
+
+      const gebruikersId = loginResult.insertId;
+
+      // 4. Commit the transaction
       await connection.commit();
       
-      // 2. Gebruik jouw createUserCredentials functie
-      const credentialsResult = await createUserCredentials('bedrijf', bedrijfsnummer, password);
-      
-      if (!credentialsResult.success) {
-        throw new Error(credentialsResult.message);
-      }
+      console.log(`✅ Bedrijf registered successfully: ID ${bedrijfsnummer}, GebruikersId ${gebruikersId}`);
       
       return {
-        gebruikersId: credentialsResult.gebruikersId,
+        gebruikersId: gebruikersId,
         userId: bedrijfsnummer,
         userType: 'bedrijf',
         email: email
@@ -183,39 +190,40 @@ class Auth {
     }
   }
 
-  // 👔 Register new organisator
+  // 👔 Register new organisator - FIXED VERSION
   static async registerOrganisator(organisatorData, password) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
 
-      // 1. Create organisator record first
       const { voornaam, achternaam, email } = organisatorData;
 
+      // 1. Hash the password first
+      const hashedPassword = await passwordManager.hashPassword(password);
+
+      // 2. Insert into LOGINBEHEER first (since organisator references it)
+      const [loginResult] = await connection.query(`
+        INSERT INTO LOGINBEHEER (passwoord_hash, created_at, password_changed_at) 
+        VALUES (?, NOW(), NOW())
+      `, [hashedPassword]);
+
+      const gebruikersId = loginResult.insertId;
+
+      // 3. Insert the organisator record with the gebruikersId
       const [orgResult] = await connection.query(`
         INSERT INTO ORGANISATOR (gebruikersId, voornaam, achternaam, email)
-        VALUES (NULL, ?, ?, ?)
-      `, [voornaam, achternaam, email]);
+        VALUES (?, ?, ?, ?)
+      `, [gebruikersId, voornaam, achternaam, email]);
 
       const organisatorId = orgResult.insertId;
 
+      // 4. Commit the transaction
       await connection.commit();
       
-      // 2. Gebruik jouw createUserCredentials functie voor organisator
-      const credentialsResult = await createUserCredentials('organisator', email, password);
-      
-      if (!credentialsResult.success) {
-        throw new Error(credentialsResult.message);
-      }
-
-      // 3. Update organisator record met gebruikersId
-      await connection.query(
-        'UPDATE ORGANISATOR SET gebruikersId = ? WHERE organisatorId = ?',
-        [credentialsResult.gebruikersId, organisatorId]
-      );
+      console.log(`✅ Organisator registered successfully: ID ${organisatorId}, GebruikersId ${gebruikersId}`);
       
       return {
-        gebruikersId: credentialsResult.gebruikersId,
+        gebruikersId: gebruikersId,
         userId: organisatorId,
         userType: 'organisator',
         email: email
@@ -230,10 +238,10 @@ class Auth {
     }
   }
 
-  // 🔑 Verify password (gebruik jouw verifyPassword)
+  // 🔑 Verify password
   static async verifyPassword(plainPassword, hashedPassword) {
     try {
-      return await verifyPassword(plainPassword, hashedPassword);
+      return await passwordManager.verifyPassword(plainPassword, hashedPassword);
     } catch (error) {
       console.error('Error verifying password:', error);
       return false;
@@ -243,13 +251,11 @@ class Auth {
   // 🔄 Update password
   static async updatePassword(gebruikersId, newPassword) {
     try {
-      const hashedPassword = await hashPassword(newPassword);
-      
+      const hashedPassword = await passwordManager.hashPassword(newPassword);
       const [result] = await pool.query(
-        'UPDATE LOGINBEHEER SET passwoord_hash = ? WHERE gebruikersId = ?',
+        'UPDATE LOGINBEHEER SET passwoord_hash = ?, password_changed_at = NOW() WHERE gebruikersId = ?',
         [hashedPassword, gebruikersId]
       );
-      
       return result.affectedRows > 0;
     } catch (error) {
       console.error('Error updating password:', error);
@@ -264,7 +270,6 @@ class Auth {
         'DELETE FROM LOGINBEHEER WHERE gebruikersId = ?',
         [gebruikersId]
       );
-      
       return result.affectedRows > 0;
     } catch (error) {
       console.error('Error deleting account:', error);
