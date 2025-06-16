@@ -217,9 +217,7 @@ function initializeQualityOfLifeFeatures() {
   
   // 11. Error Boundary
   initializeErrorHandling();
-  
-  // 12. Time-based Features
-  initializeTimeBasedFeatures();
+
   
   // 13. Accessibility Tools
   initializeAccessibilityTools();
@@ -592,17 +590,6 @@ function initializeErrorHandling() {
     console.error('🚨 Unhandled promise rejection:', e.reason);
     showNotification('Er is een netwerk fout opgetreden.', 'error');
   });
-}
-
-// 🕐 Time-based Features
-function initializeTimeBasedFeatures() {
-  const hour = new Date().getHours();
-  
-  
-  // Dark mode suggestions in evening
-  if (hour > 20 || hour < 6) {
-    showNotification('🌙 Tip: Overweeg dark mode voor betere oogcomfort in de avond!', 'info', 6000);
-  }
 }
 
 // ♿ Accessibility Tools

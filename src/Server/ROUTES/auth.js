@@ -101,15 +101,6 @@ const validateStudentRegistration = [
     .withMessage('Achternaam must be between 2 and 50 characters')
     .matches(/^[a-zA-ZÀ-ÿ\s-']+$/)
     .withMessage('Achternaam contains invalid characters'),
-  body('studentnummer')
-    .isInt({ min: 1, max: 999999 })
-    .withMessage('Valid studentnummer is required')
-    .custom(async (studentnummer) => {
-      if (studentnummer.toString().length < 3) {
-        throw new Error('Studentnummer must be at least 3 digits');
-      }
-      return true;
-    }),
   body('email')
     .isEmail()
     .withMessage('Valid email is required')

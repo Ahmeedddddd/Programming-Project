@@ -1,19 +1,21 @@
 // src/Server/CONTROLLERS/authController.js
 
-const Auth = require('../MODELS/auth');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { pool } = require('../CONFIG/database');
 const config = require('../CONFIG/config');
-const bcrypt = require('bcrypt');
+
+// 🔐 USE NEW UNIFIED PASSWORD MANAGER (replaces all old password utilities)
+const { passwordManager } = require('../PASSWOORD/passwordManager');
 
 const authController = {
 
-  // 🔐 EMAIL-FIRST LOGIN - FIXED
+  // 🔐 SIMPLIFIED LOGIN using unified password manager
   async login(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('❌ Validation errors:', errors.array());
         return res.status(400).json({ 
           success: false,
           error: 'Validation failed',
@@ -24,44 +26,46 @@ const authController = {
       const { email, password } = req.body;
       console.log(`🔐 Login attempt for email: ${email}`);
 
-      // 🎯 FIXED: Use authController instead of this
-      const userResult = await authController.findUserByEmailAndValidatePassword(email, password);
+      // 🎯 USE UNIFIED PASSWORD MANAGER
+      const authResult = await passwordManager.authenticateUser(email, password);
       
-      if (!userResult.success) {
-        console.log(`❌ Authentication failed: ${userResult.message}`);
+      if (!authResult.success) {
+        console.log(`❌ Authentication failed: ${authResult.message}`);
         return res.status(401).json({ 
           success: false,
           error: 'Invalid credentials',
-          message: userResult.message || 'Email of wachtwoord is onjuist'
+          message: authResult.message
         });
       }
 
-      console.log(`✅ Authentication successful for ${userResult.user.email}`);
+      console.log(`✅ Authentication successful for ${email}`);
 
-      // 🎫 Generate JWT token - CONSISTENT payload
+      // Generate JWT token
       const tokenPayload = {
-        email: userResult.user.email,
-        userType: userResult.user.userType,
-        userId: userResult.user.userId, 
-        gebruikersId: userResult.user.gebruikersId,
-        naam: userResult.user.naam
+        email: authResult.user.email,
+        userType: authResult.user.userType,
+        userId: authResult.user.userId, 
+        gebruikersId: authResult.user.gebruikersId,
+        naam: authResult.user.naam || authResult.user.email
       };
 
       const token = jwt.sign(tokenPayload, config.jwt.secret, { 
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
-      // ✅ CONSISTENT response format
+      console.log(`🎫 Token generated for ${email} (${authResult.user.userType})`);
+
+      // Send response
       res.json({
         success: true,
         message: 'Login succesvol',
         token: token,
         user: {
-          email: userResult.user.email,
-          userType: userResult.user.userType,
-          userId: userResult.user.userId,
-          naam: userResult.user.naam,
-          ...userResult.user
+          email: authResult.user.email,
+          userType: authResult.user.userType,
+          userId: authResult.user.userId,
+          naam: authResult.user.naam || authResult.user.email,
+          gebruikersId: authResult.user.gebruikersId
         }
       });
 
@@ -75,104 +79,78 @@ const authController = {
     }
   },
 
-  // 🔍 MAIN EMAIL-TO-USER LOOKUP WITH PASSWORD VALIDATION - FIXED
-  async findUserByEmailAndValidatePassword(email, password) {
+  // 🔄 SIMPLIFIED PASSWORD CHANGE using unified password manager
+  async changePassword(req, res) {
     try {
-      let userInfo = null;
-
-      // 1. Check STUDENT table with JOIN to LOGINBEHEER
-      const [students] = await pool.query(`
-        SELECT 
-          s.*, 
-          lb.gebruikersId, 
-          lb.passwoord_hash,
-          s.studentnummer as userId,
-          'student' as userType
-        FROM STUDENT s
-        JOIN LOGINBEHEER lb ON lb.studentnummer = s.studentnummer
-        WHERE s.email = ?
-      `, [email]);
-
-      if (students.length > 0) {
-        userInfo = {
-          ...students[0],
-          naam: `${students[0].voornaam} ${students[0].achternaam}`
-        };
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Validation failed',
+          details: errors.array()
+        });
       }
 
-      // 2. Check BEDRIJF table with JOIN to LOGINBEHEER if not found
-      if (!userInfo) {
-        const [bedrijven] = await pool.query(`
-          SELECT 
-            b.*, 
-            lb.gebruikersId, 
-            lb.passwoord_hash,
-            b.bedrijfsnummer as userId,
-            'bedrijf' as userType
-          FROM BEDRIJF b
-          JOIN LOGINBEHEER lb ON lb.bedrijfsnummer = b.bedrijfsnummer
-          WHERE b.email = ?
-        `, [email]);
+      const { currentPassword, newPassword } = req.body;
+      const { gebruikersId, email } = req.user;
 
-        if (bedrijven.length > 0) {
-          userInfo = bedrijven[0];
-        }
+      console.log(`🔄 Password change request for user: ${email}`);
+
+      // 🎯 USE UNIFIED PASSWORD MANAGER
+      const updateResult = await passwordManager.updatePassword(
+        gebruikersId, 
+        newPassword, 
+        currentPassword
+      );
+
+      if (!updateResult.success) {
+        return res.status(400).json({
+          success: false,
+          error: 'Password change failed',
+          message: updateResult.message
+        });
       }
 
-      // 3. Check ORGANISATOR table with JOIN to LOGINBEHEER if not found
-      if (!userInfo) {
-        const [organisators] = await pool.query(`
-          SELECT 
-            o.*, 
-            lb.gebruikersId, 
-            lb.passwoord_hash,
-            o.organisatorId as userId,
-            'organisator' as userType
-          FROM ORGANISATOR o
-          JOIN LOGINBEHEER lb ON lb.gebruikersId = o.gebruikersId
-          WHERE o.email = ?
-        `, [email]);
+      console.log(`✅ Password changed successfully for user: ${email}`);
 
-        if (organisators.length > 0) {
-          userInfo = {
-            ...organisators[0],
-            naam: `${organisators[0].voornaam} ${organisators[0].achternaam}`
-          };
-        }
-      }
-
-      if (!userInfo) {
-        return { 
-          success: false, 
-          message: 'Geen account gevonden met dit email adres' 
-        };
-      }
-
-      // 4. Verify password
-      const isPasswordValid = await bcrypt.compare(password, userInfo.passwoord_hash);
-
-      if (!isPasswordValid) {
-        return { 
-          success: false, 
-          message: 'Onjuist wachtwoord' 
-        };
-      }
-
-      // 5. Return success with all user data
-      return {
+      res.json({
         success: true,
-        user: userInfo
-      };
+        message: 'Wachtwoord succesvol gewijzigd'
+      });
 
     } catch (error) {
-      console.error('Error in findUserByEmailAndValidatePassword:', error);
-      return { 
-        success: false, 
-        message: 'Er ging iets mis bij de authenticatie' 
-      };
+      console.error('❌ Change password error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to change password',
+        message: 'Er ging iets mis bij het wijzigen van je wachtwoord'
+      });
     }
   },
 
+  // 📧 FIXED EMAIL CHECK - Direct database query instead of passwordManager
+  async checkEmailExists(email) {
+    try {
+      // Check in STUDENT table
+      const [students] = await pool.query('SELECT email FROM STUDENT WHERE email = ?', [email]);
+      if (students.length > 0) return true;
+
+      // Check in BEDRIJF table
+      const [bedrijven] = await pool.query('SELECT email FROM BEDRIJF WHERE email = ?', [email]);
+      if (bedrijven.length > 0) return true;
+
+      // Check in ORGANISATOR table
+      const [organisators] = await pool.query('SELECT email FROM ORGANISATOR WHERE email = ?', [email]);
+      if (organisators.length > 0) return true;
+
+      return false;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  },
+
+  // ✅ FIXED STUDENT REGISTRATION
   async registerStudent(req, res) {
     try {
       const errors = validationResult(req);
@@ -186,9 +164,9 @@ const authController = {
 
       const { password, ...studentData } = req.body;
 
-      // FIXED: Use authController instead of this
-      const existingUser = await authController.checkEmailExists(studentData.email);
-      if (existingUser) {
+      // 🎯 FIXED EMAIL CHECK - Direct database query
+      const emailExists = await authController.checkEmailExists(studentData.email);
+      if (emailExists) {
         return res.status(409).json({ 
           success: false,
           error: 'Email already exists',
@@ -196,7 +174,10 @@ const authController = {
         });
       }
 
-      // Register student using existing Auth model
+      console.log(`📝 Registering student: ${studentData.email}`);
+
+      // Use Auth model for registration - no more passwordManager conflicts
+      const Auth = require('../MODELS/auth');
       const userResult = await Auth.registerStudent(studentData, password);
 
       // Generate token for immediate login
@@ -212,6 +193,8 @@ const authController = {
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
+      console.log(`✅ Student registered successfully: ${studentData.email}`);
+
       res.status(201).json({
         success: true,
         message: 'Student account succesvol aangemaakt',
@@ -220,12 +203,23 @@ const authController = {
           email: studentData.email,
           userType: 'student',
           userId: userResult.userId,
-          naam: `${studentData.voornaam} ${studentData.achternaam}`
+          naam: `${studentData.voornaam} ${studentData.achternaam}`,
+          gebruikersId: userResult.gebruikersId
         }
       });
 
     } catch (error) {
       console.error('Student registration error:', error);
+      
+      // More specific error handling
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met dit email adres of telefoonnummer'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Registration failed',
@@ -234,6 +228,7 @@ const authController = {
     }
   },
 
+  // ✅ FIXED BEDRIJF REGISTRATION
   async registerBedrijf(req, res) {
     try {
       const errors = validationResult(req);
@@ -247,9 +242,9 @@ const authController = {
 
       const { password, ...bedrijfData } = req.body;
 
-      // FIXED: Use authController instead of this
-      const existingUser = await authController.checkEmailExists(bedrijfData.email);
-      if (existingUser) {
+      // 🎯 FIXED EMAIL CHECK - Direct database query
+      const emailExists = await authController.checkEmailExists(bedrijfData.email);
+      if (emailExists) {
         return res.status(409).json({ 
           success: false,
           error: 'Email already exists',
@@ -257,7 +252,10 @@ const authController = {
         });
       }
 
-      // Register bedrijf using existing Auth model
+      console.log(`📝 Registering bedrijf: ${bedrijfData.email}`);
+
+      // Use Auth model for registration - no more passwordManager conflicts
+      const Auth = require('../MODELS/auth');
       const userResult = await Auth.registerBedrijf(bedrijfData, password);
 
       // Generate token for immediate login
@@ -273,6 +271,8 @@ const authController = {
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
+      console.log(`✅ Bedrijf registered successfully: ${bedrijfData.email}`);
+
       res.status(201).json({
         success: true,
         message: 'Bedrijf account succesvol aangemaakt',
@@ -281,12 +281,23 @@ const authController = {
           email: bedrijfData.email,
           userType: 'bedrijf',
           userId: userResult.userId,
-          naam: bedrijfData.naam
+          naam: bedrijfData.naam,
+          gebruikersId: userResult.gebruikersId
         }
       });
 
     } catch (error) {
       console.error('Bedrijf registration error:', error);
+      
+      // More specific error handling
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met dit email adres, telefoonnummer of BTW nummer'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Registration failed',
@@ -295,6 +306,7 @@ const authController = {
     }
   },
 
+  // ✅ FIXED ORGANISATOR REGISTRATION
   async registerOrganisator(req, res) {
     try {
       const errors = validationResult(req);
@@ -308,9 +320,9 @@ const authController = {
 
       const { password, ...organisatorData } = req.body;
 
-      // FIXED: Use authController instead of this
-      const existingUser = await authController.checkEmailExists(organisatorData.email);
-      if (existingUser) {
+      // 🎯 FIXED EMAIL CHECK - Direct database query
+      const emailExists = await authController.checkEmailExists(organisatorData.email);
+      if (emailExists) {
         return res.status(409).json({ 
           success: false,
           error: 'Email already exists',
@@ -318,7 +330,10 @@ const authController = {
         });
       }
 
-      // Register organisator using existing Auth model
+      console.log(`📝 Registering organisator: ${organisatorData.email}`);
+
+      // Use Auth model for registration - no more passwordManager conflicts
+      const Auth = require('../MODELS/auth');
       const userResult = await Auth.registerOrganisator(organisatorData, password);
 
       // Generate token for immediate login
@@ -334,6 +349,8 @@ const authController = {
         expiresIn: config.jwt.expiresIn || '7d'
       });
 
+      console.log(`✅ Organisator registered successfully: ${organisatorData.email}`);
+
       res.status(201).json({
         success: true,
         message: 'Organisator account succesvol aangemaakt',
@@ -342,17 +359,93 @@ const authController = {
           email: organisatorData.email,
           userType: 'organisator',
           userId: userResult.userId,
-          naam: `${organisatorData.voornaam} ${organisatorData.achternaam}`
+          naam: `${organisatorData.voornaam} ${organisatorData.achternaam}`,
+          gebruikersId: userResult.gebruikersId
         }
       });
 
     } catch (error) {
       console.error('Organisator registration error:', error);
+      
+      // More specific error handling
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ 
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Er bestaat al een account met dit email adres'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Registration failed',
         message: 'Er ging iets mis bij het aanmaken van je account'
       });
+    }
+  },
+
+  async getMe(req, res) {
+    try {
+      const { email, userType } = req.user;
+
+      const userResult = await authController.getUserDataByEmail(email, userType);
+      
+      if (!userResult) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        user: userResult
+      });
+    } catch (error) {
+      console.error('Get me error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get user data'
+      });
+    }
+  },
+
+  async getUserDataByEmail(email, userType) {
+    try {
+      if (userType === 'student') {
+        const [students] = await pool.query('SELECT * FROM STUDENT WHERE email = ?', [email]);
+        if (students.length > 0) {
+          return {
+            ...students[0],
+            userType: 'student',
+            userId: students[0].studentnummer,
+            naam: `${students[0].voornaam} ${students[0].achternaam}`
+          };
+        }
+      } else if (userType === 'bedrijf') {
+        const [bedrijven] = await pool.query('SELECT * FROM BEDRIJF WHERE email = ?', [email]);
+        if (bedrijven.length > 0) {
+          return {
+            ...bedrijven[0],
+            userType: 'bedrijf',
+            userId: bedrijven[0].bedrijfsnummer
+          };
+        }
+      } else if (userType === 'organisator') {
+        const [organisators] = await pool.query('SELECT * FROM ORGANISATOR WHERE email = ?', [email]);
+        if (organisators.length > 0) {
+          return {
+            ...organisators[0],
+            userType: 'organisator',
+            userId: organisators[0].organisatorId,
+            naam: `${organisators[0].voornaam} ${organisators[0].achternaam}`
+          };
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting user data by email:', error);
+      return null;
     }
   },
 
@@ -457,156 +550,6 @@ const authController = {
     }
   },
 
-  async changePassword(req, res) {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Validation failed',
-          details: errors.array()
-        });
-      }
-
-      const { currentPassword, newPassword } = req.body;
-      const { gebruikersId, email } = req.user;
-
-      // Get current user data to verify current password
-      const [users] = await pool.query(
-        'SELECT passwoord_hash FROM LOGINBEHEER WHERE gebruikersId = ?',
-        [gebruikersId]
-      );
-
-      if (users.length === 0) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found',
-          message: 'Gebruiker niet gevonden'
-        });
-      }
-
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, users[0].passwoord_hash);
-      
-      if (!isCurrentPasswordValid) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid current password',
-          message: 'Huidig wachtwoord is onjuist'
-        });
-      }
-
-      // Hash new password
-      const saltRounds = 12;
-      const newHashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-      // Update password in database
-      await pool.query(
-        'UPDATE LOGINBEHEER SET passwoord_hash = ? WHERE gebruikersId = ?',
-        [newHashedPassword, gebruikersId]
-      );
-
-      console.log(`✅ Password changed successfully for user: ${email}`);
-
-      res.json({
-        success: true,
-        message: 'Wachtwoord succesvol gewijzigd'
-      });
-
-    } catch (error) {
-      console.error('Change password error:', error);
-      res.status(500).json({ 
-        success: false,
-        error: 'Failed to change password',
-        message: 'Er ging iets mis bij het wijzigen van je wachtwoord'
-      });
-    }
-  },
-
-  async checkEmailExists(email) {
-    try {
-      const [students] = await pool.query('SELECT email FROM STUDENT WHERE email = ?', [email]);
-      if (students.length > 0) return true;
-
-      const [bedrijven] = await pool.query('SELECT email FROM BEDRIJF WHERE email = ?', [email]);
-      if (bedrijven.length > 0) return true;
-
-      const [organisators] = await pool.query('SELECT email FROM ORGANISATOR WHERE email = ?', [email]);
-      if (organisators.length > 0) return true;
-
-      return false;
-    } catch (error) {
-      console.error('Error checking email exists:', error);
-      return false;
-    }
-  },
-
-  async getMe(req, res) {
-    try {
-      const { email, userType } = req.user;
-
-      // FIXED: Use authController instead of this
-      const userResult = await authController.getUserDataByEmail(email, userType);
-      
-      if (!userResult) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found'
-        });
-      }
-
-      res.json({
-        success: true,
-        user: userResult
-      });
-    } catch (error) {
-      console.error('Get me error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to get user data'
-      });
-    }
-  },
-
-  async getUserDataByEmail(email, userType) {
-    try {
-      if (userType === 'student') {
-        const [students] = await pool.query('SELECT * FROM STUDENT WHERE email = ?', [email]);
-        if (students.length > 0) {
-          return {
-            ...students[0],
-            userType: 'student',
-            userId: students[0].studentnummer,
-            naam: `${students[0].voornaam} ${students[0].achternaam}`
-          };
-        }
-      } else if (userType === 'bedrijf') {
-        const [bedrijven] = await pool.query('SELECT * FROM BEDRIJF WHERE email = ?', [email]);
-        if (bedrijven.length > 0) {
-          return {
-            ...bedrijven[0],
-            userType: 'bedrijf',
-            userId: bedrijven[0].bedrijfsnummer
-          };
-        }
-      } else if (userType === 'organisator') {
-        const [organisators] = await pool.query('SELECT * FROM ORGANISATOR WHERE email = ?', [email]);
-        if (organisators.length > 0) {
-          return {
-            ...organisators[0],
-            userType: 'organisator',
-            userId: organisators[0].organisatorId,
-            naam: `${organisators[0].voornaam} ${organisators[0].achternaam}`
-          };
-        }
-      }
-      return null;
-    } catch (error) {
-      console.error('Error getting user data by email:', error);
-      return null;
-    }
-  },
-
   async logout(req, res) {
     try {
       const { email, userType } = req.user;
@@ -627,3 +570,6 @@ const authController = {
 };
 
 module.exports = authController;
+
+console.log('🔐 AuthController FIXED - No more transaction conflicts');
+console.log('✅ Direct database queries for email checking');
