@@ -6,6 +6,8 @@ const express = require('express')
 const app = express()
 const port = 8383
 const path = require('path');
+const cors = require('cors');
+
 
 // Import the enhanced role-based system
 const {
@@ -15,6 +17,12 @@ const {
   requireRole,
   generateClientSideScript
 } = require('./MIDDLEWARE/rolCheck');
+
+
+//CORS
+app.use(cors({
+  origin: 'http://localhost:8383',
+}));
 
 // Middleware voor JSON parsing
 app.use(express.json());
