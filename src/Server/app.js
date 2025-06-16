@@ -1,6 +1,6 @@
-// src/Server/app.js
+// src/Server/app.js - Updated with Enhanced Project Support
 // Deze server is verantwoordelijk voor het bedienen van de frontend bestanden
-// ENHANCED VERSION - Role-based system with all original routes
+// ENHANCED VERSION - Role-based system with PROJECT routes
 
 const express = require('express')
 const app = express()
@@ -141,17 +141,30 @@ app.get('/bedrijf/:id', (req, res) => {
   res.redirect(`/resultaatBedrijf?id=${bedrijfId}`);
 });
 
-app.get('/resultaatBedrijf', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html'));
-});
-
-  //PROJECTEN
+  // 🆕 ENHANCED: PROJECTEN ROUTES
 app.get('/alleProjecten', (req, res) => {
+  console.log('📚 Serving alle projecten page');
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html'));
 });
 
+// Project detail route - accepts ID as query parameter
 app.get('/zoekbalkProjecten', (req, res) => {
+  const projectId = req.query.id;
+  
+  if (!projectId) {
+    console.log('❓ No project ID provided, redirecting to alle projecten');
+    return res.redirect('/alleProjecten');
+  }
+  
+  console.log('🚀 Serving project detail page for ID:', projectId);
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html'));
+});
+
+// Alternative route for backwards compatibility
+app.get('/project/:id', (req, res) => {
+  const projectId = req.params.id;
+  console.log('🔄 Redirecting legacy project route to new format:', projectId);
+  res.redirect(`/zoekbalkProjecten?id=${projectId}`);
 });
 
   //RESERVATIES
@@ -168,8 +181,24 @@ app.get('/alleStudenten', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html'));
 });
 
+// Student detail route - accepts ID as query parameter
 app.get('/zoekbalkStudenten', (req, res) => {
+  const studentId = req.query.id;
+  
+  if (!studentId) {
+    console.log('❓ No student ID provided, redirecting to alle studenten');
+    return res.redirect('/alleStudenten');
+  }
+  
+  console.log('🎓 Serving student detail page for ID:', studentId);
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html'));
+});
+
+// Alternative route for backwards compatibility
+app.get('/student/:id', (req, res) => {
+  const studentId = req.params.id;
+  console.log('🔄 Redirecting legacy student route to new format:', studentId);
+  res.redirect(`/zoekbalkStudenten?id=${studentId}`);
 });
 
 // ===== PROTECTED ROUTES =====
@@ -231,13 +260,19 @@ app.post('/api/send-invoice', async (req, res) => {
   }
 });
 
-// Live stats endpoint
+// Live stats endpoint (enhanced met project stats)
 app.get('/api/stats/live', async (req, res) => {
   try {
     const { pool } = require('./CONFIG/database');
     
     const [studentCount] = await pool.query('SELECT COUNT(*) as count FROM STUDENT');
     const [bedrijfCount] = await pool.query('SELECT COUNT(*) as count FROM BEDRIJF');
+    
+    // 🆕 ENHANCED: Project count
+    const [projectCount] = await pool.query(`
+      SELECT COUNT(*) as count FROM STUDENT 
+      WHERE projectTitel IS NOT NULL AND projectTitel != ''
+    `);
     
     let afspraakCount = [{ count: 0 }];
     try {
@@ -249,7 +284,7 @@ app.get('/api/stats/live', async (req, res) => {
     const stats = {
       totalStudents: studentCount[0]?.count || 0,
       totalCompanies: bedrijfCount[0]?.count || 0,
-      totalProjects: 187,
+      totalProjects: projectCount[0]?.count || 0, // 🆕 ENHANCED
       totalReservations: afspraakCount[0]?.count || 0,
       lastUpdated: new Date().toISOString()
     };
@@ -266,12 +301,16 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    version: '2.0.1', // 🔄 MINOR VERSION BUMP
+    version: '2.2.0', // 🔄 VERSION BUMP voor project functionaliteit
     features: {
       enhancedHomepages: 'Enabled',
       liveDataIntegration: 'Enabled',
       emailFirstAuth: 'Enabled',
-      bedrijfDetailPages: 'Enabled' // 🆕 NEW FEATURE
+      bedrijfDetailPages: 'Enabled',
+      projectManagement: 'Enabled', // 🆕 ENHANCED FEATURE
+      projectDetailPages: 'Enabled', // 🆕 ENHANCED FEATURE
+      projectSearch: 'Enabled', // 🆕 ENHANCED FEATURE
+      studentDetailPages: 'Enabled' // 🆕 ENHANCED FEATURE
     }
   });
 });
@@ -290,9 +329,17 @@ app.use((req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  // Check if it's a potential bedrijf detail route without ID
+  // Check for detail routes without ID
   if (req.path === '/resultaatBedrijf') {
     return res.redirect('/alleBedrijven');
+  }
+  
+  if (req.path === '/zoekbalkProjecten') { // 🆕 ENHANCED
+    return res.redirect('/alleProjecten');
+  }
+  
+  if (req.path === '/zoekbalkStudenten') { // 🆕 ENHANCED
+    return res.redirect('/alleStudenten');
   }
   
   res.redirect('/');
@@ -305,12 +352,20 @@ app.listen(port, () => {
   console.log('   ✅ Live database integration - Real-time stats');
   console.log('   ✅ Email-first authentication');
   console.log('   ✅ Navigation interceptors');
-  console.log('   🆕 Bedrijf detail pages with dynamic routing'); // 🆕 NEW
+  console.log('   ✅ Bedrijf detail pages with dynamic routing');
+  console.log('   ✅ Project detail pages with dynamic routing'); 
+  console.log('   ✅ Project management system'); 
+  console.log('   ✅Student detail pages with dynamic routing'); 
   console.log('🔧 API Endpoints:');
   console.log('   - User Info: http://localhost:' + port + '/api/user-info');
   console.log('   - Role Manager: http://localhost:' + port + '/js/role-manager.js');
   console.log('   - Live Stats: http://localhost:' + port + '/api/stats/live');
-  console.log('🔗 New Routes:'); // 🆕 NEW SECTION
+  console.log('🔗 All Routes:');
+  console.log('   - Homepage: http://localhost:' + port + '/');
+  console.log('   - All Students: http://localhost:' + port + '/alleStudenten');
+  console.log('   - Student Detail: http://localhost:' + port + '/zoekbalkStudenten?id={studentId}');
   console.log('   - All Companies: http://localhost:' + port + '/alleBedrijven');
   console.log('   - Company Detail: http://localhost:' + port + '/resultaatBedrijf?id={bedrijfId}');
+  console.log('   - All Projects: http://localhost:' + port + '/alleProjecten'); 
+  console.log('   - Project Detail: http://localhost:' + port + '/zoekbalkProjecten?id={projectId}');
 });
