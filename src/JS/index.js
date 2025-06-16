@@ -507,10 +507,17 @@ class CarouselManager {
         const truncatedDesc = description.length > 200 ? 
             description.substring(0, 200) + '...' : description;
         
-        // Add student info if available (for database projects)
+        // Handle multiple students (comma-separated names)
         let studentInfo = '';
         if (project.studentNaam) {
-            studentInfo = `<div class="project-student">Door: ${project.studentNaam}</div>`;
+            const studentNames = project.studentNaam;
+            const studentCount = project.aantalStudenten || 1;
+            
+            if (studentCount > 1) {
+                studentInfo = `<div class="project-student">Door: ${studentNames} (${studentCount} studenten)</div>`;
+            } else {
+                studentInfo = `<div class="project-student">Door: ${studentNames}</div>`;
+            }
         }
         
         card.innerHTML = `

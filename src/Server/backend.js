@@ -241,25 +241,27 @@ app.get('/api/studenten', async (req, res) => {
   }
 });
 
-// Projects endpoint voor studentenprojecten
+// Projects endpoint voor studentenprojecten (grouped by project)
 app.get('/api/projecten', async (req, res) => {
   try {
     const connection = await pool.getConnection();
 
     const [rows] = await connection.query(`
       SELECT 
-        studentnummer as id,
+        MIN(studentnummer) as id,
         projectTitel as naam,
-        projectBeschrijving as beschrijving,
-        CONCAT(voornaam, ' ', achternaam) as studentNaam,
-        email as studentEmail,
-        opleiding,
-        opleidingsrichting
+        MIN(projectBeschrijving) as beschrijving,
+        GROUP_CONCAT(CONCAT(voornaam, ' ', achternaam) SEPARATOR ', ') as studentNaam,
+        GROUP_CONCAT(email SEPARATOR ', ') as studentEmail,
+        MIN(opleiding) as opleiding,
+        MIN(opleidingsrichting) as opleidingsrichting,
+        COUNT(*) as aantalStudenten
       FROM STUDENT 
       WHERE projectTitel IS NOT NULL 
         AND projectTitel != ''
         AND projectBeschrijving IS NOT NULL 
         AND projectBeschrijving != ''
+      GROUP BY projectTitel, projectBeschrijving
       ORDER BY projectTitel
     `);
 
