@@ -1,4 +1,4 @@
-// src/Server/backend.js
+// src/Server/backend.js - Production version met project management
 
 require('dotenv').config();
 const express = require('express');
@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 // Logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  if (req.body && Object.keys(req.body).length > 0) {
+  if (req.body && Object.keys(req.body).length > 0 && process.env.NODE_ENV === 'development') {
     console.log('Body:', JSON.stringify(req.body, null, 2));
   }
   next();
@@ -44,7 +44,7 @@ app.get('/api/health', (req, res) => {
     message: 'CareerLaunch Backend API is healthy',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    version: '1.1.0', // 🔄 VERSION BUMP for project functionality
+    version: '1.2.0',
     database: 'Connected'
   });
 });
@@ -68,9 +68,9 @@ app.get('/api/test', async (req, res) => {
         'Error handling middleware',
         'Input validation',
         'CORS enabled',
-        '🆕 Project management system', // 🆕 NEW FEATURE
-        '🆕 Project detail pages', // 🆕 NEW FEATURE
-        '🆕 Project search & filtering' // 🆕 NEW FEATURE
+        'Project management system',
+        'Project detail pages',
+        'Project search & filtering'
       ]
     });
   } catch (error) {
@@ -81,134 +81,268 @@ app.get('/api/test', async (req, res) => {
   }
 });
 
-// ===== LOAD ROUTES IN CORRECT ORDER =====
+// ===== MAIN DATA ENDPOINTS =====
 
-console.log('🔍 Loading routes...');
-
-// 1. ✅ PRIORITY: Load authentication routes FIRST
-try {
-  console.log('Loading authentication routes...');
-  const authRoutes = require('./ROUTES/auth');
-  app.use('/api/auth', authRoutes);
-  console.log('✅ Authentication routes loaded successfully');
-} catch (error) {
-  console.log('❌ Authentication routes failed:', error.message);
-}
-
-// 2. 🆕 NEW: Load project routes
-try {
-  console.log('Loading project routes...');
-  const projectRoutes = require('./ROUTES/project');
-  app.use('/api/projecten', projectRoutes);
-  console.log('✅ Project routes loaded successfully');
-} catch (error) {
-  console.log('❌ Project routes failed:', error.message);
-}
-
-// 3. Load student routes
-try {
-  console.log('Loading student routes...');
-  const studentRoutes = require('./ROUTES/student');
-  app.use('/api/student', studentRoutes);
-  app.use('/api/studenten', studentRoutes);
-  console.log('✅ Student routes loaded successfully');
-} catch (error) {
-  console.log('❌ Student routes failed:', error.message);
-}
-
-// 4. Load bedrijf routes
-try {
-  console.log('Loading bedrijf routes...');
-  const bedrijfRoutes = require('./ROUTES/bedrijf');
-  app.use('/api/bedrijf', bedrijfRoutes);
-  app.use('/api/bedrijven', bedrijfRoutes);
-  console.log('✅ Bedrijf routes loaded successfully');
-} catch (error) {
-  console.log('❌ Bedrijf routes failed:', error.message);
-}
-
-// 5. Load organisator routes
-try {
-  console.log('Loading organisator routes...');
-  const organisatorRoutes = require('./ROUTES/organisator');
-  app.use('/api/organisator', organisatorRoutes);
-  console.log('✅ Organisator routes loaded successfully');
-} catch (error) {
-  console.log('❌ Organisator routes failed:', error.message);
-}
-
-// 6. Load reservaties routes
-try {
-  console.log('Loading reservaties routes...');
-  const reservatieRoutes = require('./ROUTES/reservaties');
-  app.use('/api/reservaties', reservatieRoutes);
-  console.log('✅ Reservatie routes loaded successfully');
-} catch (error) {
-  console.log('❌ Reservatie routes failed:', error.message);
-}
-
-console.log('✅ All routes loaded');
-
-// ===== ADDITIONAL ENDPOINTS =====
-
-// Quick stats endpoint - Enhanced with project stats
+// Stats endpoint with project count
 app.get('/api/stats', async (req, res) => {
   try {
-    const [studentCount] = await pool.query('SELECT COUNT(*) as count FROM STUDENT');
-    const [bedrijfCount] = await pool.query('SELECT COUNT(*) as count FROM BEDRIJF');
-    
-    // 🆕 NEW: Get project count
-    const [projectCount] = await pool.query(`
-      SELECT COUNT(*) as count FROM STUDENT 
-      WHERE projectTitel IS NOT NULL AND projectTitel != ''
-    `);
-    
-    // Try to get reservation count, fallback to 0 if table doesn't exist
-    let afspraakCount = [{ count: 0 }];
+    const connection = await pool.getConnection();
+
+    let studenten = 0;
+    let bedrijven = 0;
+    let afspraken = 0;
+    let projecten = 0;
+    let errors = [];
+
+    // Count students
     try {
-      [afspraakCount] = await pool.query('SELECT COUNT(*) as count FROM AFSPRAAK');
-    } catch (e) {
-      console.log('AFSPRAAK table not available:', e.message);
+      const [studentResult] = await connection.query('SELECT COUNT(*) as count FROM STUDENT');
+      studenten = studentResult[0].count;
+    } catch (error) {
+      console.error('Student count error:', error.message);
+      errors.push(`Student count: ${error.message}`);
     }
 
-    // Try to get login count
-    let loginCount = [{ count: 0 }];
+    // Count companies
     try {
-      [loginCount] = await pool.query('SELECT COUNT(*) as count FROM LOGINBEHEER');
-    } catch (e) {
-      console.log('LOGINBEHEER table not available:', e.message);
+      const [bedrijfResult] = await connection.query('SELECT COUNT(*) as count FROM BEDRIJF');
+      bedrijven = bedrijfResult[0].count;
+    } catch (error) {
+      console.error('Bedrijf count error:', error.message);
+      errors.push(`Bedrijf count: ${error.message}`);
     }
 
-    res.json({
-      studenten: studentCount[0].count,
-      bedrijven: bedrijfCount[0].count,
-      projecten: projectCount[0].count, // 🆕 NEW
-      afspraken: afspraakCount[0].count,
-      registeredUsers: loginCount[0].count,
+    // Count appointments
+    try {
+      const [afspraakResult] = await connection.query('SELECT COUNT(*) as count FROM AFSPRAAK');
+      afspraken = afspraakResult[0].count;
+    } catch (error) {
+      console.warn('AFSPRAAK table not available:', error.message);
+    }
+
+    // Count projects (students with projects)
+    try {
+      const [projectResult] = await connection.query(`
+        SELECT COUNT(*) as count 
+        FROM STUDENT 
+        WHERE projectTitel IS NOT NULL AND projectTitel != ''
+      `);
+      projecten = projectResult[0].count;
+    } catch (error) {
+      console.error('Project count error:', error.message);
+      errors.push(`Project count: ${error.message}`);
+    }
+
+    connection.release();
+
+    const response = {
+      studenten,
+      bedrijven,
+      afspraken,
+      projecten,
       timestamp: new Date().toISOString()
-    });
+    };
+
+    if (errors.length > 0 && process.env.NODE_ENV === 'development') {
+      response.warnings = errors;
+    }
+
+    res.json(response);
+
   } catch (error) {
-    console.error('Stats error:', error);
+    console.error('Stats endpoint error:', error);
     res.status(500).json({ 
       error: 'Failed to fetch statistics',
+      message: error.message,
       studenten: 0,
       bedrijven: 0,
-      projecten: 0, // 🆕 NEW
       afspraken: 0,
-      registeredUsers: 0
+      projecten: 0
     });
   }
 });
 
-// Test registration endpoint
-app.post('/api/test-registration', async (req, res) => {
-  res.json({
-    message: 'Registration test endpoint reached',
-    receivedData: req.body,
-    timestamp: new Date().toISOString(),
-    note: 'Use /api/auth/register/student or /api/auth/register/bedrijf for actual registration'
-  });
+// Companies endpoint
+app.get('/api/bedrijven', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+
+    const [rows] = await connection.query(`
+      SELECT 
+        bedrijfsnummer as id,
+        bedrijfsnummer,
+        naam,
+        bechrijving as beschrijving,
+        email,
+        sector,
+        gemeente,
+        TVA_nummer
+      FROM BEDRIJF 
+      ORDER BY naam
+    `);
+
+    connection.release();
+    
+    res.json({
+      success: true,
+      data: rows,
+      count: rows.length
+    });
+
+  } catch (error) {
+    console.error('Companies endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch companies',
+      message: error.message,
+      data: []
+    });
+  }
 });
+
+// Students endpoint
+app.get('/api/studenten', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+
+    const [rows] = await connection.query(`
+      SELECT 
+        studentnummer as id,
+        studentnummer,
+        voornaam,
+        achternaam,
+        email,
+        opleiding,
+        opleidingsrichting,
+        projectTitel,
+        projectBeschrijving,
+        overMezelf as beschrijving,
+        gemeente
+      FROM STUDENT 
+      ORDER BY achternaam, voornaam
+    `);
+
+    connection.release();
+    
+    res.json({
+      success: true,
+      data: rows,
+      count: rows.length
+    });
+
+  } catch (error) {
+    console.error('Students endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch students',
+      message: error.message,
+      data: []
+    });
+  }
+});
+
+// Projects endpoint voor studentenprojecten (grouped by project)
+app.get('/api/projecten', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+
+    const [rows] = await connection.query(`
+      SELECT 
+        MIN(studentnummer) as id,
+        projectTitel as naam,
+        MIN(projectBeschrijving) as beschrijving,
+        GROUP_CONCAT(CONCAT(voornaam, ' ', achternaam) SEPARATOR ', ') as studentNaam,
+        GROUP_CONCAT(email SEPARATOR ', ') as studentEmail,
+        MIN(opleiding) as opleiding,
+        MIN(opleidingsrichting) as opleidingsrichting,
+        COUNT(*) as aantalStudenten
+      FROM STUDENT 
+      WHERE projectTitel IS NOT NULL 
+        AND projectTitel != ''
+        AND projectBeschrijving IS NOT NULL 
+        AND projectBeschrijving != ''
+      GROUP BY projectTitel, projectBeschrijving
+      ORDER BY projectTitel
+    `);
+
+    connection.release();
+    
+    res.json({
+      success: true,
+      data: rows,
+      count: rows.length
+    });
+
+  } catch (error) {
+    console.error('Projects endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch projects',
+      message: error.message,
+      data: []
+    });
+  }
+});
+
+// ===== LOAD ROUTES =====
+
+console.log('🔍 Loading application routes...');
+
+// Load authentication routes
+try {
+  const authRoutes = require('./ROUTES/auth');
+  app.use('/api/auth', authRoutes);
+  console.log('✅ Authentication routes loaded');
+} catch (error) {
+  console.log('❌ Authentication routes failed:', error.message);
+}
+
+// Load project routes
+try {
+  const projectRoutes = require('./ROUTES/project');
+  app.use('/api/projecten', projectRoutes);
+  console.log('✅ Project routes loaded');
+} catch (error) {
+  console.log('❌ Project routes failed:', error.message);
+}
+
+// Load student routes
+try {
+  const studentRoutes = require('./ROUTES/student');
+  app.use('/api/student', studentRoutes);
+  console.log('✅ Student routes loaded');
+} catch (error) {
+  console.log('❌ Student routes failed:', error.message);
+}
+
+// Load bedrijf routes
+try {
+  const bedrijfRoutes = require('./ROUTES/bedrijf');
+  app.use('/api/bedrijf', bedrijfRoutes);
+  console.log('✅ Bedrijf routes loaded');
+} catch (error) {
+  console.log('❌ Bedrijf routes failed:', error.message);
+}
+
+// Load organisator routes
+try {
+  const organisatorRoutes = require('./ROUTES/organisator');
+  app.use('/api/organisator', organisatorRoutes);
+  console.log('✅ Organisator routes loaded');
+} catch (error) {
+  console.log('❌ Organisator routes failed:', error.message);
+}
+
+// Load reservaties routes
+try {
+  const reservatieRoutes = require('./ROUTES/reservaties');
+  app.use('/api/reservaties', reservatieRoutes);
+  console.log('✅ Reservatie routes loaded');
+} catch (error) {
+  console.log('❌ Reservatie routes failed:', error.message);
+}
+
+console.log('✅ All routes loaded successfully');
 
 // ===== ERROR HANDLING =====
 
@@ -227,7 +361,13 @@ app.use('/api/*', (req, res) => {
         'PUT /api/auth/change-password (requires auth)',
         'POST /api/auth/refresh (requires auth)'
       ],
-      'Projects': [ // 🆕 NEW SECTION
+      'Data': [
+        'GET /api/stats',
+        'GET /api/bedrijven',
+        'GET /api/studenten', 
+        'GET /api/projecten'
+      ],
+      'Projects': [
         'GET /api/projecten',
         'GET /api/projecten/:id',
         'GET /api/projecten/search/:searchTerm',
@@ -282,7 +422,7 @@ const startServer = async () => {
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log('\n📡 Available API endpoints:');
       console.log(`   Health Check: http://localhost:${port}/api/health`);
-      console.log(`   Test: http://localhost:${port}/api/test`);
+      console.log(`   Database Test: http://localhost:${port}/api/test`);
       console.log(`   Stats: http://localhost:${port}/api/stats`);
       console.log('\n🔐 Authentication endpoints:');
       console.log(`   Login: POST http://localhost:${port}/api/auth/login`);
@@ -293,12 +433,11 @@ const startServer = async () => {
       console.log(`   Companies: GET http://localhost:${port}/api/bedrijven`);
       console.log(`   Students: GET http://localhost:${port}/api/studenten`);
       console.log(`   Projects: GET http://localhost:${port}/api/projecten`);
-      console.log(`   Project Detail: GET http://localhost:${port}/api/projecten/:id`); 
       console.log(`   Company Profile: GET http://localhost:${port}/api/bedrijf/profile`);
       console.log('\n🏗️  Architecture: MVC with Authentication, Password Hashing & JWT');
       console.log(`🎓 Frontend Server: http://localhost:8383\n`);
       
-      console.log('🎯 New Features:');
+      console.log('🎯 Features:');
       console.log('   ✅ Student & Company Registration with Password Hashing');
       console.log('   ✅ JWT Authentication');
       console.log('   ✅ Protected Profile Endpoints');
