@@ -70,7 +70,9 @@ app.get('/test', (req, res) => {
 });
 
 // ===== PUBLIC ROUTES =====
-
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/favicon.ico'));
+});
 //ACCOUNT
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/ACCOUNT/login.html'));
