@@ -75,6 +75,7 @@ app.get('/programma', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma.html'));
 });
 
+
 app.get('/alleBedrijven', (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html'));
 });
@@ -106,6 +107,10 @@ app.get('/accountOrganisator', requireRole(['organisator']), (req, res) => {
 
 app.get('/adminPanel', requireRole(['organisator']), (req, res) => {
   res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/admin-panel.html'));
+});
+
+app.get('/programmaBedrijven', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/PROGRAMMA/programma.html'));
 });
 
 // ===== API ROUTES =====
