@@ -1,13 +1,13 @@
 //src/Server/MODELS/student.js
 const { pool } = require('../CONFIG/database');
 
-class Student {
-  static async getAll() {
+class Student {  static async getAll() {
     const [rows] = await pool.query(`
       SELECT
         studentnummer, voornaam, achternaam, email, gsm_nummer,
         opleiding, opleidingsrichting, projectTitel, projectBeschrijving,
-        overMezelf, huisnummer, straatnaam, gemeente, postcode, bus
+        overMezelf, huisnummer, straatnaam, gemeente, postcode, bus,
+        tafelNr, leerjaar
       FROM STUDENT
       ORDER BY achternaam, voornaam
     `);
@@ -64,14 +64,15 @@ class Student {
     );
     return result.affectedRows;
   }
-
   static async getWithProjects() {
     const [rows] = await pool.query(`
       SELECT
         studentnummer,
         CONCAT(voornaam, ' ', achternaam) as studentNaam,
+        voornaam,
+        achternaam,
         email, projectTitel, projectBeschrijving,
-        opleiding, opleidingsrichting
+        opleiding, opleidingsrichting, tafelNr, leerjaar
       FROM STUDENT
       WHERE projectTitel IS NOT NULL AND projectTitel != ''
       ORDER BY projectTitel

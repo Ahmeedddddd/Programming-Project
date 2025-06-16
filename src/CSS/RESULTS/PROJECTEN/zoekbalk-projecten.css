@@ -49,11 +49,6 @@ body {
   letter-spacing: -0.02em;
 }
 
-.project-title::before {
-  content: "🤖 ";
-  font-size: 2rem;
-}
-
 .project-skills {
   color: #666;
   font-size: 1rem;
@@ -64,28 +59,15 @@ body {
   border-left: 4px solid #A91B47;
 }
 
-.project-skills::before {
-  content: "🛠️ Technologies: ";
-  font-weight: 700;
-  color: #881538;
-}
-
 /* Main Content Area */
 .content-area {
   background: white;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
   padding: 2.5rem;
   box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
   position: relative;
 }
 
 /* Description Section */
-.description-section {
-  padding-right: 1rem;
-}
-
 .description-section h2 {
   color: #881538;
   font-size: 1.5rem;
@@ -95,55 +77,11 @@ body {
   border-bottom: 2px solid #f8f9fa;
 }
 
-.description-section h2::before {
-  content: "📝 ";
-}
-
 .description-section p {
   color: #333;
   font-size: 1rem;
   line-height: 1.7;
   text-align: justify;
-}
-
-/* Images Sidebar */
-.images-sidebar {
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 2px solid #dee2e6;
-  height: fit-content;
-}
-
-.image-figure {
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.image-figure:last-child {
-  margin-bottom: 0;
-}
-
-.image-figure img {
-  width: 100%;
-  max-width: 200px;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid #881538;
-  margin-bottom: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.image-figure img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
-}
-
-.image-figure figcaption {
-  color: #881538;
-  font-weight: 600;
-  font-size: 0.9rem;
 }
 
 /* Info Section */
@@ -166,11 +104,6 @@ body {
   gap: 0.5rem;
 }
 
-.info-section h2::before {
-  content: "📍";
-  font-size: 1.2rem;
-}
-
 .team-list {
   list-style: none;
   padding: 0;
@@ -190,11 +123,6 @@ body {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-}
-
-.team-list li::before {
-  content: "👤";
-  margin-right: 0.5rem;
 }
 
 .team-list li:hover {
@@ -226,26 +154,10 @@ body {
   content: "🤖";
 }
 
-.image-figure img[src="koken.jpg"]::after {
-  content: "🍳";
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
   .content-area {
-      grid-template-columns: 1fr;
       gap: 2rem;
-  }
-  
-  .images-sidebar {
-      order: -1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-  }
-  
-  .image-figure {
-      margin-bottom: 0;
   }
 }
 
@@ -262,10 +174,6 @@ body {
   
   .project-title {
       font-size: 1.8rem;
-  }
-  
-  .images-sidebar {
-      grid-template-columns: 1fr;
   }
   
   .team-list {
