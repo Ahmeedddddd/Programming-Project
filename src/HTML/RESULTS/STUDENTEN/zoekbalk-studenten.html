@@ -3,10 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>John Doe – Portfolio & Reservatie</title>
+    <title>Student Portfolio & Reservatie</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/CSS/style.css" as="style">
+    <link rel="preload" href="/src/CSS/RESULTS/STUDENTEN/zoekbalk-studenten.css" as="style">
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/STUDENTEN/zoekbalk-studenten.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        /* Additional styles for dynamic content */
+        .back-button {
+            position: fixed;
+            top: 140px;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #881538;
+            color: #881538;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-button:hover {
+            background: #881538;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+        }
+
+        .student-header-info {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .student-specialization {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .student-year {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .no-project {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            color: #666;
+            border: 2px dashed #dee2e6;
+        }
+
+        .no-links {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 1rem;
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .skeleton-title {
+            height: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Error state */
+        .error-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            margin: 2rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .error-state h3 {
+            color: #881538;
+            margin-bottom: 1rem;
+        }
+
+        .error-state p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn,
+        .retry-btn {
+            background: #881538;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover,
+        .retry-btn:hover {
+            background: #A91B47;
+            transform: translateY(-2px);
+        }
+
+        /* Loading state for main content */
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            margin: 2rem;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .back-button {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 1rem;
+                display: inline-block;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigatie -->
@@ -16,7 +166,7 @@
     <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
   </div>
   <div class="navBar">
-    <a href="/index.html" class="navItem active">Home</a>
+    <a href="/index.html" class="navItem">Home</a>
     <a href="/programma" class="navItem">Programma</a>
     <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
     <a href="/info" class="navItem">Info</a>
@@ -25,7 +175,6 @@
     <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
-
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
@@ -62,7 +211,9 @@
 
 <!-- Site Header -->
     <header class="site-header">
-        <h1 class="site-title">John Doe</h1>
+        <h1 class="site-title">
+            <div class="skeleton skeleton-title" style="width: 300px; margin: 0 auto; background: rgba(255,255,255,0.3);"></div>
+        </h1>
     </header>
 
     <!-- Layout Container -->
@@ -72,33 +223,22 @@
             <!-- Project Sectie -->
             <section class="section-project" id="project">
                 <h2>Mijn Project</h2>
-                <article class="project-article">
-                    <h3 class="project-title">Kokende AI Robot</h3>
-                    <p class="project-description">
-                        De Kokende AI Robot is een geavanceerde huishoudrobot ontworpen om volledig zelfstandig maaltijden te bereiden. Uitgerust met kunstmatige intelligentie, spraakherkenning en honderden ingebouwde recepten, analyseert hij voedingsvoorkeuren, allergieën en beschikbare ingrediënten. Dankzij zijn precisiearmen en temperatuurcontrole kan hij koken als een professionele chef. In de fictieve wereld waarin deze robot populair is, verandert hij het dagelijks leven door tijd te besparen en voedselverspilling te minimaliseren, terwijl hij tegelijkertijd gepersonaliseerde en gezonde gerechten op tafel zet.
-                    </p>
-                    <div class="project-keywords">
-                        <h4>Kernwoorden</h4>
-                        <ul>
-                            <li>AI</li>
-                            <li>Embedded software</li>
-                            <li>Mechatronica</li>
-                            <li>Machine Learning</li>
-                            <li>ROS</li>
-                            <li>IoT &amp; Edge Computing</li>
-                            <li>Sensorintegratie</li>
-                            <li>Kalibratie</li>
-                        </ul>
-                    </div>
-                </article>
+                <div class="loading-content">
+                    <div class="skeleton skeleton-title" style="width: 250px;"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                </div>
             </section>
 
             <!-- Over Mezelf Sectie -->
             <section class="section-over" id="over-mezelf">
                 <h2>Over mezelf</h2>
-                <p>
-                    Hallo! Ik ben John Doe, een gepassioneerde developer met interesse in AI, embedded software, mechatronica en IoT. Ik werk graag aan projecten waarin kunstmatige intelligentie samenkomt met hardware en robotica. Mijn drijfveer is het oplossen van complexe technische uitdagingen door innovatieve oplossingen te ontwikkelen. In mijn vrije tijd lees ik graag vakliteratuur, experimenteer ik met nieuwe technologieën en werk ik aan persoonlijke projecten die de grenzen van wat mogelijk is verleggen.
-                </p>
+                <div class="loading-content">
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text" style="width: 90%;"></div>
+                </div>
             </section>
         </main>
 
@@ -108,24 +248,17 @@
             <nav class="info-links" aria-labelledby="info-heading">
                 <h2 id="info-heading">Contactinfo</h2>
                 <ul>
-                    <li><a href="https://www.linkedin.com/in/johndoe" target="_blank" rel="noopener">LinkedIn Profiel</a></li>
-                    <li><a href="https://github.com/jonddoe3" target="_blank" rel="noopener">GitHub Repository</a></li>
-                    <li><a href="CV.pdf" target="_blank">Download CV</a></li>
-                    <li><span>📍 Tafel 1</span></li>
+                    <!-- Contact info wordt dynamisch toegevoegd -->
+                    <li><span>📍 Tafel wordt geladen...</span></li>
                 </ul>
             </nav>
 
             <!-- Profile Links -->
             <div class="profile-links">
-                <a href="https://www.linkedin.com/in/johndoe" target="_blank" rel="noopener" class="link-item">
-                    <span>LinkedIn</span>
-                </a>
-                <a href="https://github.com/jonddoe3" target="_blank" rel="noopener" class="link-item">
-                    <span>GitHub/jonddoe3</span>
-                </a>
-                <a href="CV.pdf" target="_blank" class="link-item">
-                    <span>CV Downloaden</span>
-                </a>
+                <!-- Profile links worden dynamisch toegevoegd -->
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text"></div>
             </div>
 
             <!-- Reservatie Container -->
@@ -137,13 +270,45 @@
 
     <!-- Footer -->
     <footer class="site-footer">
-        <p>&copy; 2025 John Doe. Alle rechten voorbehouden.</p>
+        <p>&copy; 2025 CareerLaunch EHB. Alle rechten voorbehouden.</p>
     </footer>
 </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-  <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+
+    <!-- Error State Template (hidden by default) -->
+    <div id="errorState" class="error-state" style="display: none;">
+        <h3><i class="fas fa-exclamation-triangle"></i> Student niet gevonden</h3>
+        <p>De gevraagde student kon niet worden geladen. Dit kan komen door een verkeerde link of tijdelijke technische problemen.</p>
+        <button class="retry-btn" onclick="window.location.reload()">
+            <i class="fas fa-redo"></i>
+            Probeer opnieuw
+        </button>
+        <br><br>
+        <a href="/alleStudenten" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Terug naar alle studenten
+        </a>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
+        <!-- Notifications will be added here by JavaScript -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script src="/src/JS/RESULTS/STUDENTEN/zoekbalk-studenten.js"></script>
+
+    <style>
+        /* Hide skeleton elements when content is loaded */
+        .content-loaded .skeleton {
+            display: none;
+        }
+    </style>
 </body>
 </html>
