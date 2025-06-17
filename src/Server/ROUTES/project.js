@@ -322,7 +322,7 @@ router.get('/stats', async (req, res) => {
                     totalStudents: 0,
                     projectsByOpleiding: {},
                     projectsByOpleidingsrichting: {},
-                    topOpleidingen: [],
+                    topOpleidingen: [], 
                     topOpleidingsrichtingen: []
                 }
             });
