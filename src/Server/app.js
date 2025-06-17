@@ -1,6 +1,5 @@
 // src/Server/app.js
-// Deze server is verantwoordelijk voor het bedienen van de frontend bestanden
-// ENHANCED VERSION - Role-based system with all original routes
+// =================
 
 const express = require("express");
 const app = express();
@@ -8,7 +7,9 @@ const port = 8383;
 const path = require("path");
 const cors = require("cors");
 
-// Import the enhanced role-based system
+console.log("🚀 Starting CareerLaunch Server...");
+
+// ===== MIDDLEWARE IMPORTS =====
 const {
   serveRoleBasedHomepage,
   getUserInfo,
@@ -18,55 +19,67 @@ const {
   generateClientSideScript,
 } = require("./MIDDLEWARE/rolCheck");
 
-// **** ENIGE NOODZAKELIJKE WIJZIGING: ALLE ROUTE IMPORTS BOVENAAN VERZAMELD ****
-// Dit voorkomt de "Identifier 'registratieRoutes' has already been declared" error.
-// Zorg ervoor dat deze paden correct zijn ten opzichte van app.js
-const registratieRoutes = require("./ROUTES/registratie"); // Deze was al aanwezig
-const authRoutes = require("./ROUTES/auth"); // VOEG DEZE TOE
-const bedrijfRoutes = require("./ROUTES/bedrijf"); // VOEG DEZE TOE
-const reservatiesRoutes = require("./ROUTES/reservaties"); // VOEG DEZE TOE
-// **** EINDE WIJZIGING ****
+// ===== ROUTE IMPORTS (organized) =====
+let registratieRoutes,
+  authRoutes,
+  bedrijfRoutes,
+  reservatiesRoutes,
+  studentRoutes,
+  organisatorRoutes;
 
-// Dynamic navigation script
-app.get("/js/navigation-manager.js", async (req, res) => {
-  res.setHeader("Content-Type", "application/javascript");
-  const script = await generateClientSideScript();
-  res.send(script);
-});
+try {
+  registratieRoutes = require("./ROUTES/registratie");
+  authRoutes = require("./ROUTES/auth");
+  bedrijfRoutes = require("./ROUTES/bedrijf");
+  reservatiesRoutes = require("./ROUTES/reservaties");
+  studentRoutes = require("./ROUTES/student");
+  organisatorRoutes = require("./ROUTES/organisator");
+  console.log("✅ All route modules loaded successfully");
+} catch (error) {
+  console.error("❌ Error loading route modules:", error.message);
+  process.exit(1);
+}
 
-//CORS
+// ===== EXPRESS CONFIGURATION =====
 app.use(
   cors({
-    origin: "http://localhost:8383",
+    origin: ["http://localhost:8383", "http://localhost:3301"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Middleware voor JSON parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Serveer statische frontendbestanden - Deze blijven EXACT ZOALS JE ZE HAD
+// ===== REQUEST LOGGING MIDDLEWARE =====
+app.use((req, res, next) => {
+  console.log(
+    `${new Date().toISOString()} - ${req.method} ${req.path}${
+      req.query && Object.keys(req.query).length
+        ? "?" +
+          Object.keys(req.query)
+            .map((k) => `${k}=${req.query[k]}`)
+            .join("&")
+        : ""
+    }`
+  );
+  next();
+});
+
+// ===== STATIC FILE SERVING =====
 app.use(express.static(path.join(__dirname, "../CareerLaunch")));
 app.use(express.static(path.join(__dirname, "../../public")));
 app.use("/src/CSS", express.static(path.join(__dirname, "../CSS")));
 app.use("/src/JS", express.static(path.join(__dirname, "../JS")));
 app.use("/images", express.static(path.join(__dirname, "../../public/images")));
 
-//
-
-// 🏠 MAIN HOMEPAGE ROUTING - Uses your existing files
-app.get("/", serveRoleBasedHomepage);
-app.get("/index.html", serveRoleBasedHomepage);
-
-// API endpoint voor user info
-app.get("/api/user-info", getUserInfo);
-
-// 🔥 Enhanced client-side script endpoint met live database data
+// ===== DYNAMIC SCRIPTS =====
 app.get("/js/role-manager.js", async (req, res) => {
   try {
     res.setHeader("Content-Type", "application/javascript");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-
     const script = await generateClientSideScript();
     res.send(script);
   } catch (error) {
@@ -75,6 +88,278 @@ app.get("/js/role-manager.js", async (req, res) => {
   }
 });
 
+app.get("/js/navigation-manager.js", async (req, res) => {
+  try {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    const script = await generateClientSideScript();
+    res.send(script);
+  } catch (error) {
+    console.error("❌ Error generating navigation manager script:", error);
+    res.status(500).send("console.error('Failed to load navigation manager');");
+  }
+});
+
+// ===== API ROUTES (MOUNTED FIRST - CRITICAL) =====
+console.log("🔗 Mounting API routes...");
+
+app.get("/api/user-info", getUserInfo);
+app.get("/api/stats/live", getLiveStats);
+
+// Health check endpoint
+app.get("/api/health", async (req, res) => {
+  try {
+    const { pool } = require("./CONFIG/database");
+    await pool.query("SELECT 1");
+
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      version: "2.4.1",
+      database: "connected",
+      port: port,
+      features: {
+        roleBasedRouting: "Enabled",
+        legacyCompatibility: "Enabled",
+        authenticationRequired: "Enabled",
+        apiRoutesFixed: "Enabled",
+        parameterPreservingRedirects: "Enabled",
+        contactpersonenAPI: "Added",
+      },
+    });
+  } catch (error) {
+    console.error("❌ Health check failed:", error);
+    res.status(500).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      port: port,
+    });
+  }
+});
+
+// Mount API routes with proper error handling
+try {
+  app.use("/api/auth", authRoutes);
+  console.log("✅ Auth routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount auth routes:", error);
+}
+
+try {
+  app.use("/api/registratie", registratieRoutes);
+  console.log("✅ Registration routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount registration routes:", error);
+}
+
+try {
+  app.use("/api/bedrijven", bedrijfRoutes);
+  console.log("✅ Bedrijf routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount bedrijf routes:", error);
+}
+
+try {
+  app.use("/api/studenten", studentRoutes);
+  console.log("✅ Student routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount student routes:", error);
+}
+
+try {
+  app.use("/api/reservaties", reservatiesRoutes);
+  console.log("✅ Reservatie routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount reservatie routes:", error);
+}
+
+try {
+  app.use("/api/organisator", organisatorRoutes);
+  console.log("✅ Organisator routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount organisator routes:", error);
+}
+
+// FIXED: Add missing /api/projecten route that redirects to student projects
+app.get("/api/projecten", (req, res) => {
+  console.log("🔄 Redirecting /api/projecten to /api/studenten/projecten");
+  res.redirect(308, "/api/studenten/projecten");
+});
+
+// FIXED: Add missing /api/contactpersonen routes
+app.get("/api/contactpersonen/bedrijf/:bedrijfId", async (req, res) => {
+  try {
+    console.log(
+      `📞 Getting contactpersonen for bedrijf: ${req.params.bedrijfId}`
+    );
+
+    const { pool } = require("./CONFIG/database");
+
+    // Query contactpersonen for specific bedrijf
+    const [contactpersonen] = await pool.query(
+      `SELECT 
+        cp.*,
+        b.naam as bedrijfsnaam
+       FROM CONTACTPERSOON cp
+       LEFT JOIN BEDRIJF b ON cp.bedrijfsnummer = b.bedrijfsnummer
+       WHERE cp.bedrijfsnummer = ?
+       ORDER BY cp.voornaam, cp.achternaam`,
+      [req.params.bedrijfId]
+    );
+
+    console.log(
+      `📞 Found ${contactpersonen.length} contactpersonen for bedrijf ${req.params.bedrijfId}`
+    );
+
+    if (contactpersonen.length === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        message: "Geen contactpersonen gevonden voor dit bedrijf",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: contactpersonen,
+      count: contactpersonen.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching contactpersonen:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contactpersonen",
+      message: error.message,
+    });
+  }
+});
+
+// Get all contactpersonen
+app.get("/api/contactpersonen", async (req, res) => {
+  try {
+    console.log("📞 Getting all contactpersonen");
+
+    const { pool } = require("./CONFIG/database");
+
+    const [contactpersonen] = await pool.query(
+      `SELECT 
+        cp.*,
+        b.naam as bedrijfsnaam
+       FROM CONTACTPERSOON cp
+       LEFT JOIN BEDRIJF b ON cp.bedrijfsnummer = b.bedrijfsnummer
+       ORDER BY b.naam, cp.voornaam, cp.achternaam`
+    );
+
+    console.log(`📞 Found ${contactpersonen.length} total contactpersonen`);
+
+    res.json({
+      success: true,
+      data: contactpersonen,
+      count: contactpersonen.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching all contactpersonen:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contactpersonen",
+      message: error.message,
+    });
+  }
+});
+
+console.log("✅ Contactpersonen API routes added");
+
+// Email service endpoint
+app.post("/api/send-invoice", async (req, res) => {
+  try {
+    const { sendInvoice } = require("./SERVICES/emailServ");
+    await sendInvoice(req.body);
+    res.status(200).json({ message: "✅ Factuur verzonden!" });
+  } catch (err) {
+    console.error("❌ Email service niet gevonden:", err.message);
+    res.status(200).json({
+      message: "📝 Factuur aangemaakt (email service niet actief)",
+    });
+  }
+});
+
+console.log("✅ All API routes mounted successfully");
+
+// ===== HOMEPAGE ROUTING (FIXED) =====
+// FIXED: Ensure guest homepage file exists and is served correctly
+app.get("/", (req, res, next) => {
+  console.log("🏠 Root homepage request received");
+  console.log("📂 Checking for guest homepage file...");
+
+  const guestHomepagePath = path.join(__dirname, "../../public/index.html");
+  const fs = require("fs");
+
+  // Check if guest homepage exists
+  if (!fs.existsSync(guestHomepagePath)) {
+    console.error(`❌ Guest homepage not found at: ${guestHomepagePath}`);
+    console.log("📂 Available files in public directory:");
+
+    try {
+      const publicDir = path.join(__dirname, "../../public");
+      if (fs.existsSync(publicDir)) {
+        const files = fs.readdirSync(publicDir);
+        files.forEach((file) => console.log(`   - ${file}`));
+      } else {
+        console.error(`❌ Public directory not found: ${publicDir}`);
+      }
+    } catch (err) {
+      console.error("❌ Error reading public directory:", err.message);
+    }
+
+    // Fallback: serve a basic HTML page
+    return res.send(`
+      <!DOCTYPE html>
+      <html lang="nl">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>CareerLaunch - Homepage Fallback</title>
+          <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
+              .error { color: #e74c3c; margin: 1rem 0; }
+              .info { color: #3498db; margin: 1rem 0; }
+              .button { display: inline-block; padding: 0.75rem 1.5rem; background: #881538; color: white; text-decoration: none; border-radius: 5px; margin: 0.5rem; }
+          </style>
+      </head>
+      <body>
+          <h1>🎓 CareerLaunch</h1>
+          <div class="error">⚠️ Homepage bestand niet gevonden</div>
+          <div class="info">Verwacht bestand: ${guestHomepagePath}</div>
+          
+          <div style="margin: 2rem 0;">
+              <a href="/login" class="button">🔐 Inloggen</a>
+              <a href="/register" class="button">📝 Registreren</a>
+              <a href="/info" class="button">ℹ️ Informatie</a>
+          </div>
+          
+          <div>
+              <h3>🔧 Debug Info</h3>
+              <p>Server draait op poort: ${port}</p>
+              <p>Timestamp: ${new Date().toISOString()}</p>
+              <p>Pad naar homepage: ${guestHomepagePath}</p>
+          </div>
+      </body>
+      </html>
+    `);
+  }
+
+  // If file exists, use the role-based homepage logic
+  console.log("✅ Guest homepage file exists, using role-based routing");
+  serveRoleBasedHomepage(req, res, next);
+});
+
+app.get("/index.html", (req, res) => {
+  console.log("🏠 index.html explicitly requested, redirecting to /");
+  res.redirect("/");
+});
+
+// ===== ROLE-BASED HOMEPAGES =====
 app.get("/student-homepage", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html")
@@ -86,15 +371,75 @@ app.get("/bedrijf-homepage", (req, res) => {
     path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html")
   );
 });
-app.get("/test", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/test.html"));
+
+app.get("/organisator-homepage", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html")
+  );
 });
 
-// ===== PUBLIC ROUTES =====
-app.get("/favicon.ico", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/favicon.ico"));
+// ===== ACCOUNT ROUTES (PROTECTED) =====
+// Student Account Routes
+app.get("/account-student", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/STUDENTEN/account-student.html")
+  );
 });
-//ACCOUNT
+
+app.get("/gegevens-student", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html")
+  );
+});
+
+app.get("/mijn-project", requireRole(["student"]), (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/STUDENTEN/mijn-project.html")
+  );
+});
+
+// Bedrijf Account Routes
+app.get("/account-bedrijf", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/BEDRIJVEN/account-bedrijf.html")
+  );
+});
+
+app.get("/gegevens-bedrijf", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html")
+  );
+});
+
+// Organisator Account Routes
+app.get("/account-organisator", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/ORGANISATOR/account-organisator.html")
+  );
+});
+
+app.get("/gegevens-organisator", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html")
+  );
+});
+
+app.get("/admin-panel", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/ORGANISATOR/admin-panel.html")
+  );
+});
+
+app.get("/overzicht-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/ORGANISATOR/overzicht-organisator.html"
+    )
+  );
+});
+
+// ===== AUTHENTICATION ROUTES =====
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
 });
@@ -105,32 +450,134 @@ app.get("/register", (req, res) => {
   );
 });
 
-app.get("/change-password", (req, res) => {
-  res.sendFile(path.join(__dirname, "../HTML/ACCOUNT/change-password.html"));
+app.get("/change-password", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/ACCOUNT/change-password.html")
+  );
+});
+
+// ===== CONVERSATION ROUTES =====
+app.get("/gesprekken-overzicht", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html"
+    )
+  );
+});
+
+app.get("/gesprekken-overzicht-bedrijven", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html"
+    )
+  );
+});
+
+app.get("/gesprekken-overzicht-studenten", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html"
+    )
+  );
+});
+
+// ===== PROGRAM ROUTES =====
+app.get("/programma", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
+});
+
+app.get("/programma-bedrijven", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/BEDRIJVEN/programma-bedrijven.html")
+  );
+});
+
+app.get("/programma-studenten", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/STUDENTEN/programma-studenten.html")
+  );
+});
+
+// ===== COMPANY ROUTES =====
+app.get("/alle-bedrijven", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
+  );
+});
+
+app.get("/resultaat-bedrijf", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html"
+    )
+  );
 });
 
 app.get("/tarieven", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJF/tarieven.html"));
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/tarieven.html"));
 });
 
-//INFO
+// ===== STUDENT ROUTES =====
+app.get("/alle-studenten", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html")
+  );
+});
+
+app.get("/zoekbalk-studenten", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html"
+    )
+  );
+});
+
+// ===== PROJECT ROUTES =====
+app.get("/alle-projecten", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html")
+  );
+});
+
+app.get("/zoekbalk-projecten", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"
+    )
+  );
+});
+
+// ===== RESERVATION ROUTES =====
+app.get("/reservatie", requireAuth, (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html")
+  );
+});
+
+// ===== INFO ROUTES =====
 app.get("/info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
 });
 
-app.get("/infoStudent", (req, res) => {
+app.get("/info-student", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/INFO/informatie-studenten.html")
   );
 });
 
-app.get("/infoBedrijf", (req, res) => {
+app.get("/info-bedrijf", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/INFO/informatie-bedrijven.html")
   );
 });
 
-app.get("/infoCareerLaunch", (req, res) => {
+app.get("/info-career-launch", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/INFO/informatie-career-launch.html")
   );
@@ -144,330 +591,322 @@ app.get("/tarieven-info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/tarieven-info.html"));
 });
 
-//PROGRAMMA
-app.get("/programma", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
-});
+// ===== LEGACY ROUTES WITH PARAMETER PRESERVATION (FIXED) =====
+console.log("🔄 Setting up parameter-preserving legacy route redirects...");
 
-app.get("/programmaVoormidag", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-voormidag.html")
-  );
-});
-
-app.get("/programmaNamidag", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-namidag.html")
-  );
-});
-
-//RESULTS
-//BEDRIJVEN
-app.get("/alleBedrijven", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
-  );
-});
-
-app.get("/programmaBedrijven", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/programmaBedrijven.html")
-  );
-});
-
-// Bedrijf detail route - accepts ID as query parameter
-app.get("/resultaatBedrijf", (req, res) => {
-  const bedrijfId = req.query.id;
-
-  if (!bedrijfId) {
-    console.log("❓ No bedrijf ID provided, redirecting to alle bedrijven");
-    return res.redirect("/alleBedrijven");
-  }
-
-  console.log("🏢 Serving bedrijf detail page for ID:", bedrijfId);
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html"
-    )
-  );
-});
-
-// Alternative route for backwards compatibility
-app.get("/bedrijf/:id", (req, res) => {
-  const bedrijfId = req.params.id;
-  console.log("🔄 Redirecting legacy bedrijf route to new format:", bedrijfId);
-  res.redirect(`/resultaatBedrijf?id=${bedrijfId}`);
-});
-
-app.get("/resultaatBedrijf", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html"
-    )
-  );
-});
-
-//PROJECTEN
-app.get("/alleProjecten", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html")
-  );
-});
-
-app.get("/zoekbalkProjecten", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"
-    )
-  );
-});
-
-//RESERVATIES
-app.get("/reservatie", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html")
-  );
-});
-
-app.get("/gesprekkenOverzichtBedrijven", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html"
-    )
-  );
-});
-
-app.get("/gesprekkenOverzichtStudenten", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html"
-    )
-  );
-});
-
-//STUDENTEN
-app.get("/alleStudenten", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html")
-  );
-});
-
-app.get("/zoekbalkStudenten", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html"
-    )
-  );
-});
-
-app.get("/programmaStudenten", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/programmaStudenten.html")
-  );
-});
-
-// ===== PROTECTED ROUTES =====
-
-// Student routes
-app.get("/accountStudent", requireRole(["student"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/account-student.html")
-  );
-});
-
-app.get("/gegevensStudent", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html")
-  );
-});
-
-app.get("/mijnProject", requireRole(["student"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/mijn-project.html")
-  );
-});
-
-// Bedrijf routes
-app.get("/accountBedrijf", requireRole(["bedrijf"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/account-bedrijf.html")
-  );
-});
-
-app.get("/gegevensBedrijf", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html")
-  );
-});
-
-// Organisator routes
-app.get("/accountOrganisator", requireRole(["organisator"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/account-organisator.html")
-  );
-});
-
-app.get("/gegevensOrganisator", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html")
-  );
-});
-
-app.get("/overzichtOrganisator", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/ORGANISATOR/overzicht-organisator.html"
-    )
-  );
-});
-
-app.get("/adminPanel", requireRole(["organisator"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/admin-panel.html")
-  );
-});
-
-app.get("/programmaBedrijven", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
-});
-
-// ===== API ROUTES =====
-// **** DEZE REGELS ZIJN VERPLAATST VANAF REGEL 343 EN SAMENGEVOEGD ****
-app.use("/api", registratieRoutes);
-app.use("/api/auth", authRoutes); // Deze was de cruciale die ontbrak voor /api/auth/me
-app.use("/api/bedrijven", bedrijfRoutes); // Deze was de cruciale die ontbrak voor /api/bedrijven
-app.use("/api/reservaties", reservatiesRoutes); // Deze was de cruciale die ontbrak voor /api/reservaties/my
-// **** EINDE WIJZIGING ****
-
-// Live stats API
-app.get("/api/stats/live", getLiveStats);
-
-// Email service endpoint - Check if SERVICES folder exists
-app.post("/api/send-invoice", async (req, res) => {
-  try {
-    // Try to load email service if it exists
-    const { sendInvoice } = require("./SERVICES/emailServ");
-    await sendInvoice(req.body);
-    res.status(200).json({ message: "✅ Factuur verzonden!" });
-  } catch (err) {
-    console.error("❌ Email service niet gevonden of fout bij verzenden:", err);
-    // Return success for now, but log the error
-    res
-      .status(200)
-      .json({ message: "📝 Factuur aangemaakt (email service niet actief)" });
-  }
-});
-
-// Live stats endpoint (DEZE IS DUBBEL EN BLIJFT INACTIEF ZOALS HET ORIGINEEL WAS)
-// Ik laat deze dubbele definitie in commentaar staan, zoals het eruit zag in je originele code,
-// om zo dicht mogelijk bij je origineel te blijven, maar de bovenstaande 'app.get("/api/stats/live", getLiveStats);'
-// zal de aanroepen afhandelen.
-/*
-app.get("/api/stats/live", async (req, res) => {
-  try {
-    const { pool } = require("./CONFIG/database");
-
-    const [studentCount] = await pool.query(
-      "SELECT COUNT(*) as count FROM STUDENT"
+// FIXED: Helper function to preserve query parameters during redirects
+function redirectWithParams(oldPath, newPath) {
+  return (req, res) => {
+    const queryString =
+      Object.keys(req.query).length > 0
+        ? "?" + new URLSearchParams(req.query).toString()
+        : "";
+    const targetUrl = newPath + queryString;
+    console.log(
+      `🔄 Legacy redirect: ${oldPath}${
+        req.url.includes("?") ? req.url.substring(req.url.indexOf("?")) : ""
+      } → ${targetUrl}`
     );
-    const [bedrijfCount] = await pool.query(
-      "SELECT COUNT(*) as count FROM BEDRIJF"
-    );
+    res.redirect(targetUrl);
+  };
+}
 
-    let afspraakCount = [{ count: 0 }];
-    try {
-      [afspraakCount] = await pool.query(
-        "SELECT COUNT(*) as count FROM AFSPRAAK"
-      );
-    } catch (e) {
-      console.log("AFSPRAAK table not available");
-    }
+// Legacy account routes with auth
+app.get(
+  "/accountStudent",
+  requireAuth,
+  redirectWithParams("/accountStudent", "/account-student")
+);
+app.get(
+  "/gegevensStudent",
+  requireAuth,
+  redirectWithParams("/gegevensStudent", "/gegevens-student")
+);
+app.get(
+  "/mijnProject",
+  requireRole(["student"]),
+  redirectWithParams("/mijnProject", "/mijn-project")
+);
+app.get(
+  "/accountBedrijf",
+  requireAuth,
+  redirectWithParams("/accountBedrijf", "/account-bedrijf")
+);
+app.get(
+  "/gegevensBedrijf",
+  requireAuth,
+  redirectWithParams("/gegevensBedrijf", "/gegevens-bedrijf")
+);
+app.get(
+  "/accountOrganisator",
+  requireAuth,
+  redirectWithParams("/accountOrganisator", "/account-organisator")
+);
+app.get(
+  "/gegevensOrganisator",
+  requireAuth,
+  redirectWithParams("/gegevensOrganisator", "/gegevens-organisator")
+);
+app.get(
+  "/adminPanel",
+  requireRole(["organisator"]),
+  redirectWithParams("/adminPanel", "/admin-panel")
+);
+app.get(
+  "/overzichtOrganisator",
+  requireRole(["organisator"]),
+  redirectWithParams("/overzichtOrganisator", "/overzicht-organisator")
+);
 
-    const stats = {
-      totalStudents: studentCount[0]?.count || 0,
-      totalCompanies: bedrijfCount[0]?.count || 0,
-      totalProjects: 187,
-      totalReservations: afspraakCount[0]?.count || 0,
-      lastUpdated: new Date().toISOString(),
-    };
+// Legacy conversation routes with auth
+app.get(
+  "/gesprekkenOverzicht",
+  requireAuth,
+  redirectWithParams("/gesprekkenOverzicht", "/gesprekken-overzicht")
+);
+app.get(
+  "/gesprekkenOverzichtBedrijven",
+  requireAuth,
+  redirectWithParams(
+    "/gesprekkenOverzichtBedrijven",
+    "/gesprekken-overzicht-bedrijven"
+  )
+);
+app.get(
+  "/gesprekkenOverzichtStudenten",
+  requireAuth,
+  redirectWithParams(
+    "/gesprekkenOverzichtStudenten",
+    "/gesprekken-overzicht-studenten"
+  )
+);
 
-    res.json(stats);
-  } catch (error) {
-    console.error("Error loading live stats:", error);
-    res.status(500).json({ error: "Failed to load statistics" });
-  }
+// Legacy program routes
+app.get(
+  "/programmaBedrijven",
+  redirectWithParams("/programmaBedrijven", "/programma-bedrijven")
+);
+app.get(
+  "/programmaStudenten",
+  redirectWithParams("/programmaStudenten", "/programma-studenten")
+);
+
+// Legacy company routes - CRITICAL FIX
+app.get(
+  "/alleBedrijven",
+  redirectWithParams("/alleBedrijven", "/alle-bedrijven")
+);
+app.get(
+  "/resultaatBedrijf",
+  redirectWithParams("/resultaatBedrijf", "/resultaat-bedrijf")
+);
+
+// Legacy student routes - CRITICAL FIX
+app.get(
+  "/alleStudenten",
+  redirectWithParams("/alleStudenten", "/alle-studenten")
+);
+app.get(
+  "/zoekbalkStudenten",
+  redirectWithParams("/zoekbalkStudenten", "/zoekbalk-studenten")
+);
+
+// Legacy project routes - CRITICAL FIX
+app.get(
+  "/alleProjecten",
+  redirectWithParams("/alleProjecten", "/alle-projecten")
+);
+app.get(
+  "/zoekbalkProjecten",
+  redirectWithParams("/zoekbalkProjecten", "/zoekbalk-projecten")
+);
+
+// Legacy info routes
+app.get("/infoStudent", redirectWithParams("/infoStudent", "/info-student"));
+app.get("/infoBedrijf", redirectWithParams("/infoBedrijf", "/info-bedrijf"));
+app.get(
+  "/infoCareerLaunch",
+  redirectWithParams("/infoCareerLaunch", "/info-career-launch")
+);
+
+console.log("✅ Parameter-preserving legacy redirects configured");
+
+// ===== TEST ROUTES =====
+app.get("/test", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/test.html"));
 });
-*/
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../public/favicon.ico"));
+});
+
+// ===== API DEBUG ENDPOINT =====
+app.get("/api/debug/routes", (req, res) => {
+  const routes = [];
+
+  function extractRoutes(stack, prefix = "") {
+    stack.forEach((layer) => {
+      if (layer.route) {
+        routes.push({
+          method: Object.keys(layer.route.methods)[0].toUpperCase(),
+          path: prefix + layer.route.path,
+        });
+      } else if (layer.name === "router" && layer.regexp) {
+        const match = layer.regexp.source.match(/\^\\?\/?([^\\]*)/);
+        const routerPrefix = match ? `/${match[1]}` : "";
+        if (layer.handle.stack) {
+          extractRoutes(layer.handle.stack, prefix + routerPrefix);
+        }
+      }
+    });
+  }
+
+  extractRoutes(app._router.stack);
+
   res.json({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    version: "2.0.1",
-    features: {
-      enhancedHomepages: "Enabled",
-      liveDataIntegration: "Enabled",
-      emailFirstAuth: "Enabled",
-      bedrijfDetailPages: "Enabled",
-    },
+    totalRoutes: routes.length,
+    apiRoutes: routes.filter((r) => r.path.startsWith("/api")),
+    pageRoutes: routes.filter((r) => !r.path.startsWith("/api")),
+    legacyRoutes: routes.filter((r) => {
+      const legacyPatterns = [
+        "/resultaatBedrijf",
+        "/alleBedrijven",
+        "/zoekbalkStudenten",
+        "/alleStudenten",
+        "/zoekbalkProjecten",
+        "/alleProjecten",
+      ];
+      return legacyPatterns.some((pattern) => r.path.includes(pattern));
+    }),
+    allRoutes: routes.sort((a, b) => a.path.localeCompare(b.path)),
   });
 });
 
-// Error handling
+// ===== ERROR HANDLING =====
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  console.error("❌ Server Error:", err.stack);
+
+  if (req.path.startsWith("/api/")) {
+    res.status(500).json({
+      error: "Internal server error",
+      timestamp: new Date().toISOString(),
+      path: req.path,
+    });
+  } else {
+    res.status(500).send(`
+      <h1>Server Error</h1>
+      <p>Er ging iets mis. Probeer later opnieuw.</p>
+      <a href="/">Terug naar homepage</a>
+    `);
+  }
 });
 
 // 404 handler
 app.use((req, res) => {
-  console.log("❓ 404 - Route not found: " + req.method + " " + req.path);
+  console.log(
+    `❓ 404 - Route not found: ${req.method} ${req.path}${
+      req.query && Object.keys(req.query).length
+        ? "?" +
+          Object.keys(req.query)
+            .map((k) => `${k}=${req.query[k]}`)
+            .join("&")
+        : ""
+    }`
+  );
 
   if (req.path.startsWith("/api/")) {
-    return res.status(404).json({ error: "API endpoint not found" });
+    return res.status(404).json({
+      error: "API endpoint not found",
+      path: req.path,
+      method: req.method,
+      availableEndpoints: [
+        "/api/health",
+        "/api/user-info",
+        "/api/stats/live",
+        "/api/auth/*",
+        "/api/studenten/*",
+        "/api/bedrijven/*",
+        "/api/reservaties/*",
+        "/api/organisator/*",
+        "/api/contactpersonen/*",
+        "/api/projecten (→ /api/studenten/projecten)",
+      ],
+    });
   }
 
-  // Check if it's a potential bedrijf detail route without ID
-  if (req.path === "/resultaatBedrijf") {
-    return res.redirect("/alleBedrijven");
+  // Redirect account to login for unauthenticated users
+  if (req.path === "/account") {
+    return res.redirect("/login");
   }
 
+  // Redirect to homepage for other 404s
   res.redirect("/");
 });
 
+// ===== SERVER STARTUP =====
 app.listen(port, () => {
+  console.log("\n🎓 ========================================");
+  console.log("🎓 CareerLaunch Server SUCCESSFULLY STARTED");
+  console.log("🎓 ========================================");
+  console.log(`🌐 Server URL: http://localhost:${port}`);
   console.log(
-    "🎓 CareerLaunch Enhanced Server running on: http://localhost:" + port
+    `📋 Version: 2.4.1 - Fixed contactpersonen API & homepage routing`
   );
-  console.log("📱 Enhanced Features:");
+  console.log("\n📋 Features Enabled:");
+  console.log("   ✅ Role-based homepage routing (FIXED)");
+  console.log("   ✅ API routes properly mounted (FIXED)");
+  console.log("   ✅ Parameter-preserving redirects (FIXED)");
+  console.log("   ✅ Database query fixes (FIXED)");
+  console.log("   ✅ Missing /api/projecten route added (FIXED)");
+  console.log("   ✅ Missing /api/contactpersonen routes added (FIXED)");
+  console.log("   ✅ Homepage file existence check (FIXED)");
+  console.log("   ✅ Enhanced authentication middleware");
+  console.log("   ✅ Protected account routes");
+  console.log("   ✅ Legacy route compatibility with parameters");
+  console.log("   ✅ Organized URL structure");
+  console.log("   ✅ Error handling & debugging");
+
+  console.log("\n🔗 Key Endpoints:");
+  console.log(`   - Health Check: http://localhost:${port}/api/health`);
+  console.log(`   - User Info: http://localhost:${port}/api/user-info`);
+  console.log(`   - Live Stats: http://localhost:${port}/api/stats/live`);
+  console.log(`   - Route Debug: http://localhost:${port}/api/debug/routes`);
+  console.log(`   - Role Manager: http://localhost:${port}/js/role-manager.js`);
+
+  console.log("\n📊 API Routes:");
+  console.log(`   - Students: http://localhost:${port}/api/studenten`);
+  console.log(`   - Companies: http://localhost:${port}/api/bedrijven`);
   console.log(
-    "   ✅ Role-based homepage routing - Uses your existing HTML files"
-  );
-  console.log("   ✅ Live database integration - Real-time stats");
-  console.log("   ✅ Email-first authentication");
-  console.log("   ✅ Navigation interceptors");
-  console.log("   🆕 Bedrijf detail pages with dynamic routing");
-  console.log("🔧 API Endpoints:");
-  console.log("   - User Info: http://localhost:" + port + "/api/user-info");
-  console.log(
-    "   - Role Manager: http://localhost:" + port + "/js/role-manager.js"
-  );
-  console.log("   - Live Stats: http://localhost:" + port + "/api/stats/live");
-  console.log("🔗 New Routes:");
-  console.log(
-    "   - All Companies: http://localhost:" + port + "/alleBedrijven"
+    `   - Projects: http://localhost:${port}/api/projecten → /api/studenten/projecten`
   );
   console.log(
-    "   - Company Detail: http://localhost:" +
-      port +
-      "/resultaatBedrijf?id={bedrijfId}"
+    `   - Contactpersonen: http://localhost:${port}/api/contactpersonen`
   );
+  console.log(
+    `   - Contactpersonen by Bedrijf: http://localhost:${port}/api/contactpersonen/bedrijf/:id`
+  );
+  console.log(`   - Auth: http://localhost:${port}/api/auth`);
+  console.log(`   - Reservations: http://localhost:${port}/api/reservaties`);
+  console.log(`   - Admin: http://localhost:${port}/api/organisator`);
+
+  console.log("\n🎯 FIXED ISSUES:");
+  console.log(
+    `   ✅ Legacy URLs now preserve parameters: /resultaatBedrijf?id=1 → /resultaat-bedrijf?id=1`
+  );
+  console.log(`   ✅ Database 'id' column error fixed for organisator`);
+  console.log(`   ✅ Missing /api/projecten route added`);
+  console.log(`   ✅ Missing /api/contactpersonen routes added`);
+  console.log(`   ✅ Homepage file existence validation added`);
+  console.log(`   ✅ Enhanced request logging with parameters`);
+
+  console.log("\n🧪 TEST THESE FIXED ROUTES:");
+  console.log(`   - http://localhost:${port}/ (guest homepage)`);
+  console.log(`   - http://localhost:${port}/api/contactpersonen/bedrijf/94`);
+  console.log(`   - http://localhost:${port}/resultaatBedrijf?id=1`);
+  console.log(`   - http://localhost:${port}/zoekbalkStudenten?id=232`);
+  console.log(`   - http://localhost:${port}/zoekbalkProjecten?id=233`);
+  console.log(`   - organisator login should work without database errors`);
+
+  console.log("\n✅ All systems operational - Ready to serve requests!");
+  console.log("🎓 ========================================\n");
 });
