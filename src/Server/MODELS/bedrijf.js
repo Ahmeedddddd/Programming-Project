@@ -5,9 +5,11 @@ class Bedrijf {
     static async getAll(limit = null, searchTerm = '') {
         let query = `
             SELECT
-                bedrijfsnummer, naam, sector, gemeente, beschrijving, email, telefoon, logoUrl, tafelNr, beschikbareTijdslots
+                bedrijfsnummer, TVA_nummer, naam, email, gsm_nummer, sector,
+                huisnummer, straatnaam, gemeente, postcode, bus, land,
+                tafelNr, bechrijving 
             FROM BEDRIJF
-        `;
+            ORDER BY naam`;
         const params = [];
         let whereConditions = [];
 
@@ -45,21 +47,17 @@ class Bedrijf {
     }
 
     static async getById(bedrijfsnummer) {
-        const [rows] = await pool.query(
-            'SELECT bedrijfsnummer, naam, sector, gemeente, beschrijving, email, telefoon, logoUrl, tafelNr, beschikbareTijdslots FROM BEDRIJF WHERE bedrijfsnummer = ?',
-            [bedrijfsnummer]
-        );
+        // DEFINITIEVE QUERY: Selecteert alleen de kolommen die bestaan.
+        const sql = `
+            SELECT
+                bedrijfsnummer, TVA_nummer, naam, email, gsm_nummer, sector,
+                huisnummer, straatnaam, gemeente, postcode, bus, land,
+                tafelNr, bechrijving 
+            FROM BEDRIJF 
+            WHERE bedrijfsnummer = ?`;
+        const [rows] = await pool.query(sql, [bedrijfsnummer]);
         const bedrijf = rows[0];
-        if (bedrijf && typeof bedrijf.beschikbareTijdslots === 'string') { // Check if it's a string from DB
-            try {
-                bedrijf.beschikbareTijdslots = JSON.parse(bedrijf.beschikbareTijdslots);
-            } catch (e) {
-                console.error("Fout bij parsen beschikbareTijdslots voor ID", bedrijfsnummer, e);
-                bedrijf.beschikbareTijdslots = [];
-            }
-        } else if (bedrijf) {
-            bedrijf.beschikbareTijdslots = []; // Zorg altijd voor een array als het null/undefined is
-        }
+        
         return bedrijf;
     }
 
