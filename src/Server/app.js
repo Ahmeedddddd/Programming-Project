@@ -292,38 +292,6 @@ app.post("/api/send-invoice", async (req, res) => {
 console.log("✅ All API routes mounted successfully");
 
 // ===== HOMEPAGE ROUTING =====
-<<<<<<< Updated upstream
-app.get("/", (req, res, next) => {
-  console.log("🏠 Root homepage request received");
-
-  // 🔍 Check eerst of gebruiker is ingelogd
-  const user = getCurrentUser(req);
-
-  if (user) {
-    // ✅ User is ingelogd: gebruik rol-gebaseerde routing
-    console.log(
-      `👤 Authenticated user detected: ${user.email} (${user.userType})`
-    );
-    console.log("   → Using role-based homepage routing");
-    return serveRoleBasedHomepage(req, res, next);
-  } else {
-    // 👥 Guest user: serve guest homepage
-    console.log("👥 Guest user detected, serving guest homepage");
-
-    // Serve guest homepage
-    console.log("✅ Serving guest homepage");
-    res.sendFile(guestHomepagePath);
-  }
-});
-
-app.get("/index.html", (req, res) => {
-  console.log("🏠 index.html explicitly requested, redirecting to /");
-  res.redirect("/");
-});
-=======
-// Je hebt deze custom route niet meer nodig, want serveRoleBasedHomepage regelt alles!
-// Verwijderd: app.get("/", ...) en app.get("/index.html", ...)
->>>>>>> Stashed changes
 
 // ===== ROLE-BASED HOMEPAGES =====
 app.get("/student-homepage", (req, res) => {
