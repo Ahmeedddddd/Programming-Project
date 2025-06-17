@@ -4,9 +4,10 @@
 const jwt = require("jsonwebtoken");
 const config = require("../CONFIG/config");
 const path = require("path");
+const fs = require("fs");
 const { pool } = require("../CONFIG/database");
 
-// Enhanced navigation configuration
+// Navigation config remains the same...
 const NAVIGATION_CONFIG = {
   guest: {
     navbar: [
@@ -90,7 +91,7 @@ const NAVIGATION_CONFIG = {
 const UI_SETTINGS = {
   debug: process.env.NODE_ENV === 'development',
   autoSetActive: true,
-  refreshInterval: 30000, // 30 seconds
+  refreshInterval: 30000,
   selectors: {
     navbar: '.navBar',
     sidebar: '.sideMenu-content'
@@ -125,33 +126,55 @@ const STATS_CONFIG = {
 // ===== ENHANCED USER MANAGEMENT =====
 
 const getCurrentUser = (req) => {
+  console.log('🔍 getCurrentUser called for path:', req.path);
+  
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) return null;
+  console.log('   → Auth header present:', !!authHeader);
+  
+  if (!authHeader) {
+    console.log('   → No authorization header found');
+    return null;
+  }
+  
+  const token = authHeader.split(" ")[1];
+  console.log('   → Token extracted:', token ? 'Yes' : 'No');
+  
+  if (!token) {
+    console.log('   → No token in auth header');
+    return null;
+  }
 
   try {
     const user = jwt.verify(token, config.jwt.secret);
+    console.log('   → JWT verified successfully');
+    console.log(`   → User: ${user.email} (${user.userType})`);
     
-    // Enhanced user object with additional properties
-    return {
+    const enhancedUser = {
       ...user,
       isLoggedIn: true,
       lastActivity: new Date().toISOString()
     };
+    
+    return enhancedUser;
+    
   } catch (error) {
-    console.warn("🔐 Invalid token:", error.message);
+    console.warn("🔐 JWT verification failed:", error.message);
+    console.warn("   → Token:", token.substring(0, 20) + '...');
     return null;
   }
 };
 
 // Enhanced middleware to serve role-based homepage
 const serveRoleBasedHomepage = async (req, res, next) => {
+  console.log('🏠 serveRoleBasedHomepage called for path:', req.path);
+  
   if (req.path !== "/" && req.path !== "/index.html") {
+    console.log('   → Not homepage request, passing to next middleware');
     return next();
   }
 
   const user = getCurrentUser(req);
+  console.log('👤 Current user:', user ? `${user.email} (${user.userType})` : 'No user');
 
   if (!user) {
     console.log("🎯 Serving guest homepage");
@@ -159,33 +182,52 @@ const serveRoleBasedHomepage = async (req, res, next) => {
   }
 
   let homepageFile;
+  let userTypeForLog;
+  
   switch (user.userType) {
     case "student":
       homepageFile = path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html");
-      console.log(`🎓 Serving student homepage for: ${user.email}`);
+      userTypeForLog = "🎓 Student";
       break;
+      
     case "bedrijf":
       homepageFile = path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html");
-      console.log(`🏢 Serving bedrijf homepage for: ${user.email}`);
+      userTypeForLog = "🏢 Bedrijf";
       break;
+      
     case "organisator":
       homepageFile = path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html");
-      console.log(`👔 Serving organisator homepage for: ${user.email}`);
+      userTypeForLog = "👔 Organisator";
       break;
+      
     default:
+      console.warn(`❓ Unknown user type: ${user.userType}, serving guest homepage`);
       homepageFile = path.join(__dirname, "../../public/index.html");
-      console.log(`❓ Unknown user type: ${user.userType}, serving guest homepage`);
+      userTypeForLog = "❓ Unknown";
   }
 
   try {
+    console.log(`🔍 Checking file exists: ${homepageFile}`);
+    
+    if (!fs.existsSync(homepageFile)) {
+      console.error(`❌ Homepage file not found: ${homepageFile}`);
+      console.error(`   → Falling back to guest homepage`);
+      return res.sendFile(path.join(__dirname, "../../public/index.html"));
+    }
+    
+    console.log(`✅ ${userTypeForLog} homepage serving: ${user.email}`);
+    console.log(`   → File: ${homepageFile}`);
+    
     res.sendFile(homepageFile);
+    
   } catch (error) {
     console.error("❌ Error serving homepage:", error);
+    console.error("   → Stack:", error.stack);
     res.sendFile(path.join(__dirname, "../../public/index.html"));
   }
 };
 
-// Enhanced getUserInfo with better error handling
+// FIXED: Enhanced getUserInfo with correct database column names
 const getUserInfo = async (req, res) => {
   try {
     const user = getCurrentUser(req);
@@ -220,8 +262,9 @@ const getUserInfo = async (req, res) => {
           userData = { ...userData, ...bedrijfData[0] };
         }
       } else if (user.userType === 'organisator') {
+        // FIXED: Use correct column name 'organisatorId' instead of 'id'
         const [organisatorData] = await pool.query(
-          "SELECT * FROM ORGANISATOR WHERE id = ?",
+          "SELECT * FROM ORGANISATOR WHERE organisatorId = ?",
           [user.userId]
         );
         if (organisatorData[0]) {
@@ -256,7 +299,7 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-// Enhanced getLiveStats with better error handling
+// Enhanced getLiveStats remains the same
 const getLiveStats = async (req, res) => {
   try {
     let stats = { ...STATS_CONFIG.fallback };
@@ -275,7 +318,6 @@ const getLiveStats = async (req, res) => {
             stats[statKey] = result[0]?.count || 0;
           } catch (queryError) {
             console.warn(`⚠️ Failed to get ${key} stats:`, queryError.message);
-            // Keep fallback value
           }
         }
 
@@ -299,11 +341,17 @@ const getLiveStats = async (req, res) => {
 
 // Enhanced authentication middleware
 const requireAuth = (req, res, next) => {
+  console.log(`🔒 requireAuth middleware called for: ${req.path}`);
+  
   const user = getCurrentUser(req);
+  
   if (!user) {
-    console.log(`🔒 Auth required for: ${req.path}`);
+    console.log(`❌ Auth required but no user found for: ${req.path}`);
+    console.log('   → Redirecting to /login');
     return res.redirect("/login");
   }
+  
+  console.log(`✅ Auth successful: ${user.email} (${user.userType}) accessing ${req.path}`);
   req.user = user;
   next();
 };
@@ -311,22 +359,34 @@ const requireAuth = (req, res, next) => {
 // Enhanced role checking
 const requireRole = (allowedRoles) => {
   return (req, res, next) => {
+    console.log(`🛡️ requireRole middleware called for: ${req.path}`);
+    console.log(`   → Required roles: [${allowedRoles.join(", ")}]`);
+    
     const user = getCurrentUser(req);
 
     if (!user) {
       console.log(`❌ No user found for protected route: ${req.path}`);
       return res.redirect("/login");
     }
+    
+    console.log(`   → User role: ${user.userType}`);
 
     if (!allowedRoles.includes(user.userType)) {
       console.log(`❌ Access denied: ${user.userType} not in [${allowedRoles.join(", ")}] for ${req.path}`);
+      
+      const redirectMap = {
+        'student': '/student-homepage',
+        'bedrijf': '/bedrijf-homepage', 
+        'organisator': '/organisator-homepage'
+      };
+      
+      const redirectUrl = redirectMap[user.userType] || '/';
+      console.log(`   → Redirecting to: ${redirectUrl}`);
+      
       return res.status(403).json({
         error: "Access denied",
         message: `Required role: ${allowedRoles.join(" or ")}, but you are: ${user.userType}`,
-        redirect: user.userType === 'student' ? '/student-homepage' 
-          : user.userType === 'bedrijf' ? '/bedrijf-homepage'
-          : user.userType === 'organisator' ? '/organisator-homepage'
-          : '/'
+        redirect: redirectUrl
       });
     }
 
@@ -336,7 +396,7 @@ const requireRole = (allowedRoles) => {
   };
 };
 
-// Enhanced client-side script generation
+// Enhanced client-side script generation remains the same but with fixed API calls
 const generateClientSideScript = async () => {
   try {
     console.log("🔥 Generating enhanced navigation manager with live data...");
@@ -371,7 +431,7 @@ const generateClientSideScript = async () => {
 /**
  * 🚀 CAREERLAUNCH ENHANCED NAVIGATION MANAGER
  * Generated at: ${new Date().toISOString()}
- * Version: 2.2.0 - Improved reliability & bug fixes
+ * Version: 2.4.0 - Fixed database queries & API routes
  */
 
 // ===== 📊 SERVER DATA INJECTION =====
@@ -404,13 +464,12 @@ class EnhancedNavigationManager {
       this.updateNavigation();
       this.updateLiveStats();
       this.setupEventListeners();
-      this.setupAccountButtonHandler(); // NEW: Enhanced account button handling
+      this.setupAccountButtonHandler();
       this.startAutoRefresh();
       
       this.isInitialized = true;
       this.log('✅ Enhanced Navigation Manager initialized successfully');
       
-      // Dispatch ready event
       window.dispatchEvent(new CustomEvent('navigationManagerReady', {
         detail: { userType: this.getUserType(), user: this.currentUser }
       }));
@@ -426,19 +485,18 @@ class EnhancedNavigationManager {
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
       try {
         await this.loadUserInfo();
-        this.retryCount = 0; // Reset on success
+        this.retryCount = 0;
         return;
       } catch (error) {
         this.retryCount++;
         this.log(\`⚠️ User info load attempt \${attempt + 1} failed:\`, error.message);
         
         if (attempt < this.maxRetries - 1) {
-          await this.sleep(1000 * (attempt + 1)); // Exponential backoff
+          await this.sleep(1000 * (attempt + 1));
         }
       }
     }
     
-    // All attempts failed
     this.log('❌ All attempts to load user info failed, using guest mode');
     this.currentUser = { isLoggedIn: false, userType: 'guest' };
   }
@@ -470,7 +528,6 @@ class EnhancedNavigationManager {
         }
       } else {
         if (response.status === 401) {
-          // Token expired or invalid
           localStorage.removeItem('authToken');
           this.log('🔐 Token expired, cleared from storage');
         }
@@ -484,7 +541,6 @@ class EnhancedNavigationManager {
   }
   
   setupAccountButtonHandler() {
-    // Enhanced account button click handler
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a');
       if (!link) return;
@@ -492,7 +548,6 @@ class EnhancedNavigationManager {
       const href = link.getAttribute('href');
       const text = link.textContent.toLowerCase();
       
-      // Check if this is an account-related link
       if (href === '/account' || 
           text.includes('account') || 
           text.includes('mijn account') ||
@@ -545,11 +600,9 @@ class EnhancedNavigationManager {
       return;
     }
     
-    // Clear existing nav items (but keep logo)
     const existingItems = navbar.querySelectorAll('.navItem');
     existingItems.forEach(item => item.remove());
     
-    // Add new items
     navItems.forEach(item => {
       const link = this.createNavItem(item);
       navbar.appendChild(link);
@@ -565,10 +618,8 @@ class EnhancedNavigationManager {
       return;
     }
     
-    // Clear existing content
     sidebar.innerHTML = '';
     
-    // Add new items
     sidebarItems.forEach(item => {
       if (item.divider) {
         const divider = document.createElement('hr');
@@ -622,7 +673,6 @@ class EnhancedNavigationManager {
   updateActiveStates() {
     if (!this.settings.autoSetActive) return;
     
-    // Update navbar active states
     document.querySelectorAll('.navItem').forEach(item => {
       item.classList.remove('active');
       if (this.isCurrentPage(item.getAttribute('href'))) {
@@ -651,7 +701,6 @@ class EnhancedNavigationManager {
   }
   
   updateLiveStats() {
-    // Update live statistics on page
     Object.entries(this.stats).forEach(([key, value]) => {
       const elements = document.querySelectorAll(\`[data-count="\${key}"], #\${key}\`);
       elements.forEach(el => {
@@ -661,30 +710,25 @@ class EnhancedNavigationManager {
   }
   
   setupEventListeners() {
-    // Auto-refresh on visibility change
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && this.isInitialized) {
         this.refresh();
       }
     });
     
-    // Handle navigation clicks
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a');
       if (link && link.href) {
-        // Check if user has access to this page
         this.validatePageAccess(link.href);
       }
     });
   }
   
   validatePageAccess(href) {
-    // Basic page access validation
     const userType = this.getUserType();
     const url = new URL(href, window.location.origin);
     const path = url.pathname;
     
-    // Check for protected paths
     const protectedPaths = {
       'student': ['/account-student', '/gegevens-student', '/mijn-project'],
       'bedrijf': ['/account-bedrijf', '/gegevens-bedrijf'],
@@ -793,20 +837,17 @@ function initializeNavigation() {
   }
 }
 
-// Public API functions
 window.refreshNavigation = () => {
   if (window.navigationManager) {
     window.navigationManager.refresh();
   }
 };
 
-// Legacy compatibility functions
 window.checkAuthStatus = () => window.navigationManager ? window.navigationManager.isLoggedIn() : false;
 window.getUserType = () => window.navigationManager ? window.navigationManager.getUserType() : 'guest';
 window.getLiveStats = () => window.navigationManager ? window.navigationManager.stats : window.LIVE_STATS;
 window.refreshRoleUI = () => window.refreshNavigation();
 
-// Global logout function
 function logout() {
   if (window.navigationManager) {
     window.navigationManager.logout();
@@ -816,21 +857,19 @@ function logout() {
   }
 }
 
-// Initialize when ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeNavigation);
 } else {
   initializeNavigation();
 }
 
-// Re-initialize on page visibility change
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && window.navigationManager) {
     window.navigationManager.refresh();
   }
 });
 
-console.log('✅ Enhanced Navigation Manager v2.2.0 loaded and ready');
+console.log('✅ Enhanced Navigation Manager v2.4.0 loaded and ready');
 `;
   } catch (error) {
     console.error("❌ Error generating navigation manager:", error);

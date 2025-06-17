@@ -133,10 +133,6 @@ body {
   margin-bottom: 1rem;
 }
 
-.project-title::before {
-  content: "🤖 ";
-}
-
 .project-description {
   color: #333;
   font-size: 1rem;
