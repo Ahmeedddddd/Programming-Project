@@ -34,10 +34,11 @@ class StudentGegevens {
   constructor() {
     console.log("📝 StudentGegevens constructor aangeroepen");
     this.token = localStorage.getItem("authToken");
-    this.studentData = null;
+    this.studentData = null; // Dit bevat de laatst geladen data
+    this.initialStudentData = null; // Sla de initiële data op voor annuleren
     this.editMode = false;
     this.projectEditMode = false;
-    this.form = document.getElementById("studentForm");
+    this.form = document.getElementById("studentForm"); // Algemeen formulier
 
     // Initialize
     this.init();
@@ -54,7 +55,9 @@ class StudentGegevens {
     try {
       await this.loadStudentGegevens();
       this.setupEventListeners();
-      this.setupFormHandling();
+      // Verwijder setupFormHandling, we gebruiken nu de save knoppen direct
+      // en de form submit wordt opgevangen in de save functies.
+      // this.setupFormHandling();
       this.setupProjectHandling();
     } catch (error) {
       console.error("❌ Initialisatie mislukt:", error);
@@ -87,7 +90,6 @@ class StudentGegevens {
           this.redirectToLogin();
           return;
         }
-        // Log de responsbody als er een fout is
         const errorResult = await response
           .json()
           .catch(() => ({ message: response.statusText || "Onbekende fout" }));
@@ -103,6 +105,7 @@ class StudentGegevens {
 
       if (result.success) {
         this.studentData = result.data;
+        this.initialStudentData = { ...result.data }; // Maak een kopie voor annuleren
         console.log("✅ Student data loaded:", this.studentData);
         this.displayStudentGegevens();
         this.displayProjectInfo();
@@ -118,8 +121,18 @@ class StudentGegevens {
     }
   }
 
-  async updateStudentGegevens(formData) {
-    console.log("📝 Updating student gegevens:", formData);
+  async updateStudentGegevens(updatedFields) {
+    // Deze functie ontvangt nu alleen de velden die *gewijzigd* zijn
+    // We versturen het HELE studentData object naar de server, met de gewijzigde velden erin.
+    // Dit zorgt ervoor dat de server altijd een compleet object krijgt.
+
+    console.log("📝 Preparing to update student gegevens...");
+    console.log("💡 Fields to update:", updatedFields);
+
+    // Update this.studentData met de nieuwe waarden
+    // De spread operator zorgt ervoor dat bestaande velden behouden blijven
+    this.studentData = { ...this.studentData, ...updatedFields };
+
     try {
       this.showLoading(true);
 
@@ -131,13 +144,11 @@ class StudentGegevens {
             Authorization: `Bearer ${this.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(this.studentData), // Verstuur het hele, bijgewerkte studentData object
         }
       );
 
-      // Probeer de JSON respons te parsen, zelfs bij een niet-OK status
       const result = await response.json().catch(() => {
-        // Als JSON parsen faalt, geef een generiek object terug
         return {
           success: false,
           message:
@@ -146,18 +157,23 @@ class StudentGegevens {
         };
       });
 
-      console.log("📝 Update result:", result);
+      console.log("📝 Update API response result:", result);
 
       if (response.ok && result.success) {
-        // Combineer checks voor robuustheid
-        this.studentData = result.data;
-        this.displayStudentGegevens();
-        this.displayProjectInfo();
-        this.disableEditMode(); // Belangrijk: Schakel de algemene bewerkingsmodus uit
-        this.disableProjectEditMode(); // Belangrijk: Schakel ook de project bewerkingsmodus uit
+        this.studentData = result.data; // Gebruik de data die de server terugstuurt als de nieuwe state
+        this.initialStudentData = { ...result.data }; // Update de initiële data ook
+        this.displayStudentGegevens(); // Toon de algemene gegevens
+        this.displayProjectInfo(); // Toon de projectgegevens
+        this.disableEditMode(); // Schakel de algemene bewerkingsmodus uit
+        this.disableProjectEditMode(); // Schakel de project bewerkingsmodus uit
         this.showSuccess("Gegevens succesvol bijgewerkt!");
       } else {
-        // Log de volledige respons en het resultaat voor debugging
+        // Belangrijk: Bij een fout, herstel this.studentData naar de initiële staat
+        // zodat de UI de correcte (ongewijzigde) data toont.
+        this.studentData = { ...this.initialStudentData };
+        this.displayStudentGegevens();
+        this.displayProjectInfo();
+
         console.error(
           "❌ Fout bij bijwerken, HTTP Status:",
           response.status,
@@ -187,7 +203,6 @@ class StudentGegevens {
     }
 
     const data = this.studentData;
-    console.log("📊 Data to display:", data);
 
     // Update persoonlijke gegevens
     this.updateField("studentnummer", data.studentnummer);
@@ -208,7 +223,7 @@ class StudentGegevens {
     this.updateField("postcode", data.postcode);
     this.updateField("gemeente", data.gemeente);
 
-    // Account info
+    // Account info (niet bewerkbaar)
     this.updateField("account-status", "Actief en Geverifieerd");
     this.updateField(
       "last-login",
@@ -219,15 +234,14 @@ class StudentGegevens {
         })
     );
 
-    // Update extra info
     const accountCreated = document.getElementById("account-created");
     const lastUpdated = document.getElementById("last-updated");
     if (accountCreated)
-      accountCreated.textContent = `Account aangemaakt: ${new Date().getFullYear()}`;
+      accountCreated.textContent = `Account aangemaakt: ${new Date().getFullYear()}`; // Of data.accountCreatedDate als beschikbaar
     if (lastUpdated)
       lastUpdated.textContent = `Laatste update: ${new Date().toLocaleDateString(
         "nl-BE"
-      )}`;
+      )}`; // Of data.lastUpdatedDate als beschikbaar
 
     console.log("✅ UI updated successfully");
   }
@@ -253,57 +267,48 @@ class StudentGegevens {
   }
 
   updateProjectLinks(data) {
-    // GitHub link
-    const githubLink = document.getElementById("github-link");
-    if (githubLink) {
-      // Check if the current content is not an input field (i.e., in view mode)
-      if (!githubLink.querySelector("input")) {
-        if (data.githubUrl) {
-          githubLink.innerHTML = `<strong>GitHub:</strong> <a href="${data.githubUrl}" target="_blank" class="project-link">
-                        <i class="fab fa-github"></i> GitHub Repository
-                    </a>`;
-        } else {
-          githubLink.innerHTML =
-            '<strong>GitHub:</strong> <span class="no-link">Geen GitHub link</span>';
-        }
-      }
-    }
+    const linkElements = {
+      githubUrl: {
+        id: "github-link",
+        icon: "fab fa-github",
+        text: "GitHub Repository",
+        label: "GitHub",
+        noLinkText: "Geen GitHub link",
+      },
+      cvUrl: {
+        id: "cv-link",
+        icon: "fas fa-file-pdf",
+        text: "Download CV",
+        label: "CV",
+        noLinkText: "Geen CV geüpload",
+      },
+      linkedinUrl: {
+        id: "linkedin-link",
+        icon: "fab fa-linkedin",
+        text: "LinkedIn Profiel",
+        label: "LinkedIn",
+        noLinkText: "Geen LinkedIn link",
+      },
+    };
 
-    // CV link
-    const cvLink = document.getElementById("cv-link");
-    if (cvLink) {
-      // Check if the current content is not an input field (i.e., in view mode)
-      if (!cvLink.querySelector("input")) {
-        if (data.cvUrl) {
-          cvLink.innerHTML = `<strong>CV:</strong> <a href="${data.cvUrl}" target="_blank" class="project-link">
-                        <i class="fas fa-file-pdf"></i> Download CV
-                    </a>`;
-        } else {
-          cvLink.innerHTML =
-            '<strong>CV:</strong> <span class="no-link">Geen CV geüpload</span>';
-        }
-      }
-    }
-
-    // LinkedIn link
-    const linkedinLink = document.getElementById("linkedin-link");
-    if (linkedinLink) {
-      // Check if the current content is not an input field (i.e., in view mode)
-      if (!linkedinLink.querySelector("input")) {
-        if (data.linkedinUrl) {
-          linkedinLink.innerHTML = `<strong>LinkedIn:</strong> <a href="${data.linkedinUrl}" target="_blank" class="project-link">
-                        <i class="fab fa-linkedin"></i> LinkedIn Profiel
-                    </a>`;
-        } else {
-          linkedinLink.innerHTML =
-            '<strong>LinkedIn:</strong> <span class="no-link">Geen LinkedIn link</span>';
+    for (const key in linkElements) {
+      const { id, icon, text, label, noLinkText } = linkElements[key];
+      const linkContainer = document.getElementById(id);
+      if (linkContainer) {
+        // Alleen de weergave bijwerken als we NIET in bewerkingsmodus zijn voor dit veld
+        const inputElement = linkContainer.querySelector("input");
+        if (!this.projectEditMode || !inputElement) {
+          if (data[key]) {
+            linkContainer.innerHTML = `<strong>${label}:</strong> <a href="${data[key]}" target="_blank" class="project-link"><i class="${icon}"></i> ${text}</a>`;
+          } else {
+            linkContainer.innerHTML = `<strong>${label}:</strong> <span class="no-link">${noLinkText}</span>`;
+          }
         }
       }
     }
   }
 
   updateProjectStats(data) {
-    // Project completion percentage (example calculation)
     const completionPercentage = this.calculateProjectCompletion(data);
     const progressBar = document.getElementById("project-progress");
     if (progressBar) {
@@ -311,10 +316,9 @@ class StudentGegevens {
       progressBar.textContent = `${completionPercentage}% compleet`;
     }
 
-    // Project info stats
     const projectStats = document.getElementById("project-stats");
     if (projectStats) {
-      // Remove existing stat items to prevent duplication
+      // Bestaande stat items verwijderen om duplicatie te voorkomen
       projectStats.innerHTML = "";
       const tafelNrElement = document.createElement("div");
       tafelNrElement.className = "stat-item ehbVeld";
@@ -356,7 +360,6 @@ class StudentGegevens {
   setupProjectHandling() {
     console.log("🛠️ Setting up project handling");
 
-    // Project edit button
     const projectEditBtn = document.getElementById("projectEditBtn");
     if (projectEditBtn) {
       projectEditBtn.addEventListener("click", () =>
@@ -364,7 +367,6 @@ class StudentGegevens {
       );
     }
 
-    // Project cancel button
     const projectCancelBtn = document.getElementById("projectCancelBtn");
     if (projectCancelBtn) {
       projectCancelBtn.addEventListener("click", () =>
@@ -372,7 +374,6 @@ class StudentGegevens {
       );
     }
 
-    // Project save button
     const projectSaveBtn = document.getElementById("projectSaveBtn");
     if (projectSaveBtn) {
       projectSaveBtn.addEventListener("click", () => this.saveProjectChanges());
@@ -382,14 +383,12 @@ class StudentGegevens {
   enableProjectEditMode() {
     console.log("✏️ Enabling project edit mode");
     this.projectEditMode = true;
+    this.editMode = false; // Zorg dat algemene bewerkingsmodus uit staat
 
-    // Verberg algemene view controls en toon project edit controls
     document.getElementById("viewControls").style.display = "none";
+    document.getElementById("editControls").style.display = "none"; // Zorg dat algemene edit controls verborgen zijn
     document.getElementById("projectEditControls").style.display = "flex";
-    // Verberg ook de algemene edit controls als deze toevallig zichtbaar zijn
-    document.getElementById("editControls").style.display = "none";
 
-    // Converteer projectvelden naar inputs
     this.createEditableProjectFields();
   }
 
@@ -397,14 +396,15 @@ class StudentGegevens {
     console.log("❌ Disabling project edit mode");
     this.projectEditMode = false;
 
-    // Toon algemene view controls en verberg project edit controls
-    document.getElementById("viewControls").style.display = "flex";
-    document.getElementById("projectEditControls").style.display = "none";
-    // Zorg ervoor dat de algemene bewerkingsknoppen ook verborgen blijven of correct verschijnen
-    document.getElementById("editControls").style.display = "none";
+    // Reset project data to initial state if cancelled
+    this.studentData = { ...this.initialStudentData };
 
-    // Herstel projectveld weergave
-    this.displayProjectInfo();
+    document.getElementById("viewControls").style.display = "flex";
+    document.getElementById("editControls").style.display = "none";
+    document.getElementById("projectEditControls").style.display = "none";
+
+    this.displayProjectInfo(); // Herstel projectveld weergave met oorspronkelijke data
+    this.displayStudentGegevens(); // Zorg dat ook de algemene gegevens correct zijn (ongewijzigd)
   }
 
   createEditableProjectFields() {
@@ -417,7 +417,7 @@ class StudentGegevens {
       "github-url",
       "cv-url",
       "linkedin-url",
-      "tafel-nummer", // Tafelnummer is nu ook bewerkbaar
+      "tafel-nummer",
     ];
 
     projectFields.forEach((fieldId) => {
@@ -427,24 +427,20 @@ class StudentGegevens {
         const label = this.getProjectFieldLabel(fieldId);
 
         if (fieldId === "project-beschrijving" || fieldId === "over-mezelf") {
-          // Textarea for longer content
           field.innerHTML = `
-                        <div class="project-field-edit">
-                            <label for="edit-${fieldId}"><strong>${label}</strong></label>
-                            <textarea
-                                id="edit-${fieldId}"
-                                class="project-edit-input"
-                                rows="6"
-                                placeholder="Beschrijf je ${
-                                  fieldId.includes("beschrijving")
-                                    ? "project"
-                                    : "achtergrond"
-                                } hier..."
-                            >${currentValue}</textarea>
-                        </div>
-                    `;
+            <div class="project-field-edit">
+              <label for="edit-${fieldId}"><strong>${label}</strong></label>
+              <textarea
+                id="edit-${fieldId}"
+                class="project-edit-input"
+                rows="6"
+                placeholder="Beschrijf je ${
+                  fieldId.includes("beschrijving") ? "project" : "achtergrond"
+                } hier..."
+              >${currentValue}</textarea>
+            </div>
+          `;
         } else {
-          // Input for other fields
           const inputType = fieldId.includes("url")
             ? "url"
             : fieldId === "tafel-nummer"
@@ -453,17 +449,17 @@ class StudentGegevens {
           const placeholder = this.getFieldPlaceholder(fieldId);
 
           field.innerHTML = `
-                        <div class="project-field-edit">
-                            <label for="edit-${fieldId}"><strong>${label}</strong></label>
-                            <input
-                                type="${inputType}"
-                                id="edit-${fieldId}"
-                                value="${currentValue}"
-                                class="project-edit-input"
-                                placeholder="${placeholder}"
-                            >
-                        </div>
-                    `;
+            <div class="project-field-edit">
+              <label for="edit-${fieldId}"><strong>${label}</strong></label>
+              <input
+                type="${inputType}"
+                id="edit-${fieldId}"
+                value="${currentValue}"
+                class="project-edit-input"
+                placeholder="${placeholder}"
+              >
+            </div>
+          `;
         }
       }
     });
@@ -477,7 +473,7 @@ class StudentGegevens {
       "github-url": "githubUrl",
       "cv-url": "cvUrl",
       "linkedin-url": "linkedinUrl",
-      "tafel-nummer": "tafelNr", // Mapping voor tafelnummer
+      "tafel-nummer": "tafelNr",
     };
 
     const dataField = mapping[fieldId];
@@ -492,7 +488,7 @@ class StudentGegevens {
       "github-url": "GitHub Repository URL",
       "cv-url": "CV Download Link",
       "linkedin-url": "LinkedIn Profiel URL",
-      "tafel-nummer": "Tafel Nummer", // Label voor tafelnummer
+      "tafel-nummer": "Tafel Nummer",
     };
     return labels[fieldId] || fieldId;
   }
@@ -503,7 +499,7 @@ class StudentGegevens {
       "github-url": "https://github.com/username/repository",
       "cv-url": "https://example.com/cv/jouw-cv.pdf",
       "linkedin-url": "https://www.linkedin.com/in/jouw-profiel",
-      "tafel-nummer": "Bijv: 1", // Placeholder voor tafelnummer
+      "tafel-nummer": "Bijv: 1",
     };
     return placeholders[fieldId] || "";
   }
@@ -513,7 +509,6 @@ class StudentGegevens {
 
     const projectData = {};
 
-    // Collect all project field values
     const projectInputs = document.querySelectorAll(".project-edit-input");
     projectInputs.forEach((input) => {
       const fieldId = input.id.replace("edit-", "");
@@ -525,11 +520,12 @@ class StudentGegevens {
 
     console.log("📦 Project data to save:", projectData);
 
-    // Validate URLs
     if (!this.validateProjectData(projectData)) {
       return;
     }
 
+    // Roep de algemene update functie aan met de projectData
+    // De updateStudentGegevens functie zal deze velden combineren met de rest van studentData
     await this.updateStudentGegevens(projectData);
   }
 
@@ -547,7 +543,6 @@ class StudentGegevens {
   }
 
   validateProjectData(data) {
-    // Check required fields
     if (!data.projectTitel || data.projectTitel.length < 3) {
       this.showError("Project titel moet minimaal 3 karakters bevatten");
       return false;
@@ -560,7 +555,6 @@ class StudentGegevens {
       return false;
     }
 
-    // Validate URLs
     const urlFields = ["githubUrl", "cvUrl", "linkedinUrl"];
     for (const field of urlFields) {
       if (data[field] && !this.isValidUrl(data[field])) {
@@ -570,7 +564,6 @@ class StudentGegevens {
       }
     }
 
-    // Validate tafelnummer if it's provided and is a number
     if (data.tafelNr && isNaN(parseInt(data.tafelNr))) {
       this.showError("Tafelnummer moet een geldig nummer zijn");
       return false;
@@ -595,26 +588,23 @@ class StudentGegevens {
       if (valueSpan) {
         const displayValue = value || "Niet ingevuld";
         valueSpan.textContent = displayValue;
-        console.log(`📝 Updated field ${fieldId}:`, displayValue);
+        // console.log(`📝 Updated field ${fieldId}:`, displayValue); // Minder console.logs tijdens UI updates
       }
     } else {
       console.warn(`⚠️ Field not found: ${fieldId}`);
     }
   }
 
-  // ✏️ Edit Mode Management (existing methods...)
+  // ✏️ Edit Mode Management
   enableEditMode() {
     console.log("✏️ Enabling edit mode");
     this.editMode = true;
     this.projectEditMode = false; // Zorg dat project bewerkingsmodus uit staat
 
-    // Verberg alle view controls en toon algemene edit controls
     document.getElementById("viewControls").style.display = "none";
+    document.getElementById("projectEditControls").style.display = "none"; // Zorg dat project edit controls verborgen zijn
     document.getElementById("editControls").style.display = "flex";
-    // Zorg ervoor dat project edit controls ook verborgen zijn
-    document.getElementById("projectEditControls").style.display = "none";
 
-    // Converteer velden naar inputs
     this.createEditableFields();
   }
 
@@ -622,12 +612,14 @@ class StudentGegevens {
     console.log("❌ Disabling edit mode");
     this.editMode = false;
 
-    // Toon algemene view controls en verberg algemene edit controls
+    // Reset student data to initial state if cancelled
+    this.studentData = { ...this.initialStudentData };
+
     document.getElementById("viewControls").style.display = "flex";
     document.getElementById("editControls").style.display = "none";
 
-    // Herstel veld weergave
-    this.displayStudentGegevens();
+    this.displayStudentGegevens(); // Herstel de weergave met de oorspronkelijke data
+    this.displayProjectInfo(); // Zorg dat ook projectgegevens correct zijn (ongewijzigd)
   }
 
   createEditableFields() {
@@ -636,10 +628,9 @@ class StudentGegevens {
     const editableFields = document.querySelectorAll(".editable-field");
     editableFields.forEach((field) => {
       const fieldId = field.getAttribute("data-field");
-      const valueSpan = field.querySelector(".field-value");
       const strongElement = field.querySelector("strong");
 
-      // Skip project-related fields if we are in general edit mode
+      // Skip project-related fields
       const projectRelatedFields = [
         "project-titel",
         "project-beschrijving",
@@ -650,39 +641,27 @@ class StudentGegevens {
         "tafel-nummer",
       ];
       if (projectRelatedFields.includes(fieldId)) {
-        // Restore their original display and skip creating input for them in this mode
-        this.updateField(fieldId, this.getProjectFieldValue(fieldId)); // Zorg dat ze correct worden bijgewerkt
-        return;
+        // Zorg ervoor dat deze velden terug naar hun display mode gaan
+        this.updateField(fieldId, this.getProjectFieldValue(fieldId));
+        return; // Sla het aanmaken van een input voor deze velden over
       }
 
-      if (valueSpan && fieldId && this.studentData) {
+      if (fieldId && this.studentData) {
         const currentValue = this.getFieldValue(fieldId);
         const labelText = strongElement ? strongElement.textContent : fieldId;
 
-        if (fieldId === "project-beschrijving" || fieldId === "over-mezelf") {
-          // Create textarea for longer text fields
-          field.innerHTML = `
-                        <strong>${labelText}</strong><br><br>
-                        <textarea
-                            id="edit-${fieldId}"
-                            class="edit-input"
-                            style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #881538; border-radius: 8px; font-family: inherit; resize: vertical;"
-                        >${currentValue}</textarea>
-                    `;
-        } else {
-          // Create input for regular fields
-          const inputType = this.getInputType(fieldId);
-          field.innerHTML = `
-                        <strong>${labelText}</strong>
-                        <input
-                            type="${inputType}"
-                            id="edit-${fieldId}"
-                            value="${currentValue}"
-                            class="edit-input"
-                            style="margin-left: 0.5rem; padding: 0.5rem; border: 2px solid #881538; border-radius: 8px; width: 250px;"
-                        >
-                    `;
-        }
+        // Geen textarea's meer in algemene modus, enkel input
+        const inputType = this.getInputType(fieldId);
+        field.innerHTML = `
+          <strong>${labelText}</strong>
+          <input
+            type="${inputType}"
+            id="edit-${fieldId}"
+            value="${currentValue}"
+            class="edit-input"
+            style="margin-left: 0.5rem; padding: 0.5rem; border: 2px solid #881538; border-radius: 8px; width: 250px;"
+          >
+        `;
       }
     });
   }
@@ -718,39 +697,48 @@ class StudentGegevens {
     return typeMapping[fieldId] || "text";
   }
 
-  // 📝 Form Handling
-  setupFormHandling() {
-    if (this.form) {
-      this.form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        // Controleer welke modus actief is voordat je de submit afhandelt
-        if (this.editMode) {
-          this.handleFormSubmit();
-        } else if (this.projectEditMode) {
-          this.saveProjectChanges();
-        }
-      });
+  // 📝 Form Handling (Aangepast)
+  // Deze methode is vereenvoudigd omdat de "save" knoppen direct updateStudentGegevens aanroepen
+  setupEventListeners() {
+    console.log("👂 Setting up event listeners");
+
+    // Edit button (general data)
+    const editBtn = document.getElementById("editBtn");
+    if (editBtn) {
+      editBtn.addEventListener("click", () => this.enableEditMode());
+    }
+
+    // Cancel button for general data
+    const cancelBtn = document.getElementById("cancelBtn");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => this.disableEditMode());
+    }
+
+    // Save button for general data
+    const saveBtn = document.getElementById("saveBtn"); // Assuming you have a saveBtn for general data
+    if (saveBtn) {
+      saveBtn.addEventListener("click", () => this.saveGeneralChanges());
     }
   }
 
-  async handleFormSubmit() {
-    console.log("💾 Handling form submit for general data");
+  async saveGeneralChanges() {
+    console.log("💾 Saving general student changes");
 
-    const formData = {};
+    const generalData = {};
     const editInputs = document.querySelectorAll(
-      '.editable-field:not([data-field^="project-"]):not([data-field="github-url"]):not([data-field="cv-url"]):not([data-field="linkedin-url"]):not([data-field="tafel-nummer"]) .edit-input'
+      '.editable-field:not([data-field^="project-"]) .edit-input'
     );
 
     editInputs.forEach((input) => {
       const fieldId = input.id.replace("edit-", "");
       const mappedField = this.getFieldMapping(fieldId);
       if (mappedField) {
-        formData[mappedField] = input.value.trim();
+        generalData[mappedField] = input.value.trim();
       }
     });
 
-    console.log("📦 Form data to submit:", formData);
-    await this.updateStudentGegevens(formData);
+    console.log("📦 General data to save:", generalData);
+    await this.updateStudentGegevens(generalData);
   }
 
   getFieldMapping(fieldId) {
@@ -767,25 +755,9 @@ class StudentGegevens {
       bus: "bus",
       postcode: "postcode",
       gemeente: "gemeente",
+      // Zorg ervoor dat project-gerelateerde velden NIET hier gemapt worden
     };
     return mapping[fieldId];
-  }
-
-  // 🎯 Event Listeners
-  setupEventListeners() {
-    console.log("👂 Setting up event listeners");
-
-    // Edit button
-    const editBtn = document.getElementById("editBtn");
-    if (editBtn) {
-      editBtn.addEventListener("click", () => this.enableEditMode());
-    }
-
-    // Cancel button for general data
-    const cancelBtn = document.getElementById("cancelBtn");
-    if (cancelBtn) {
-      cancelBtn.addEventListener("click", () => this.disableEditMode());
-    }
   }
 
   // 🔧 Utility Methods
@@ -801,7 +773,6 @@ class StudentGegevens {
     if (window.showNotification) {
       window.showNotification(message, "error");
     } else {
-      // Fallback for environments without notification system
       console.error(
         "Notification system not available, showing alert: " + message
       );
@@ -813,7 +784,6 @@ class StudentGegevens {
     if (window.showNotification) {
       window.showNotification(message, "success");
     } else {
-      // Fallback for environments without notification system
       console.log(
         "Notification system not available, showing alert: " + message
       );
