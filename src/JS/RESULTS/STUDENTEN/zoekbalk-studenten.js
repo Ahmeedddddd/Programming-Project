@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Globale variabelen
 let currentStudent = null;
 let studentId = null;
+const API_BASE = window.location.origin; // FIXED: Use same port as frontend
 
 // ===== MAIN INITIALIZATION =====
 async function initializeStudentDetailPage() {
@@ -63,7 +64,6 @@ async function testBackendConnectivity() {
     console.log('🔍 Testing backend connectivity...');
     
     try {
-        const API_BASE = 'http://localhost:3301';
         const response = await fetch(`${API_BASE}/api/health`);
         
         if (response.ok) {
@@ -99,7 +99,6 @@ async function loadStudentDetails(studentId) {
     console.log('📡 Loading student details for ID:', studentId);
     
     try {
-        const API_BASE = 'http://localhost:3301';
         const url = `${API_BASE}/api/studenten/${studentId}`;
         
         console.log('📡 Fetching from URL:', url);
@@ -544,7 +543,7 @@ function showErrorState(message) {
         errorContainer.innerHTML = `
             <h3 style="color: #881538; margin-bottom: 1rem;">⚠️ ${message}</h3>
             <p style="margin-bottom: 2rem;">Controleer de URL of probeer het opnieuw.</p>
-            <button onclick="window.location.href='/alleStudenten'" style="background: #881538; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; margin-right: 1rem; cursor: pointer;">
+            <button onclick="window.location.href='/alle-studenten'" style="background: #881538; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; margin-right: 1rem; cursor: pointer;">
                 ← Terug naar alle studenten
             </button>
             <button onclick="location.reload()" style="background: #666; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer;">
