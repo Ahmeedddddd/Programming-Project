@@ -8,9 +8,6 @@ const fs = require("fs");
 const { pool } = require("../CONFIG/database");
 const { NAVIGATION_CONFIG, UI_SETTINGS, STATS_CONFIG } = require("./navigation-config");
 
-// Navigation config remains the same...
-
-
 // ===== ENHANCED USER MANAGEMENT =====
 
 const getCurrentUser = (req) => {
