@@ -66,7 +66,7 @@ class StudentGegevens {
     try {
       this.showLoading(true);
       
-      const response = await fetch('http://localhost:3301/api/student/profile', {
+      const response = await fetch('/api/studenten/profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${this.token}`,
@@ -109,7 +109,7 @@ class StudentGegevens {
     try {
       this.showLoading(true);
       
-      const response = await fetch('http://localhost:3301/api/student/profile', {
+      const response = await fetch('/api/studenten/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${this.token}`,

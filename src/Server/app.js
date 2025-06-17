@@ -181,13 +181,11 @@ try {
   console.error("❌ Failed to mount organisator routes:", error);
 }
 
-// FIXED: Add missing /api/projecten route that redirects to student projects
 app.get("/api/projecten", (req, res) => {
   console.log("🔄 Redirecting /api/projecten to /api/studenten/projecten");
   res.redirect(308, "/api/studenten/projecten");
 });
 
-// FIXED: Add missing /api/contactpersonen routes
 app.get("/api/contactpersonen/bedrijf/:bedrijfId", async (req, res) => {
   try {
     console.log(
@@ -286,72 +284,28 @@ app.post("/api/send-invoice", async (req, res) => {
 
 console.log("✅ All API routes mounted successfully");
 
-// ===== HOMEPAGE ROUTING (FIXED) =====
-// FIXED: Ensure guest homepage file exists and is served correctly
+// ===== HOMEPAGE ROUTING =====
 app.get("/", (req, res, next) => {
   console.log("🏠 Root homepage request received");
-  console.log("📂 Checking for guest homepage file...");
 
-  const guestHomepagePath = path.join(__dirname, "../../public/index.html");
-  const fs = require("fs");
+  // 🔍 Check eerst of gebruiker is ingelogd
+  const user = getCurrentUser(req);
 
-  // Check if guest homepage exists
-  if (!fs.existsSync(guestHomepagePath)) {
-    console.error(`❌ Guest homepage not found at: ${guestHomepagePath}`);
-    console.log("📂 Available files in public directory:");
+  if (user) {
+    // ✅ User is ingelogd: gebruik rol-gebaseerde routing
+    console.log(
+      `👤 Authenticated user detected: ${user.email} (${user.userType})`
+    );
+    console.log("   → Using role-based homepage routing");
+    return serveRoleBasedHomepage(req, res, next);
+  } else {
+    // 👥 Guest user: serve guest homepage
+    console.log("👥 Guest user detected, serving guest homepage");
 
-    try {
-      const publicDir = path.join(__dirname, "../../public");
-      if (fs.existsSync(publicDir)) {
-        const files = fs.readdirSync(publicDir);
-        files.forEach((file) => console.log(`   - ${file}`));
-      } else {
-        console.error(`❌ Public directory not found: ${publicDir}`);
-      }
-    } catch (err) {
-      console.error("❌ Error reading public directory:", err.message);
-    }
-
-    // Fallback: serve a basic HTML page
-    return res.send(`
-      <!DOCTYPE html>
-      <html lang="nl">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>CareerLaunch - Homepage Fallback</title>
-          <style>
-              body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
-              .error { color: #e74c3c; margin: 1rem 0; }
-              .info { color: #3498db; margin: 1rem 0; }
-              .button { display: inline-block; padding: 0.75rem 1.5rem; background: #881538; color: white; text-decoration: none; border-radius: 5px; margin: 0.5rem; }
-          </style>
-      </head>
-      <body>
-          <h1>🎓 CareerLaunch</h1>
-          <div class="error">⚠️ Homepage bestand niet gevonden</div>
-          <div class="info">Verwacht bestand: ${guestHomepagePath}</div>
-          
-          <div style="margin: 2rem 0;">
-              <a href="/login" class="button">🔐 Inloggen</a>
-              <a href="/register" class="button">📝 Registreren</a>
-              <a href="/info" class="button">ℹ️ Informatie</a>
-          </div>
-          
-          <div>
-              <h3>🔧 Debug Info</h3>
-              <p>Server draait op poort: ${port}</p>
-              <p>Timestamp: ${new Date().toISOString()}</p>
-              <p>Pad naar homepage: ${guestHomepagePath}</p>
-          </div>
-      </body>
-      </html>
-    `);
+    // Serve guest homepage
+    console.log("✅ Serving guest homepage");
+    res.sendFile(guestHomepagePath);
   }
-
-  // If file exists, use the role-based homepage logic
-  console.log("✅ Guest homepage file exists, using role-based routing");
-  serveRoleBasedHomepage(req, res, next);
 });
 
 app.get("/index.html", (req, res) => {

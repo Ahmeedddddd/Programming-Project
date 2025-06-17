@@ -81,7 +81,7 @@ class BedrijfGegevens {
     try {
       this.showLoading(true);
       
-      const response = await fetch('/api/bedrijf/profile', {
+      const response = await fetch('/api/bedrijven/profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${this.token}`,
@@ -124,7 +124,7 @@ class BedrijfGegevens {
     try {
       this.showLoading(true);
       
-      const response = await fetch('/api/bedrijf/profile', {
+      const response = await fetch('/api/bedrijven/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${this.token}`,
