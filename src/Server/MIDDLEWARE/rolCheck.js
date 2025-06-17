@@ -13,38 +13,49 @@ const { NAVIGATION_CONFIG, UI_SETTINGS, STATS_CONFIG } = require("./navigation-c
 const getCurrentUser = (req) => {
   console.log('🔍 getCurrentUser called for path:', req.path);
   
-  const authHeader = req.headers["authorization"];
-  console.log('   → Auth header present:', !!authHeader);
+  let token = null;
   
-  if (!authHeader) {
-    console.log('   → No authorization header found');
-    return null;
+  // Method 1: Check Authorization header (voor API calls)
+  const authHeader = req.headers["authorization"];
+  if (authHeader) {
+    token = authHeader.split(" ")[1];
+    console.log('   → Token from Authorization header: ✅');
   }
   
-  const token = authHeader.split(" ")[1];
-  console.log('   → Token extracted:', token ? 'Yes' : 'No');
+  // Method 2: Check cookies (voor page navigation) - NIEUWE FUNCTIONALITEIT
+  if (!token && req.headers.cookie) {
+    console.log('   → Checking cookies for auth token...');
+    const cookies = req.headers.cookie.split(';');
+    
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'authToken') {
+        token = value;
+        console.log('   → Token found in cookies: ✅');
+        break;
+      }
+    }
+  }
   
   if (!token) {
-    console.log('   → No token in auth header');
+    console.log('   → No token found in headers or cookies');
     return null;
   }
 
   try {
     const user = jwt.verify(token, config.jwt.secret);
-    console.log('   → JWT verified successfully');
+    console.log('   → JWT verified successfully ✅');
     console.log(`   → User: ${user.email} (${user.userType})`);
     
-    const enhancedUser = {
+    return {
       ...user,
       isLoggedIn: true,
       lastActivity: new Date().toISOString()
     };
     
-    return enhancedUser;
-    
   } catch (error) {
     console.warn("🔐 JWT verification failed:", error.message);
-    console.warn("   → Token:", token.substring(0, 20) + '...');
+    console.warn("   → Token:", token ? token.substring(0, 20) + '...' : 'undefined');
     return null;
   }
 };

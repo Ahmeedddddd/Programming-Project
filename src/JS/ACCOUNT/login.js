@@ -1,4 +1,4 @@
-// src/JS/ACCOUNT/login.js
+// src/JS/ACCOUNT/login.js - FIXED VERSION WITH DIRECT HOMEPAGE REDIRECT
 
 // Configuration
 const API_BASE_URL = 'http://localhost:3301';

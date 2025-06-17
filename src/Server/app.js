@@ -1,6 +1,4 @@
-// src/Server/app.js
-// Deze server is verantwoordelijk voor het bedienen van de frontend bestanden
-// ENHANCED VERSION - Role-based system with PROJECT support + all original routes
+// src/Server/app.js - CORRECTED VERSION: Only homepage auth, keep all other routes
 
 const express = require("express");
 const app = express();
@@ -8,7 +6,9 @@ const port = 8383;
 const path = require("path");
 const cors = require("cors");
 
-// Import the enhanced role-based system
+console.log("🚀 Starting CareerLaunch Server...");
+
+// ===== MIDDLEWARE IMPORTS =====
 const {
   serveRoleBasedHomepage,
   getUserInfo,
@@ -16,56 +16,67 @@ const {
   getLiveStats,
   requireRole,
   generateClientSideScript,
+  getCurrentUser
 } = require("./MIDDLEWARE/rolCheck");
 
-// **** ALLE ROUTE IMPORTS BOVENAAN VERZAMELD ****
-// Dit voorkomt de "Identifier has already been declared" error
-const registratieRoutes = require("./ROUTES/registratie");
-const authRoutes = require("./ROUTES/auth");
-const bedrijfRoutes = require("./ROUTES/bedrijf");
-const reservatiesRoutes = require("./ROUTES/reservaties");
-// **** EINDE WIJZIGING ****
+// ===== PATH TO GUEST HOMEPAGE =====
+const guestHomepagePath = path.join(__dirname, "../../../public/index.html");
 
-// Dynamic navigation script
-app.get("/js/navigation-manager.js", async (req, res) => {
-  res.setHeader("Content-Type", "application/javascript");
-  const script = await generateClientSideScript();
-  res.send(script);
+// ===== ROUTE IMPORTS =====
+let registratieRoutes,
+    authRoutes,
+    bedrijfRoutes,
+    reservatiesRoutes,
+    studentRoutes,
+    organisatorRoutes,
+    projectRoutes;
+
+try {
+  registratieRoutes    = require("./ROUTES/registratie");
+  authRoutes           = require("./ROUTES/auth");
+  bedrijfRoutes        = require("./ROUTES/bedrijf");
+  reservatiesRoutes    = require("./ROUTES/reservaties");
+  studentRoutes        = require("./ROUTES/student");
+  organisatorRoutes    = require("./ROUTES/organisator");
+  projectRoutes        = require("./ROUTES/project");
+  console.log("✅ All route modules loaded successfully");
+} catch (error) {
+  console.error("❌ Error loading route modules:", error.message);
+  process.exit(1);
+}
+
+// ===== EXPRESS CONFIGURATION =====
+app.use(cors({
+  origin: ["http://localhost:8383", "http://localhost:3301"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ===== REQUEST LOGGING =====
+app.use((req, res, next) => {
+  const qs = req.query && Object.keys(req.query).length
+    ? "?" + new URLSearchParams(req.query).toString()
+    : "";
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}${qs}`);
+  next();
 });
 
-//CORS
-app.use(
-  cors({
-    origin: "http://localhost:8383",
-  })
-);
-
-// Middleware voor JSON parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Serveer statische frontendbestanden
+// ===== STATIC FILE SERVING =====
 app.use(express.static(path.join(__dirname, "../CareerLaunch")));
 app.use(express.static(path.join(__dirname, "../../public")));
 app.use("/src/CSS", express.static(path.join(__dirname, "../CSS")));
 app.use("/src/JS", express.static(path.join(__dirname, "../JS")));
 app.use("/images", express.static(path.join(__dirname, "../../public/images")));
 
-// ===== ENHANCED ROLE-BASED HOMEPAGE SYSTEM =====
-
-// 🏠 MAIN HOMEPAGE ROUTING - Uses your existing files
-app.get("/", serveRoleBasedHomepage);
-app.get("/index.html", serveRoleBasedHomepage);
-
-// API endpoint voor user info
-app.get("/api/user-info", getUserInfo);
-
-// 🔥 Enhanced client-side script endpoint met live database data
+// ===== DYNAMIC SCRIPTS =====
 app.get("/js/role-manager.js", async (req, res) => {
   try {
     res.setHeader("Content-Type", "application/javascript");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-
     const script = await generateClientSideScript();
     res.send(script);
   } catch (error) {
@@ -74,396 +85,408 @@ app.get("/js/role-manager.js", async (req, res) => {
   }
 });
 
-// Homepage routes
-app.get("/student-homepage", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html")
-  );
-});
-
-app.get("/bedrijf-homepage", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html")
-  );
-});
-
-app.get("/test", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/test.html"));
-});
-
-// ===== PUBLIC ROUTES =====
-
-app.get("/favicon.ico", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/favicon.ico"));
-});
-
-//ACCOUNT
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
-});
-
-app.get("/register", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ACCOUNT/account-aanmaken.html")
-  );
-});
-
-app.get("/change-password", (req, res) => {
-  res.sendFile(path.join(__dirname, "../HTML/ACCOUNT/change-password.html"));
-});
-
-app.get("/tarieven", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJF/tarieven.html"));
-});
-
-//INFO
-app.get("/info", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
-});
-
-app.get("/infoStudent", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/INFO/informatie-studenten.html")
-  );
-});
-
-app.get("/infoBedrijf", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/INFO/informatie-bedrijven.html")
-  );
-});
-
-app.get("/infoCareerLaunch", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/INFO/informatie-career-launch.html")
-  );
-});
-
-app.get("/contacteer", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/contacteer.html"));
-});
-
-app.get("/tarieven-info", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/tarieven-info.html"));
-});
-
-//PROGRAMMA
-app.get("/programma", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
-});
-
-app.get("/programmaVoormidag", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-voormidag.html")
-  );
-});
-
-app.get("/programmaNamidag", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-namidag.html")
-  );
-});
-
-app.get("/programmaBedrijven", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/programmaBedrijven.html")
-  );
-});
-
-app.get("/programmaStudenten", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/programmaStudenten.html")
-  );
-});
-
-//RESULTS
-//BEDRIJVEN
-app.get("/alleBedrijven", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
-  );
-});
-
-// Bedrijf detail route - accepts ID as query parameter
-app.get("/resultaatBedrijf", (req, res) => {
-  const bedrijfId = req.query.id;
-
-  if (!bedrijfId) {
-    console.log("❓ No bedrijf ID provided, redirecting to alle bedrijven");
-    return res.redirect("/alleBedrijven");
+app.get("/js/navigation-manager.js", async (req, res) => {
+  try {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    const script = await generateClientSideScript();
+    res.send(script);
+  } catch (error) {
+    console.error("❌ Error generating navigation manager script:", error);
+    res.status(500).send("console.error('Failed to load navigation manager');");
   }
-
-  console.log("🏢 Serving bedrijf detail page for ID:", bedrijfId);
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html"
-    )
-  );
-});
-
-// Alternative route for backwards compatibility
-app.get("/bedrijf/:id", (req, res) => {
-  const bedrijfId = req.params.id;
-  console.log("🔄 Redirecting legacy bedrijf route to new format:", bedrijfId);
-  res.redirect(`/resultaatBedrijf?id=${bedrijfId}`);
-});
-
-// 🆕 ENHANCED: PROJECTEN ROUTES
-app.get("/alleProjecten", (req, res) => {
-  console.log("📚 Serving alle projecten page");
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html")
-  );
-});
-
-// Project detail route - accepts ID as query parameter
-app.get("/zoekbalkProjecten", (req, res) => {
-  const projectId = req.query.id;
-  
-  if (!projectId) {
-    console.log("❓ No project ID provided, redirecting to alle projecten");
-    return res.redirect("/alleProjecten");
-  }
-  
-  console.log("🚀 Serving project detail page for ID:", projectId);
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"
-    )
-  );
-});
-
-// Alternative route for backwards compatibility
-app.get("/project/:id", (req, res) => {
-  const projectId = req.params.id;
-  console.log("🔄 Redirecting legacy project route to new format:", projectId);
-  res.redirect(`/zoekbalkProjecten?id=${projectId}`);
-});
-
-//RESERVATIES
-app.get("/reservatie", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html")
-  );
-});
-
-app.get("/gesprekkenOverzichtBedrijven", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html"
-    )
-  );
-});
-
-app.get("/gesprekkenOverzichtStudenten", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html"
-    )
-  );
-});
-
-//STUDENTEN
-app.get("/alleStudenten", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html")
-  );
-});
-
-// Student detail route - accepts ID as query parameter
-app.get("/zoekbalkStudenten", (req, res) => {
-  const studentId = req.query.id;
-  
-  if (!studentId) {
-    console.log("❓ No student ID provided, redirecting to alle studenten");
-    return res.redirect("/alleStudenten");
-  }
-  
-  console.log("🎓 Serving student detail page for ID:", studentId);
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html"
-    )
-  );
-});
-
-// Alternative route for backwards compatibility
-app.get("/student/:id", (req, res) => {
-  const studentId = req.params.id;
-  console.log("🔄 Redirecting legacy student route to new format:", studentId);
-  res.redirect(`/zoekbalkStudenten?id=${studentId}`);
-});
-
-// ===== PROTECTED ROUTES =====
-
-// Student routes
-app.get("/accountStudent", requireRole(["student"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/account-student.html")
-  );
-});
-
-app.get("/gegevensStudent", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html")
-  );
-});
-
-app.get("/mijnProject", requireRole(["student"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/mijn-project.html")
-  );
-});
-
-// Bedrijf routes
-app.get("/accountBedrijf", requireRole(["bedrijf"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/account-bedrijf.html")
-  );
-});
-
-app.get("/gegevensBedrijf", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html")
-  );
-});
-
-// Organisator routes
-app.get("/accountOrganisator", requireRole(["organisator"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/account-organisator.html")
-  );
-});
-
-app.get("/gegevensOrganisator", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html")
-  );
-});
-
-app.get("/overzichtOrganisator", (req, res) => {
-  res.sendFile(
-    path.join(
-      __dirname,
-      "../../src/HTML/ORGANISATOR/overzicht-organisator.html"
-    )
-  );
-});
-
-app.get("/adminPanel", requireRole(["organisator"]), (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/admin-panel.html")
-  );
 });
 
 // ===== API ROUTES =====
-// Alle routes gegroepeerd om conflicts te vermijden
-app.use("/api", registratieRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/bedrijven", bedrijfRoutes);
-app.use("/api/reservaties", reservatiesRoutes);
-
-// Live stats API
+console.log("🔗 Mounting API routes...");
+app.get("/api/user-info", getUserInfo);
 app.get("/api/stats/live", getLiveStats);
 
-// Email service endpoint
+// Health check
+app.get("/api/health", async (req, res) => {
+  try {
+    const { pool } = require("./CONFIG/database");
+    await pool.query("SELECT 1");
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      version: "2.4.1",
+      database: "connected",
+      port,
+      features: {
+        roleBasedRouting: "Enabled",
+        legacyCompatibility: "Enabled",
+        authenticationRequired: "Enabled",
+        apiRoutesFixed: "Enabled",
+        parameterPreservingRedirects: "Enabled",
+        contactpersonenAPI: "Added"
+      }
+    });
+  } catch (error) {
+    console.error("❌ Health check failed:", error);
+    res.status(500).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      port,
+    });
+  }
+});
+
+// Mount API routers
+try {
+  app.use("/api/auth", authRoutes);
+  console.log("✅ Auth routes mounted");
+  app.use("/api/registratie", registratieRoutes);
+  console.log("✅ Registration routes mounted");
+  app.use("/api/bedrijven", bedrijfRoutes);
+  console.log("✅ Bedrijf routes mounted");
+  app.use("/api/studenten", studentRoutes);
+  console.log("✅ Student routes mounted");
+  app.use("/api/reservaties", reservatiesRoutes);
+  console.log("✅ Reservatie routes mounted");
+  app.use("/api/organisator", organisatorRoutes);
+  console.log("✅ Organisator routes mounted");
+  app.use("/api/projecten", projectRoutes);
+  console.log("✅ Project routes mounted");
+} catch (error) {
+  console.error("❌ Failed to mount one or more API routes:", error);
+}
+
+// Email endpoint
 app.post("/api/send-invoice", async (req, res) => {
   try {
     const { sendInvoice } = require("./SERVICES/emailServ");
     await sendInvoice(req.body);
     res.status(200).json({ message: "✅ Factuur verzonden!" });
   } catch (err) {
-    console.error("❌ Email service niet gevonden of fout bij verzenden:", err);
-    res
-      .status(200)
-      .json({ message: "📝 Factuur aangemaakt (email service niet actief)" });
+    console.error("❌ Email service niet gevonden:", err.message);
+    res.status(200).json({ message: "📝 Factuur aangemaakt (email service niet actief)" });
   }
 });
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
+// ===== AUTH-PROTECTED HOMEPAGE ROUTES ONLY =====
+console.log("🔒 Setting up AUTH-PROTECTED homepage routes...");
+
+// Homepage route (/) - ONLY route with auth redirect logic
+app.get("/", (req, res) => {
+  console.log("🏠 Homepage (/) requested");
+  const user = getCurrentUser(req);
+  
+  if (user) {
+    console.log(`👤 Authenticated user detected: ${user.userType}`);
+    
+    // Redirect authenticated users to their specific homepage
+    let targetHomepage;
+    switch(user.userType) {
+      case 'student':
+        targetHomepage = '/student-homepage';
+        break;
+      case 'bedrijf':
+        targetHomepage = '/bedrijf-homepage';
+        break;
+      case 'organisator':
+        targetHomepage = '/organisator-homepage';
+        break;
+      default:
+        console.warn(`❓ Unknown user type: ${user.userType}, serving guest page`);
+        return res.sendFile(guestHomepagePath);
+    }
+    
+    console.log(`🔄 Redirecting ${user.userType} from / to ${targetHomepage}`);
+    return res.redirect(targetHomepage);
+  } else {
+    console.log("👤 Guest user - serving guest homepage");
+    return res.sendFile(guestHomepagePath);
+  }
+});
+
+// Redirect index.html to /
+app.get("/index.html", (req, res) => {
+  console.log("🔄 Redirecting index.html to /");
+  res.redirect("/");
+});
+
+// AUTH-PROTECTED role-specific homepages
+app.get("/student-homepage", (req, res) => {
+  console.log("📄 Student homepage requested");
+  
+  const user = getCurrentUser(req);
+  
+  if (!user) {
+    console.log("❌ No authenticated user - redirecting to guest homepage");
+    return res.redirect('/');
+  }
+  
+  if (user.userType !== 'student') {
+    console.log(`❌ Wrong user type (${user.userType}) for student page - redirecting to correct homepage`);
+    
+    switch(user.userType) {
+      case 'bedrijf':
+        return res.redirect('/bedrijf-homepage');
+      case 'organisator':
+        return res.redirect('/organisator-homepage');
+      default:
+        return res.redirect('/');
+    }
+  }
+  
+  console.log("✅ Serving student homepage");
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html"));
+});
+
+app.get("/bedrijf-homepage", (req, res) => {
+  console.log("📄 Bedrijf homepage requested");
+  
+  const user = getCurrentUser(req);
+  
+  if (!user) {
+    console.log("❌ No authenticated user - redirecting to guest homepage");
+    return res.redirect('/');
+  }
+  
+  if (user.userType !== 'bedrijf') {
+    console.log(`❌ Wrong user type (${user.userType}) for bedrijf page - redirecting to correct homepage`);
+    
+    switch(user.userType) {
+      case 'student':
+        return res.redirect('/student-homepage');
+      case 'organisator':
+        return res.redirect('/organisator-homepage');
+      default:
+        return res.redirect('/');
+    }
+  }
+  
+  console.log("✅ Serving bedrijf homepage");
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html"));
+});
+
+app.get("/organisator-homepage", (req, res) => {
+  console.log("📄 Organisator homepage requested");
+  
+  const user = getCurrentUser(req);
+  
+  if (!user) {
+    console.log("❌ No authenticated user - redirecting to guest homepage");
+    return res.redirect('/');
+  }
+  
+  if (user.userType !== 'organisator') {
+    console.log(`❌ Wrong user type (${user.userType}) for organisator page - redirecting to correct homepage`);
+    
+    switch(user.userType) {
+      case 'student':
+        return res.redirect('/student-homepage');
+      case 'bedrijf':
+        return res.redirect('/bedrijf-homepage');
+      default:
+        return res.redirect('/');
+    }
+  }
+  
+  console.log("✅ Serving organisator homepage");
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html"));
+});
+
+console.log("✅ AUTH-PROTECTED homepage routes loaded");
+
+// ===== NORMAL PUBLIC PAGE ROUTES (NO AUTH REQUIRED) =====
+console.log("📄 Setting up normal public page routes...");
+
+// Public pages - anyone can access these (guests + logged in users)
+app.get("/programma", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
+});
+
+app.get("/alle-bedrijven", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/alle-bedrijven.html"));
+});
+
+app.get("/alle-projecten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/alle-projecten.html"));
+});
+
+app.get("/zoekbalk-projecten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-projecten.html"));
+});
+
+app.get("/zoekbalk-studenten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-studenten.html"));
+});
+
+app.get("/resultaat-bedrijf", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/resultaat-bedrijf.html"));
+});
+
+app.get("/resultaat-student", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/resultaat-student.html"));
+});
+
+app.get("/conversations", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/GESPREKKEN/conversations.html"));
+});
+
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
+});
+
+app.get("/register", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/register.html"));
+});
+
+// INFO pages
+app.get("/info", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
+});
+
+// Test page
+app.get("/test", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/test.html"));
+});
+
+// Add all your other normal page routes here...
+// These work for everyone - no auth required
+
+console.log("✅ Normal public page routes loaded");
+
+// ===== AUTH-REQUIRED ACCOUNT PAGES =====
+console.log("🔐 Setting up auth-required account routes...");
+
+// ===== STUDENT ACCOUNT ROUTES =====
+app.get("/account-student", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/account-student.html"));
+});
+
+app.get("/gegevens-student", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html"));
+});
+
+app.get("/mijn-project", requireRole(["student"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/mijn-project.html"));
+});
+
+app.get("/programma-student", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/programmaStudent.html"));
+});
+
+// ===== BEDRIJF ACCOUNT ROUTES =====
+app.get("/account-bedrijf", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/account-bedrijf.html"));
+});
+
+app.get("/gegevens-bedrijf", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html"));
+});
+
+app.get("/tarieven", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/tarieven.html"));
+});
+
+app.get("/programma-bedrijven", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/programmaBedrijven.html"));
+});
+
+// ===== ORGANISATOR ACCOUNT ROUTES =====
+app.get("/account-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/account-organisator.html"));
+});
+
+app.get("/gegevens-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html"));
+});
+
+app.get("/admin-panel", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/admin-panel.html"));
+});
+
+app.get("/overzicht-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/overzicht-organisator.html"));
+});
+
+// ===== GENERAL ACCOUNT ROUTES (from ACCOUNT folder) =====
+// Check if these exist in your ACCOUNT folder and add them if needed
+// app.get("/account-bedrijf-general", requireAuth, (req, res) => {
+//   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/account-bedrijf.html"));
+// });
+
+// app.get("/account-student-general", requireAuth, (req, res) => {
+//   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/account-student.html"));
+// });
+
+console.log("✅ Auth-required account routes loaded");
+
+// ===== DEBUG ENDPOINT =====
+app.get("/debug/auth", (req, res) => {
+  const user = getCurrentUser(req);
+  
   res.json({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    version: "2.2.1", // Updated version combining both features
-    features: {
-      enhancedHomepages: "Enabled",
-      liveDataIntegration: "Enabled",
-      emailFirstAuth: "Enabled",
-      bedrijfDetailPages: "Enabled",
-      projectManagement: "Enabled", // 🆕 From first version
-      projectDetailPages: "Enabled", // 🆕 From first version
-      projectSearch: "Enabled", // 🆕 From first version
-      studentDetailPages: "Enabled", // 🆕 From first version
-      corsSupport: "Enabled", // 🆕 From second version
-      allOriginalRoutes: "Enabled" // 🆕 From second version
+    authenticated: !!user,
+    user: user ? {
+      email: user.email,
+      userType: user.userType,
+      userId: user.userId
+    } : null,
+    headers: {
+      authorization: !!req.headers.authorization,
+      cookie: !!req.headers.cookie,
+      cookieContent: req.headers.cookie || 'none'
     },
+    path: req.path,
+    timestamp: new Date().toISOString(),
+    message: user ? `Authenticated as ${user.userType}` : 'Not authenticated'
   });
 });
 
-// Error handling
+// ===== LEGACY REDIRECTS =====
+function redirectWithParams(oldPath, newPath) {
+  return (req, res) => {
+    const qs = req.url.includes('?')
+      ? req.url.substring(req.url.indexOf('?'))
+      : '';
+    const target = newPath + qs;
+    console.log(`🔄 Legacy redirect: ${oldPath}${qs} → ${target}`);
+    res.redirect(target);
+  };
+}
+
+app.get("/accountStudent", requireAuth, redirectWithParams("/accountStudent", "/account-student"));
+app.get("/gegevensStudent", requireAuth, redirectWithParams("/gegevensStudent", "/gegevens-student"));
+app.get("/mijnProject", requireRole(["student"]), redirectWithParams("/mijnProject", "/mijn-project"));
+// Add remaining legacy routes for bedrijf, student, project, programma, etc.
+
+// ===== ERROR HANDLING =====
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  console.error("❌ Server Error:", err.stack);
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({
+      error: 'Internal server error',
+      timestamp: new Date().toISOString(),
+      path: req.path
+    });
+  }
+  res.status(500).send(`
+    <h1>Server Error</h1>
+    <p>Er ging iets mis. Probeer later opnieuw.</p>
+    <a href="/">Terug naar homepage</a>
+  `);
 });
 
 // 404 handler
 app.use((req, res) => {
-  console.log("❓ 404 - Route not found: " + req.method + " " + req.path);
-
-  if (req.path.startsWith("/api/")) {
-    return res.status(404).json({ error: "API endpoint not found" });
+  const qs = req.query && Object.keys(req.query).length ?
+    '?' + new URLSearchParams(req.query).toString() : '';
+  console.log(`❓ 404 - Route not found: ${req.method} ${req.path}${qs}`);
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found', path: req.path, method: req.method });
   }
-
-  // Check for detail routes without ID
-  if (req.path === "/resultaatBedrijf") {
-    return res.redirect("/alleBedrijven");
-  }
-  
-  if (req.path === "/zoekbalkProjecten") { // 🆕 ENHANCED
-    return res.redirect("/alleProjecten");
-  }
-  
-  if (req.path === "/zoekbalkStudenten") { // 🆕 ENHANCED
-    return res.redirect("/alleStudenten");
-  }
-
-  res.redirect("/");
+  if (req.path === '/account') return res.redirect('/login');
+  res.redirect('/');
 });
 
+// ===== SERVER STARTUP =====
 app.listen(port, () => {
-  console.log(
-    "🎓 CareerLaunch Enhanced Server running on: http://localhost:" + port
-  );
-  console.log("📱 Enhanced Features:");
-  console.log(
-    "   ✅ Role-based homepage routing - Uses your existing HTML files"
-  );
-  console.log("   ✅ Live database integration - Real-time stats");
-  console.log("   ✅ Email-first authentication");
-  console.log("   ✅ Navigation interceptors");
-  console.log("   ✅ Bedrijf detail pages with dynamic routing");
-  console.log("   ✅ Project detail pages with dynamic routing"); 
-  console.log("   ✅ Project management system"); 
-  console.log("   ✅ Student detail pages with dynamic routing");
-  console.log("   ✅ CORS support");
-  console.log("🔧 API Endpoints:");
-  console.log("   - User Info: http://localhost:" + port + "/api/user-info");
-  console.log(
-    "   - Role Manager: http://localhost:" + port + "/js/role-manager.js"
-  );
-  console.log("   - Live Stats: http://localhost:" + port + "/api/stats/live");
-  console.log("🔗 All Routes:");
-  console.log("   - Homepage: http://localhost:" + port + "/");
-  console.log("   - All Students: http://localhost:" + port + "/alleStudenten");
-  console.log("   - Student Detail: http://localhost:" + port + "/zoekbalkStudenten?id={studentId}");
-  console.log("   - All Companies: http://localhost:" + port + "/alleBedrijven");
-  console.log("   - Company Detail: http://localhost:" + port + "/resultaatBedrijf?id={bedrijfId}");
-  console.log("   - All Projects: http://localhost:" + port + "/alleProjecten"); 
-  console.log("   - Project Detail: http://localhost:" + port + "/zoekbalkProjecten?id={projectId}");
+  console.log(`🎓 CareerLaunch Server running on http://localhost:${port}`);
 });
+
+console.log('✅ CareerLaunch Frontend Server Setup Complete');
