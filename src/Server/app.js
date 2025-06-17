@@ -1,5 +1,4 @@
-// src/Server/app.js
-// =================
+// src/Server/app.js - CORRECTED VERSION: Only homepage auth, keep all other routes
 
 const express = require("express");
 const app = express();
@@ -65,9 +64,6 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}${qs}`);
   next();
 });
-
-// ===== ROLE-BASED HOMEPAGE =====
-app.use(serveRoleBasedHomepage);
 
 // ===== STATIC FILE SERVING =====
 app.use(express.static(path.join(__dirname, "../CareerLaunch")));
@@ -169,28 +165,278 @@ app.post("/api/send-invoice", async (req, res) => {
   }
 });
 
-// ===== PAGE ROUTES =====
-// Homepage (role-based)
+// ===== AUTH-PROTECTED HOMEPAGE ROUTES ONLY =====
+console.log("🔒 Setting up AUTH-PROTECTED homepage routes...");
+
+// Homepage route (/) - ONLY route with auth redirect logic
 app.get("/", (req, res) => {
+  console.log("🏠 Homepage (/) requested");
   const user = getCurrentUser(req);
-  if (user) return serveRoleBasedHomepage(req, res);
-  res.sendFile(guestHomepagePath);
+  
+  if (user) {
+    console.log(`👤 Authenticated user detected: ${user.userType}`);
+    
+    // Redirect authenticated users to their specific homepage
+    let targetHomepage;
+    switch(user.userType) {
+      case 'student':
+        targetHomepage = '/student-homepage';
+        break;
+      case 'bedrijf':
+        targetHomepage = '/bedrijf-homepage';
+        break;
+      case 'organisator':
+        targetHomepage = '/organisator-homepage';
+        break;
+      default:
+        console.warn(`❓ Unknown user type: ${user.userType}, serving guest page`);
+        return res.sendFile(guestHomepagePath);
+    }
+    
+    console.log(`🔄 Redirecting ${user.userType} from / to ${targetHomepage}`);
+    return res.redirect(targetHomepage);
+  } else {
+    console.log("👤 Guest user - serving guest homepage");
+    return res.sendFile(guestHomepagePath);
+  }
 });
-app.get("/index.html", (req, res) => res.redirect("/"));
 
-// Role-based
-app.get("/student-homepage", (req, res) =>
-  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html"))
-);
-app.get("/bedrijf-homepage", (req, res) =>
-  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html"))
-);
-app.get("/organisator-homepage", (req, res) =>
-  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html"))
-);
+// Redirect index.html to /
+app.get("/index.html", (req, res) => {
+  console.log("🔄 Redirecting index.html to /");
+  res.redirect("/");
+});
 
-// ... include all other page routes here (accounts, conversations,
-// programma, alle-bedrijven, alle-projecten, zoekbalk-projecten, etc.)
+// AUTH-PROTECTED role-specific homepages
+app.get("/student-homepage", (req, res) => {
+  console.log("📄 Student homepage requested");
+  
+  const user = getCurrentUser(req);
+  
+  if (!user) {
+    console.log("❌ No authenticated user - redirecting to guest homepage");
+    return res.redirect('/');
+  }
+  
+  if (user.userType !== 'student') {
+    console.log(`❌ Wrong user type (${user.userType}) for student page - redirecting to correct homepage`);
+    
+    switch(user.userType) {
+      case 'bedrijf':
+        return res.redirect('/bedrijf-homepage');
+      case 'organisator':
+        return res.redirect('/organisator-homepage');
+      default:
+        return res.redirect('/');
+    }
+  }
+  
+  console.log("✅ Serving student homepage");
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html"));
+});
+
+app.get("/bedrijf-homepage", (req, res) => {
+  console.log("📄 Bedrijf homepage requested");
+  
+  const user = getCurrentUser(req);
+  
+  if (!user) {
+    console.log("❌ No authenticated user - redirecting to guest homepage");
+    return res.redirect('/');
+  }
+  
+  if (user.userType !== 'bedrijf') {
+    console.log(`❌ Wrong user type (${user.userType}) for bedrijf page - redirecting to correct homepage`);
+    
+    switch(user.userType) {
+      case 'student':
+        return res.redirect('/student-homepage');
+      case 'organisator':
+        return res.redirect('/organisator-homepage');
+      default:
+        return res.redirect('/');
+    }
+  }
+  
+  console.log("✅ Serving bedrijf homepage");
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html"));
+});
+
+app.get("/organisator-homepage", (req, res) => {
+  console.log("📄 Organisator homepage requested");
+  
+  const user = getCurrentUser(req);
+  
+  if (!user) {
+    console.log("❌ No authenticated user - redirecting to guest homepage");
+    return res.redirect('/');
+  }
+  
+  if (user.userType !== 'organisator') {
+    console.log(`❌ Wrong user type (${user.userType}) for organisator page - redirecting to correct homepage`);
+    
+    switch(user.userType) {
+      case 'student':
+        return res.redirect('/student-homepage');
+      case 'bedrijf':
+        return res.redirect('/bedrijf-homepage');
+      default:
+        return res.redirect('/');
+    }
+  }
+  
+  console.log("✅ Serving organisator homepage");
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html"));
+});
+
+console.log("✅ AUTH-PROTECTED homepage routes loaded");
+
+// ===== NORMAL PUBLIC PAGE ROUTES (NO AUTH REQUIRED) =====
+console.log("📄 Setting up normal public page routes...");
+
+// Public pages - anyone can access these (guests + logged in users)
+app.get("/programma", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
+});
+
+app.get("/alle-bedrijven", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/alle-bedrijven.html"));
+});
+
+app.get("/alle-projecten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/alle-projecten.html"));
+});
+
+app.get("/zoekbalk-projecten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-projecten.html"));
+});
+
+app.get("/zoekbalk-studenten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-studenten.html"));
+});
+
+app.get("/resultaat-bedrijf", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/resultaat-bedrijf.html"));
+});
+
+app.get("/resultaat-student", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/resultaat-student.html"));
+});
+
+app.get("/conversations", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/GESPREKKEN/conversations.html"));
+});
+
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
+});
+
+app.get("/register", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/register.html"));
+});
+
+// INFO pages
+app.get("/info", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
+});
+
+// Test page
+app.get("/test", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/test.html"));
+});
+
+// Add all your other normal page routes here...
+// These work for everyone - no auth required
+
+console.log("✅ Normal public page routes loaded");
+
+// ===== AUTH-REQUIRED ACCOUNT PAGES =====
+console.log("🔐 Setting up auth-required account routes...");
+
+// ===== STUDENT ACCOUNT ROUTES =====
+app.get("/account-student", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/account-student.html"));
+});
+
+app.get("/gegevens-student", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html"));
+});
+
+app.get("/mijn-project", requireRole(["student"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/mijn-project.html"));
+});
+
+app.get("/programma-student", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/programmaStudent.html"));
+});
+
+// ===== BEDRIJF ACCOUNT ROUTES =====
+app.get("/account-bedrijf", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/account-bedrijf.html"));
+});
+
+app.get("/gegevens-bedrijf", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html"));
+});
+
+app.get("/tarieven", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/tarieven.html"));
+});
+
+app.get("/programma-bedrijven", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/programmaBedrijven.html"));
+});
+
+// ===== ORGANISATOR ACCOUNT ROUTES =====
+app.get("/account-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/account-organisator.html"));
+});
+
+app.get("/gegevens-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html"));
+});
+
+app.get("/admin-panel", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/admin-panel.html"));
+});
+
+app.get("/overzicht-organisator", requireRole(["organisator"]), (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/overzicht-organisator.html"));
+});
+
+// ===== GENERAL ACCOUNT ROUTES (from ACCOUNT folder) =====
+// Check if these exist in your ACCOUNT folder and add them if needed
+// app.get("/account-bedrijf-general", requireAuth, (req, res) => {
+//   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/account-bedrijf.html"));
+// });
+
+// app.get("/account-student-general", requireAuth, (req, res) => {
+//   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/account-student.html"));
+// });
+
+console.log("✅ Auth-required account routes loaded");
+
+// ===== DEBUG ENDPOINT =====
+app.get("/debug/auth", (req, res) => {
+  const user = getCurrentUser(req);
+  
+  res.json({
+    authenticated: !!user,
+    user: user ? {
+      email: user.email,
+      userType: user.userType,
+      userId: user.userId
+    } : null,
+    headers: {
+      authorization: !!req.headers.authorization,
+      cookie: !!req.headers.cookie,
+      cookieContent: req.headers.cookie || 'none'
+    },
+    path: req.path,
+    timestamp: new Date().toISOString(),
+    message: user ? `Authenticated as ${user.userType}` : 'Not authenticated'
+  });
+});
 
 // ===== LEGACY REDIRECTS =====
 function redirectWithParams(oldPath, newPath) {
@@ -207,7 +453,7 @@ function redirectWithParams(oldPath, newPath) {
 app.get("/accountStudent", requireAuth, redirectWithParams("/accountStudent", "/account-student"));
 app.get("/gegevensStudent", requireAuth, redirectWithParams("/gegevensStudent", "/gegevens-student"));
 app.get("/mijnProject", requireRole(["student"]), redirectWithParams("/mijnProject", "/mijn-project"));
-// ... add remaining legacy routes for bedrijf, student, project, programma, etc.
+// Add remaining legacy routes for bedrijf, student, project, programma, etc.
 
 // ===== ERROR HANDLING =====
 app.use((err, req, res, next) => {
@@ -242,3 +488,5 @@ app.use((req, res) => {
 app.listen(port, () => {
   console.log(`🎓 CareerLaunch Server running on http://localhost:${port}`);
 });
+
+console.log('✅ CareerLaunch Frontend Server Setup Complete');

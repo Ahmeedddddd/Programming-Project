@@ -1,4 +1,40 @@
-// src/JS/index.js - Production version met carousel en database projecten
+// src/JS/index.js - FIXED VERSION WITH AUTH CHECK AND HOMEPAGE REDIRECT
+
+// ===== AUTH CHECK FIRST =====
+function checkAuthAndRedirect() {
+    console.log('🔍 Checking authentication before loading homepage...');
+    
+    const authToken = localStorage.getItem('authToken');
+    const userType = localStorage.getItem('userType');
+    
+    // If user is logged in, redirect to their specific homepage
+    if (authToken && userType) {
+        console.log(`🔄 Authenticated user (${userType}) detected on guest page, redirecting...`);
+        
+        let targetPath;
+        switch(userType) {
+            case 'student':
+                targetPath = '/student-homepage';
+                break;
+            case 'bedrijf':
+                targetPath = '/bedrijf-homepage';
+                break;
+            case 'organisator':
+                targetPath = '/organisator-homepage';
+                break;
+            default:
+                console.warn('❓ Unknown user type:', userType);
+                return false; // Continue loading guest page
+        }
+        
+        console.log(`🚀 Redirecting to: ${targetPath}`);
+        window.location.href = targetPath;
+        return true; // Stop loading guest page
+    }
+    
+    console.log('👤 No authenticated user found, loading guest homepage');
+    return false; // Continue with guest homepage
+}
 
 // ===== GLOBAL VARIABLES =====
 let dataFetcher;
@@ -539,7 +575,7 @@ class CarouselManager {
             if (this.isAutoRotating) {
                 this.rotateNext();
             }
-        }, 30000); // Rotate every 5 seconds
+        }, 30000); // Rotate every 30 seconds
     }
 
     // Rotate to next items
@@ -652,29 +688,39 @@ function initializeAnimations() {
 }
 
 function initializeHoverEffects() {
-   // hover-in met guard
-document.addEventListener('mouseenter', (e) => {
-    if (typeof e.target.matches === 'function'
-        && e.target.matches('.preview-card, .project-card')) {
-      e.target.style.transform = 'translateY(-8px) scale(1.02)';
-      e.target.style.boxShadow = '0 15px 35px rgba(136, 21, 56, 0.2)';
-    }
-  }, true);
-  
-  // hover-out met guard
-  document.addEventListener('mouseleave', (e) => {
-    if (typeof e.target.matches === 'function'
-        && e.target.matches('.preview-card, .project-card')) {
-      e.target.style.transform = 'translateY(0) scale(1)';
-      e.target.style.boxShadow = '';
-    }
-  }, true);
-  
+    // hover-in met guard
+    document.addEventListener('mouseenter', (e) => {
+        if (typeof e.target.matches === 'function'
+            && e.target.matches('.preview-card, .project-card')) {
+            e.target.style.transform = 'translateY(-8px) scale(1.02)';
+            e.target.style.boxShadow = '0 15px 35px rgba(136, 21, 56, 0.2)';
+        }
+    }, true);
+
+    // hover-out met guard
+    document.addEventListener('mouseleave', (e) => {
+        if (typeof e.target.matches === 'function'
+            && e.target.matches('.preview-card, .project-card')) {
+            e.target.style.transform = 'translateY(0) scale(1)';
+            e.target.style.boxShadow = '';
+        }
+    }, true);
 }
 
-// ===== MAIN INITIALIZATION =====
+// ===== MAIN INITIALIZATION WITH AUTH CHECK =====
 async function initIndexAnimations() {
-    console.log('🎯 Initializing homepage...');
+    console.log('🎯 Starting homepage initialization...');
+
+    // 🔧 CRITICAL: Check auth first before loading anything
+    const shouldRedirect = checkAuthAndRedirect();
+    
+    if (shouldRedirect) {
+        console.log('🔄 Authenticated user detected, stopping guest homepage load');
+        return; // Stop execution, user is being redirected
+    }
+
+    // Continue with guest homepage initialization
+    console.log('👤 Loading guest homepage...');
 
     try {
         dataFetcher = new HomepageDataFetcher();
@@ -686,14 +732,14 @@ async function initIndexAnimations() {
 
         await dataFetcher.loadHomepageData();
 
-        console.log('✅ Homepage initialization completed');
+        console.log('✅ Guest homepage initialization completed');
 
     } catch (error) {
         console.error('❌ Failed to initialize homepage:', error);
     }
 }
 
-// ===== STARTUP =====
+// ===== STARTUP WITH AUTH CHECK =====
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initIndexAnimations);
 } else {
@@ -721,4 +767,37 @@ window.debugCarousel = () => {
     });
 };
 
-console.log('✅ Homepage script loaded with database projects and carousel');
+// 🆕 NEW: Global auth utility
+window.CareerLaunchAuth = {
+    isLoggedIn: () => !!localStorage.getItem('authToken'),
+    getUserType: () => localStorage.getItem('userType'),
+    getUserEmail: () => localStorage.getItem('userEmail'),
+    
+    logout: async function() {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                await fetch('http://localhost:3301/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('❌ Logout API error:', error);
+        } finally {
+            // Clear all data
+            localStorage.clear();
+            sessionStorage.clear();
+            document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            document.cookie = 'userType=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            
+            console.log('🚪 User logged out - redirecting to guest homepage');
+            window.location.href = '/';
+        }
+    }
+};
+
+console.log('✅ FIXED homepage script loaded with AUTH CHECK and carousel');

@@ -1,4 +1,4 @@
-// src/JS/ACCOUNT/login.js - SIMPLIFIED FINAL VERSION (SYNTAX FIXED)
+// src/JS/ACCOUNT/login.js - FIXED VERSION WITH DIRECT HOMEPAGE REDIRECT
 
 // Configuration
 const API_BASE_URL = 'http://localhost:3301';
@@ -38,10 +38,10 @@ function initializeLoginSystem() {
         passwordInput.addEventListener('input', clearErrorMessages);
     }
     
-    console.log('🔐 Simplified login system initialized');
+    console.log('🔐 Fixed login system initialized');
 }
 
-// 🎯 MAIN LOGIN HANDLER - Simplified for email-first auth
+// 🎯 MAIN LOGIN HANDLER - Fixed for direct homepage redirect
 async function handleLogin(event) {
     event.preventDefault();
     
@@ -66,7 +66,7 @@ async function handleLogin(event) {
         
         console.log('🔄 Attempting login for:', email);
         
-        // 📨 SIMPLE LOGIN REQUEST - just email and password
+        // 📨 LOGIN REQUEST
         const response = await fetch(LOGIN_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -94,7 +94,7 @@ async function handleLogin(event) {
     }
 }
 
-// Handle successful login
+// 🔧 FIXED: Handle successful login with direct homepage redirect
 async function handleLoginSuccess(data) {
     console.log('✅ Login successful:', data);
     
@@ -106,20 +106,44 @@ async function handleLoginSuccess(data) {
         localStorage.setItem('userName', data.user.naam || '');
         localStorage.setItem('userId', data.user.userId || '');
         
+        // 🆕 NIEUWE: Set cookies for server-side access
+        document.cookie = `authToken=${data.token}; path=/; SameSite=Lax; max-age=86400`;
+        document.cookie = `userType=${data.user.userType}; path=/; SameSite=Lax; max-age=86400`;
+        
         console.log('🔑 Auth data stored:', {
             userType: data.user.userType,
             email: data.user.email,
-            naam: data.user.naam
+            naam: data.user.naam,
+            inLocalStorage: true,
+            inCookies: true
         });
     }
     
     // Show success message
     showSuccessMessage('Login succesvol! Je wordt doorgestuurd naar je homepage...');
     
-    // 🚀 REDIRECT to homepage (which will automatically serve the correct role-based page)
+    // 🆕 FIXED: Direct redirect to specific homepage based on user type
+    const targetHomepage = getHomepageForUserType(data.user.userType);
+    
     setTimeout(function() {
-        window.location.href = '/';
+        console.log(`🏠 Redirecting ${data.user.userType} to: ${targetHomepage}`);
+        window.location.href = targetHomepage;
     }, 1000);
+}
+
+// 🆕 NEW: Get homepage URL for user type
+function getHomepageForUserType(userType) {
+    switch(userType) {
+        case 'student':
+            return '/student-homepage';
+        case 'bedrijf':
+            return '/bedrijf-homepage';
+        case 'organisator':
+            return '/organisator-homepage';
+        default:
+            console.warn('❓ Unknown user type:', userType);
+            return '/';
+    }
 }
 
 // Handle login errors
@@ -141,7 +165,7 @@ function handleLoginError(error) {
     showErrorMessage(errorMessage);
 }
 
-// Check if user is already logged in
+// 🔧 FIXED: Check existing login with direct redirect
 function checkExistingLogin() {
     const token = localStorage.getItem('authToken');
     const userType = localStorage.getItem('userType');
@@ -152,7 +176,7 @@ function checkExistingLogin() {
     }
 }
 
-// Verify existing token
+// 🔧 FIXED: Verify existing token with direct redirect
 async function verifyTokenAndRedirect(token, userType) {
     try {
         const response = await fetch(API_BASE_URL + '/api/auth/me', {
@@ -166,10 +190,13 @@ async function verifyTokenAndRedirect(token, userType) {
         if (response.ok) {
             const userData = await response.json();
             if (userData.success) {
-                console.log('✅ Valid token found, redirecting to homepage...');
+                console.log('✅ Valid token found, redirecting to specific homepage...');
                 showInfoMessage('Je bent al ingelogd. Je wordt doorgestuurd naar je homepage...');
+                
+                const targetHomepage = getHomepageForUserType(userType);
                 setTimeout(function() {
-                    window.location.href = '/';
+                    console.log(`🏠 Redirecting existing user (${userType}) to: ${targetHomepage}`);
+                    window.location.href = targetHomepage;
                 }, 1000);
                 return;
             }
@@ -192,7 +219,12 @@ function clearAuthData() {
     localStorage.removeItem('userId');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
-    console.log('🧹 Auth data cleared');
+    
+    // 🆕 NEW: Clear cookies
+    document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'userType=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    
+    console.log('🧹 Auth data cleared (localStorage + cookies)');
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -281,7 +313,7 @@ function clearErrorMessages() {
     });
 }
 
-// Global logout function for consistency
+// 🔧 FIXED: Enhanced logout function
 window.logout = async function() {
     try {
         const token = localStorage.getItem('authToken');
@@ -306,4 +338,4 @@ window.logout = async function() {
     }
 };
 
-console.log('✅ Simplified login system loaded - Ready for email-first authentication');
+console.log('✅ FIXED login system loaded - Direct homepage redirect enabled');
