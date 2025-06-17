@@ -286,9 +286,9 @@ h2 {
 /* ===== 7. ZOEKBALK ===== */
 .searchSection {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem 0 2rem 0;
+  flex-direction: column;     /* ⬅️ maak kolomsgewijs */
+  align-items: center;        /* centreer horizontaal */
+  padding: 2rem 0;
 }
 
 .searchBar {
@@ -343,6 +343,8 @@ h2 {
   transform: scale(1.1);
   box-shadow: var(--shadow-red);
 }
+
+
 
 /* ===== 8. SIDE MENU SYSTEEM ===== */
 
@@ -920,4 +922,73 @@ h2 {
         }
         
         
-  
+/* ─── MOOIERE INFOblocks ─── */
+
+/* Container full-width onder de balk */
+#searchResults, .search-results {
+  width: 100%;
+  max-width: 1200px;
+  margin: 1.5rem auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+/* Centreer als er maar één kaart is */
+#searchResults:has(> .infoblock:only-child),
+.search-results:has(> .infoblock:only-child) {
+  justify-content: center;
+}
+
+/* Kaart styling */
+#searchResults .infoblock,
+.search-results .infoblock {
+  position: relative;
+  background: var(--white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 1.5rem 1.25rem 1.25rem;
+  flex: 1 1 calc(33% - 1rem);
+  max-width: 320px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Gekleurde streep bovenaan */
+#searchResults .infoblock::before,
+.search-results .infoblock::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 6px;
+  background: linear-gradient(135deg, var(--primary-red), var(--secondary-red));
+}
+
+/* Hover effect */
+#searchResults .infoblock:hover,
+.search-results .infoblock:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+/* Titels en subtekst */
+#searchResults .infoblock h3 { margin-bottom: 0.5rem; font-size: 1.25rem; }
+#searchResults .infoblock p { margin: 0; color: var(--gray-600); font-size: 0.95rem; }
+
+/* Responsive: twee kolommen onder 768px, één onder 480px */
+@media (max-width: 768px) {
+  #searchResults .infoblock,
+  .search-results .infoblock {
+    flex: 1 1 calc(50% - 1rem);
+  }
+}
+@media (max-width: 480px) {
+  #searchResults .infoblock,
+  .search-results .infoblock {
+    flex: 1 1 100%;
+  }
+}
+
+/* Verberg de native datalist-dropdown */
+datalist { display: none !important; }

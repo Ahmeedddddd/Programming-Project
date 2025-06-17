@@ -26,6 +26,7 @@ const bedrijfRoutes = require("./ROUTES/bedrijf");
 const reservatiesRoutes = require("./ROUTES/reservaties");
 const studentRoutes = require("./ROUTES/student");
 const organisatorRoutes = require("./ROUTES/organisator");
+const projectRoutes = require("./ROUTES/project");
 
 // ===== EXPRESS CONFIGURATION =====
 app.use(cors({
@@ -329,6 +330,7 @@ app.use("/api/bedrijven", bedrijfRoutes);
 app.use("/api/studenten", studentRoutes);
 app.use("/api/reservaties", reservatiesRoutes);
 app.use("/api/organisator", organisatorRoutes);
+app.use("/api/projecten", projectRoutes);
 
 // Email service endpoint
 app.post("/api/send-invoice", async (req, res) => {
