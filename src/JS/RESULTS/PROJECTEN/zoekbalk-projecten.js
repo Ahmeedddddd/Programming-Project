@@ -8,6 +8,7 @@ class ProjectDetailManager {
         this.projectId = null;
         this.projectData = null;
         this.studentData = null;
+        this.API_BASE = window.location.origin; // FIXED: Use same port as frontend
         this.init();
     }
 
@@ -48,7 +49,9 @@ class ProjectDetailManager {
         const id = urlParams.get('id');
         console.log('🔗 Project ID from URL:', id);
         return id;
-    }    async loadProjectData() {
+    }
+
+    async loadProjectData() {
         try {
             console.log('📡 Loading project data and all students working on it...');
             
@@ -58,9 +61,9 @@ class ProjectDetailManager {
             
             // Try to get all students/projects data first
             const endpoints = [
-                { url: 'http://localhost:3301/api/studenten/projecten', name: 'backend-student-projects' },
-                { url: 'http://localhost:3301/api/studenten?hasProject=true', name: 'backend-filtered-students' },
-                { url: '/api/studenten?hasProject=true', name: 'frontend-fallback' }
+                { url: `${this.API_BASE}/api/studenten/projecten`, name: 'backend-student-projects' },
+                { url: `${this.API_BASE}/api/studenten?hasProject=true`, name: 'backend-filtered-students' },
+                { url: `${this.API_BASE}/api/studenten`, name: 'backend-all-students' }
             ];
             
             // Try each endpoint to get all project data
@@ -106,10 +109,13 @@ class ProjectDetailManager {
                     const allStudentsOnProject = allProjects.filter(project => 
                         project.projectTitel && 
                         project.projectTitel.trim() === projectTitle
-                    );                    this.projectData = {
+                    );
+
+                    this.projectData = {
                         titel: targetProject.projectTitel,
                         beschrijving: targetProject.projectBeschrijving,
-                        studenten: allStudentsOnProject.map(student => {                            console.log('🔍 Processing student:', {
+                        studenten: allStudentsOnProject.map(student => {
+                            console.log('🔍 Processing student:', {
                                 naam: student.studentNaam,
                                 tafelNr: student.tafelNr,
                                 hasTable: !!student.tafelNr
@@ -120,7 +126,8 @@ class ProjectDetailManager {
                                        `Student ${student.studentnummer}`;
                             
                             console.log('🏷️ Final name:', naam);
-                              return {
+                              
+                            return {
                                 naam: naam,
                                 email: student.email,
                                 opleiding: student.opleiding,
@@ -141,7 +148,8 @@ class ProjectDetailManager {
                         achternaam: s.achternaam,
                         tafelNr: s.tafelNr
                     })));
-                    return; // Success! Exit function                } else {
+                    return; // Success! Exit function
+                } else {
                     console.warn('⚠️ Project not found in API data');
                 }
             } else {
@@ -155,7 +163,9 @@ class ProjectDetailManager {
             console.error('❌ Error loading project data:', error);
             throw error;
         }
-    }    renderProjectDetails() {
+    }
+
+    renderProjectDetails() {
         try {
             console.log('🎨 Rendering project details...');
             
@@ -182,11 +192,15 @@ class ProjectDetailManager {
             console.error('❌ Error rendering project details:', error);
             this.showErrorState();
         }
-    }    updateHeader() {
+    }
+
+    updateHeader() {
         const projectTitle = document.querySelector('.project-title');
         if (projectTitle) {
             projectTitle.textContent = this.projectData.titel;
-        }        // Update skills/technologies if present - use first student's opleidingsrichting
+        }
+
+        // Update skills/technologies if present - use first student's opleidingsrichting
         const projectSkills = document.querySelector('.project-skills');
         if (projectSkills && this.projectData.studenten && this.projectData.studenten.length > 0) {
             const firstStudent = this.projectData.studenten[0];
@@ -216,7 +230,9 @@ class ProjectDetailManager {
         
         // Add project metadata
         this.addProjectMetadata(descriptionSection);
-    }    addProjectMetadata(container) {
+    }
+
+    addProjectMetadata(container) {
         // Remove existing metadata
         const existingMeta = container.querySelector('.project-metadata');
         if (existingMeta) {
@@ -231,7 +247,9 @@ class ProjectDetailManager {
             background: #f8f9fa;
             border-radius: 12px;
             border-left: 4px solid #881538;
-        `;        let metadataHTML = `<h3 style="color: #881538; margin-bottom: 1rem; font-size: 1.1rem;">Project Informatie</h3>`;
+        `;
+
+        let metadataHTML = `<h3 style="color: #881538; margin-bottom: 1rem; font-size: 1.1rem;">Project Informatie</h3>`;
         
         // Get unique values from all students
         if (this.projectData.studenten && this.projectData.studenten.length > 0) {
@@ -254,7 +272,9 @@ class ProjectDetailManager {
 
         metadata.innerHTML = metadataHTML;
         container.appendChild(metadata);
-    }    updateInfoSection() {
+    }
+
+    updateInfoSection() {
         const infoSection = document.querySelector('.info-section');
         if (!infoSection) return;
 
@@ -278,9 +298,13 @@ class ProjectDetailManager {
         // Update team list with all students working on the project
         const teamList = infoSection.querySelector('.team-list');
         if (teamList) {
-            teamList.innerHTML = '';            // Add all students working on this project
+            teamList.innerHTML = '';
+
+            // Add all students working on this project
             this.projectData.studenten.forEach((student, index) => {
-                const studentItem = document.createElement('li');                studentItem.style.cssText = `
+                const studentItem = document.createElement('li');
+
+                studentItem.style.cssText = `
                     margin-bottom: 1rem;
                     padding: 1rem;
                     background: #f8f9fa;
@@ -297,7 +321,7 @@ class ProjectDetailManager {
                 
                 // Make the entire card clickable
                 studentItem.addEventListener('click', () => {
-                    window.location.href = `/zoekbalkStudenten?id=${student.studentnummer}`;
+                    window.location.href = `/zoekbalk-studenten?id=${student.studentnummer}`;
                 });
                 
                 // Add hover effect
@@ -312,7 +336,8 @@ class ProjectDetailManager {
                     studentItem.style.boxShadow = 'none';
                     studentItem.style.background = '#f8f9fa';
                 });
-                  studentItem.innerHTML = `
+
+                studentItem.innerHTML = `
                     <div style="flex: 1;">
                         <div style="font-weight: 600; color: #881538; margin-bottom: 0.5rem;">
                             👤 ${student.naam}
@@ -324,7 +349,9 @@ class ProjectDetailManager {
                         <div style="font-size: 0.9rem; color: #666;">
                             📧 ${student.email || 'Geen email beschikbaar'}
                         </div>
-                    </div>                    <div style="
+                    </div>
+
+                    <div style="
                         display: inline-block;
                         background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
                         color: white;
@@ -345,12 +372,14 @@ class ProjectDetailManager {
                 teamList.appendChild(studentItem);
             });
         }
-    }addBackButton() {
+    }
+
+    addBackButton() {
         // Check if back button already exists
         if (document.querySelector('.back-button')) return;
 
         const backButton = document.createElement('a');
-        backButton.href = '/alleProjecten';
+        backButton.href = '/alle-projecten';
         backButton.className = 'back-button';
         backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Terug naar projecten';
         backButton.style.cssText = `
@@ -382,7 +411,9 @@ class ProjectDetailManager {
             backButton.style.color = '#881538';
             backButton.style.transform = 'translateY(0)';
             backButton.style.boxShadow = '0 4px 15px rgba(136, 21, 56, 0.2)';
-        });        document.body.appendChild(backButton);
+        });
+
+        document.body.appendChild(backButton);
     }
 
     removeLoadingStates() {
@@ -427,7 +458,7 @@ class ProjectDetailManager {
                     <i class="fas fa-redo"></i> Probeer opnieuw
                 </button>
                 <br><br>
-                <a href="/alleProjecten" class="back-btn">
+                <a href="/alle-projecten" class="back-btn">
                     <i class="fas fa-arrow-left"></i> Terug naar alle projecten
                 </a>
             `;

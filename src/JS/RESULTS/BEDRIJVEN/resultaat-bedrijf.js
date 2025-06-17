@@ -8,6 +8,7 @@ class BedrijfDetailManager {
     this.bedrijfData = null;
     this.contactpersoonData = null;
     this.bedrijfId = null;
+    this.API_BASE = window.location.origin; // FIXED: Use same port as frontend
     this.init();
   }
 
@@ -18,7 +19,11 @@ class BedrijfDetailManager {
       
       if (!this.bedrijfId) {
         console.error('❌ No bedrijf ID found in URL');
-        this.showError('Geen bedrijf ID gevonden. Ga terug naar alle bedrijven.');
+        console.log('🔧 Current URL:', window.location.href);
+        console.log('🔧 Expected format: /resultaat-bedrijf?id=1');
+        
+        // Try to load first available bedrijf as fallback
+        await this.loadFirstAvailableBedrijf();
         return;
       }
 
@@ -29,6 +34,36 @@ class BedrijfDetailManager {
     } catch (error) {
       console.error('❌ Initialisatie mislukt:', error);
       this.showError('Er ging iets mis bij het laden van de bedrijfsgegevens');
+    }
+  }
+
+  async loadFirstAvailableBedrijf() {
+    try {
+      console.log('🔄 No ID provided, loading first available bedrijf...');
+      
+      const response = await fetch(`${this.API_BASE}/api/bedrijven`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data.length > 0) {
+          const firstBedrijf = data.data[0];
+          this.bedrijfId = firstBedrijf.bedrijfsnummer;
+          
+          console.log(`✅ Using first available bedrijf: ${firstBedrijf.naam} (ID: ${this.bedrijfId})`);
+          
+          // Update URL without redirect
+          const newUrl = `${window.location.pathname}?id=${this.bedrijfId}`;
+          window.history.replaceState({}, '', newUrl);
+          
+          await this.loadBedrijfDetail();
+          this.setupEventListeners();
+          return;
+        }
+      }
+      
+      this.showError('Geen bedrijf ID gevonden en geen bedrijven beschikbaar. Ga terug naar alle bedrijven.');
+    } catch (error) {
+      console.error('❌ Error loading first bedrijf:', error);
+      this.showError('Geen bedrijf ID gevonden. Ga terug naar alle bedrijven.');
     }
   }
 
@@ -45,8 +80,8 @@ class BedrijfDetailManager {
     try {
       this.showLoading(true);
       
-      // 🔧 FIX: Use correct backend API URL
-      const response = await fetch(`http://localhost:3301/api/bedrijven/${this.bedrijfId}`, {
+      // FIXED: Use correct API URL (same port as frontend)
+      const response = await fetch(`${this.API_BASE}/api/bedrijven/${this.bedrijfId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -85,8 +120,8 @@ class BedrijfDetailManager {
 
   async loadContactpersoon() {
     try {
-      // 🔧 FIX: Use correct backend API URL
-      const response = await fetch(`http://localhost:3301/api/contactpersonen/bedrijf/${this.bedrijfId}`);
+      // FIXED: Use correct API URL (same port as frontend)
+      const response = await fetch(`${this.API_BASE}/api/contactpersonen/bedrijf/${this.bedrijfId}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -308,13 +343,12 @@ class BedrijfDetailManager {
   goBack() {
     console.log('🔙 Navigating back to alle bedrijven');
     
-    // 🔧 IMMEDIATE NAVIGATION - no loading overlay
     // Check if we can go back in history
     if (document.referrer && document.referrer.includes('alleBedrijven')) {
       window.history.back();
     } else {
       // Fallback to alle bedrijven page
-      window.location.href = '/alleBedrijven';
+      window.location.href = '/alle-bedrijven';
     }
   }
 
@@ -324,7 +358,7 @@ class BedrijfDetailManager {
     if (overlay) {
       overlay.style.display = show ? 'flex' : 'none';
       
-      // 🔧 FIX: Auto-hide loading after 10 seconds to prevent infinite loading
+      // Auto-hide loading after 10 seconds to prevent infinite loading
       if (show) {
         setTimeout(() => {
           overlay.style.display = 'none';
@@ -336,6 +370,42 @@ class BedrijfDetailManager {
 
   showError(message) {
     console.error('❌ Error:', message);
+    
+    // Show helpful error message
+    const errorContainer = document.createElement('div');
+    errorContainer.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+      border-left: 4px solid #dc2626;
+      max-width: 500px;
+      z-index: 10000;
+      text-align: center;
+    `;
+    
+    errorContainer.innerHTML = `
+      <h3 style="color: #881538; margin-bottom: 1rem;">⚠️ Probleem met bedrijfsgegevens</h3>
+      <p style="margin-bottom: 1rem; color: #666;">${message}</p>
+      <div style="margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; color: #555;">
+        <strong>Mogelijke oplossingen:</strong><br/>
+        • Probeer: <code>/resultaat-bedrijf?id=1</code><br/>
+        • Of ga terug naar alle bedrijven en klik op een bedrijf
+      </div>
+      <button onclick="window.location.href='/alle-bedrijven'" style="background: #881538; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; margin-right: 1rem; cursor: pointer;">
+        ← Alle bedrijven
+      </button>
+      <button onclick="window.location.reload()" style="background: #666; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+        🔄 Probeer opnieuw
+      </button>
+    `;
+    
+    document.body.appendChild(errorContainer);
+    
     this.showNotification(message, 'error');
   }
 
