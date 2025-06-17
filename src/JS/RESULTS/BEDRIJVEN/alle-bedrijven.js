@@ -155,45 +155,25 @@ class AlleBedrijvenManager {
       this.navigateToBedrijfDetail(bedrijf.bedrijfsnummer);
     }); // Get company icon based on sector
 
-    const icon = this.getCompanyIcon(bedrijf.sector); // Get description or fallback (use 'bechrijving' as per your SQL schema)
+    // Get description or fallback
     const beschrijving =
-      bedrijf.bechrijving || "Meer informatie beschikbaar op de detailpagina.";
+      bedrijf.bechrijving ||
+      bedrijf.beschrijving ||
+      "Meer informatie beschikbaar op de detailpagina.";
 
     article.innerHTML = `
-      <h2 class="bedrijfNaam">${icon} ${bedrijf.naam}</h2>
-      <p class="bedrijfSector">${bedrijf.sector}</p>
-      <p class="bedrijfBeschrijving">
-  ${beschrijving}
-      </p>
-      <div class="bedrijf-info">
-        <span class="bedrijf-locatie">📍 ${bedrijf.gemeente}</span>
-        <span class="bedrijf-tafel">🏷️ Tafel ${bedrijf.tafelNr || "TBD"}</span>
-      </div>
-    `;
+      <h2 class="bedrijfNaam"> ${bedrijf.naam}</h2>
+      <p class="bedrijfSector">${bedrijf.sector}</p>
+      <p class="bedrijfBeschrijving">
+        ${beschrijving}
+      </p>
+      <div class="bedrijf-info">
+        <span class="bedrijf-locatie">📍 ${bedrijf.gemeente}</span>
+        <span class="bedrijf-tafel">🏷️ Tafel ${bedrijf.tafelNr || "TBD"}</span>
+      </div>
+    `;
 
     return article;
-  }
-
-  getCompanyIcon(sector) {
-    const sectorIcons = {
-      AI: "🤖",
-      "Health informatics": "⚕️",
-      "Netwerk- en infrastructuurtechnologie": "🌐",
-      "Informatie- en communicatietechnologie": "💻",
-      Duurzaamheid: "🌱",
-      Onderwijs: "📚",
-      Gezondheidszorg: "🏥",
-      Landbouwtechnologie: "🚜",
-      Luchtvaartindustrie: "✈️",
-      Software: "💻",
-      Biotech: "🧬",
-      Milieu: "🌿",
-      "IT Consulting": "💼",
-      "Design & Engineering": "🎨",
-      "Duurzame Energie": "⚡",
-      Design: "🎨",
-    };
-    return sectorIcons[sector] || "🏢";
   }
 
   navigateToBedrijfDetail(bedrijfsnummer) {

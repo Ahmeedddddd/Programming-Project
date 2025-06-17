@@ -92,7 +92,7 @@
 
 .projectTitel {
     color: #881538;
-    font-size: 1.4rem;
+    font-size: 1.4rem !important;
     font-weight: 700;
     margin-bottom: 1rem;
     position: relative;
@@ -116,39 +116,28 @@
 
 .projectBeschrijving {
     color: #333;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 0.95rem;    line-height: 1.6;
     margin-bottom: 1.5rem;
     text-align: justify;
 }
-
-/* Project Type Icons */
-.projectTegel:nth-child(1) .projectTitel::before { content: "🤖 "; }
-.projectTegel:nth-child(2) .projectTitel::before { content: "👁️ "; }
-.projectTegel:nth-child(3) .projectTitel::before { content: "🧠 "; }
-.projectTegel:nth-child(4) .projectTitel::before { content: "🏗️ "; }
-.projectTegel:nth-child(5) .projectTitel::before { content: "🌐 "; }
-.projectTegel:nth-child(6) .projectTitel::before { content: "⚡ "; }
-.projectTegel:nth-child(7) .projectTitel::before { content: "🏥 "; }
-.projectTegel:nth-child(8) .projectTitel::before { content: "🔐 "; }
-.projectTegel:nth-child(9) .projectTitel::before { content: "🤖 "; }
-.projectTegel:nth-child(10) .projectTitel::before { content: "🎵 "; }
 
 /* Technology Tags */
 .projectTegel::after {
     content: "Bekijk Project →";
     position: absolute;
-    bottom: 1.5rem;
-    right: 2rem;
+    bottom: 1rem;
+    right: 1rem;
     background: #881538;
     color: white;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
     opacity: 0;
     transform: translateY(10px);
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(136, 21, 56, 0.3);
+    z-index: 10;
 }
 
 .projectTegel:hover::after {
@@ -303,13 +292,8 @@
     .projectTegel {
         padding: 1rem;
     }
-    
-    .page-title {
+      .page-title {
         font-size: 1.8rem;
-    }
-    
-    .projectTitel {
-        font-size: 1.2rem;
     }
     
     .pfpContainer {

@@ -1,4 +1,4 @@
-// admin-panel.js - Frontend JavaScript voor CareerLaunch Admin Panel
+// admin-panel.js - Fixed version met correcte database mapping
 
 class AdminPanel {
     constructor() {
@@ -9,7 +9,7 @@ class AdminPanel {
         this.appointments = [];
         this.currentEditId = null;
         this.currentEditType = null;
-        this.authToken = this.getValidAuthToken(); // Verbeterde token validatie
+        this.authToken = this.getValidAuthToken();
         
         console.log('🚀 AdminPanel initializing...');
         console.log('Auth token available:', !!this.authToken);
@@ -23,11 +23,9 @@ class AdminPanel {
         const tokenTimestamp = localStorage.getItem('authTokenTimestamp');
         const isTestToken = localStorage.getItem('isTestToken') === 'true';
         
-        // Als het een test token is, check of de pagina is gerefresht
         if (isTestToken && tokenTimestamp) {
             const sessionStartTime = sessionStorage.getItem('sessionStartTime');
             if (!sessionStartTime) {
-                // Pagina is gerefresht, test token expiren
                 console.log('🔄 Pagina refresh gedetecteerd - test token expired');
                 this.clearAuthToken();
                 return null;
@@ -44,14 +42,11 @@ class AdminPanel {
         localStorage.setItem('isTestToken', isTestToken.toString());
         
         if (isTestToken) {
-            // Stel session marker in voor test tokens
             sessionStorage.setItem('sessionStartTime', Date.now().toString());
             console.log('🧪 Test token ingesteld - vervalt bij pagina refresh');
         }
         
         console.log('✅ Auth token set successfully');
-        
-        // Reload data with authentication
         this.loadAllData();
     }
 
@@ -74,26 +69,16 @@ class AdminPanel {
 
     async init() {
         console.log('🔧 Setting up event listeners...');
-        // Event listeners instellen
         this.setupEventListeners();
-        
-        // Zorg ervoor dat modal standaard verborgen is
         this.initModal();
         
         console.log('📊 Loading data...');
-        // Data laden
         await this.loadAllData();
         
-        // VERWIJDERD: Secties standaard gesloten laten
-        // this.expandSection('students-section');
-        
-        // Voeg tijdelijke test knop toe
         this.addTestAuthButton();
-        
         console.log('✅ AdminPanel initialization complete!');
     }
 
-    // ===== MODAL INITIALIZATION =====
     initModal() {
         const modal = document.getElementById('modal');
         if (modal) {
@@ -101,9 +86,7 @@ class AdminPanel {
         }
     }
 
-    // ===== TIJDELIJKE TEST FUNCTIE =====
     addTestAuthButton() {
-        // Voeg test knop toe aan header
         const header = document.querySelector('.header');
         if (header && !document.getElementById('test-auth-btn')) {
             const testButton = document.createElement('button');
@@ -128,7 +111,6 @@ class AdminPanel {
                 animation: pulse 2s infinite;
             `;
             
-            // Voeg CSS animatie toe voor attention
             const pulseStyle = document.createElement('style');
             pulseStyle.textContent = `
                 @keyframes pulse {
@@ -140,13 +122,10 @@ class AdminPanel {
             document.head.appendChild(pulseStyle);
             
             testButton.addEventListener('click', () => {
-                // Waarschuwing voor test gebruik
                 if (confirm('⚠️ WAARSCHUWING: Dit is een test functie!\n\nDeze knop geeft je tijdelijk admin rechten voor testing.\nAlleen gebruiken in development omgeving.\n\nTest token vervalt automatisch bij pagina refresh.\n\nDoorgaan?')) {
-                    // Stel een dummy auth token in voor testing (met test flag)
                     this.setAuthToken('test-admin-token-12345', true);
                     this.showTemporaryMessage('🔑 Test auth token ingesteld! Vervalt bij refresh.', 'success');
                     
-                    // Toon extra info
                     console.log('🧪 TEST MODE ACTIVATED');
                     console.log('📝 Nu kan je testen:');
                     console.log('   - Studenten toevoegen/bewerken/verwijderen');
@@ -155,7 +134,6 @@ class AdminPanel {
                     console.log('🔄 Token vervalt automatisch bij pagina refresh');
                     console.log('🧹 Gebruik removeTestButton() om deze knop te verwijderen');
                     
-                    // Verberg de knop na gebruik
                     testButton.style.display = 'none';
                 }
             });
@@ -174,7 +152,6 @@ class AdminPanel {
         }
     }
 
-    // ===== TEST AUTH TOKEN HELPER =====
     enableTestMode() {
         this.setAuthToken('test-admin-token-12345', true);
         this.showTemporaryMessage('🧪 Test modus geactiveerd! Vervalt bij refresh.', 'info');
@@ -220,7 +197,7 @@ class AdminPanel {
             }
         });
 
-        // Section toggle listeners (nu we onclick attributes hebben weggehaald)
+        // Section toggle listeners
         document.querySelectorAll('.section-header').forEach(header => {
             header.addEventListener('click', () => {
                 const sectionId = header.parentElement.id;
@@ -253,18 +230,27 @@ class AdminPanel {
         }
 
         try {
+            console.log(`🌐 API Request: ${method} ${endpoint}`, { requireAuth, hasToken: !!this.authToken });
+            
             const response = await fetch(`${this.API_BASE_URL}${endpoint}`, config);
             
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || error.error || 'API request failed');
+                let errorMessage;
+                try {
+                    const error = await response.json();
+                    errorMessage = error.message || error.error || `HTTP ${response.status}: ${response.statusText}`;
+                } catch {
+                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                }
+                throw new Error(errorMessage);
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log(`✅ API Response:`, result);
+            return result;
         } catch (error) {
-            console.error('API Error:', error);
+            console.error('❌ API Error:', error);
             
-            // Show different messages based on the error type
             if (error.message?.includes('Access token required') && !this.authToken) {
                 if (method !== 'GET') {
                     this.showTemporaryMessage('🔒 Login als organisator vereist voor deze actie', 'info');
@@ -293,7 +279,7 @@ class AdminPanel {
 
     async loadStatistics() {
         try {
-            // Gebruik alleen public endpoints voor statistieken
+            // FIXED: gebruik correcte endpoints voor stats
             const [studentStats, companyStats, projectStats] = await Promise.all([
                 this.apiRequest('/studenten').catch(() => ({ data: [] })),
                 this.apiRequest('/bedrijven').catch(() => ({ data: [] })),
@@ -309,13 +295,13 @@ class AdminPanel {
             document.getElementById('company-count').textContent = companyCount;
             document.getElementById('project-count').textContent = projectCount;
             
-            // Voor appointments, probeer eerst zonder auth, anders zet op 0
+            // Voor appointments - probeer met auth token
             try {
                 const appointmentStats = await this.apiRequest('/reservaties', 'GET', null, true);
                 document.getElementById('appointment-count').textContent = appointmentStats.count || appointmentStats.data?.length || 0;
             } catch (error) {
-                // Silent fail - appointments require auth
                 document.getElementById('appointment-count').textContent = '0';
+                console.log('ℹ️ Appointments require authentication');
             }
         } catch (error) {
             console.error('Failed to load statistics:', error);
@@ -364,9 +350,10 @@ class AdminPanel {
         try {
             const response = await this.apiRequest('/reservaties', 'GET', null, true);
             this.appointments = response.data || response;
+            console.log('📅 Loaded appointments:', this.appointments);
             this.renderAppointments();
         } catch (error) {
-            // Silent fail for appointments - they require auth
+            console.log('ℹ️ Could not load appointments:', error.message);
             this.appointments = [];
             document.getElementById('appointments-list').innerHTML = 
                 '<div class="no-items">🔒 Login vereist om afspraken te bekijken</div>';
@@ -387,20 +374,14 @@ class AdminPanel {
     showModal() {
         const modal = document.getElementById('modal');
         if (modal) {
-            // FLEXBOX MODAL - Simpel en clean!
             modal.style.display = 'flex';
-            // CSS zorgt automatisch voor align-items: center en justify-content: center
-            
-            // Scroll naar top van pagina voor betere UX
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
             
-            // Blokkeer body scroll tijdens modal
             document.body.style.overflow = 'hidden';
             
-            // Focus management voor accessibility
             setTimeout(() => {
                 const firstInput = modal.querySelector('input, textarea, button');
                 if (firstInput) {
@@ -414,8 +395,6 @@ class AdminPanel {
         const modal = document.getElementById('modal');
         if (modal) {
             modal.style.display = 'none';
-            
-            // Herstel body scroll
             document.body.style.overflow = '';
         }
         this.currentEditId = null;
@@ -437,6 +416,8 @@ class AdminPanel {
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             transform: translateX(100%);
             transition: transform 0.3s ease;
+            max-width: 400px;
+            word-wrap: break-word;
             ${type === 'success' ? 
                 'background: linear-gradient(135deg, #27ae60, #2ecc71);' : 
                 type === 'error' ?
@@ -459,7 +440,7 @@ class AdminPanel {
                     messageEl.parentNode.removeChild(messageEl);
                 }
             }, 300);
-        }, 3000);
+        }, 4000); // FIXED: Longer display time for better UX
     }
 
     getFieldLabel(field) {
@@ -505,13 +486,21 @@ class AdminPanel {
 
     formatTime(timeString) {
         if (!timeString) return 'Onbekend';
-        const time = new Date(`2000-01-01T${timeString}`);
-        return time.toLocaleTimeString('nl-BE', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        // FIXED: Handle time strings properly
+        if (timeString.includes('T')) {
+            const date = new Date(timeString);
+            return date.toLocaleTimeString('nl-BE', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } else {
+            // Handle time-only strings like "13:30:00"
+            const timeParts = timeString.split(':');
+            return `${timeParts[0]}:${timeParts[1]}`;
+        }
     }
 
+    // FIXED: Status mappings die overeenkomen met database
     getStatusText(status) {
         const statusMap = {
             'gepland': 'Gepland',
@@ -519,10 +508,27 @@ class AdminPanel {
             'geannuleerd': 'Geannuleerd',
             'afgewerkt': 'Afgewerkt',
             'no-show': 'No-show',
+            // Extra statuses from backend
             'aangevraagd': 'Aangevraagd',
-            'geweigerd': 'Geweigerd'
+            'geweigerd': 'Geweigerd',
+            'voltooid': 'Voltooid'
         };
         return statusMap[status] || status;
+    }
+
+    // FIXED: Status color classes
+    getStatusClass(status) {
+        const statusClasses = {
+            'gepland': 'status-gepland',
+            'bevestigd': 'status-bevestigd',
+            'geannuleerd': 'status-geannuleerd',
+            'afgewerkt': 'status-afgewerkt',
+            'no-show': 'status-no-show',
+            'aangevraagd': 'status-aangevraagd',
+            'geweigerd': 'status-geweigerd',
+            'voltooid': 'status-voltooid'
+        };
+        return statusClasses[status] || 'status-onbekend';
     }
 
     // ===== RENDERING METHODS =====
@@ -620,6 +626,7 @@ class AdminPanel {
         `).join('');
     }
 
+    // FIXED: Appointments rendering met correcte status mapping
     renderAppointments(searchTerm = '') {
         const container = document.getElementById('appointments-list');
         if (!container) return;
@@ -648,7 +655,7 @@ class AdminPanel {
                 <div class="item-name">${appointment.studentNaam} ↔ ${appointment.bedrijfNaam}</div>
                 <div class="item-info">
                     ${this.formatDateTime(appointment.startTijd)} - ${this.formatTime(appointment.eindTijd)} • 
-                    <span class="status-badge status-${appointment.status}">${this.getStatusText(appointment.status)}</span>
+                    <span class="status-badge ${this.getStatusClass(appointment.status)}">${this.getStatusText(appointment.status)}</span>
                 </div>
             </div>
         `).join('');
@@ -656,7 +663,6 @@ class AdminPanel {
 
     // ===== MODAL METHODS =====
     showAddModal(type) {
-        // Check auth voor add operaties
         if (!this.requiresAuth('nieuwe items toevoegen')) {
             return;
         }
@@ -696,7 +702,6 @@ class AdminPanel {
     }
 
     showEditModal(type, id) {
-        // Check auth voor edit operaties
         if (!this.requiresAuth('items bewerken')) {
             return;
         }
@@ -726,7 +731,10 @@ class AdminPanel {
                 break;
         }
 
-        if (!item) return;
+        if (!item) {
+            this.showTemporaryMessage('❌ Item niet gevonden', 'error');
+            return;
+        }
         
         document.getElementById('modal-title').textContent = title;
         
@@ -779,7 +787,10 @@ class AdminPanel {
                 break;
         }
 
-        if (!item) return;
+        if (!item) {
+            this.showTemporaryMessage('❌ Item niet gevonden', 'error');
+            return;
+        }
 
         document.getElementById('modal-title').textContent = title;
         
@@ -798,7 +809,7 @@ class AdminPanel {
                 } else if (key === 'eindTijd') {
                     displayValue = this.formatTime(value);
                 } else if (key === 'status') {
-                    displayValue = `<span class="status-badge status-${value}">${this.getStatusText(value)}</span>`;
+                    displayValue = `<span class="status-badge ${this.getStatusClass(value)}">${this.getStatusText(value)}</span>`;
                 }
                 
                 detailsHtml += `
@@ -932,6 +943,7 @@ class AdminPanel {
         `;
     }
 
+    // FIXED: Appointment form met correcte database statuses
     getAppointmentFormHtml(item = null) {
         return `
             <form id="data-form">
@@ -954,9 +966,8 @@ class AdminPanel {
                 <div class="form-group">
                     <label class="form-label">Status *</label>
                     <select class="form-input" name="status" required>
-                        <option value="aangevraagd" ${item?.status === 'aangevraagd' ? 'selected' : ''}>Aangevraagd</option>
+                        <option value="gepland" ${item?.status === 'gepland' ? 'selected' : ''}>Gepland</option>
                         <option value="bevestigd" ${item?.status === 'bevestigd' ? 'selected' : ''}>Bevestigd</option>
-                        <option value="geweigerd" ${item?.status === 'geweigerd' ? 'selected' : ''}>Geweigerd</option>
                         <option value="geannuleerd" ${item?.status === 'geannuleerd' ? 'selected' : ''}>Geannuleerd</option>
                         <option value="afgewerkt" ${item?.status === 'afgewerkt' ? 'selected' : ''}>Afgewerkt</option>
                         <option value="no-show" ${item?.status === 'no-show' ? 'selected' : ''}>No-show</option>
@@ -971,7 +982,6 @@ class AdminPanel {
     async handleFormSubmit(event) {
         event.preventDefault();
         
-        // Check auth voor alle form submissions (CREATE/UPDATE vereisen auth)
         if (!this.requiresAuth('studenten/bedrijven/afspraken beheren')) {
             return;
         }
@@ -996,6 +1006,7 @@ class AdminPanel {
                         await this.loadCompanies();
                         break;
                     case 'appointment':
+                        // FIXED: Use correct status endpoint
                         await this.apiRequest(`/reservaties/${this.currentEditId}/status`, 'PUT', data, true);
                         await this.loadAppointments();
                         break;
@@ -1012,7 +1023,6 @@ class AdminPanel {
                         await this.apiRequest('/bedrijven', 'POST', data, true);
                         await this.loadCompanies();
                         break;
-                    // Note: Appointments worden meestal aangemaakt door studenten/bedrijven, niet via admin panel
                 }
                 this.showTemporaryMessage('✅ Item succesvol toegevoegd!', 'success');
             }
@@ -1022,11 +1032,11 @@ class AdminPanel {
             this.closeModal();
         } catch (error) {
             // Error message is already shown by apiRequest
+            console.error('Form submit error:', error);
         }
     }
 
     async deleteItem(type, id) {
-        // Check auth voor delete operaties
         if (!this.requiresAuth('items verwijderen')) {
             return;
         }
@@ -1065,6 +1075,7 @@ class AdminPanel {
                         await this.loadCompanies();
                         break;
                     case 'appointment':
+                        // FIXED: Use correct endpoint
                         await this.apiRequest(`/reservaties/${id}`, 'DELETE', null, true);
                         await this.loadAppointments();
                         break;
@@ -1073,14 +1084,13 @@ class AdminPanel {
                 await this.loadStatistics();
                 this.showTemporaryMessage('🗑️ Item succesvol verwijderd!', 'success');
             } catch (error) {
-                // Error message is already shown by apiRequest
+                console.error('Delete error:', error);
             }
         }
     }
 }
 
 // ===== MENU TOGGLE FUNCTIONS =====
-// Functies voor de navigatie menu (uit de originele HTML)
 function toggleMenu() {
     const sideMenu = document.getElementById('sideMenu');
     if (sideMenu) {
@@ -1096,7 +1106,6 @@ window.toggleMenu = toggleMenu;
 
 // Initialize admin panel when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Zet session marker om refresh detection mogelijk te maken
     if (!sessionStorage.getItem('sessionStartTime')) {
         sessionStorage.setItem('sessionStartTime', Date.now().toString());
     }
@@ -1117,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('- adminPanel - Direct toegang tot AdminPanel instance');
 });
 
-// Voeg CSS styling toe voor appointments sectie
+// FIXED: Add missing CSS for new status types
 function addAppointmentStyling() {
     const style = document.createElement('style');
     style.textContent = `
@@ -1141,7 +1150,7 @@ function addAppointmentStyling() {
             color: #881538; 
         }
         
-        /* Status badges verbeterd */
+        /* FIXED: Uitgebreide status badges voor alle statuses */
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 6px;
@@ -1152,18 +1161,13 @@ function addAppointmentStyling() {
             display: inline-block;
         }
 
-        .status-aangevraagd { 
-            background: linear-gradient(135deg, #f39c12, #e67e22); 
+        .status-gepland { 
+            background: linear-gradient(135deg, #3498db, #2980b9); 
             color: white; 
         }
         
         .status-bevestigd { 
             background: linear-gradient(135deg, #27ae60, #2ecc71); 
-            color: white; 
-        }
-        
-        .status-geweigerd { 
-            background: linear-gradient(135deg, #e74c3c, #c0392b); 
             color: white; 
         }
         
@@ -1179,6 +1183,27 @@ function addAppointmentStyling() {
         
         .status-no-show { 
             background: linear-gradient(135deg, #636e72, #2d3436); 
+            color: white; 
+        }
+
+        /* Extra statuses from backend */
+        .status-aangevraagd { 
+            background: linear-gradient(135deg, #f39c12, #e67e22); 
+            color: white; 
+        }
+        
+        .status-geweigerd { 
+            background: linear-gradient(135deg, #e74c3c, #c0392b); 
+            color: white; 
+        }
+        
+        .status-voltooid { 
+            background: linear-gradient(135deg, #16a085, #1abc9c); 
+            color: white; 
+        }
+
+        .status-onbekend { 
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d); 
             color: white; 
         }
         
@@ -1199,3 +1224,8 @@ function addAppointmentStyling() {
     `;
     document.head.appendChild(style);
 }
+
+// Initialize styling when DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+    addAppointmentStyling();
+});

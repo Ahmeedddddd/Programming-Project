@@ -3,12 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project - Kokende AI Robot</title>
+    <title>Project - Details worden geladen...</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS//RESULTS/PROJECTEN/zoekbalk-projecten.css">
      <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
     <script src="/js/navigation-manager.js"></script>
 
+    <style>
+        /* Additional styles for dynamic content */
+        .back-button {
+            position: fixed;
+            top: 140px;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #881538;
+            color: #881538;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .back-button:hover {
+            background: #881538;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(136, 21, 56, 0.3);
+        }
+
+        .project-metadata {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #881538;
+        }
+
+        .contact-btn {
+            background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(136, 21, 56, 0.3);
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-text {
+            height: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .skeleton-title {
+            height: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Error state */
+        .error-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            margin: 2rem;
+            border-left: 4px solid #dc2626;
+        }
+
+        .error-state h3 {
+            color: #881538;
+            margin-bottom: 1rem;
+        }
+
+        .error-state p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn,
+        .retry-btn {
+            background: #881538;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover,
+        .retry-btn:hover {
+            background: #A91B47;
+            transform: translateY(-2px);
+        }
+
+        /* Loading state for main content */
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+            margin: 2rem;
+        }
+
+        /* Hide skeleton elements when content is loaded */
+        .content-loaded .skeleton {
+            display: none;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .back-button {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin: 1rem;
+                display: inline-block;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigatie -->
@@ -24,7 +162,6 @@
     <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
     </div>
   </div>
-
 
 <!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
@@ -60,11 +197,13 @@
 </div>
 
     <div class="layout-container">
-        <!-- Header met projecttitel en skills -->
+        <!-- Header met projecttitel en skills - Nu dynamisch geladen -->
         <header class="project-header">
-            <h1 class="project-title">Kokende AI Robot</h1>
+            <h1 class="project-title">
+                <div class="skeleton skeleton-title" style="width: 300px; margin: 0;"></div>
+            </h1>
             <p class="project-skills">
-                AI, Embedded software ontwikkeling, Mechatronica engineering, Machine Learning, ROS, IoT &amp; Edge Computing Developer, Sensorintegratie &amp; Kalibratie
+                <div class="skeleton skeleton-text" style="width: 80%;"></div>
             </p>
         </header>
 
@@ -73,38 +212,52 @@
             <!-- Beschrijvende sectie -->
             <section class="description-section">
                 <h2>Beschrijving</h2>
-                <p>
-                    De Kokende AI Robot is een geavanceerde huishoudrobot ontworpen om volledig zelfstandig maaltijden te bereiden. Uitgerust met kunstmatige intelligentie, spraakherkenning en honderden ingebouwde recepten, analyseert hij voedingsvoorkeuren, allergieën en beschikbare ingrediënten. Dankzij zijn precisiearmen en temperatuurcontrole kan hij koken als een professionele chef. In de fictieve wereld waarin deze robot populair is, verandert hij het dagelijks leven door tijd te besparen en voedselverspilling te minimaliseren, terwijl hij tegelijkertijd gepersonaliseerde en gezonde gerechten op tafel zet.
-                </p>
+                <div class="loading-content">
+                    <div class="skeleton skeleton-text"></div>                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text" style="width: 90%;"></div>
+                    <div class="skeleton skeleton-text" style="width: 70%;"></div>
+                </div>
             </section>
-
-            <!-- Sidebar voor afbeeldingen -->
-            <aside class="images-sidebar">
-                <figure class="image-figure">
-                    <img src="" >
-                </figure>
-                <figure class="image-figure">
-                    <img src="" >
-                </figure>
-            </aside>
         </main>
 
-        <!-- Info-sectie met tafel en teamleden -->
+        <!-- Info-sectie met tafel en teamleden - Nu dynamisch geladen -->
         <section class="info-section">
-            <h2>Info - Tafel 1</h2>
+            <h2>Info - Tafel wordt geladen...</h2>
             <ul class="team-list">
-                <li>Lucas Decomp</li>
-                <li>Didier Vasco</li>
-                <li>Thomas D'Angelo</li>
-                <li>John Doe</li>
+                <li><div class="skeleton skeleton-text" style="width: 150px;"></div></li>
+                <li><div class="skeleton skeleton-text" style="width: 120px;"></div></li>
             </ul>
         </section>
     </div>
     </div>
-    <!-- Loading Overlay  -->
-  <div id="loadingOverlay">
-    <div class="loader"></div>
-  </div>
-  <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+
+    <!-- Error State Template (hidden by default) -->
+    <div id="errorState" class="error-state" style="display: none;">
+        <h3><i class="fas fa-exclamation-triangle"></i> Project niet gevonden</h3>
+        <p>Het gevraagde project kon niet worden geladen. Dit kan komen door een verkeerde link of tijdelijke technische problemen.</p>
+        <button class="retry-btn" onclick="window.location.reload()">
+            <i class="fas fa-redo"></i>
+            Probeer opnieuw
+        </button>
+        <br><br>
+        <a href="/alleProjecten" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Terug naar alle projecten
+        </a>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
+        <!-- Notifications will be added here by JavaScript -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script src="/src/JS/RESULTS/PROJECTEN/zoekbalk-projecten.js"></script>
 </body>
 </html>

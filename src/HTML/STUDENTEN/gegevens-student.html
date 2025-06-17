@@ -10,8 +10,7 @@
     <script src="/js/navigation-manager.js"></script>
 </head>
 <body>
-    <!-- Navigatie -->
-<div class="container">
+    <div class="container">
   <div class="nav">
   <div class="logo">
     <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
@@ -24,14 +23,11 @@
     </div>
   </div>
 
-<!-- Verborgen sidebar -->
 <div class="sideMenu" id="sideMenu">
-  <!-- Geanimeerde achtergrond laag -->
   <div class="menu-bg-animation"></div>
 <div class="menu-bg-animation"></div>
 <div class="sparkles"></div>
-  
-  <!-- Header met titel -->
+   
   <div class="sideMenu-header">
     <div>
       <h2 class="sideMenu-title">CareerLaunch EHB</h2>
@@ -41,8 +37,7 @@
       <i class="fas fa-times"></i>
     </button>
   </div>
-  
-  <!-- Menu content -->
+   
   <div class="sideMenu-content">
     <a href="/login">
       <i class="fas fa-sign-in-alt"></i>
@@ -52,24 +47,20 @@
       <i class="fas fa-envelope"></i>
       Contact us
     </a>
-    
+     
     <hr class="sideMenu-divider">
   </div>
 </div>
 
-        <!-- Main Content -->
         <main class="flex-center">
             <div class="contentKaart animatie-fade-up">
-                
-                <!-- Header met rol badge -->
+                 
                 <div class="text-center mb-3">
                     <span class="ehbBadge student">Student Account</span>
                 </div>
 
-                <!-- Profiel Informatie -->
                 <form id="studentForm" class="w-full">
-                    
-                    <!-- Persoonlijke Gegevens -->
+                     
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">👤 Persoonlijke Gegevens</h3>
                     </div>
@@ -87,7 +78,6 @@
                         </div>
                     </div>
 
-                    <!-- Contact Gegevens -->
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📞 Contact Informatie</h3>
                     </div>
@@ -101,7 +91,6 @@
                         </div>
                     </div>
 
-                    <!-- Studie Informatie -->
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🎓 Studie Informatie</h3>
                     </div>
@@ -119,7 +108,6 @@
                         <strong>Academiejaar:</strong> <span class="field-value">2024-2025</span>
                     </div>
 
-                    <!-- Project Informatie -->
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">💼 Project Informatie</h3>
                     </div>
@@ -138,7 +126,41 @@
                         <span class="field-value">Laden...</span>
                     </div>
 
-                    <!-- Adres Gegevens -->
+                    <div class="ehbVeld mb-2 editable-field" data-field="tafel-nummer">
+                        <strong>Tafel Nummer:</strong> <span class="field-value">Laden...</span>
+                    </div>
+
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🔗 Project Links</h3>
+                    </div>
+
+                    <div class="ehbGrid tweekolomnig mb-2">
+                        <div class="ehbVeld editable-field" data-field="github-url" id="github-link">
+                            <strong>GitHub:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                        <div class="ehbVeld editable-field" data-field="linkedin-url" id="linkedin-link">
+                            <strong>LinkedIn:</strong> <span class="field-value">Laden...</span>
+                        </div>
+                    </div>
+                    <div class="ehbVeld mb-2 editable-field" data-field="cv-url" id="cv-link">
+                        <strong>CV:</strong> <span class="field-value">Laden...</span>
+                    </div>
+                    
+                    <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📈 Project Status</h3>
+                    </div>
+                    <div class="ehbVeld mb-2">
+                        <strong>Voortgang:</strong>
+                        <div class="progress-bar-container" style="background-color: #e0e0e0; border-radius: 5px; height: 20px; margin-top: 5px;">
+                            <div id="project-progress" class="progress-bar" style="background: linear-gradient(90deg, #881538, #A91B47); height: 100%; width: 0%; border-radius: 5px; text-align: center; color: white; line-height: 20px; transition: width 0.5s ease-in-out;">
+                                0% compleet
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ehbGrid tweekolomnig mb-2" id="project-stats">
+                        </div>
+
+
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📍 Adres Informatie</h3>
                     </div>
@@ -165,7 +187,6 @@
                         <strong>Gemeente:</strong> <span class="field-value">Laden...</span>
                     </div>
 
-                    <!-- Beveiliging -->
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">🔒 Beveiliging</h3>
                     </div>
@@ -180,11 +201,14 @@
 
                 </form>
 
-                <!-- View Controls -->
                 <div id="viewControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap;">
                     <button id="editBtn" class="ehbBtn bewerken">
                         <i class="fas fa-pencil-alt"></i>
                         Gegevens Bewerken
+                    </button>
+                    <button id="projectEditBtn" class="ehbBtn bewerken" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                        <i class="fas fa-edit"></i>
+                        Project Bewerken
                     </button>
                     <button class="ehbBtn secundair">
                         <i class="fas fa-key"></i>
@@ -195,8 +219,7 @@
                         CV Downloaden
                     </button>
                 </div>
-                
-                <!-- Edit Controls (hidden by default) -->
+                 
                 <div id="editControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap; display: none;">
                     <button type="submit" form="studentForm" class="ehbBtn primair">
                         <i class="fas fa-save"></i>
@@ -208,7 +231,18 @@
                     </button>
                 </div>
 
-                <!-- Account Status -->
+                <div id="projectEditControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap; display: none;">
+                    <button id="projectSaveBtn" class="ehbBtn primair" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                        <i class="fas fa-save"></i>
+                        Project Bewaren
+                    </button>
+                    <button id="projectCancelBtn" class="ehbBtn secundair">
+                        <i class="fas fa-times"></i>
+                        Annuleren Project
+                    </button>
+                </div>
+
+
                 <div class="text-center mt-4">
                     <div class="ehbVeld" data-field="account-status" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
                         <i class="fas fa-check-circle"></i>
@@ -216,7 +250,6 @@
                     </div>
                 </div>
 
-                <!-- Extra Informatie -->
                 <div class="text-center mt-3">
                     <p style="color: #666; font-size: 0.9rem;">
                         <span id="account-created">Account aangemaakt: Laden...</span><br>
@@ -227,17 +260,14 @@
             </div>
         </main>
 
-        <!-- Menu Overlay -->
         <div class="menu-overlay"></div>
-        
+         
     </div>
-    
-    <!-- Loading Overlay  -->
+     
     <div id="loadingOverlay">
         <div class="loader"></div>
     </div>
 
-    <!-- Error/Success Notifications -->
     <div id="notification-container" style="
         position: fixed;
         top: 2rem;

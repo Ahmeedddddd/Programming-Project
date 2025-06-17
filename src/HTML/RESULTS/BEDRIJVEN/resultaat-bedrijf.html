@@ -20,10 +20,83 @@
         Terug naar alle bedrijven
     </a>
 
-    <div class="container">
-        <div class="nav">
-            <div class="logo">
-                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+    <!-- Navigatie -->
+<div class="container">
+  <div class="nav">
+  <div class="logo">
+    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+  </div>
+  <div class="navBar">
+    <a href="/index.html" class="navItem">Home</a>
+    <a href="/programma" class="navItem">Programma</a>
+    <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
+    <a href="/info" class="navItem">Info</a>
+  </div>
+  <div class="pfpContainer">
+    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+    </div>
+  </div>
+
+<!-- Verborgen sidebar -->
+<div class="sideMenu" id="sideMenu">
+  <!-- Geanimeerde achtergrond laag -->
+  <div class="menu-bg-animation"></div>
+<div class="menu-bg-animation"></div>
+<div class="sparkles"></div>
+  
+  <!-- Header met titel -->
+  <div class="sideMenu-header">
+    <div>
+      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+      <p class="sideMenu-subtitle">Menu</p>
+    </div>
+    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <!-- Menu content -->
+  <div class="sideMenu-content">
+    <a href="/login">
+      <i class="fas fa-sign-in-alt"></i>
+      Login
+    </a>
+    <a href="/contacteer">
+      <i class="fas fa-envelope"></i>
+      Contact us
+    </a>
+    
+    <hr class="sideMenu-divider">
+  </div>
+</div>
+
+        <!-- Main Content -->
+        <main class="bedrijf-detail">
+            <!-- Left Column - Company Info -->
+            <div class="bedrijf-info">
+                <div class="bedrijf-header">
+                    <div class="logo-container">
+                        <!-- Logo/initials will be inserted by JavaScript -->
+                        <div class="skeleton skeleton-text" style="width: 60px; height: 60px; border-radius: 50%;"></div>
+                    </div>
+                    <div class="bedrijf-titel">
+                        <h1 class="bedrijf-naam">
+                            <div class="skeleton skeleton-title" style="width: 300px;"></div>
+                        </h1>
+                        <p class="bedrijf-type">
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bedrijf-beschrijving">
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                </div>
+
+                <div class="tafel-highlight">
+                    <div class="skeleton skeleton-text" style="background: rgba(255,255,255,0.3);"></div>
+                </div>
             </div>
             <div class="navBarStudenten">
                 <a href="/student-homepage" class="navItem">Home</a>
