@@ -1,0 +1,132 @@
+/* src/CSS/GESPREKKEN/gesprekken-overzicht.css */
+
+.gesprekkenKaart {
+    max-width: 900px;
+    margin: 2rem auto;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.gesprekkenTitel {
+  font-size: 2rem;
+    color: #881538;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.gesprekkenTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.gesprekkenTableHeader,
+.gesprekkenTableRow {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1.5fr; /* Naam, Tijdslot, Locatie/Status, Actie */
+    gap: 1rem;
+    padding: 0.8rem 0;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.gesprekkenTableHeader {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #333;
+    border-top: 1px solid #eee;
+    border-bottom: 2px solid #ddd;
+}
+
+.gesprekkenTableHeader > div,
+.gesprekkenTableRow > div {
+    padding: 0 0.5rem;
+    word-break: break-word; /* Prevent long text from breaking layout */
+}
+
+.gesprekkenTableRow:nth-child(odd) {
+    background-color: #fafafa;
+}
+
+.gesprekkenActions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.actieBtn {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.bevestigBtn {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+
+.bevestigBtn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.verwijderBtn {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+
+.verwijderBtn:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+.status-aangevraagd {
+    color: #ffc107; /* Yellow for pending */
+    font-weight: bold;
+}
+
+.status-bevestigd {
+    color: #28a745; /* Green for accepted */
+    font-weight: bold;
+}
+
+.status-geweigerd, .status-geannuleerd {
+    color: #dc3545; /* Red for rejected/cancelled */
+    font-weight: bold;
+}
+
+.locatieCel {
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .gesprekkenTableHeader,
+    .gesprekkenTableRow {
+        grid-template-columns: 1fr; /* Stack elements on small screens */
+        padding: 1rem;
+        text-align: left;
+        gap: 0.5rem;
+    }
+
+    .gesprekkenTableHeader div,
+    .gesprekkenTableRow div {
+        padding: 0; /* Remove horizontal padding when stacked */
+    }
+
+    .gesprekkenActions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .actieBtn {
+        width: 100%; /* Full width buttons when stacked */
+    }
+}

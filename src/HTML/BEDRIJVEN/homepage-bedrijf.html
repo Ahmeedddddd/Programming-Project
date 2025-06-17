@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/index.css">
     <link rel="stylesheet" href="/src/CSS/BEDRIJVEN/bedrijf-homepage.css">
+     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
+    <script src="/js/navigation-manager.js"></script>
 </head>
 <body>
      <!-- Navigatie - Identiek aan standaard maar zal dynamisch worden aangepast -->
@@ -96,16 +98,17 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon">📅</div>
-                    <h2 class="card-title">Gesprek Aanvragen <span id="appointments-count">12</span></h2>
+                    <h2 class="card-title">Gesprek Aanvragen <span id="pending-appointments-count">0</span></h2>
                 </div>
+                
                 <p class="card-subtitle">Beheer inkomende gesprek verzoeken:</p>
                 <ul class="feature-list">
                     <li class="feature-item">Accepteren of weigeren</li>
                     <li class="feature-item">Tijd slots beheren</li>
                 </ul>
-                <div class="card-buttons">
-                    <a href="#" class="btn-primary">Gesprekken Beheren</a>
-                </div>
+               <div class="card-buttons">
+    <a href="/gesprekken-overzicht-bedrijven" class="btn-primary">Gesprekken Beheren</a>
+</div>
             </div>
 
             <!-- Bedrijf profiel -->
@@ -292,3 +295,27 @@
 
 </body>
 </html>
+
+<script src="/src/JS/api.js"></script>
+<script src="/src/JS/reservatieService.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadPendingAppointmentsCount();
+    });
+
+    async function loadPendingAppointmentsCount() {
+        try {
+            const countElement = document.getElementById('pending-appointments-count');
+            const meetings = await ReservatieService.getCompanyReservations();
+            const pendingCount = meetings.filter(m => m.status === 'aangevraagd').length;
+            if (countElement) {
+                countElement.textContent = pendingCount;
+            }
+        } catch (error) {
+            console.error('Error loading pending appointments count for company:', error);
+            if (document.getElementById('pending-appointments-count')) {
+                document.getElementById('pending-appointments-count').textContent = 'Error';
+            }
+        }
+    }
+</script>

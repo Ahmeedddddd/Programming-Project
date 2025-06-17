@@ -6,8 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerLaunch - Student Dashboard</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
-    <link rel="stylesheet" href="/src/CSS/index.css">
-    <script src="/js/navigation-manager.js"></script>
+    <link rel="stylesheet" href="/src/CSS/index.css">
+    <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="/js/navigation-manager.js"></script>          
+     <script src="/src/JS/UTILS/notification-system.js"></script> 
+     <script src="/src/JS/api.js"></script>                    
+    <script src="/src/JS/reservatieService.js"></script>       
+  
   </head>
   <body>
     <!-- Navigatie - Identiek aan standaard maar zal dynamisch worden aangepast -->
@@ -16,7 +22,7 @@
   <div class="logo">
     <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
   </div>
-  <div class="navBarStudenten">
+  <div class="navBar">
   
   </div>
   <div class="pfpContainer">
@@ -327,118 +333,169 @@
 
 <div class="menu-overlay"></div>
 </div>
-
+<script src="/js/role-manager.js"></script>
+<script src="/src/JS/UTILS/homepageInitializer.js"></script>
+<script type="module" src="src/JS/UTILS/startPage.js"></script>
+<script type="module" src="src/JS/index.js"></script>
 <!-- Student-specific JavaScript -->
 <script>
+// Vaste evenementdatum voor deze pagina
+// Dit is belangrijk voor het correct weergeven van de datum bij de tijden,
+// aangezien de database alleen tijd zonder datum opslaat.
+const EVENT_DATE_STRING_HOMEPAGE = '2025-06-25'; // Datum van Student Project Showcase 2025
+
 document.addEventListener('DOMContentLoaded', async function() {
-  await loadUserInfo();
-  await loadUpcomingMeetings();
-  await loadRecommendedCompanies();
+    await loadUserInfo();
+    await loadUpcomingMeetings();
+    await loadRecommendedCompanies();
 });
 
 async function loadUserInfo() {
-  try {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-    
-    const response = await fetch('/api/user-info', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success && data.data) {
-        // Update welcome title with student name
-        const welcomeTitle = document.getElementById('studentWelcomeTitle');
-        if (welcomeTitle && data.data.voornaam) {
-          welcomeTitle.textContent = `Welkom terug, ${data.data.voornaam}! 🎓`;
+    try {
+        // window.fetchWithAuth is nu globaal beschikbaar en handelt token-controle af.
+        const response = await window.fetchWithAuth('/api/user-info');
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                const welcomeTitle = document.getElementById('studentWelcomeTitle');
+                if (welcomeTitle && data.data.voornaam) {
+                    welcomeTitle.textContent = `Welkom terug, ${data.data.voornaam}! 🎓`;
+                }
+            }
+        } else {
+            console.warn('Fout bij laden user info:', response.status);
+            // window.showNotification is nu globaal beschikbaar via notification-system.js
+            if (window.showNotification) window.showNotification(`Kan gebruikersinfo niet laden: HTTP ${response.status}`, 'error');
         }
-      }
+    } catch (error) {
+        console.error('Error loading user info:', error);
+        if (window.showNotification) window.showNotification(`Fout bij laden gebruikersinfo: ${error.message}`, 'error');
     }
-  } catch (error) {
-    console.error('Error loading user info:', error);
-  }
 }
 
 async function loadUpcomingMeetings() {
-  try {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-    
-    const response = await fetch('/api/reservaties/my', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      const container = document.getElementById('upcomingMeetingsList');
-      const countElement = document.getElementById('upcomingCount');
-      const appointmentCount = document.getElementById('appointmentCount');
-      
-      if (data.data && data.data.length > 0) {
-        // Update counts
-        if (countElement) countElement.textContent = data.data.length;
-        if (appointmentCount) appointmentCount.textContent = data.data.length;
+    const container = document.getElementById('upcomingMeetingsList');
+    const countElement = document.getElementById('upcomingCount');
+    const appointmentCount = document.getElementById('appointmentCount');
+
+    // Toon een laadbericht en update tellers tijdens het laden
+    if (container) container.innerHTML = `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Laden...</h3><p class="card-description">Even geduld aub.</p></div>`;
+    if (countElement) countElement.textContent = '...';
+    if (appointmentCount) appointmentCount.textContent = '...';
+
+    try {
+        // Gebruik de ReservatieService om gesprekken op te halen
+        const data = await window.ReservatieService.getMyReservations();
         
-        // Show meetings
-        container.innerHTML = data.data.slice(0, 4).map(meeting => `
-          <div class="preview-card">
-            <h3 class="card-title">${meeting.bedrijfNaam}</h3>
-            <p class="card-description">
-              <strong>📅 ${new Date(meeting.startTijd).toLocaleDateString('nl-BE')}</strong><br>
-              <strong>🕐 ${new Date(meeting.startTijd).toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'})}</strong><br>
-              Status: ${meeting.status}
-            </p>
-          </div>
-        `).join('');
-      } else {
-        // No meetings
+        if (data && data.length > 0) {
+            // Update counts
+            if (countElement) countElement.textContent = data.length;
+            if (appointmentCount) appointmentCount.textContent = data.length;
+            
+            // Filter voor 'aangevraagd' en 'bevestigd' om alleen aankomende gesprekken te tonen
+            const upcoming = data.filter(meeting => meeting.status === 'aangevraagd' || meeting.status === 'bevestigd');
+
+            if (upcoming.length > 0) {
+                // Sorteer aankomende gesprekken op starttijd
+                upcoming.sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
+
+                container.innerHTML = upcoming.slice(0, 4).map(meeting => {
+                    // Backend stuurt nu ISO strings (met datum gecombineerd in de service), dus direct parsen.
+                    const startDate = new Date(meeting.startTijd);
+                    const endDate = new Date(meeting.eindTijd);
+                    
+                    // Formatteer de datum en tijd voor weergave
+                    const formattedDate = startDate.toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+                    const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+                    
+                    return `
+                        <div class="preview-card">
+                            <h3 class="card-title">${meeting.bedrijfNaam}</h3>
+                            <p class="card-description">
+                                <strong>📅 ${formattedDate}</strong><br>
+                                <strong>🕐 ${formattedStartTime} - ${formattedEndTime}</strong><br>
+                                Status: <span class="status-${meeting.status}">${meeting.status}</span>
+                            </p>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="preview-card" style="text-align: center; color: #666;">
+                        <h3 class="card-title">Geen aankomende gesprekken</h3>
+                        <p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p>
+                    </div>
+                `;
+            }
+
+        } else {
+            // Geen gesprekken gevonden
+            if (countElement) countElement.textContent = '0';
+            if (appointmentCount) appointmentCount.textContent = '0';
+            
+            container.innerHTML = `
+                <div class="preview-card" style="text-align: center; color: #666;">
+                    <h3 class="card-title">Geen gesprekken gepland</h3>
+                    <p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading meetings:', error);
+        if (window.showNotification) window.showNotification(`Fout bij het laden van je gesprekken: ${error.message}`, 'error');
         if (countElement) countElement.textContent = '0';
         if (appointmentCount) appointmentCount.textContent = '0';
-        
-        container.innerHTML = `
-          <div class="preview-card" style="text-align: center; color: #666;">
-            <h3 class="card-title">Geen gesprekken gepland</h3>
-            <p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p>
-          </div>
+        if (container) container.innerHTML = `
+            <div class="preview-card" style="text-align: center; color: #dc3545;">
+                <h3 class="card-title">Fout bij laden</h3>
+                <p class="card-description">Kan gesprekken niet laden. Probeer later opnieuw.</p>
+            </div>
         `;
-      }
     }
-  } catch (error) {
-    console.error('Error loading meetings:', error);
-  }
 }
 
 async function loadRecommendedCompanies() {
-  try {
-    const response = await fetch('/api/bedrijven?limit=4');
-    const data = await response.json();
-    
     const container = document.getElementById('recommendedCompanies');
-    if (data.data && data.data.length > 0) {
-      container.innerHTML = data.data.map(company => `
-        <a href="/resultaatBedrijf?id=${company.bedrijfsnummer}" class="preview-card">
-          <h3 class="card-title">${company.naam}</h3>
-          <p class="card-description">${company.sector} - ${company.gemeente} • ${company.bechrijving ? company.bechrijving.substring(0, 80) + '...' : 'Ontdek meer over dit bedrijf'}</p>
-        </a>
-      `).join('');
+    if (!container) {
+        console.warn('Recommended companies container not found.');
+        return;
     }
-  } catch (error) {
-    console.error('Error loading companies:', error);
-  }
+
+    // Optioneel: toon een laadindicator voor bedrijven
+    container.innerHTML = `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Laden...</h3><p class="card-description">Bedrijven worden opgehaald.</p></div>`;
+
+    try {
+        // FIX: Gebruik window.fetchWithAuth en het gestandaardiseerde pad
+        const response = await window.fetchWithAuth('/api/bedrijven?limit=4');
+        const data = await response.json();
+        
+        if (data.data && data.data.length > 0) {
+            container.innerHTML = data.data.map(company => `
+                <a href="/resultaat-bedrijf?id=${company.bedrijfsnummer}" class="preview-card"> <h3 class="card-title">${company.naam}</h3>
+                    <p class="card-description">${company.sector} - ${company.gemeente} • ${company.bechrijving ? company.bechrijving.substring(0, 80) + '...' : 'Ontdek meer over dit bedrijf'}</p>
+                </a>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="preview-card" style="text-align: center; color: #666;">
+                    <h3 class="card-title">Geen bedrijven gevonden</h3>
+                    <p class="card-description">Er zijn momenteel geen aanbevolen bedrijven beschikbaar.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading companies:', error);
+        if (window.showNotification) window.showNotification(`Fout bij het laden van bedrijven: ${error.message}`, 'error');
+        container.innerHTML = `
+            <div class="preview-card" style="text-align: center; color: #dc3545;">
+                <h3 class="card-title">Fout bij laden</h3>
+                <p class="card-description">Kan aanbevolen bedrijven niet laden. Probeer later opnieuw.</p>
+            </div>
+        `;
+    }
 }
 </script>
-
-<!-- Load the role management script -->
-<script src="/js/role-manager.js"></script>
-<script src="/src/JS/UTILS/homepageInitializer.js"></script>
-
-<script type="module" src="src/JS/UTILS/startPage.js"></script>
-<script type="module" src="src/JS/index.js"></script>
-
 </body>
 </html>
