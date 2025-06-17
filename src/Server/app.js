@@ -17,7 +17,11 @@ const {
   getLiveStats,
   requireRole,
   generateClientSideScript,
+  getCurrentUser // <-- toegevoegd!
 } = require("./MIDDLEWARE/rolCheck");
+
+// ===== PAD NAAR GUEST HOMEPAGE =====
+const guestHomepagePath = path.join(__dirname, "../../../public/index.html");
 
 // ===== ROUTE IMPORTS (organized) =====
 let registratieRoutes,
@@ -67,6 +71,9 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+// ===== ROLGEBASEERDE HOMEPAGE MIDDLEWARE =====
+app.use(serveRoleBasedHomepage);
 
 // ===== STATIC FILE SERVING =====
 app.use(express.static(path.join(__dirname, "../CareerLaunch")));
@@ -285,6 +292,7 @@ app.post("/api/send-invoice", async (req, res) => {
 console.log("✅ All API routes mounted successfully");
 
 // ===== HOMEPAGE ROUTING =====
+<<<<<<< Updated upstream
 app.get("/", (req, res, next) => {
   console.log("🏠 Root homepage request received");
 
@@ -312,6 +320,10 @@ app.get("/index.html", (req, res) => {
   console.log("🏠 index.html explicitly requested, redirecting to /");
   res.redirect("/");
 });
+=======
+// Je hebt deze custom route niet meer nodig, want serveRoleBasedHomepage regelt alles!
+// Verwijderd: app.get("/", ...) en app.get("/index.html", ...)
+>>>>>>> Stashed changes
 
 // ===== ROLE-BASED HOMEPAGES =====
 app.get("/student-homepage", (req, res) => {
