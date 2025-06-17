@@ -99,7 +99,7 @@ app.get("/api/health", async (req, res) => {
     res.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
-      version: "2.4.0",
+      version: "2.4.1",
       database: "connected",
       port: port,
       features: {
@@ -107,7 +107,8 @@ app.get("/api/health", async (req, res) => {
         legacyCompatibility: "Enabled",
         authenticationRequired: "Enabled",
         apiRoutesFixed: "Enabled",
-        parameterPreservingRedirects: "Enabled"
+        parameterPreservingRedirects: "Enabled",
+        contactpersonenAPI: "Added"
       }
     });
   } catch (error) {
@@ -164,11 +165,90 @@ try {
   console.error("❌ Failed to mount organisator routes:", error);
 }
 
-// FIXED: Add missing /api/projecten route that redirects to student projects
 app.get("/api/projecten", (req, res) => {
   console.log("🔄 Redirecting /api/projecten to /api/studenten/projecten");
   res.redirect(308, "/api/studenten/projecten");
 });
+
+app.get("/api/contactpersonen/bedrijf/:bedrijfId", async (req, res) => {
+  try {
+    console.log(`📞 Getting contactpersonen for bedrijf: ${req.params.bedrijfId}`);
+    
+    const { pool } = require("./CONFIG/database");
+    
+    // Query contactpersonen for specific bedrijf
+    const [contactpersonen] = await pool.query(
+      `SELECT 
+        cp.*,
+        b.naam as bedrijfsnaam
+       FROM CONTACTPERSOON cp
+       LEFT JOIN BEDRIJF b ON cp.bedrijfsnummer = b.bedrijfsnummer
+       WHERE cp.bedrijfsnummer = ?
+       ORDER BY cp.voornaam, cp.achternaam`,
+      [req.params.bedrijfId]
+    );
+    
+    console.log(`📞 Found ${contactpersonen.length} contactpersonen for bedrijf ${req.params.bedrijfId}`);
+    
+    if (contactpersonen.length === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        message: "Geen contactpersonen gevonden voor dit bedrijf"
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: contactpersonen,
+      count: contactpersonen.length
+    });
+    
+  } catch (error) {
+    console.error("❌ Error fetching contactpersonen:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contactpersonen",
+      message: error.message
+    });
+  }
+});
+
+// Get all contactpersonen
+app.get("/api/contactpersonen", async (req, res) => {
+  try {
+    console.log("📞 Getting all contactpersonen");
+    
+    const { pool } = require("./CONFIG/database");
+    
+    const [contactpersonen] = await pool.query(
+      `SELECT 
+        cp.*,
+        b.naam as bedrijfsnaam
+       FROM CONTACTPERSOON cp
+       LEFT JOIN BEDRIJF b ON cp.bedrijfsnummer = b.bedrijfsnummer
+       ORDER BY b.naam, cp.voornaam, cp.achternaam`
+    );
+    
+    console.log(`📞 Found ${contactpersonen.length} total contactpersonen`);
+    
+    res.json({
+      success: true,
+      data: contactpersonen,
+      count: contactpersonen.length
+    });
+    
+  } catch (error) {
+    console.error("❌ Error fetching all contactpersonen:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contactpersonen",
+      message: error.message
+    });
+  }
+});
+
+console.log("✅ Contactpersonen API routes added");
 
 // Email service endpoint
 app.post("/api/send-invoice", async (req, res) => {
@@ -187,8 +267,31 @@ app.post("/api/send-invoice", async (req, res) => {
 console.log("✅ All API routes mounted successfully");
 
 // ===== HOMEPAGE ROUTING =====
-app.get("/", serveRoleBasedHomepage);
-app.get("/index.html", serveRoleBasedHomepage);
+app.get("/", (req, res, next) => {
+  console.log("🏠 Root homepage request received");
+  
+  // 🔍 Check eerst of gebruiker is ingelogd
+  const user = getCurrentUser(req);
+  
+  if (user) {
+    // ✅ User is ingelogd: gebruik rol-gebaseerde routing
+    console.log(`👤 Authenticated user detected: ${user.email} (${user.userType})`);
+    console.log("   → Using role-based homepage routing");
+    return serveRoleBasedHomepage(req, res, next);
+  } else {
+    // 👥 Guest user: serve guest homepage
+    console.log("👥 Guest user detected, serving guest homepage");
+    
+    // Serve guest homepage
+    console.log("✅ Serving guest homepage");
+    res.sendFile(guestHomepagePath);
+  }
+});
+
+app.get("/index.html", (req, res) => {
+  console.log("🏠 index.html explicitly requested, redirecting to /");
+  res.redirect("/");
+});
 
 // ===== ROLE-BASED HOMEPAGES =====
 app.get("/student-homepage", (req, res) => {
@@ -481,6 +584,7 @@ app.use((req, res) => {
         "/api/bedrijven/*",
         "/api/reservaties/*",
         "/api/organisator/*",
+        "/api/contactpersonen/*",
         "/api/projecten (→ /api/studenten/projecten)"
       ]
     });
@@ -501,13 +605,15 @@ app.listen(port, () => {
   console.log("🎓 CareerLaunch Server SUCCESSFULLY STARTED");
   console.log("🎓 ========================================");
   console.log(`🌐 Server URL: http://localhost:${port}`);
-  console.log(`📋 Version: 2.4.0 - Fixed parameter preservation & API routes`);
+  console.log(`📋 Version: 2.4.1 - Fixed contactpersonen API & homepage routing`);
   console.log("\n📋 Features Enabled:");
   console.log("   ✅ Role-based homepage routing (FIXED)");
   console.log("   ✅ API routes properly mounted (FIXED)");
   console.log("   ✅ Parameter-preserving redirects (FIXED)");
   console.log("   ✅ Database query fixes (FIXED)");
   console.log("   ✅ Missing /api/projecten route added (FIXED)");
+  console.log("   ✅ Missing /api/contactpersonen routes added (FIXED)");
+  console.log("   ✅ Homepage file existence check (FIXED)");
   console.log("   ✅ Enhanced authentication middleware");
   console.log("   ✅ Protected account routes");
   console.log("   ✅ Legacy route compatibility with parameters");
@@ -525,6 +631,8 @@ app.listen(port, () => {
   console.log(`   - Students: http://localhost:${port}/api/studenten`);
   console.log(`   - Companies: http://localhost:${port}/api/bedrijven`);
   console.log(`   - Projects: http://localhost:${port}/api/projecten → /api/studenten/projecten`);
+  console.log(`   - Contactpersonen: http://localhost:${port}/api/contactpersonen`);
+  console.log(`   - Contactpersonen by Bedrijf: http://localhost:${port}/api/contactpersonen/bedrijf/:id`);
   console.log(`   - Auth: http://localhost:${port}/api/auth`);
   console.log(`   - Reservations: http://localhost:${port}/api/reservaties`);
   console.log(`   - Admin: http://localhost:${port}/api/organisator`);
@@ -533,9 +641,13 @@ app.listen(port, () => {
   console.log(`   ✅ Legacy URLs now preserve parameters: /resultaatBedrijf?id=1 → /resultaat-bedrijf?id=1`);
   console.log(`   ✅ Database 'id' column error fixed for organisator`);
   console.log(`   ✅ Missing /api/projecten route added`);
+  console.log(`   ✅ Missing /api/contactpersonen routes added`);
+  console.log(`   ✅ Homepage file existence validation added`);
   console.log(`   ✅ Enhanced request logging with parameters`);
   
   console.log("\n🧪 TEST THESE FIXED ROUTES:");
+  console.log(`   - http://localhost:${port}/ (guest homepage)`);
+  console.log(`   - http://localhost:${port}/api/contactpersonen/bedrijf/94`);
   console.log(`   - http://localhost:${port}/resultaatBedrijf?id=1`);
   console.log(`   - http://localhost:${port}/zoekbalkStudenten?id=232`);
   console.log(`   - http://localhost:${port}/zoekbalkProjecten?id=233`);
