@@ -99,7 +99,7 @@ app.get("/api/health", async (req, res) => {
     res.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
-      version: "2.4.0",
+      version: "2.4.1",
       database: "connected",
       port: port,
       features: {
@@ -107,7 +107,8 @@ app.get("/api/health", async (req, res) => {
         legacyCompatibility: "Enabled",
         authenticationRequired: "Enabled",
         apiRoutesFixed: "Enabled",
-        parameterPreservingRedirects: "Enabled"
+        parameterPreservingRedirects: "Enabled",
+        contactpersonenAPI: "Added"
       }
     });
   } catch (error) {
@@ -170,6 +171,87 @@ app.get("/api/projecten", (req, res) => {
   res.redirect(308, "/api/studenten/projecten");
 });
 
+// FIXED: Add missing /api/contactpersonen routes
+app.get("/api/contactpersonen/bedrijf/:bedrijfId", async (req, res) => {
+  try {
+    console.log(`📞 Getting contactpersonen for bedrijf: ${req.params.bedrijfId}`);
+    
+    const { pool } = require("./CONFIG/database");
+    
+    // Query contactpersonen for specific bedrijf
+    const [contactpersonen] = await pool.query(
+      `SELECT 
+        cp.*,
+        b.naam as bedrijfsnaam
+       FROM CONTACTPERSOON cp
+       LEFT JOIN BEDRIJF b ON cp.bedrijfsnummer = b.bedrijfsnummer
+       WHERE cp.bedrijfsnummer = ?
+       ORDER BY cp.voornaam, cp.achternaam`,
+      [req.params.bedrijfId]
+    );
+    
+    console.log(`📞 Found ${contactpersonen.length} contactpersonen for bedrijf ${req.params.bedrijfId}`);
+    
+    if (contactpersonen.length === 0) {
+      return res.json({
+        success: true,
+        data: [],
+        message: "Geen contactpersonen gevonden voor dit bedrijf"
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: contactpersonen,
+      count: contactpersonen.length
+    });
+    
+  } catch (error) {
+    console.error("❌ Error fetching contactpersonen:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contactpersonen",
+      message: error.message
+    });
+  }
+});
+
+// Get all contactpersonen
+app.get("/api/contactpersonen", async (req, res) => {
+  try {
+    console.log("📞 Getting all contactpersonen");
+    
+    const { pool } = require("./CONFIG/database");
+    
+    const [contactpersonen] = await pool.query(
+      `SELECT 
+        cp.*,
+        b.naam as bedrijfsnaam
+       FROM CONTACTPERSOON cp
+       LEFT JOIN BEDRIJF b ON cp.bedrijfsnummer = b.bedrijfsnummer
+       ORDER BY b.naam, cp.voornaam, cp.achternaam`
+    );
+    
+    console.log(`📞 Found ${contactpersonen.length} total contactpersonen`);
+    
+    res.json({
+      success: true,
+      data: contactpersonen,
+      count: contactpersonen.length
+    });
+    
+  } catch (error) {
+    console.error("❌ Error fetching all contactpersonen:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch contactpersonen",
+      message: error.message
+    });
+  }
+});
+
+console.log("✅ Contactpersonen API routes added");
+
 // Email service endpoint
 app.post("/api/send-invoice", async (req, res) => {
   try {
@@ -186,9 +268,78 @@ app.post("/api/send-invoice", async (req, res) => {
 
 console.log("✅ All API routes mounted successfully");
 
-// ===== HOMEPAGE ROUTING =====
-app.get("/", serveRoleBasedHomepage);
-app.get("/index.html", serveRoleBasedHomepage);
+// ===== HOMEPAGE ROUTING (FIXED) =====
+// FIXED: Ensure guest homepage file exists and is served correctly
+app.get("/", (req, res, next) => {
+  console.log("🏠 Root homepage request received");
+  console.log("📂 Checking for guest homepage file...");
+  
+  const guestHomepagePath = path.join(__dirname, "../../public/index.html");
+  const fs = require("fs");
+  
+  // Check if guest homepage exists
+  if (!fs.existsSync(guestHomepagePath)) {
+    console.error(`❌ Guest homepage not found at: ${guestHomepagePath}`);
+    console.log("📂 Available files in public directory:");
+    
+    try {
+      const publicDir = path.join(__dirname, "../../public");
+      if (fs.existsSync(publicDir)) {
+        const files = fs.readdirSync(publicDir);
+        files.forEach(file => console.log(`   - ${file}`));
+      } else {
+        console.error(`❌ Public directory not found: ${publicDir}`);
+      }
+    } catch (err) {
+      console.error("❌ Error reading public directory:", err.message);
+    }
+    
+    // Fallback: serve a basic HTML page
+    return res.send(`
+      <!DOCTYPE html>
+      <html lang="nl">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>CareerLaunch - Homepage Fallback</title>
+          <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
+              .error { color: #e74c3c; margin: 1rem 0; }
+              .info { color: #3498db; margin: 1rem 0; }
+              .button { display: inline-block; padding: 0.75rem 1.5rem; background: #881538; color: white; text-decoration: none; border-radius: 5px; margin: 0.5rem; }
+          </style>
+      </head>
+      <body>
+          <h1>🎓 CareerLaunch</h1>
+          <div class="error">⚠️ Homepage bestand niet gevonden</div>
+          <div class="info">Verwacht bestand: ${guestHomepagePath}</div>
+          
+          <div style="margin: 2rem 0;">
+              <a href="/login" class="button">🔐 Inloggen</a>
+              <a href="/register" class="button">📝 Registreren</a>
+              <a href="/info" class="button">ℹ️ Informatie</a>
+          </div>
+          
+          <div>
+              <h3>🔧 Debug Info</h3>
+              <p>Server draait op poort: ${port}</p>
+              <p>Timestamp: ${new Date().toISOString()}</p>
+              <p>Pad naar homepage: ${guestHomepagePath}</p>
+          </div>
+      </body>
+      </html>
+    `);
+  }
+  
+  // If file exists, use the role-based homepage logic
+  console.log("✅ Guest homepage file exists, using role-based routing");
+  serveRoleBasedHomepage(req, res, next);
+});
+
+app.get("/index.html", (req, res) => {
+  console.log("🏠 index.html explicitly requested, redirecting to /");
+  res.redirect("/");
+});
 
 // ===== ROLE-BASED HOMEPAGES =====
 app.get("/student-homepage", (req, res) => {
@@ -481,6 +632,7 @@ app.use((req, res) => {
         "/api/bedrijven/*",
         "/api/reservaties/*",
         "/api/organisator/*",
+        "/api/contactpersonen/*",
         "/api/projecten (→ /api/studenten/projecten)"
       ]
     });
@@ -501,13 +653,15 @@ app.listen(port, () => {
   console.log("🎓 CareerLaunch Server SUCCESSFULLY STARTED");
   console.log("🎓 ========================================");
   console.log(`🌐 Server URL: http://localhost:${port}`);
-  console.log(`📋 Version: 2.4.0 - Fixed parameter preservation & API routes`);
+  console.log(`📋 Version: 2.4.1 - Fixed contactpersonen API & homepage routing`);
   console.log("\n📋 Features Enabled:");
   console.log("   ✅ Role-based homepage routing (FIXED)");
   console.log("   ✅ API routes properly mounted (FIXED)");
   console.log("   ✅ Parameter-preserving redirects (FIXED)");
   console.log("   ✅ Database query fixes (FIXED)");
   console.log("   ✅ Missing /api/projecten route added (FIXED)");
+  console.log("   ✅ Missing /api/contactpersonen routes added (FIXED)");
+  console.log("   ✅ Homepage file existence check (FIXED)");
   console.log("   ✅ Enhanced authentication middleware");
   console.log("   ✅ Protected account routes");
   console.log("   ✅ Legacy route compatibility with parameters");
@@ -525,6 +679,8 @@ app.listen(port, () => {
   console.log(`   - Students: http://localhost:${port}/api/studenten`);
   console.log(`   - Companies: http://localhost:${port}/api/bedrijven`);
   console.log(`   - Projects: http://localhost:${port}/api/projecten → /api/studenten/projecten`);
+  console.log(`   - Contactpersonen: http://localhost:${port}/api/contactpersonen`);
+  console.log(`   - Contactpersonen by Bedrijf: http://localhost:${port}/api/contactpersonen/bedrijf/:id`);
   console.log(`   - Auth: http://localhost:${port}/api/auth`);
   console.log(`   - Reservations: http://localhost:${port}/api/reservaties`);
   console.log(`   - Admin: http://localhost:${port}/api/organisator`);
@@ -533,9 +689,13 @@ app.listen(port, () => {
   console.log(`   ✅ Legacy URLs now preserve parameters: /resultaatBedrijf?id=1 → /resultaat-bedrijf?id=1`);
   console.log(`   ✅ Database 'id' column error fixed for organisator`);
   console.log(`   ✅ Missing /api/projecten route added`);
+  console.log(`   ✅ Missing /api/contactpersonen routes added`);
+  console.log(`   ✅ Homepage file existence validation added`);
   console.log(`   ✅ Enhanced request logging with parameters`);
   
   console.log("\n🧪 TEST THESE FIXED ROUTES:");
+  console.log(`   - http://localhost:${port}/ (guest homepage)`);
+  console.log(`   - http://localhost:${port}/api/contactpersonen/bedrijf/94`);
   console.log(`   - http://localhost:${port}/resultaatBedrijf?id=1`);
   console.log(`   - http://localhost:${port}/zoekbalkStudenten?id=232`);
   console.log(`   - http://localhost:${port}/zoekbalkProjecten?id=233`);
