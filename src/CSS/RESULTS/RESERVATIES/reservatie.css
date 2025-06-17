@@ -1,10 +1,8 @@
-
-
 .reservation-container {
     max-width: 800px;
     margin: 2rem auto;
     background: white;
-     border-radius: 20px;
+    border-radius: 20px;
     padding: 2.5rem;
     box-shadow: 0 20px 60px rgba(128, 0, 32, 0.08), 0 8px 30px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(128, 0, 32, 0.1);
@@ -22,7 +20,6 @@
     background: linear-gradient(90deg, #800020, #a0002a, #800020);
     border-radius: 20px 20px 0 0;
 }
-
 
 .company-header {
     background:linear-gradient(135deg, #800020 0%, #9a0025 50%, #800020 100%);
@@ -97,7 +94,7 @@
 }
 
 .back-button:hover {
-  background: white;
+    background: white;
     transform: translateY(-50%) scale(1.08) translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
@@ -164,7 +161,7 @@
 
 .time-slots {
     display: grid;
-    grid-template-columns:  repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 1.2rem;
     margin-bottom: 2.5rem;
 }
@@ -207,7 +204,7 @@
 }
 
 .time-slot.available:hover {
-      background: linear-gradient(135deg, #800020 0%, #9a0025 100%);
+    background: linear-gradient(135deg, #800020 0%, #9a0025 100%);
     color: white;
     transform: translateY(-4px) scale(1.02);
     box-shadow: 0 12px 32px rgba(128, 0, 32, 0.25);
@@ -227,7 +224,7 @@
 }
 
 .time-slot.selected {
-     background: linear-gradient(135deg, #800020 0%, #9a0025 100%);
+    background: linear-gradient(135deg, #800020 0%, #9a0025 100%);
     color: white;
     border: 2px solid #660019;
     transform: translateY(-2px);
@@ -300,7 +297,7 @@
 }
 
 .reserve-button:hover:not(:disabled) {
-        background: linear-gradient(135deg, #660019 0%, #800020 50%, #660019 100%);
+    background: linear-gradient(135deg, #660019 0%, #800020 50%, #660019 100%);
     transform: translateY(-3px);
     box-shadow: 0 12px 32px rgba(128, 0, 32, 0.4);
 }
@@ -376,40 +373,40 @@
         padding: 1.5rem;
         border-radius: 16px;
     }
-    
+
     .time-slots {
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 0.8rem;
     }
-    
+
     .time-slot {
         min-height: 75px;
         padding: 1rem 0.6rem;
         font-size: 0.85rem;
     }
-    
+
     .company-header {
         padding: 2rem 1rem;
         margin-bottom: 2rem;
     }
-    
+
     .company-name {
         font-size: 1.8rem;
     }
-    
+
     .company-logo-placeholder,
     .back-button {
         position: static;
         transform: none;
         margin: 1rem 0;
     }
-    
+
     .back-button {
         width: 44px;
         height: 44px;
         border-radius: 12px;
     }
-    
+
     .reserve-button {
         max-width: 100%;
         font-size: 1rem;
