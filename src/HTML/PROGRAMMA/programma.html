@@ -3,14 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareerLaunch - Programma</title>
     <link rel="stylesheet" href="/src/CSS/style.css" />
     <link rel="stylesheet" href="/src/CSS/PROGRAMMA/programma.css" />
     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
-    <script src="/js/navigation-manager.js"></script>
+    
   </head>
-  <body>
-    <!-- Navigatie -->
+  
+    
+</head>
+<body>
     <div class="container">
       <div class="nav">
         <div class="logo">
@@ -42,7 +46,7 @@
             <h2 class="sideMenu-title">CareerLaunch EHB</h2>
             <p class="sideMenu-subtitle">Menu</p>
           </div>
-          <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+          <button class="sideMenu-closeBtn" onclick="toggleMenu()">Test2  </button> 
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -57,24 +61,81 @@
             <i class="fas fa-envelope"></i>
             Contact us
           </a>
+<div class="container">
+  <div class="nav">
+  <div class="logo">
+    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+  </div>
+  <div class="navBar">
+    <a href="/index.html" class="navItem">Home</a>
+    <a href="/programma" class="navItem active">Programma</a>
+    <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
+    <a href="/info" class="navItem">Info</a>
+  </div>
+  <div class="pfpContainer">
+    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+    </div>
+  </div>
 
           <hr class="sideMenu-divider" />
         </div>
       </div>
+<!-- Verborgen sidebar -->
+<div class="sideMenu" id="sideMenu">
+  <!-- Geanimeerde achtergrond laag -->
+  <div class="menu-bg-animation"></div>
+  <div class="menu-bg-animation"></div>
+  <div class="sparkles"></div>
+ 
+  <!-- Header met titel -->
+  <div class="sideMenu-header">
+    <div>
+      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+      <p class="sideMenu-subtitle">Menu</p>
+    </div>
+    <button class="sideMenu-closeBtn" onclick="toggleMenu()">Test</button>
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+ 
+  <!-- Menu content -->
+  <div class="sideMenu-content">
+    <a href="/login">
+      <i class="fas fa-sign-in-alt"></i>
+      Login
+    </a>
+    <a href="/contacteer">
+      <i class="fas fa-envelope"></i>
+      Contact us
+    </a>
+   
+    <hr class="sideMenu-divider">
+  </div>
+</div>
 
       <!-- Main Content -->
       <main class="mainContent">
+    <!-- Main Content -->
+    <main class="mainContent">
         <section class="planningBox animatie-fade-up">
           <!-- Decorative header -->
           <div class="planningHeader">
             <div class="iconWrapper">
               <span class="headerIcon">📅</span>
+            <!-- Decorative header -->
+            <div class="planningHeader">
+                <div class="iconWrapper">
+                    <span class="headerIcon">📅</span>
+                </div>
+                <h2>Programma Overzicht</h2>
+                <p class="subtitle">Kies jouw gewenste tijdslot voor de CareerLaunch events</p>
             </div>
             <h2>Programma Overzicht</h2>
             <p class="subtitle">
               Kies jouw gewenste tijdslot voor de CareerLaunch events
             </p>
           </div>
+
 
           <!-- Time slots -->
           <div class="timeSlotContainer">
@@ -92,12 +153,56 @@
                   <span class="feature">💼 Bedrijfspresentaties</span>
                   <span class="feature">🤝 Networking sessies</span>
                   <span class="feature">📈 Workshops</span>
+            <!-- Time slots -->
+            <div class="timeSlotContainer">
+                <a href="/programmaVoormidag" class="timeSlot voormiddagBtn">
+                    <div class="timeSlotHeader">
+                        <span class="timeIcon">🌅</span>
+                        <div class="timeInfo">
+                            <h3>Voormiddag</h3>
+                            <span class="timeRange">9:00 - 12:00</span>
+                        </div>
+                    </div>
+                    <div class="timeSlotContent">
+                        <p>Ontdek bedrijven en netwerk met professionals</p>
+                        <div class="timeSlotFeatures">
+                            <span class="feature">💼 Bedrijfspresentaties</span>
+                            <span class="feature">🤝 Networking sessies</span>
+                            <span class="feature">📈 Workshops</span>
+                        </div>
+                    </div>
+                    <div class="timeSlotFooter">
+                        <span class="cta">Bekijk programma →</span>
+                    </div>
+                </a>
+
                 </div>
               </div>
               <div class="timeSlotFooter">
                 <span class="cta">Bekijk programma →</span>
               </div>
             </a>
+                <a href="/programmaNamidag" class="timeSlot namiddagBtn">
+                    <div class="timeSlotHeader">
+                        <span class="timeIcon">🌇</span>
+                        <div class="timeInfo">
+                            <h3>Namiddag</h3>
+                            <span class="timeRange">13:00 - 16:00</span>
+                        </div>
+                    </div>
+                    <div class="timeSlotContent">
+                        <p>Diepgaande gesprekken en persoonlijke begeleiding</p>
+                        <div class="timeSlotFeatures">
+                            <span class="feature">💬 One-on-one gesprekken</span>
+                            <span class="feature">🎯 Carrière coaching</span>
+                            <span class="feature">📋 CV reviews</span>
+                        </div>
+                    </div>
+                    <div class="timeSlotFooter">
+                        <span class="cta">Bekijk programma →</span>
+                    </div>
+                </a>
+            </div>
 
             <a href="/programmaNamidag" class="timeSlot namiddagBtn">
               <div class="timeSlotHeader">
@@ -105,6 +210,15 @@
                 <div class="timeInfo">
                   <h3>Namiddag</h3>
                   <span class="timeRange">13:00 - 16:00</span>
+            <!-- Additional info -->
+            <div class="additionalInfo">
+                <div class="infoCard">
+                    <span class="infoIcon">🎫</span>
+                    <div>
+                        <strong>Student</strong>
+                        <p>Gratis voor alle studenten</p>
+                    </div>
+                    
                 </div>
               </div>
               <div class="timeSlotContent">
@@ -113,6 +227,12 @@
                   <span class="feature">💬 One-on-one gesprekken</span>
                   <span class="feature">🎯 Carrière coaching</span>
                   <span class="feature">📋 CV reviews</span>
+                <div class="infoCard">
+                    <span class="infoIcon">🎫</span>
+                    <div>
+                        <strong>Toegang</strong>
+                        <p>Bedrijven </p>
+                    </div>
                 </div>
               </div>
               <div class="timeSlotFooter">
@@ -140,10 +260,14 @@
           </div>
         </section>
       </main>
+    </main>
 
       <!-- Menu Overlay -->
       <div class="menu-overlay"></div>
     </div>
+    <!-- Menu Overlay -->
+    <div class="menu-overlay"></div>
+</div>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay">

@@ -140,12 +140,19 @@ function initializeMenu() {
   }
 
   document.addEventListener('click', (e) => {
-    if (sideMenu.classList.contains('open') && 
-        !sideMenu.contains(e.target) && 
-        !avatar.contains(e.target)) {
+    // Pak altijd een Element, niet een TextNode
+    const tgt = (e.target.nodeType === Node.ELEMENT_NODE)
+                ? e.target
+                : e.target.parentElement;
+    
+    if (sideMenu.classList.contains('open')
+        && tgt
+        && !sideMenu.contains(tgt)
+        && !avatar.contains(tgt)) {
       closeMenu();
     }
   });
+  ;
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sideMenu.classList.contains('open')) {

@@ -66,10 +66,20 @@
 <!-- Zoekbalk -->
 <section class="searchSection">
   <div class="searchBar">
-    <input placeholder="Zoeken"></input>
-    <button class="searchBtn"><img src="" alt="Zoek" /></button>
+    <input 
+      type="text"
+      class="search-input"
+      list="search-suggestions"
+      placeholder="Zoeken in bedrijven, studenten" 
+    />
+    <datalist id="search-suggestions"></datalist>
   </div>
+  <div id="searchResults" class="search-results"></div>
 </section>
+
+  <!-- Éénmaal de resultaten‐container -->
+  <div id="searchResults" class="search-results"></div>
+
 
     <!-- Bedrijven en Studenten secties -->
 <section class="content-sections">
@@ -314,5 +324,6 @@
   <script src="/js/role-manager.js"></script>
   <script type="module" src="src/JS/UTILS/startPage.js"></script>
   <script type="module" src="src/JS/index.js"></script>
+  <script type="module" src="/src/JS/UTILS/zoekbalkHomepage.js"></script>
 </body>
 </html>

@@ -14,7 +14,7 @@ class HomepageDataFetcher {
         this.isLoading = false;
         this.retryCount = 0;
         this.maxRetries = 3;
-        
+
         console.log('🚀 HomepageDataFetcher initialized');
     }
 
@@ -39,7 +39,7 @@ class HomepageDataFetcher {
     // API fetch with retry logic
     async fetchAPI(endpoint, options = {}) {
         const url = `${this.API_BASE_URL}${endpoint}`;
-        
+
         for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
             try {
                 const response = await fetch(url, {
@@ -66,12 +66,12 @@ class HomepageDataFetcher {
 
                 const data = await response.json();
                 return data;
-                
+
             } catch (error) {
                 if (attempt === this.maxRetries) {
                     throw error;
                 }
-                
+
                 // Wait before retry
                 const delay = Math.pow(2, attempt) * 1000;
                 await new Promise(resolve => setTimeout(resolve, delay));
@@ -95,11 +95,11 @@ class HomepageDataFetcher {
     async fetchStats() {
         try {
             const stats = await this.fetchAPI('/stats');
-            
+
             if (stats.warnings && stats.warnings.length > 0) {
                 console.warn('⚠️ Stats warnings:', stats.warnings);
             }
-            
+
             this.updateCounts(stats);
             return stats;
         } catch (error) {
@@ -119,14 +119,14 @@ class HomepageDataFetcher {
     async fetchCompanies() {
         try {
             const response = await this.fetchAPI('/bedrijven');
-            
+
             let companies = [];
             if (response.success && Array.isArray(response.data)) {
                 companies = response.data;
             } else if (Array.isArray(response)) {
                 companies = response;
             }
-            
+
             allCompanies = companies;
             return companies;
         } catch (error) {
@@ -140,14 +140,14 @@ class HomepageDataFetcher {
     async fetchStudents() {
         try {
             const response = await this.fetchAPI('/studenten');
-            
+
             let students = [];
             if (response.success && Array.isArray(response.data)) {
                 students = response.data;
             } else if (Array.isArray(response)) {
                 students = response;
             }
-            
+
             allStudents = students;
             return students;
         } catch (error) {
@@ -161,19 +161,19 @@ class HomepageDataFetcher {
     async fetchProjects() {
         try {
             const response = await this.fetchAPI('/projecten');
-            
+
             let projects = [];
             if (response.success && Array.isArray(response.data)) {
                 projects = response.data;
             } else if (Array.isArray(response)) {
                 projects = response;
             }
-            
+
             allProjects = projects;
             return projects;
         } catch (error) {
             console.error('❌ Failed to fetch projects from database:', error);
-            
+
             // Fallback to static projects
             allProjects = this.getStaticProjects();
             return allProjects;
@@ -190,7 +190,7 @@ class HomepageDataFetcher {
             },
             {
                 id: 'static-2',
-                naam: "SmartLine Inspector", 
+                naam: "SmartLine Inspector",
                 beschrijving: "SmartLine Inspector is een vision-gebaseerd edge-systeem voor kwaliteitscontrole in productielijnen. Door gebruik te maken van edge computing en AI worden defecte producten automatisch herkend."
             },
             {
@@ -211,10 +211,10 @@ class HomepageDataFetcher {
         document.querySelectorAll('[data-count]').forEach(element => {
             const parentTitle = element.closest('.section-title');
             if (!parentTitle) return;
-            
+
             const titleText = parentTitle.textContent.toLowerCase();
             let targetValue = 0;
-            
+
             if (titleText.includes('bedrijf')) {
                 targetValue = stats.bedrijven || allCompanies.length || 0;
             } else if (titleText.includes('student')) {
@@ -222,7 +222,7 @@ class HomepageDataFetcher {
             } else if (titleText.includes('project')) {
                 targetValue = stats.projecten || allProjects.length || 0;
             }
-            
+
             this.animateCounter(element, targetValue);
         });
     }
@@ -230,23 +230,23 @@ class HomepageDataFetcher {
     // Animate counter
     animateCounter(element, targetValue) {
         const currentValue = parseInt(element.textContent) || 0;
-        
+
         if (currentValue === targetValue) return;
-        
+
         const duration = 2000;
         const frameRate = 60;
         const totalFrames = (duration / 1000) * frameRate;
         const increment = (targetValue - currentValue) / totalFrames;
-        
+
         let frame = 0;
         const timer = setInterval(() => {
             frame++;
             const progress = frame / totalFrames;
             const easeOutProgress = 1 - Math.pow(1 - progress, 3);
             const currentDisplayValue = Math.round(currentValue + (increment * frame * easeOutProgress));
-            
+
             element.textContent = Math.min(currentDisplayValue, targetValue);
-            
+
             if (frame >= totalFrames) {
                 clearInterval(timer);
                 element.textContent = targetValue;
@@ -257,7 +257,7 @@ class HomepageDataFetcher {
     // Show error notification
     showError(section, message) {
         console.error(`❌ Error in ${section}:`, message);
-        
+
         // Create error notification
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-notification';
@@ -272,9 +272,9 @@ class HomepageDataFetcher {
             </div>
             <button class="error-close" onclick="this.parentElement.remove()">×</button>
         `;
-        
+
         document.body.appendChild(errorDiv);
-        
+
         // Auto remove after 15 seconds
         setTimeout(() => {
             if (errorDiv.parentElement) {
@@ -310,7 +310,7 @@ class HomepageDataFetcher {
                 students: students.status === 'fulfilled' ? students.value : [],
                 projects: projects.status === 'fulfilled' ? projects.value : []
             };
-            
+
             console.log('✅ Homepage data loading completed');
             console.log('📊 Results summary:', {
                 stats: results.stats ? 'success' : 'failed',
@@ -342,7 +342,7 @@ class CarouselManager {
         this.itemsPerPage = 4;
         this.autoRotateInterval = null;
         this.isAutoRotating = true;
-        
+
         console.log('🎠 CarouselManager initialized');
     }
 
@@ -351,7 +351,7 @@ class CarouselManager {
         allCompanies = companies || [];
         allStudents = students || [];
         allProjects = projects || [];
-        
+
         this.renderAllCarousels();
         this.startAutoRotation();
     }
@@ -369,11 +369,11 @@ class CarouselManager {
         if (!companiesGrid) return;
 
         const displayCompanies = this.getDisplayItems(allCompanies, this.currentCompanyIndex);
-        
+
         companiesGrid.style.opacity = '0';
         setTimeout(() => {
             companiesGrid.innerHTML = '';
-            
+
             if (displayCompanies.length === 0) {
                 companiesGrid.innerHTML = '<p class="no-data">Geen bedrijven beschikbaar</p>';
             } else {
@@ -383,7 +383,7 @@ class CarouselManager {
                     companiesGrid.appendChild(card);
                 });
             }
-            
+
             companiesGrid.style.opacity = '1';
         }, 300);
     }
@@ -394,11 +394,11 @@ class CarouselManager {
         if (!studentsGrid) return;
 
         const displayStudents = this.getDisplayItems(allStudents, this.currentStudentIndex);
-        
+
         studentsGrid.style.opacity = '0';
         setTimeout(() => {
             studentsGrid.innerHTML = '';
-            
+
             if (displayStudents.length === 0) {
                 studentsGrid.innerHTML = '<p class="no-data">Geen studenten beschikbaar</p>';
             } else {
@@ -408,7 +408,7 @@ class CarouselManager {
                     studentsGrid.appendChild(card);
                 });
             }
-            
+
             studentsGrid.style.opacity = '1';
         }, 300);
     }
@@ -419,11 +419,11 @@ class CarouselManager {
         if (!projectsGrid) return;
 
         const displayProjects = this.getDisplayItems(allProjects, this.currentProjectIndex);
-        
+
         projectsGrid.style.opacity = '0';
         setTimeout(() => {
             projectsGrid.innerHTML = '';
-            
+
             if (displayProjects.length === 0) {
                 projectsGrid.innerHTML = '<p class="no-data">Geen projecten beschikbaar</p>';
             } else {
@@ -433,7 +433,7 @@ class CarouselManager {
                     projectsGrid.appendChild(card);
                 });
             }
-            
+
             projectsGrid.style.opacity = '1';
         }, 300);
     }
@@ -441,7 +441,7 @@ class CarouselManager {
     // Get items to display
     getDisplayItems(items, startIndex) {
         if (!items || items.length === 0) return [];
-        
+
         const result = [];
         for (let i = 0; i < this.itemsPerPage; i++) {
             const index = (startIndex + i) % items.length;
@@ -455,17 +455,17 @@ class CarouselManager {
         const card = document.createElement('a');
         card.href = `/resultaatBedrijf?id=${company.id || company.bedrijfsnummer}`;
         card.className = 'preview-card carousel-card';
-        
+
         const name = company.naam || company.bedrijfsnaam || 'Onbekend bedrijf';
         const description = company.beschrijving || company.bechrijving || company.omschrijving || 'Geen beschrijving beschikbaar';
-        const truncatedDesc = description.length > 150 ? 
+        const truncatedDesc = description.length > 150 ?
             description.substring(0, 150) + '...' : description;
-        
+
         card.innerHTML = `
             <h3 class="card-title">${name}</h3>
             <p class="card-description">${truncatedDesc}</p>
         `;
-        
+
         return card;
     }
 
@@ -474,25 +474,25 @@ class CarouselManager {
         const card = document.createElement('a');
         card.href = `/zoekbalkStudenten?id=${student.id || student.studentnummer}`;
         card.className = 'preview-card carousel-card';
-        
-        const name = student.naam || 
-                    `${student.voornaam || ''} ${student.achternaam || ''}`.trim() ||
-                    'Onbekende student';
-        
-        const description = student.beschrijving || 
-                          student.overMezelf ||
-                          student.bio || 
-                          student.omschrijving ||
-                          'Nog geen beschrijving toegevoegd';
-        
-        const truncatedDesc = description.length > 150 ? 
+
+        const name = student.naam ||
+            `${student.voornaam || ''} ${student.achternaam || ''}`.trim() ||
+            'Onbekende student';
+
+        const description = student.beschrijving ||
+            student.overMezelf ||
+            student.bio ||
+            student.omschrijving ||
+            'Nog geen beschrijving toegevoegd';
+
+        const truncatedDesc = description.length > 150 ?
             description.substring(0, 150) + '...' : description;
-        
+
         card.innerHTML = `
             <h3 class="card-title">${name}</h3>
             <p class="card-description">${truncatedDesc}</p>
         `;
-        
+
         return card;
     }
 
@@ -501,31 +501,31 @@ class CarouselManager {
         const card = document.createElement('a');
         card.href = `/zoekbalkProjecten?id=${project.id}`;
         card.className = 'project-card carousel-card';
-        
+
         const name = project.naam || project.projectTitel || 'Onbekend project';
         const description = project.beschrijving || project.projectBeschrijving || 'Geen beschrijving beschikbaar';
-        const truncatedDesc = description.length > 200 ? 
+        const truncatedDesc = description.length > 200 ?
             description.substring(0, 200) + '...' : description;
-        
+
         // Handle multiple students (comma-separated names)
         let studentInfo = '';
         if (project.studentNaam) {
             const studentNames = project.studentNaam;
             const studentCount = project.aantalStudenten || 1;
-            
+
             if (studentCount > 1) {
                 studentInfo = `<div class="project-student">Door: ${studentNames} (${studentCount} studenten)</div>`;
             } else {
                 studentInfo = `<div class="project-student">Door: ${studentNames}</div>`;
             }
         }
-        
+
         card.innerHTML = `
             <h3 class="project-title">${name}</h3>
             <p class="project-description">${truncatedDesc}</p>
             ${studentInfo}
         `;
-        
+
         return card;
     }
 
@@ -534,7 +534,7 @@ class CarouselManager {
         if (this.autoRotateInterval) {
             clearInterval(this.autoRotateInterval);
         }
-        
+
         this.autoRotateInterval = setInterval(() => {
             if (this.isAutoRotating) {
                 this.rotateNext();
@@ -547,7 +547,7 @@ class CarouselManager {
         this.currentCompanyIndex = (this.currentCompanyIndex + this.itemsPerPage) % Math.max(allCompanies.length, 1);
         this.currentStudentIndex = (this.currentStudentIndex + this.itemsPerPage) % Math.max(allStudents.length, 1);
         this.currentProjectIndex = (this.currentProjectIndex + this.itemsPerPage) % Math.max(allProjects.length, 1);
-        
+
         this.renderAllCarousels();
     }
 }
@@ -563,7 +563,7 @@ function createScrollToTopButton() {
     scrollButton.innerHTML = '↑';
     scrollButton.id = 'scrollToTopBtn';
     scrollButton.title = 'Terug naar boven';
-    
+
     scrollButton.style.cssText = `
         position: fixed;
         bottom: 25px;
@@ -652,37 +652,42 @@ function initializeAnimations() {
 }
 
 function initializeHoverEffects() {
-    document.addEventListener('mouseenter', (e) => {
-        if (e.target.matches('.preview-card, .project-card')) {
-            e.target.style.transform = 'translateY(-8px) scale(1.02)';
-            e.target.style.boxShadow = '0 15px 35px rgba(136, 21, 56, 0.2)';
-        }
-    }, true);
-
-    document.addEventListener('mouseleave', (e) => {
-        if (e.target.matches('.preview-card, .project-card')) {
-            e.target.style.transform = 'translateY(0) scale(1)';
-            e.target.style.boxShadow = '';
-        }
-    }, true);
+   // hover-in met guard
+document.addEventListener('mouseenter', (e) => {
+    if (typeof e.target.matches === 'function'
+        && e.target.matches('.preview-card, .project-card')) {
+      e.target.style.transform = 'translateY(-8px) scale(1.02)';
+      e.target.style.boxShadow = '0 15px 35px rgba(136, 21, 56, 0.2)';
+    }
+  }, true);
+  
+  // hover-out met guard
+  document.addEventListener('mouseleave', (e) => {
+    if (typeof e.target.matches === 'function'
+        && e.target.matches('.preview-card, .project-card')) {
+      e.target.style.transform = 'translateY(0) scale(1)';
+      e.target.style.boxShadow = '';
+    }
+  }, true);
+  
 }
 
 // ===== MAIN INITIALIZATION =====
 async function initIndexAnimations() {
     console.log('🎯 Initializing homepage...');
-    
+
     try {
         dataFetcher = new HomepageDataFetcher();
         carouselManager = new CarouselManager();
-        
+
         createScrollToTopButton();
         initializeAnimations();
         initializeHoverEffects();
-        
+
         await dataFetcher.loadHomepageData();
-        
+
         console.log('✅ Homepage initialization completed');
-        
+
     } catch (error) {
         console.error('❌ Failed to initialize homepage:', error);
     }
