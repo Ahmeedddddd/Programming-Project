@@ -1,136 +1,107 @@
-//src/Server/MODELS/bedrijf.js
-const { pool } = require('../CONFIG/database');
+// src/Server/MODELS/bedrijf.js
+const { pool } = require('../CONFIG/database'); // Zorg dat dit pad klopt
 
 class Bedrijf {
-  static async getAll() {
-    const [rows] = await pool.query(`
-      SELECT
-        bedrijfsnummer, TVA_nummer, naam, email, gsm_nummer, sector,
-        huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
-      FROM BEDRIJF
-      ORDER BY naam
-    `);
-    return rows;
-  }
+    static async getAll(limit = null, searchTerm = '') {
+        let query = `
+            SELECT
+                bedrijfsnummer, naam, sector, gemeente, beschrijving, email, telefoon, logoUrl, tafelNr, beschikbareTijdslots
+            FROM BEDRIJF
+        `;
+        const params = [];
+        let whereConditions = [];
 
-  static async getById(bedrijfsnummer) {
-    const [rows] = await pool.query(
-      'SELECT * FROM BEDRIJF WHERE bedrijfsnummer = ?',
-      [bedrijfsnummer]
-    );
-    return rows[0];
-  }
+        if (searchTerm) {
+            whereConditions.push('(naam LIKE ? OR sector LIKE ? OR gemeente LIKE ? OR beschrijving LIKE ?)');
+            const searchPattern = `%${searchTerm}%`;
+            params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+        }
 
-  static async create(bedrijfData) {
-    const {
-      TVA_nummer, naam, email, gsm_nummer, sector,
-      huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
-    } = bedrijfData;
+        if (whereConditions.length > 0) {
+            query += ` WHERE ${whereConditions.join(' AND ')}`;
+        }
 
-    const [result] = await pool.query(`
-      INSERT INTO BEDRIJF (
-        TVA_nummer, naam, email, gsm_nummer, sector,
-        huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      TVA_nummer, naam, email, gsm_nummer, sector,
-      huisnummer, straatnaam, gemeente, postcode, bus, land, tafelNr, bechrijving
-    ]);
+        query += ` ORDER BY naam`;
 
-    return result.insertId;
-  }
-
-  static async update(bedrijfsnummer, bedrijfData) {
-    const fields = Object.keys(bedrijfData);
-    const values = Object.values(bedrijfData);
-    const setClause = fields.map(field => `${field} = ?`).join(', ');
-
-    const [result] = await pool.query(
-      `UPDATE BEDRIJF SET ${setClause} WHERE bedrijfsnummer = ?`,
-      [...values, bedrijfsnummer]
-    );
-
-    return result.affectedRows;
-  }
-
-  static async delete(bedrijfsnummer) {
-    const [result] = await pool.query(
-      'DELETE FROM BEDRIJF WHERE bedrijfsnummer = ?',
-      [bedrijfsnummer]
-    );
-    return result.affectedRows;
-  }
-
-  // Missing methods for statistics
-  static async getStats() {
-    try {
-      const [totalRows] = await pool.query('SELECT COUNT(*) as total FROM BEDRIJF');
-      const [sectorStats] = await pool.query(`
-        SELECT sector, COUNT(*) as count 
-        FROM BEDRIJF 
-        WHERE sector IS NOT NULL AND sector != ''
-        GROUP BY sector
-        ORDER BY count DESC
-      `);
-
-      return {
-        total: totalRows[0].total,
-        bySector: sectorStats.reduce((acc, stat) => {
-          acc[stat.sector] = stat.count;
-          return acc;
-        }, {}),
-        topSectors: sectorStats.slice(0, 5) // Top 5 sectors
-      };
-    } catch (error) {
-      console.error('Error getting bedrijf stats:', error);
-      return { total: 0, bySector: {}, topSectors: [] };
+        if (limit) {
+            query += ` LIMIT ?`;
+            params.push(limit);
+        }
+        const [rows] = await pool.query(query, params);
+        return rows.map(row => {
+            // Parse beschikbareTijdslots from JSON string to array
+            if (row.beschikbareTijdslots) {
+                try {
+                    row.beschikbareTijdslots = JSON.parse(row.beschikbareTijdslots);
+                } catch (e) {
+                    console.error("Fout bij parsen beschikbareTijdslots:", e);
+                    row.beschikbareTijdslots = [];
+                }
+            } else {
+                row.beschikbareTijdslots = [];
+            }
+            return row;
+        });
     }
-  }
 
-  static async getRecent(limit = 5) {
-    try {
-      const [rows] = await pool.query(`
-        SELECT bedrijfsnummer, naam, email, sector, TVA_nummer
-        FROM BEDRIJF 
-        ORDER BY bedrijfsnummer DESC 
-        LIMIT ?
-      `, [limit]);
-      return rows;
-    } catch (error) {
-      console.error('Error getting recent bedrijven:', error);
-      return [];
+    static async getById(bedrijfsnummer) {
+        const [rows] = await pool.query(
+            'SELECT bedrijfsnummer, naam, sector, gemeente, beschrijving, email, telefoon, logoUrl, tafelNr, beschikbareTijdslots FROM BEDRIJF WHERE bedrijfsnummer = ?',
+            [bedrijfsnummer]
+        );
+        const bedrijf = rows[0];
+        if (bedrijf && typeof bedrijf.beschikbareTijdslots === 'string') { // Check if it's a string from DB
+            try {
+                bedrijf.beschikbareTijdslots = JSON.parse(bedrijf.beschikbareTijdslots);
+            } catch (e) {
+                console.error("Fout bij parsen beschikbareTijdslots voor ID", bedrijfsnummer, e);
+                bedrijf.beschikbareTijdslots = [];
+            }
+        } else if (bedrijf) {
+            bedrijf.beschikbareTijdslots = []; // Zorg altijd voor een array als het null/undefined is
+        }
+        return bedrijf;
     }
-  }
 
-  // Additional utility methods
-  static async getBySector(sector) {
-    try {
-      const [rows] = await pool.query(
-        'SELECT * FROM BEDRIJF WHERE sector = ? ORDER BY naam',
-        [sector]
-      );
-      return rows;
-    } catch (error) {
-      console.error('Error getting bedrijven by sector:', error);
-      return [];
+    // Methode om de basis beschikbare tijdslots in te stellen voor een bedrijf
+    static async setBaseAvailableTimeSlots(bedrijfsnummer, timeSlotsArray) {
+        try {
+            const [result] = await pool.query(
+                'UPDATE BEDRIJF SET beschikbareTijdslots = ? WHERE bedrijfsnummer = ?',
+                [JSON.stringify(timeSlotsArray), bedrijfsnummer]
+            );
+            return result.affectedRows;
+        } catch (error) {
+            console.error('Error updating base available time slots for company:', error);
+            throw error;
+        }
     }
-  }
 
-  static async searchByName(searchTerm) {
-    try {
-      const [rows] = await pool.query(`
-        SELECT bedrijfsnummer, naam, email, sector, gemeente
-        FROM BEDRIJF 
-        WHERE naam LIKE ? OR email LIKE ?
-        ORDER BY naam
-        LIMIT 20
-      `, [`%${searchTerm}%`, `%${searchTerm}%`]);
-      return rows;
-    } catch (error) {
-      console.error('Error searching bedrijven:', error);
-      return [];
+    // Voeg hier de update methode toe voor algemene bedrijfsgegevens
+    static async update(bedrijfsnummer, bedrijfData) {
+        const fields = Object.keys(bedrijfData);
+        const values = Object.values(bedrijfData);
+        const setClause = fields.map(field => {
+            // Speciaal geval voor JSON kolom
+            if (field === 'beschikbareTijdslots') {
+                return `${field} = JSON_ARRAY(?)`; // Als je JSON_ARRAY wil gebruiken
+            }
+            return `${field} = ?`;
+        }).join(', ');
+
+        // Zorg ervoor dat beschikbareTijdslots als JSON string wordt opgeslagen
+        if (bedrijfData.beschikbareTijdslots && Array.isArray(bedrijfData.beschikbareTijdslots)) {
+            bedrijfData.beschikbareTijdslots = JSON.stringify(bedrijfData.beschikbareTijdslots);
+        }
+
+        const [result] = await pool.query(
+            `UPDATE BEDRIJF SET ${setClause} WHERE bedrijfsnummer = ?`,
+            [...values, bedrijfsnummer]
+        );
+        return result.affectedRows;
     }
-  }
+
+    // ... andere methodes zoals create, delete, search, etc.
 }
 
 module.exports = Bedrijf;

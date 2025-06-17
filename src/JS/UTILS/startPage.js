@@ -7,6 +7,26 @@ if (document.readyState === 'loading') {
 }
 
 function initializePage() {
+   // ======= AUTO REDIRECT OP ROOT =======
+  // Stuur direct door naar juiste homepage op /
+  if (
+    typeof window.getUserType === "function" &&
+    window.location.pathname === "/"
+  ) {
+    const userType = window.getUserType();
+    if (userType === "organisator") {
+      window.location.replace("/organisator-homepage");
+      return;
+    }
+    if (userType === "student") {
+      window.location.replace("/student-homepage");
+      return;
+    }
+    if (userType === "bedrijf") {
+      window.location.replace("/bedrijf-homepage");
+      return;
+    }
+  }
   // Start alle systemen
   hideLoading();
   scrollToTop();

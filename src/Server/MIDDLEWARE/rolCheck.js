@@ -6,122 +6,10 @@ const config = require("../CONFIG/config");
 const path = require("path");
 const fs = require("fs");
 const { pool } = require("../CONFIG/database");
+const { NAVIGATION_CONFIG, UI_SETTINGS, STATS_CONFIG } = require("./navigation-config");
 
 // Navigation config remains the same...
-const NAVIGATION_CONFIG = {
-  guest: {
-    navbar: [
-      { href: "/", text: "Home" },
-      { href: "/programma", text: "Programma" },
-      { href: "/info", text: "Info" },
-      { href: "/login", text: "Login", highlight: true }
-    ],
-    sidebar: [
-      { href: "/login", text: "Inloggen", icon: "fas fa-sign-in-alt" },
-      { href: "/register", text: "Registreren", icon: "fas fa-user-plus" },
-      { href: "/contacteer", text: "Contact", icon: "fas fa-envelope" }
-    ]
-  },
 
-  student: {
-    navbar: [
-      { href: "/student-homepage", text: "Home" },
-      { href: "/programma", text: "Programma" },
-      { href: "/gesprekken-overzicht", text: "Mijn Gesprekken" },
-      { href: "/alle-bedrijven", text: "Bedrijven" },
-      { href: "/alle-projecten", text: "Projecten" },
-      { href: "/account-student", text: "Account", highlight: true }
-    ],
-    sidebar: [
-      { href: "/account-student", text: "Mijn Account", icon: "fas fa-user" },
-      { href: "/gegevens-student", text: "Mijn Gegevens", icon: "fas fa-id-card" },
-      { href: "/mijn-project", text: "Mijn Project", icon: "fas fa-project-diagram" },
-      { href: "/gesprekken-overzicht", text: "Mijn Gesprekken", icon: "fas fa-calendar-alt" },
-      { divider: true },
-      { href: "/alle-bedrijven", text: "Bedrijven Zoeken", icon: "fas fa-building" },
-      { href: "/alle-projecten", text: "Andere Projecten", icon: "fas fa-rocket" },
-      { divider: true },
-      { action: "logout", text: "Uitloggen", icon: "fas fa-sign-out-alt", danger: true }
-    ]
-  },
-
-  bedrijf: {
-    navbar: [
-      { href: "/bedrijf-homepage", text: "Home" },
-      { href: "/programma-bedrijven", text: "Programma" },
-      { href: "/gesprekken-overzicht-bedrijven", text: "Gesprekken" },
-      { href: "/alle-studenten", text: "Studenten" },
-      { href: "/account-bedrijf", text: "Account", highlight: true }
-    ],
-    sidebar: [
-      { href: "/account-bedrijf", text: "Bedrijfsprofiel", icon: "fas fa-building" },
-      { href: "/gegevens-bedrijf", text: "Bedrijfsgegevens", icon: "fas fa-edit" },
-      { href: "/gesprekken-overzicht-bedrijven", text: "Gesprekken", icon: "fas fa-calendar-alt" },
-      { divider: true },
-      { href: "/alle-studenten", text: "Studenten Zoeken", icon: "fas fa-users" },
-      { href: "/alle-projecten", text: "Student Projecten", icon: "fas fa-rocket" },
-      { divider: true },
-      { action: "logout", text: "Uitloggen", icon: "fas fa-sign-out-alt", danger: true }
-    ]
-  },
-
-  organisator: {
-    navbar: [
-      { href: "/organisator-homepage", text: "Dashboard" },
-      { href: "/admin-panel", text: "Admin Panel" },
-      { href: "/overzicht-organisator", text: "Overzicht" },
-      { href: "/alle-studenten", text: "Studenten" },
-      { href: "/alle-bedrijven", text: "Bedrijven" },
-      { href: "/account-organisator", text: "Account", highlight: true }
-    ],
-    sidebar: [
-      { href: "/account-organisator", text: "Mijn Account", icon: "fas fa-user-shield" },
-      { href: "/gegevens-organisator", text: "Mijn Gegevens", icon: "fas fa-id-card" },
-      { divider: true },
-      { href: "/admin-panel", text: "Admin Panel", icon: "fas fa-cogs" },
-      { href: "/overzicht-organisator", text: "Overzicht", icon: "fas fa-chart-bar" },
-      { href: "/alle-studenten", text: "Studenten Beheer", icon: "fas fa-users" },
-      { href: "/alle-bedrijven", text: "Bedrijven Beheer", icon: "fas fa-building" },
-      { divider: true },
-      { action: "logout", text: "Uitloggen", icon: "fas fa-sign-out-alt", danger: true }
-    ]
-  }
-};
-
-const UI_SETTINGS = {
-  debug: process.env.NODE_ENV === 'development',
-  autoSetActive: true,
-  refreshInterval: 30000,
-  selectors: {
-    navbar: '.navBar',
-    sidebar: '.sideMenu-content'
-  },
-  classes: {
-    navbar: {
-      default: 'navItem',
-      active: 'active',
-      highlight: 'highlight'
-    },
-    sidebar: {
-      divider: 'sideMenu-divider'
-    }
-  }
-};
-
-const STATS_CONFIG = {
-  enabled: true,
-  queries: {
-    students: "SELECT COUNT(*) as count FROM STUDENT",
-    companies: "SELECT COUNT(*) as count FROM BEDRIJF", 
-    appointments: "SELECT COUNT(*) as count FROM AFSPRAAK"
-  },
-  fallback: {
-    totalStudents: 0,
-    totalCompanies: 0,
-    totalProjects: 0,
-    totalReservations: 0
-  }
-};
 
 // ===== ENHANCED USER MANAGEMENT =====
 
@@ -178,7 +66,7 @@ const serveRoleBasedHomepage = async (req, res, next) => {
 
   if (!user) {
     console.log("🎯 Serving guest homepage");
-    return res.sendFile(path.join(__dirname, "../../public/index.html"));
+    return res.sendFile(path.join(__dirname, "../../../public/index.html"));
   }
 
   let homepageFile;

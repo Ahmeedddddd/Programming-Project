@@ -1,216 +1,248 @@
 <!DOCTYPE html>
 <html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alle Projecten</title>
-    <link rel="stylesheet" href="/src/CSS/style.css">
-    <link rel="stylesheet" href="/src/CSS/RESULTS/PROJECTEN/alle-projecten.css">
+    <link rel="stylesheet" href="/src/CSS/style.css" />
+    <link
+      rel="stylesheet"
+      href="/src/CSS/RESULTS/PROJECTEN/alle-projecten.css"
+    />
     <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <script src="/js/navigation-manager"></script>
 
     <style>
-        /* Additional styles for dynamic content */
-        .projectTegel {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
+      /* Additional styles for dynamic content */
+      .projectTegel {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+      }
 
-        .projectTegel:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 45px rgba(136, 21, 56, 0.3);
-        }
+      .projectTegel:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 45px rgba(136, 21, 56, 0.3);
+      }
 
-        .student-info {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #dee2e6;
-            font-size: 0.9rem;
-            color: #666;
-        }
+      .student-info {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+        font-size: 0.9rem;
+        color: #666;
+      }
 
-        .student-info span {
-            display: block;
-            margin-bottom: 0.25rem;
-        }
+      .student-info span {
+        display: block;
+        margin-bottom: 0.25rem;
+      }
 
-        .student-info span:first-child {
-            font-weight: 600;
-            color: #881538;
-        }
+      .student-info span:first-child {
+        font-weight: 600;
+        color: #881538;
+      }
 
-        .no-results {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 3rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-        }
+      .no-results {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+      }
 
-        .error-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 3rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-            border-left: 4px solid #dc2626;
-        }
+      .error-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+        border-left: 4px solid #dc2626;
+      }
 
-        .retry-btn {
+      .retry-btn {
+        background: #881538;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+      }
+
+      .retry-btn:hover {
+        background: #a91b47;
+        transform: translateY(-2px);
+      }
+
+      /* Loading states */
+      .loading-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
+      }
+
+      /* Animation for new cards */
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .projectTegel {
+        animation: slideInUp 0.6s ease-out;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigatie -->
+    <div class="container">
+      <div class="nav">
+        <div class="logo">
+          <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+        </div>
+        <div class="navBar"></div>
+        <div class="pfpContainer">
+          <img
+            src="/images/mystery man avatar.webp"
+            alt="Profiel"
+            class="profile-pic"
+            id="burgerToggle"
+          />
+        </div>
+      </div>
+
+      <!-- Verborgen sidebar -->
+      <div class="sideMenu" id="sideMenu">
+        <!-- Geanimeerde achtergrond laag -->
+        <div class="menu-bg-animation"></div>
+        <div class="menu-bg-animation"></div>
+        <div class="sparkles"></div>
+
+        <!-- Header met titel -->
+        <div class="sideMenu-header">
+          <div>
+            <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+            <p class="sideMenu-subtitle">Menu</p>
+          </div>
+          <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Menu content -->
+        <div class="sideMenu-content">
+          <a href="/login">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+          </a>
+          <a href="/contacteer">
+            <i class="fas fa-envelope"></i>
+            Contact us
+          </a>
+
+          <hr class="sideMenu-divider" />
+        </div>
+      </div>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Alle Projecten</h1>
+        <p class="page-subtitle">
+          Ontdek innovatieve studentenprojecten en technologische oplossingen
+          tijdens CareerLaunch
+        </p>
+      </div>
+
+      <!-- Category Pills -->
+      <div class="category-pills">
+        <span class="category-pill active">Alle</span>
+        <span class="category-pill">AI & Robotica</span>
+        <span class="category-pill">Web Development</span>
+        <span class="category-pill">Hardware & IoT</span>
+        <span class="category-pill">Cybersecurity</span>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Zoek projecten..."
+        />
+        <select class="filter-select">
+          <option>Alle jaren</option>
+          <option>1e jaar</option>
+          <option>2e jaar</option>
+          <option>3e jaar</option>
+        </select>
+        <button class="filter-btn">Filter</button>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <p class="stats-text">🚀 Projecten worden geladen...</p>
+        <button
+          class="refresh-btn"
+          style="
+            margin-left: 1rem;
+            padding: 0.5rem 1rem;
             background: #881538;
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-        }
+            font-size: 0.8rem;
+          "
+          onclick="window.location.reload()"
+        >
+          <i class="fas fa-sync-alt"></i> Vernieuwen
+        </button>
+      </div>
 
-        .retry-btn:hover {
-            background: #A91B47;
-            transform: translateY(-2px);
-        }
-
-        /* Loading states */
-        .loading-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 3rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-        }
-
-        /* Animation for new cards */
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .projectTegel {
-            animation: slideInUp 0.6s ease-out;
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigatie -->
-<div class="container">
-  <div class="nav">
-  <div class="logo">
-    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-  </div>
-  <div class="navBar">
-    <a href="/index.html" class="navItem active">Home</a>
-    <a href="/programma" class="navItem">Programma</a>
-    <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
-    <a href="/info" class="navItem">Info</a>
-  </div>
-  <div class="pfpContainer">
-    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-    </div>
-  </div>
-
-<!-- Verborgen sidebar -->
-<div class="sideMenu" id="sideMenu">
-  <!-- Geanimeerde achtergrond laag -->
-  <div class="menu-bg-animation"></div>
-<div class="menu-bg-animation"></div>
-<div class="sparkles"></div>
-  
-  <!-- Header met titel -->
-  <div class="sideMenu-header">
-    <div>
-      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-      <p class="sideMenu-subtitle">Menu</p>
-    </div>
-    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-  
-  <!-- Menu content -->
-  <div class="sideMenu-content">
-    <a href="/login">
-      <i class="fas fa-sign-in-alt"></i>
-      Login
-    </a>
-    <a href="/contacteer">
-      <i class="fas fa-envelope"></i>
-      Contact us
-    </a>
-    
-    <hr class="sideMenu-divider">
-  </div>
-</div>
-
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 class="page-title">Alle Projecten</h1>
-            <p class="page-subtitle">Ontdek innovatieve studentenprojecten en technologische oplossingen tijdens CareerLaunch</p>
+      <!-- Main Content - Nu dynamisch geladen door JavaScript -->
+      <main class="projectTegels">
+        <!-- Content wordt dynamisch geladen door JavaScript -->
+        <div class="loading-state">
+          <div class="loader"></div>
+          <p style="margin-top: 1rem; color: #666">
+            Projecten worden geladen...
+          </p>
         </div>
-
-        <!-- Category Pills -->
-        <div class="category-pills">
-            <span class="category-pill active">Alle</span>
-            <span class="category-pill">AI & Robotica</span>
-            <span class="category-pill">Web Development</span>
-            <span class="category-pill">Hardware & IoT</span>
-            <span class="category-pill">Cybersecurity</span>
-        </div>
-
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <input type="text" class="search-input" placeholder="Zoek projecten...">
-            <select class="filter-select">
-                <option>Alle jaren</option>
-                <option>1e jaar</option>
-                <option>2e jaar</option>
-                <option>3e jaar</option>
-            </select>
-            <button class="filter-btn">Filter</button>
-        </div>
-
-        <!-- Stats Bar -->
-        <div class="stats-bar">
-            <p class="stats-text">🚀 Projecten worden geladen...</p>
-            <button class="refresh-btn" style="margin-left: 1rem; padding: 0.5rem 1rem; background: #881538; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" onclick="window.location.reload()">
-                <i class="fas fa-sync-alt"></i> Vernieuwen
-            </button>
-        </div>
-
-        <!-- Main Content - Nu dynamisch geladen door JavaScript -->
-        <main class="projectTegels">
-            <!-- Content wordt dynamisch geladen door JavaScript -->
-            <div class="loading-state">
-                <div class="loader"></div>
-                <p style="margin-top: 1rem; color: #666;">Projecten worden geladen...</p>
-            </div>
-        </main>
+      </main>
     </div>
 
     <!-- Notification Container -->
-    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
-        <!-- Notifications will be added here by JavaScript -->
+    <div
+      id="notification-container"
+      style="position: fixed; top: 1rem; right: 1rem; z-index: 10000"
+    >
+      <!-- Notifications will be added here by JavaScript -->
     </div>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
-        <div class="loader"></div>
+      <div class="loader"></div>
     </div>
 
     <!-- Scripts -->
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script src="/src/JS/RESULTS/PROJECTEN/alle-projecten.js"></script>
-</body>
+  </body>
 </html>

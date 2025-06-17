@@ -539,7 +539,7 @@ class CarouselManager {
             if (this.isAutoRotating) {
                 this.rotateNext();
             }
-        }, 5000); // Rotate every 5 seconds
+        }, 30000); // Rotate every 5 seconds
     }
 
     // Rotate to next items
