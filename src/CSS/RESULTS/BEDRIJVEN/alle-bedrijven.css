@@ -119,18 +119,6 @@
     text-align: justify;
 }
 
-/* Company Icons */
-.bedrijfTegel:nth-child(1) .bedrijfNaam::before { content: "🤖 "; }
-.bedrijfTegel:nth-child(2) .bedrijfNaam::before { content: "⚕️ "; }
-.bedrijfTegel:nth-child(3) .bedrijfNaam::before { content: "🎨 "; }
-.bedrijfTegel:nth-child(4) .bedrijfNaam::before { content: "⚛️ "; }
-.bedrijfTegel:nth-child(5) .bedrijfNaam::before { content: "⭐ "; }
-.bedrijfTegel:nth-child(6) .bedrijfNaam::before { content: "🤖 "; }
-.bedrijfTegel:nth-child(7) .bedrijfNaam::before { content: "✈️ "; }
-.bedrijfTegel:nth-child(8) .bedrijfNaam::before { content: "💻 "; }
-.bedrijfTegel:nth-child(9) .bedrijfNaam::before { content: "🎨 "; }
-.bedrijfTegel:nth-child(10) .bedrijfNaam::before { content: "🎬 "; }
-
 /* Call to Action Button */
 .bedrijfTegel::after {
     content: "Bekijk Details →";
