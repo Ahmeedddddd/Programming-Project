@@ -205,13 +205,9 @@
       </div>
 
       <!-- Main Content - Nu dynamisch geladen door JavaScript -->
-      <main class="projectTegels">
-        <!-- Content wordt dynamisch geladen door JavaScript -->
-        <div class="loading-state">
-          <div class="loader"></div>
-          <p style="margin-top: 1rem; color: #666">
-            Projecten worden geladen...
-          </p>
+      <main class="projectTegels" id="projectenGrid">
+        <div class="no-data" id="projectenLoading">
+          <i class="fas fa-spinner fa-spin"></i> Projecten laden...
         </div>
       </main>
     </div>
@@ -232,5 +228,6 @@
     <!-- Scripts -->
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script src="/src/JS/RESULTS/PROJECTEN/alle-projecten.js"></script>
+    <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
   </body>
 </html>

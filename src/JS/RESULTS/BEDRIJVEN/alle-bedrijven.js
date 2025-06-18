@@ -147,10 +147,11 @@ class AlleBedrijvenManager {
   }
 
   createBedrijfCard(bedrijf, index) {
-    const article = document.createElement("article");
-    article.className = "bedrijfTegel";
-    article.style.animationDelay = `${index * 0.1}s`; // Add click handler for navigation
-    article.addEventListener("click", () => {
+    const card = document.createElement('a');
+    card.className = 'bedrijfTegel';
+    card.href = `/resultaat-bedrijf?id=${bedrijf.bedrijfsnummer}`;
+    card.style.animationDelay = `${index * 0.1}s`; // Add click handler for navigation
+    card.addEventListener("click", () => {
       // FIX: Navigeer naar het nieuwe, gestandaardiseerde URL-formaat
       this.navigateToBedrijfDetail(bedrijf.bedrijfsnummer);
     }); // Get company icon based on sector
@@ -161,7 +162,7 @@ class AlleBedrijvenManager {
       bedrijf.beschrijving ||
       "Meer informatie beschikbaar op de detailpagina.";
 
-    article.innerHTML = `
+    card.innerHTML = `
       <h2 class="bedrijfNaam"> ${bedrijf.naam}</h2>
       <p class="bedrijfSector">${bedrijf.sector}</p>
       <p class="bedrijfBeschrijving">
@@ -173,7 +174,7 @@ class AlleBedrijvenManager {
       </div>
     `;
 
-    return article;
+    return card;
   }
 
   navigateToBedrijfDetail(bedrijfsnummer) {

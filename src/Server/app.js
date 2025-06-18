@@ -323,26 +323,26 @@ app.get("/programma", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
 });
 
-app.get("/alle-bedrijven", (req, res) => {
+app.get("/alleBedrijven", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
   );
 });
 
-app.get("/alle-projecten", (req, res) => {
+app.get("/alleProjecten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html")
   );
 });
 
-app.get("/alle-studenten", (req, res) => {
+app.get("/alleStudenten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html")
   );
 });
 
 app.get("/zoekbalk-projecten", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-projecten.html"));
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"));
 });
 
 app.get("/zoekbalk-studenten", (req, res) => {
@@ -351,13 +351,13 @@ app.get("/zoekbalk-studenten", (req, res) => {
 
 app.get("/resultaat-bedrijf", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/resultaat-bedrijf.html")
+    path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html")
   );
 });
 
 app.get("/resultaat-student", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/resultaat-student.html")
+    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html")
   );
 });
 
