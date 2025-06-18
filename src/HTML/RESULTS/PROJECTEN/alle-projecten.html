@@ -6,6 +6,8 @@
     <title>Alle Projecten</title>
     <link rel="stylesheet" href="/src/CSS/style.css"/>
     <link rel="stylesheet" href="/src/CSS/RESULTS/PROJECTEN/alle-projecten.css">
+     <script src="/js/navigation-manager.js"></script>
+    <script src="/js/role-manager.js"></script>
     <!-- Font Awesome for icons -->
     <link
       rel="stylesheet"
@@ -110,53 +112,42 @@
   <body>
     <!-- Navigatie -->
     <div class="container">
-      <div class="nav">
-        <div class="logo">
-          <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-        </div>
-        <div class="navBar"></div>
-        <div class="pfpContainer">
-          <img
-            src="/images/mystery man avatar.webp"
-            alt="Profiel"
-            class="profile-pic"
-            id="burgerToggle"
-          />
-        </div>
-      </div>
-
-      <!-- Verborgen sidebar -->
-      <div class="sideMenu" id="sideMenu">
-        <!-- Geanimeerde achtergrond laag -->
-        <div class="menu-bg-animation"></div>
-        <div class="menu-bg-animation"></div>
-        <div class="sparkles"></div>
-
-        <!-- Header met titel -->
-        <div class="sideMenu-header">
-          <div>
-            <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-            <p class="sideMenu-subtitle">Menu</p>
-          </div>
-          <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-            <i class="fas fa-times"></i>
-          </button>
+       <!-- Dynamic Navigation -->
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar">
+                <!-- Navigation items will be dynamically populated -->
+            </div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+            </div>
         </div>
 
-        <!-- Menu content -->
-        <div class="sideMenu-content">
-          <a href="/login">
-            <i class="fas fa-sign-in-alt"></i>
-            Login
-          </a>
-          <a href="/contacteer">
-            <i class="fas fa-envelope"></i>
-            Contact us
-          </a>
-
-          <hr class="sideMenu-divider" />
+        <!-- Dynamic Sidebar -->
+        <div class="sideMenu" id="sideMenu">
+            <!-- Geanimeerde achtergrond laag -->
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+            
+            <!-- Header met titel -->
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Organisator Menu</p>
+                </div>
+                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Menu content - dynamically populated -->
+            <div class="sideMenu-content">
+                <!-- Dynamic navigation items will be inserted here -->
+            </div>
         </div>
-      </div>
 
       <!-- Page Header -->
       <div class="page-header">
