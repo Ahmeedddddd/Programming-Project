@@ -269,59 +269,44 @@ app.get("/index.html", (req, res) => {
 // AUTH-PROTECTED role-specific homepages
 app.get('/student-homepage', (req, res) => {
   const user = getCurrentUser(req);
-
-  if (!user) {
-    return res.redirect("/");
-  }
-  if (user.userType !== "student") {
+  console.log('🔍 [ROUTE] /student-homepage - user:', user && user.email, '-', user && user.userType);
+  if (!user) return res.redirect('/');
+  if (user.userType !== 'student') {
     switch (user.userType) {
-      case "bedrijf":
-        return res.redirect("/bedrijf-homepage");
-      case "organisator":
-        return res.redirect("/organisator-homepage");
-      default:
-        return res.redirect("/");
+      case 'bedrijf': return res.redirect('/bedrijf-homepage');
+      case 'organisator': return res.redirect('/organisator-homepage');
+      default: return res.redirect('/');
     }
   }
-  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html"));
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/student-homepage.html'));
 });
 
 app.get('/bedrijf-homepage', (req, res) => {
   const user = getCurrentUser(req);
-
-  if (!user) {
-    return res.redirect("/");
-  }
-  if (user.userType !== "bedrijf") {
+  console.log('🔍 [ROUTE] /bedrijf-homepage - user:', user && user.email, '-', user && user.userType);
+  if (!user) return res.redirect('/');
+  if (user.userType !== 'bedrijf') {
     switch (user.userType) {
-      case "student":
-        return res.redirect("/student-homepage");
-      case "organisator":
-        return res.redirect("/organisator-homepage");
-      default:
-        return res.redirect("/");
+      case 'student': return res.redirect('/student-homepage');
+      case 'organisator': return res.redirect('/organisator-homepage');
+      default: return res.redirect('/');
     }
   }
-  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html"));
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJVEN/homepage-bedrijf.html'));
 });
 
 app.get('/organisator-homepage', (req, res) => {
   const user = getCurrentUser(req);
-
-  if (!user) {
-    return res.redirect("/");
-  }
-  if (user.userType !== "organisator") {
+  console.log('🔍 [ROUTE] /organisator-homepage - user:', user && user.email, '-', user && user.userType);
+  if (!user) return res.redirect('/');
+  if (user.userType !== 'organisator') {
     switch (user.userType) {
-      case "student":
-        return res.redirect("/student-homepage");
-      case "bedrijf":
-        return res.redirect("/bedrijf-homepage");
-      default:
-        return res.redirect("/");
+      case 'student': return res.redirect('/student-homepage');
+      case 'bedrijf': return res.redirect('/bedrijf-homepage');
+      default: return res.redirect('/');
     }
   }
-  res.sendFile(path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html"));
+  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/organisator-homepage.html'));
 });
 
 console.log("✅ AUTH-PROTECTED homepage routes loaded");
