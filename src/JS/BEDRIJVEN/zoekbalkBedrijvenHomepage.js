@@ -1,3 +1,4 @@
+// src/JS/RESULTS/zoekbalkBedrijfHomepage.js
 // Zoekbalk alleen voor studenten & projecten op de bedrijven-homepage
 
 console.log('🔎 ZoekbalkHomepage voor bedrijven loaded');
@@ -11,7 +12,7 @@ window.entityCaches = {
 class ZoekbalkHomepage {
   constructor() {
     this.searchInput = document.querySelector('.search-input');
-    this.datalist = document.querySelector('#search-suggestions');
+    this.datalist    = document.querySelector('#search-suggestions');
     this.resultsWrap = document.querySelector('#searchResults');
 
     if (!this.searchInput || !this.resultsWrap) {
@@ -30,6 +31,7 @@ class ZoekbalkHomepage {
         this.loadData('studenten', '/api/studenten'),
         this.loadData('projecten', '/api/projecten')
       ]);
+      // Begin zonder resultaten
       this.renderResults([], '');
     } catch (err) {
       console.error('❌ Initialisatie fout:', err);
@@ -48,7 +50,11 @@ class ZoekbalkHomepage {
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const payload = await res.json();
-      const list = Array.isArray(payload.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+      const list = Array.isArray(payload.data)
+        ? payload.data
+        : Array.isArray(payload)
+          ? payload
+          : [];
       cache.data = list;
     } catch (err) {
       console.warn(`⚠️ Fout bij laden ${key}, fallback voor ${key}`, err);
@@ -79,7 +85,9 @@ class ZoekbalkHomepage {
     ];
 
     const opts = [...new Set(
-      allNames.filter(n => n.toLowerCase().startsWith(term)).slice(0, 10)
+      allNames
+        .filter(n => n.toLowerCase().startsWith(term))
+        .slice(0, 10)
     )];
 
     this.datalist.innerHTML = opts.map(v => `<option value="${v}">`).join('');
@@ -90,10 +98,17 @@ class ZoekbalkHomepage {
     const match = text => text && text.toLowerCase().includes(term);
 
     const fs = term
-      ? studenten.data.filter(s => match(`${s.voornaam} ${s.achternaam}`) || match(s.opleiding) || match(s.gemeente))
+      ? studenten.data.filter(s =>
+          match(`${s.voornaam} ${s.achternaam}`) ||
+          match(s.opleiding) ||
+          match(s.gemeente)
+        )
       : [];
     const fp = term
-      ? projecten.data.filter(p => match(p.projectTitel) || match(p.studentNaam))
+      ? projecten.data.filter(p =>
+          match(p.projectTitel) ||
+          match(p.studentNaam)
+        )
       : [];
 
     const combined = [
@@ -108,6 +123,7 @@ class ZoekbalkHomepage {
     this.resultsWrap.innerHTML = '';
     if (!term || items.length === 0) return;
 
+    // layout
     this.resultsWrap.style.display = 'flex';
     this.resultsWrap.style.flexWrap = 'wrap';
     this.resultsWrap.style.gap = '1rem';
