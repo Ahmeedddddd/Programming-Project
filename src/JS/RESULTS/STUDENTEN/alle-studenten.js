@@ -50,32 +50,22 @@ async function initializeStudentPage() {
 
 // ===== API CALLS =====
 async function loadAllStudents() {
+    const container = document.getElementById('studentTegels');
+    if (!container) return;
+    container.innerHTML = `<div class="no-data" id="studentenLoading"><i class="fas fa-spinner fa-spin"></i> Studenten laden...</div>`;
     try {
-        const API_BASE = 'http://localhost:3301';
-        const response = await fetch(`${API_BASE}/api/studenten`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
+        const response = await fetch('/api/studenten');
         const data = await response.json();
-        
-        if (data.success && data.data) {
-            allStudents = data.data;
-            filteredStudents = [...allStudents];
-            console.log('📊 Studenten geladen:', allStudents.length);
+        if (data.success && data.data && data.data.length > 0) {
+            container.innerHTML = '';
+            data.data.forEach((student, index) => {
+                container.appendChild(createStudentCard(student, index));
+            });
         } else {
-            throw new Error('Invalid response format');
+            container.innerHTML = `<div class="no-data">Geen studenten gevonden.</div>`;
         }
-        
     } catch (error) {
-        console.error('❌ Fout bij laden studenten:', error);
-        
-        // Fallback: gebruik mock data als API niet beschikbaar is
-        allStudents = getMockStudents();
-        filteredStudents = [...allStudents];
-        
-        showNotification('⚠️ Offline modus: test data wordt gebruikt', 'warning');
+        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Fout bij laden van studenten.</div>`;
     }
 }
 
@@ -112,9 +102,10 @@ function renderStudents(students) {
 }
 
 function createStudentCard(student, index) {
-    const article = document.createElement('article');
-    article.className = 'studentTegel';
-    article.style.animationDelay = `${index * 0.1}s`;
+    const card = document.createElement('a');
+    card.className = 'studentTegel';
+    card.href = `/resultaat-student?id=${student.studentnummer}`;
+    card.style.animationDelay = `${index * 0.1}s`;
     
     // Bepaal beschrijving (gebruik overMezelf of projectBeschrijving)
     let beschrijving = student.overMezelf || student.projectBeschrijving || 'Geen beschrijving beschikbaar.';
@@ -130,7 +121,7 @@ function createStudentCard(student, index) {
     // Bepaal jaar op basis van studentnummer (simpele logica)
     const jaar = getStudentYear(student.studentnummer);
     
-    article.innerHTML = `
+    card.innerHTML = `
         <button class="connect-btn" onclick="navigateToStudent(${student.studentnummer})">💬 Connect</button>
         <h2 class="studentNaam">${student.voornaam} ${student.achternaam}</h2>
         <div class="student-meta">
@@ -150,14 +141,14 @@ function createStudentCard(student, index) {
     `;
     
     // Add click handler voor hele card
-    article.addEventListener('click', (e) => {
+    card.addEventListener('click', (e) => {
         // Alleen navigeren als niet op de connect button geklikt
         if (!e.target.classList.contains('connect-btn')) {
             navigateToStudent(student.studentnummer);
         }
     });
     
-    return article;
+    return card;
 }
 
 // ===== NAVIGATION =====

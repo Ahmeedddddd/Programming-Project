@@ -518,3 +518,27 @@ console.log('   🌐 Current URL:', window.location.href);
 console.log('   📄 Items per page:', itemsPerPage);
 
 console.log('✅ Alle Studenten - Script loaded and ready!');
+
+async function loadAllProjects() {
+  const container = document.getElementById('projectenGrid');
+  if (!container) return;
+  container.innerHTML = `<div class="no-data" id="projectenLoading"><i class="fas fa-spinner fa-spin"></i> Projecten laden...</div>`;
+  try {
+    const response = await fetch('/api/projecten');
+    const data = await response.json();
+    if (data.success && data.data && data.data.length > 0) {
+      container.innerHTML = data.data.map(project => `
+        <a href="/zoekbalk-projecten?id=${project.projectId}" class="projectTegel">
+          <h3 class="projectTitel">${project.titel}</h3>
+          <p class="projectBeschrijving">${project.beschrijving ? project.beschrijving.substring(0, 120) + '...' : ''}</p>
+        </a>
+      `).join('');
+    } else {
+      container.innerHTML = `<div class="no-data">Geen projecten gevonden.</div>`;
+    }
+  } catch (error) {
+    container.innerHTML = `<div class="no-data" style="color: #dc3545;">Fout bij laden van projecten.</div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadAllProjects);

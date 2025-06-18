@@ -9,7 +9,10 @@ const bedrijfController = {
   // GET /api/bedrijven - Alle bedrijven ophalen
   async getAllBedrijven(req, res) {
     try {
-      const bedrijven = await Bedrijf.getAll();
+      let limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+      if (isNaN(limit) || limit < 1) limit = null;
+      const searchTerm = req.query.search || '';
+      const bedrijven = await Bedrijf.getAll(limit, searchTerm);
       res.json({
         success: true,
         data: bedrijven,
