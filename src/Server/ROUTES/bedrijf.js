@@ -1,90 +1,74 @@
-// src/Server/ROUTES/bedrijf.js
-const express = require("express");
+// CREATE: /src/Server/ROUTES/bedrijf.js
+
+const express = require('express');
 const router = express.Router();
-const Bedrijf = require("../MODELS/bedrijf");
-const Reservatie = require("../MODELS/reservatie");
-const { authenticateToken, requireRole } = require("../MIDDLEWARE/auth");
+const bedrijfController = require('../CONTROLLERS/bedrijfController');
+const { validateBedrijf } = require('../MIDDLEWARE/validation');
+const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
-const EVENT_DATE_STRING = "2025-06-25"; // De vaste datum van het evenement
+// ===== IMPORTANT: SPECIFIC ROUTES FIRST, PARAMETER ROUTES LAST =====
 
-// ... (rest van de routes: router.get('/', router.get('/:id'), router.put('/profile')) ...
+// PUBLIC ROUTES (no authentication required)
 
-// NIEUW: Route om de planning (beschikbare en bezette tijdslots) van een bedrijf op te halen
-router.get(
-  "/:id/planning/:date",
+// SPECIFIC routes - deze moeten VOOR de parameter routes komen
+router.get('/stats', bedrijfController.getBedrijfStats || ((req, res) => {
+    res.json({ success: true, data: { total: 0 }, message: 'Stats endpoint not implemented yet' });
+}));
+
+// SEARCH routes
+router.get('/search/:searchTerm', bedrijfController.searchBedrijven || ((req, res) => {
+    res.json({ success: true, data: [], message: 'Search endpoint not implemented yet' });
+}));
+
+// FILTER routes  
+router.get('/sector/:sector', bedrijfController.getBedrijvenBySector || ((req, res) => {
+    res.json({ success: true, data: [], message: 'Sector filter not implemented yet' });
+}));
+
+// PROTECTED ROUTES (authentication required)
+router.get('/profile',
   authenticateToken,
-  requireRole(["student", "bedrijf"]),
-  async (req, res) => {
-    const { id: bedrijfsnummer, date } = req.params; // 'date' wordt hier ontvangen, maar genegeerd in DB query voor AFSPRAAK tabel
-
-    try {
-      const bedrijf = await Bedrijf.getById(bedrijfsnummer);
-      if (!bedrijf) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Bedrijf niet gevonden." });
-      }
-
-      const baseAvailableSlots = bedrijf.beschikbareTijdslots || [];
-
-      if (baseAvailableSlots.length === 0) {
-        return res.status(200).json({
-          success: true,
-          message: "Bedrijf heeft nog geen planning ingesteld.",
-          data: {
-            bedrijfsnummer: bedrijf.bedrijfsnummer,
-            naam: bedrijf.naam,
-            datum: EVENT_DATE_STRING, // Gebruik de vaste datum
-            allAvailableSlots: [],
-            occupiedSlots: [],
-            availableSlots: [],
-          },
-        });
-      }
-
-      // Haal alle BEVESTIGDE en AANGEVRAAGDE afspraken op voor dit bedrijf.
-      // Aangezien AFSPRAAK geen datum kolom heeft, filteren we hier niet op datum in de DB.
-      const occupiedReservations = await Reservatie.getByBedrijfAndDate(
-        bedrijfsnummer,
-        date
-      ); // date parameter is genegeerd in model
-      const occupiedSlots = occupiedReservations.map((r) => {
-        // Tijd kan direct worden gebruikt, ze zijn al strings (HH:MM:SS)
-        const start = r.startTijd.substring(0, 5); // HH:MM
-        const end = r.eindTijd.substring(0, 5); // HH:MM
-        return `<span class="math-inline">\{start\}\-</span>{end}`;
-      });
-
-      const currentAvailableSlots = baseAvailableSlots.filter((slot) => {
-        const isOccupied = occupiedSlots.some((occupied) => {
-          // Controlleer op exacte match of overlap, afhankelijk van hoe strikt je wilt zijn
-          return occupied === slot;
-        });
-        return !isOccupied;
-      });
-
-      res.status(200).json({
-        success: true,
-        data: {
-          bedrijfsnummer: bedrijf.bedrijfsnummer,
-          naam: bedrijf.naam,
-          datum: EVENT_DATE_STRING, // Gebruik de vaste datum
-          allAvailableSlots: baseAvailableSlots,
-          occupiedSlots: occupiedSlots,
-          availableSlots: currentAvailableSlots,
-        },
-      });
-    } catch (error) {
-      console.error("Error fetching company planning:", error);
-      res.status(500).json({
-        success: false,
-        message: "Interne serverfout bij het ophalen van de bedrijfsplanning.",
-      });
-    }
-  }
+  requireRole(['bedrijf']),
+  bedrijfController.getOwnProfile
 );
 
-// Optioneel: route om beschikbare tijdslots te configureren voor een bedrijf
-// ... (deze route blijft hetzelfde als in vorige antwoord) ...
+router.put('/profile',
+  authenticateToken,
+  requireRole(['bedrijf']),
+  validateBedrijf || ((req, res, next) => next()), // Fallback if validation doesn't exist
+  bedrijfController.updateOwnProfile
+);
+
+// ADMIN ROUTES
+router.post('/',
+  authenticateToken,
+  requireRole(['organisator']),
+  validateBedrijf || ((req, res, next) => next()),
+  bedrijfController.createBedrijf || ((req, res) => {
+    res.status(501).json({ success: false, message: 'Create bedrijf not implemented yet' });
+  })
+);
+
+router.put('/:bedrijfsnummer',
+  authenticateToken,
+  requireRole(['organisator', 'bedrijf']),
+  validateBedrijf || ((req, res, next) => next()),
+  bedrijfController.updateBedrijf
+);
+
+router.delete('/:bedrijfsnummer',
+  authenticateToken,
+  requireRole(['organisator']),
+  bedrijfController.deleteBedrijf
+);
+
+// ===== PARAMETER ROUTES LAST - Deze moeten als LAATSTE komen =====
+
+// GET /api/bedrijven - Alle bedrijven ophalen (met filtering en search)
+router.get('/', bedrijfController.getAllBedrijven);
+
+// GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
+// DIT MOET ALS LAATSTE omdat :bedrijfsnummer alles kan matchen
+router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
 
 module.exports = router;

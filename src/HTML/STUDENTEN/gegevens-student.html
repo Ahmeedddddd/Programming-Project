@@ -1,66 +1,68 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Gegevens</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/STUDENTEN/gegevens-student.css">
-     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
+    <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
     <script src="/js/navigation-manager.js"></script>
 </head>
+
 <body>
     <div class="container">
-  <div class="nav">
-  <div class="logo">
-    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-  </div>
-  <div class="navBar">
-    
-  </div>
-  <div class="pfpContainer">
-    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-    </div>
-  </div>
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar">
 
-<div class="sideMenu" id="sideMenu">
-  <div class="menu-bg-animation"></div>
-<div class="menu-bg-animation"></div>
-<div class="sparkles"></div>
-   
-  <div class="sideMenu-header">
-    <div>
-      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-      <p class="sideMenu-subtitle">Menu</p>
-    </div>
-    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-   
-  <div class="sideMenu-content">
-    <a href="/login">
-      <i class="fas fa-sign-in-alt"></i>
-      Login
-    </a>
-    <a href="/contacteer">
-      <i class="fas fa-envelope"></i>
-      Contact us
-    </a>
-     
-    <hr class="sideMenu-divider">
-  </div>
-</div>
+            </div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle" />
+            </div>
+        </div>
+
+        <div class="sideMenu" id="sideMenu">
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Menu</p>
+                </div>
+                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="sideMenu-content">
+                <a href="/login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </a>
+                <a href="/contacteer">
+                    <i class="fas fa-envelope"></i>
+                    Contact us
+                </a>
+
+                <hr class="sideMenu-divider">
+            </div>
+        </div>
 
         <main class="flex-center">
             <div class="contentKaart animatie-fade-up">
-                 
+
                 <div class="text-center mb-3">
                     <span class="ehbBadge student">Student Account</span>
                 </div>
 
                 <form id="studentForm" class="w-full">
-                     
+
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">👤 Persoonlijke Gegevens</h3>
                     </div>
@@ -116,12 +118,14 @@
                         <strong>Project Titel:</strong> <span class="field-value">Laden...</span>
                     </div>
 
-                    <div class="ehbVeld mb-2 editable-field" data-field="project-beschrijving" style="min-height: 100px; padding: 1.5rem;">
+                    <div class="ehbVeld mb-2 editable-field" data-field="project-beschrijving"
+                        style="min-height: 100px; padding: 1.5rem;">
                         <strong>Project Beschrijving:</strong><br><br>
                         <span class="field-value">Laden...</span>
                     </div>
 
-                    <div class="ehbVeld mb-2 editable-field" data-field="over-mezelf" style="min-height: 100px; padding: 1.5rem;">
+                    <div class="ehbVeld mb-2 editable-field" data-field="over-mezelf"
+                        style="min-height: 100px; padding: 1.5rem;">
                         <strong>Over Mezelf:</strong><br><br>
                         <span class="field-value">Laden...</span>
                     </div>
@@ -145,20 +149,22 @@
                     <div class="ehbVeld mb-2 editable-field" data-field="cv-url" id="cv-link">
                         <strong>CV:</strong> <span class="field-value">Laden...</span>
                     </div>
-                    
+
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
                         <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">📈 Project Status</h3>
                     </div>
                     <div class="ehbVeld mb-2">
                         <strong>Voortgang:</strong>
-                        <div class="progress-bar-container" style="background-color: #e0e0e0; border-radius: 5px; height: 20px; margin-top: 5px;">
-                            <div id="project-progress" class="progress-bar" style="background: linear-gradient(90deg, #881538, #A91B47); height: 100%; width: 0%; border-radius: 5px; text-align: center; color: white; line-height: 20px; transition: width 0.5s ease-in-out;">
+                        <div class="progress-bar-container"
+                            style="background-color: #e0e0e0; border-radius: 5px; height: 20px; margin-top: 5px;">
+                            <div id="project-progress" class="progress-bar"
+                                style="background: linear-gradient(90deg, #881538, #A91B47); height: 100%; width: 0%; border-radius: 5px; text-align: center; color: white; line-height: 20px; transition: width 0.5s ease-in-out;">
                                 0% compleet
                             </div>
                         </div>
                     </div>
                     <div class="ehbGrid tweekolomnig mb-2" id="project-stats">
-                        </div>
+                    </div>
 
 
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
@@ -206,7 +212,8 @@
                         <i class="fas fa-pencil-alt"></i>
                         Gegevens Bewerken
                     </button>
-                    <button id="projectEditBtn" class="ehbBtn bewerken" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                    <button id="projectEditBtn" class="ehbBtn bewerken"
+                        style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
                         <i class="fas fa-edit"></i>
                         Project Bewerken
                     </button>
@@ -219,24 +226,25 @@
                         CV Downloaden
                     </button>
                 </div>
-                 
+
                 <div id="editControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap; display: none;">
-                    <button type="submit" form="studentForm" class="ehbBtn primair">
-                        <i class="fas fa-save"></i>
+                    <button type="button" id="saveGeneralBtn" class="ehbBtn primair"> <i class="fas fa-save"></i>
                         Bewaren
                     </button>
-                    <button id="cancelBtn" class="ehbBtn secundair">
+                    <button type="button" id="cancelBtn" class="ehbBtn secundair">
                         <i class="fas fa-times"></i>
                         Annuleren
                     </button>
                 </div>
 
-                <div id="projectEditControls" class="flex-center mt-4" style="gap: 1rem; flex-wrap: wrap; display: none;">
-                    <button id="projectSaveBtn" class="ehbBtn primair" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                <div id="projectEditControls" class="flex-center mt-4"
+                    style="gap: 1rem; flex-wrap: wrap; display: none;">
+                    <button type="button" id="projectSaveBtn" class="ehbBtn primair"
+                        style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
                         <i class="fas fa-save"></i>
                         Project Bewaren
                     </button>
-                    <button id="projectCancelBtn" class="ehbBtn secundair">
+                    <button type="button" id="projectCancelBtn" class="ehbBtn secundair">
                         <i class="fas fa-times"></i>
                         Annuleren Project
                     </button>
@@ -244,7 +252,8 @@
 
 
                 <div class="text-center mt-4">
-                    <div class="ehbVeld" data-field="account-status" style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
+                    <div class="ehbVeld" data-field="account-status"
+                        style="background: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #15803d;">
                         <i class="fas fa-check-circle"></i>
                         <strong>Account Status:</strong> <span class="field-value">Laden...</span>
                     </div>
@@ -261,9 +270,9 @@
         </main>
 
         <div class="menu-overlay"></div>
-         
+
     </div>
-     
+
     <div id="loadingOverlay">
         <div class="loader"></div>
     </div>
@@ -279,4 +288,5 @@
     <script type="module" src="/src/JS/ACCOUNT/gegevens-qol.js"></script>
     <script type="module" src="/src/JS/STUDENTEN/gegevens-student.js"></script>
 </body>
+
 </html>

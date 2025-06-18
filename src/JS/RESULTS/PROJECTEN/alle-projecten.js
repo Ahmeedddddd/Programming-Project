@@ -1,777 +1,520 @@
-// src/JS/RESULTS/PROJECTEN/alle-projecten.js
-// Alle Projecten pagina functionaliteit
+// src/JS/RESULTS/STUDENTEN/alle-studenten.js - FIXED VERSION
 
-console.log('Alle Projecten script loading...');
+/**
+ * 🎓 ALLE STUDENTEN - COMPREHENSIVE FIX
+ * 
+ * Fixed:
+ * ✅ API data loading
+ * ✅ Student card rendering
+ * ✅ Search functionality
+ * ✅ URL parameter handling
+ * ✅ Better error handling
+ * ✅ Loading states
+ */
 
-class ProjectenManager {
-    constructor() {
-        this.projects = [];
-        this.filteredProjects = [];
-        this.currentFilter = 'Alle';
-        this.searchTerm = '';
-        this.init();
-    }
+// ===== CONFIGURATION =====
+const API_BASE_URL = 'http://localhost:8383';
+const STUDENTEN_API = `${API_BASE_URL}/api/studenten`;
 
-    async init() {
-        try {
-            console.log('🔍 Initializing ProjectenManager...');
-            
-            // Setup event listeners
-            this.setupEventListeners();
-              // Load projects from backend (with mock fallback)
-            await this.loadProjects();
-            
-            // Group projects by name for alle-projecten.html
-            this.projects = this.groupProjectsByName(this.projects);
-            
-            // Initialize filtered projects and render initial view
-            this.filteredProjects = [...this.projects]; // Initialize with all projects
-            this.renderProjects();
-            this.updateStatsBar();
-            
-            console.log('✅ ProjectenManager initialized successfully');
-        } catch (error) {
-            console.error('❌ Error initializing ProjectenManager:', error);
-            
-            // Emergency fallback - should not happen with new loadProjects
-            console.log('🚨 Emergency fallback: using mock data');
-            this.projects = this.getMockProjects();
-            this.renderProjects();
-            this.updateStatsBar();
-        }
-    }
+// ===== GLOBAL VARIABLES =====
+let allStudents = [];
+let filteredStudents = [];
+let currentPage = 1;
+const itemsPerPage = 12;
 
-    setupEventListeners() {
-        // Search input
-        const searchInput = document.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.searchTerm = e.target.value.toLowerCase();
-                this.filterAndRenderProjects();
-            });
-        }
+// ===== DOM ELEMENTS =====
+let studentsGrid;
+let searchInput;
+let filterDropdown;
+let loadingOverlay;
+let noResultsMessage;
+let paginationControls;
 
-        // Category pills
-        const categoryPills = document.querySelectorAll('.category-pill');
-        categoryPills.forEach(pill => {
-            pill.addEventListener('click', (e) => {
-                // Remove active class from all pills
-                categoryPills.forEach(p => p.classList.remove('active'));
-                
-                // Add active class to clicked pill
-                e.target.classList.add('active');
-                
-                // Update filter
-                this.currentFilter = e.target.textContent;
-                this.filterAndRenderProjects();
-            });
-        });
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎓 Alle Studenten - Initializing...');
+    initializeElements();
+    initializeSearch();
+    loadStudents();
+    handleURLParameters();
+});
 
-        // Filter button
-        const filterBtn = document.querySelector('.filter-btn');
-        if (filterBtn) {
-            filterBtn.addEventListener('click', () => {
-                this.filterAndRenderProjects();
-            });
-        }
-
-        // Year filter
-        const yearSelect = document.querySelector('.filter-select');
-        if (yearSelect) {
-            yearSelect.addEventListener('change', () => {
-                this.filterAndRenderProjects();
-            });
-        }
-    }
-
-    async loadProjects() {
-        try {
-            console.log('📡 Loading projects from API...');
-            
-            let response = null;
-            let endpointUsed = 'mock-data';
-            let data = null;
-              // Try different endpoints, but don't throw errors - just log them
-            const endpoints = [
-                { url: 'http://localhost:3301/api/studenten/projecten', name: 'backend-student-projects' },
-                { url: 'http://localhost:3301/api/studenten?hasProject=true', name: 'backend-filtered-students' },
-                { url: '/api/studenten?hasProject=true', name: 'frontend-fallback' }
-            ];
-            
-            // Try each endpoint
-            for (const endpoint of endpoints) {
-                try {
-                    console.log(`🔍 Trying endpoint: ${endpoint.url}`);
-                    
-                    response = await fetch(endpoint.url, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        data = await response.json();
-                        endpointUsed = endpoint.name;
-                        console.log(`✅ Success with ${endpoint.name}`);
-                        break; // Exit loop on first success
-                    } else {
-                        console.warn(`⚠️ ${endpoint.name} failed with status: ${response.status}`);
-                    }
-                } catch (error) {
-                    console.warn(`⚠️ ${endpoint.name} failed with error:`, error.message);
-                    // Continue to next endpoint
-                }
-            }
-            
-            // Process data if we got any
-            if (data && (data.success !== false)) {
-                this.projects = data.data || data || [];
-                
-                // Filter out projects without title or description
-                this.projects = this.projects.filter(project => 
-                    project.projectTitel && 
-                    project.projectTitel.trim() !== '' &&
-                    project.projectBeschrijving &&
-                    project.projectBeschrijving.trim() !== ''
-                );
-                
-                if (this.projects.length > 0) {
-                    console.log(`✅ Loaded ${this.projects.length} projects from ${endpointUsed}`);
-                    this.updateStatsBar();
-                    return; // Success! Exit function
-                } else {
-                    console.warn('⚠️ No valid projects found in API response, using mock data');
-                }
-            } else {
-                console.warn('⚠️ All API endpoints failed or returned invalid data, using mock data');
-            }
-            
-            // If we reach here, all API endpoints failed - use mock data
-            console.log('📝 Using mock data as fallback');
-            this.projects = this.getMockProjects();
-            endpointUsed = 'mock-data';
-            
-            console.log(`✅ Loaded ${this.projects.length} projects from ${endpointUsed}`);
-            this.updateStatsBar();
-
-        } catch (error) {
-            // This should never happen with the new error handling, but just in case
-            console.error('❌ Unexpected error in loadProjects:', error);
-            console.log('📝 Using mock data as emergency fallback');
-            
-            this.projects = this.getMockProjects();
-            console.log(`✅ Loaded ${this.projects.length} projects from emergency mock data`);
-            this.updateStatsBar();
-        }
-    }
-
-    getMockProjects() {
-        return [
-            {
-                studentnummer: 232,
-                projectTitel: "Kokende AI Robot",
-                projectBeschrijving: "De Kokende AI Robot is een geavanceerde huishoudrobot ontworpen om volledig zelfstandig maaltijden te bereiden. Uitgerust met kunstmatige intelligentie, spraakherkenning en honderden ingebouwde recepten, analyseert hij voedingsvoorkeuren, allergieën en beschikbare ingrediënten.",
-                studentNaam: "John Doe",
-                voornaam: "John",
-                achternaam: "Doe",
-                email: "john.doe@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "Intelligent Robotics",
-                tafelNr: 1,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 233,
-                projectTitel: "NeuroTrack",
-                projectBeschrijving: "NeuroTrack is een draagbare EEG-headset die hersenactiviteit meet tijdens sport en meditatie. Het analyseert realtime biosignalen om focus, stress en cognitieve belasting te monitoren.",
-                studentNaam: "Jeretom Carnomina",
-                voornaam: "Jeretom",
-                achternaam: "Carnomina",
-                email: "jeretom.carnomina@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "Software Engineering",
-                tafelNr: 2,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 234,
-                projectTitel: "Geïntegreerd campus-beheer via Cisco DNA Center",
-                projectBeschrijving: "Ontwikkeling van een CI/CD-geïntegreerde workflow waarin Cisco Catalyst Center API's netwerkconfiguraties automatisch uitrollen, compliance checks uitvoeren en real-time netwerk-telemetrie aanleveren voor DevOps-teams.",
-                studentNaam: "Ben Huur",
-                voornaam: "Ben",
-                achternaam: "Huur",
-                email: "ben.huur@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "Networks & Security",
-                tafelNr: 3,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 235,
-                projectTitel: "SecureCloudGuard – End-to-End Geautomatiseerd Beveiligingsplatform",
-                projectBeschrijving: "SecureCloudGuard is een end-to-end cloud-native beveiligingsplatform dat uitgebreide SAST- en DAST-scans integreert, Azure Policy- en RBAC-regels opstelt en real-time threat-detectie biedt.",
-                studentNaam: "Elina Verstegen",
-                voornaam: "Elina",
-                achternaam: "Verstegen",
-                email: "elina.verstegen@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "Network & Security",
-                tafelNr: 4,
-                leerjaar: 2
-            },
-            {
-                studentnummer: 236,
-                projectTitel: "Real-time Debug Dashboard",
-                projectBeschrijving: "Het Real-time Debug Dashboard is een tool die live systeemlogs en metrics corrigeert en visualiseert. Met WebSocket-verbindingen worden foutmeldingen en performance-indicatoren in real time geaggregeerd.",
-                studentNaam: "Anatoly Kaas",
-                voornaam: "Anatoly",
-                achternaam: "Kaas",
-                email: "anatoly.kaas@student.ehb.be",
-                opleiding: "Graduaat Programmeren",
-                opleidingsrichting: "Software Engineering",
-                tafelNr: 5,
-                leerjaar: 2
-            },
-            {
-                studentnummer: 237,
-                projectTitel: "AR Tour Guide App",
-                projectBeschrijving: "De AR Tour Guide App helpt toeristen door middel van augmented reality-pictogrammen op locaties in Vlaamse steden. Gebruikt Flutter voor cross-platform en ARKit/ARCore voor AR-elementen.",
-                studentNaam: "Lucas Vancouver",
-                voornaam: "Lucas",
-                achternaam: "Vancouver",
-                email: "lucas.vancouver@student.ehb.be",
-                opleiding: "Multimedia & Creatieve Technologie",
-                opleidingsrichting: "Creative Media",
-                tafelNr: 6,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 238,
-                projectTitel: "Predictive Maintenance Platform",
-                projectBeschrijving: "Een Predictive Maintenance Platform dat machinegegevens verzamelt via IoT-sensoren, streaming analyse uitvoert met Apache Kafka en Machine Learning-modellen gebruikt om onderhoudsproblemen te voorspellen.",
-                studentNaam: "Jane Smith",
-                voornaam: "Jane",
-                achternaam: "Smith",
-                email: "jane.smith@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "Business IT",
-                tafelNr: 7,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 244,
-                projectTitel: "Autonome Drone voor Milieumonitoring",
-                projectBeschrijving: "Een autonome drone die luchtkwaliteit en waterkwaliteit meet met sensormodules, en data realtime uploadt naar een cloud-API via 4G/LoRa. De drone stuurt zichzelf aan via een onboard Raspberry Pi met ROS.",
-                studentNaam: "Anakin Volto",
-                voornaam: "Anakin",
-                achternaam: "Volto",
-                email: "anakin.volto@student.ehb.be",
-                opleiding: "Embedded Systems",
-                opleidingsrichting: "Intelligent Robotics",
-                tafelNr: 12,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 247,
-                projectTitel: "Smart Garden Assistant",
-                projectBeschrijving: "App en sensorplatform dat plantenwater en licht regelt met ML-analyse van bodemdata. De Smart Garden Assistant ontwikkelt een slim systeem dat planten automatisch van water en licht voorziet.",
-                studentNaam: "Eva Bekaert",
-                voornaam: "Eva",
-                achternaam: "Bekaert",
-                email: "eva.bekaert@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "IoT & Data",
-                tafelNr: 15,
-                leerjaar: 3
-            },
-            {
-                studentnummer: 252,                projectTitel: "Smart Home Automation",
-                projectBeschrijving: "Ontwikkeling van een Smart Home-systeem dat apparaten zoals verlichting, verwarming en beveiliging integreert via een centrale hub. Het systeem maakt gebruik van IoT-protocollen zoals MQTT en CoAP.",
-                studentNaam: "Han Solo",
-                voornaam: "Han",
-                achternaam: "Solo",                email: "han.solo@student.ehb.be",
-                opleiding: "Multimedia & Creatieve Technologie",
-                opleidingsrichting: "Digital Design",
-                tafelNr: 17,                
-                leerjaar: 3
-            },
-            // Duplicate project to test grouping
-            {
-                studentnummer: 253,
-                projectTitel: "Smart Home Automation",
-                projectBeschrijving: "Ontwikkeling van een Smart Home-systeem dat apparaten zoals verlichting, verwarming en beveiliging integreert via een centrale hub. Het systeem maakt gebruik van IoT-protocollen zoals MQTT en CoAP.",
-                studentNaam: "Leia Organa",
-                voornaam: "Leia",
-                achternaam: "Organa",
-                email: "leia.organa@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "IoT & Data",
-                tafelNr: 18,
-                leerjaar: 3
-            },
-            // Another duplicate project
-            {
-                studentnummer: 254,
-                projectTitel: "NeuroTrack",
-                projectBeschrijving: "NeuroTrack is een draagbare EEG-headset die hersenactiviteit meet tijdens sport en meditatie. Het analyseert realtime biosignalen om focus, stress en cognitieve belasting te monitoren.",
-                studentNaam: "Luke Skywalker",
-                voornaam: "Luke",
-                achternaam: "Skywalker",
-                email: "luke.skywalker@student.ehb.be",
-                opleiding: "Toegepaste informatica",
-                opleidingsrichting: "AI & Machine Learning",
-                tafelNr: 19,
-                leerjaar: 2
-            }
-        ];
-    }
-
-    // Group projects by name and combine students working on the same project
-    groupProjectsByName(projects) {
-        const projectGroups = {};
-        
-        projects.forEach(project => {
-            const projectTitle = project.projectTitel.trim();
-            
-            if (!projectGroups[projectTitle]) {
-                // First occurrence of this project - create the group
-                projectGroups[projectTitle] = {
-                    ...project,
-                    studenten: [{
-                        studentnummer: project.studentnummer,
-                        voornaam: project.voornaam,
-                        achternaam: project.achternaam,
-                        studentNaam: project.studentNaam,
-                        email: project.email,
-                        opleiding: project.opleiding,
-                        opleidingsrichting: project.opleidingsrichting,
-                        tafelNr: project.tafelNr,
-                        leerjaar: project.leerjaar
-                    }],
-                    studentCount: 1
-                };
-            } else {
-                // Project already exists - add this student to the group
-                projectGroups[projectTitle].studenten.push({
-                    studentnummer: project.studentnummer,
-                    voornaam: project.voornaam,
-                    achternaam: project.achternaam,
-                    studentNaam: project.studentNaam,
-                    email: project.email,
-                    opleiding: project.opleiding,
-                    opleidingsrichting: project.opleidingsrichting,
-                    tafelNr: project.tafelNr,
-                    leerjaar: project.leerjaar
-                });
-                projectGroups[projectTitle].studentCount++;
-                
-                // Update table numbers if different students have different tables
-                if (project.tafelNr && project.tafelNr !== projectGroups[projectTitle].tafelNr) {
-                    if (typeof projectGroups[projectTitle].tafelNr === 'number') {
-                        projectGroups[projectTitle].tafelNr = [projectGroups[projectTitle].tafelNr, project.tafelNr];
-                    } else if (Array.isArray(projectGroups[projectTitle].tafelNr)) {
-                        projectGroups[projectTitle].tafelNr.push(project.tafelNr);
-                    }
-                }
-            }
-        });
-        
-        // Convert object back to array
-        const groupedProjects = Object.values(projectGroups);
-        
-        console.log(`📊 Grouped ${projects.length} individual entries into ${groupedProjects.length} unique projects`);
-        return groupedProjects;
-    }
-
-    filterAndRenderProjects() {
-        try {
-            console.log('🔍 Filtering projects...', {
-                totalProjects: this.projects.length,
-                currentFilter: this.currentFilter,
-                searchTerm: this.searchTerm
-            });
-
-            this.filteredProjects = this.projects.filter(project => {
-                // Search filter
-                const matchesSearch = !this.searchTerm || 
-                    project.projectTitel.toLowerCase().includes(this.searchTerm) ||
-                    project.projectBeschrijving.toLowerCase().includes(this.searchTerm) ||
-                    (project.studentNaam && project.studentNaam.toLowerCase().includes(this.searchTerm)) ||
-                    (project.voornaam && project.voornaam.toLowerCase().includes(this.searchTerm)) ||
-                    (project.achternaam && project.achternaam.toLowerCase().includes(this.searchTerm));
-
-                // Category filter
-                const projectCategory = this.getCategoryFromProject(project);
-                const matchesCategory = this.currentFilter === 'Alle' || projectCategory === this.currentFilter;
-
-                // Year filter
-                const yearSelect = document.querySelector('.filter-select');
-                const selectedYear = yearSelect ? yearSelect.value : 'Alle jaren';
-                const projectYear = this.getYearFromProject(project);
-                const matchesYear = selectedYear === 'Alle jaren' || projectYear === selectedYear;
-
-                console.log(`Project: ${project.projectTitel}`, {
-                    matchesSearch,
-                    matchesCategory,
-                    matchesYear,
-                    projectCategory,
-                    projectYear
-                });
-
-                return matchesSearch && matchesCategory && matchesYear;
-            });
-
-            console.log(`✅ Filtered ${this.filteredProjects.length} projects from ${this.projects.length} total`);
-
-            this.renderProjects();
-            this.updateStatsBar();
-        } catch (error) {
-            console.error('❌ Error filtering projects:', error);
-        }
-    }
-
-    getCategoryFromProject(project) {
-        if (!project.opleidingsrichting && !project.opleiding) return 'Alle';
-        
-        const richting = project.opleidingsrichting || '';
-        const opleiding = project.opleiding || '';
-        
-        // Map opleidingsrichtingen to categories
-        if (richting.includes('AI') || richting.includes('Robotica') || richting.includes('Intelligent')) {
-            return 'AI & Robotica';
-        }
-        if (richting.includes('Web') || richting.includes('Software') || opleiding.includes('Informatica')) {
-            return 'Web Development';
-        }
-        if (richting.includes('Hardware') || richting.includes('IoT') || richting.includes('Embedded')) {
-            return 'Hardware & IoT';
-        }
-        if (richting.includes('Security') || richting.includes('Cybersecurity')) {
-            return 'Cybersecurity';
-        }
-        
-        return 'Alle';
-    }
-
-    getYearFromProject(project) {
-        if (project.leerjaar) {
-            return `${project.leerjaar}e jaar`;
-        }
-        return '3e jaar'; // Default
-    }    renderProjects() {
-        const container = document.querySelector('.projectTegels');
-        if (!container) {
-            console.error('❌ Projects container not found');
-            return;
-        }
-
-        // Initialize filteredProjects if not set
-        if (!this.filteredProjects) {
-            this.filteredProjects = [...this.projects];
-        }
-
-        // Clear loading state
-        container.innerHTML = '';
-
-        if (this.filteredProjects.length === 0) {
-            this.showNoResults(container);
-            return;
-        }
-
-        // Render project cards
-        this.filteredProjects.forEach((project, index) => {
-            const projectCard = this.createProjectCard(project, index);
-            container.appendChild(projectCard);
-        });
-
-        console.log(`✅ Rendered ${this.filteredProjects.length} project cards`);
-    }
-
-    createProjectCard(project, index) {
-        const article = document.createElement('article');
-        article.className = 'projectTegel';
-        article.style.animationDelay = `${index * 0.1}s`;
-          // Make it clickable - navigate to project detail
-        article.style.cursor = 'pointer';
-        article.addEventListener('click', () => {
-            // For grouped projects, use the first student's number as project ID
-            let projectId;
-            
-            if (project.studenten && Array.isArray(project.studenten)) {
-                // Grouped project - use first student's number
-                projectId = project.studenten[0].studentnummer;
-            } else {
-                // Single project - use direct studentnummer
-                projectId = project.studentnummer || project.id;
-            }
-            
-            if (projectId) {
-                console.log(`🔗 Navigating to project detail: ${projectId}`);
-                console.log('Project data:', project);
-                window.location.href = `/zoekbalkProjecten?id=${projectId}`;
-            } else {
-                console.error('❌ No project ID found for navigation');
-                console.error('Project object:', project);
-            }
-        });
-
-        // Add hover effect
-        article.addEventListener('mouseenter', () => {
-            article.style.transform = 'translateY(-8px)';
-            article.style.boxShadow = '0 15px 45px rgba(136, 21, 56, 0.3)';
-        });
-
-        article.addEventListener('mouseleave', () => {
-            article.style.transform = 'translateY(-5px)';
-            article.style.boxShadow = '0 12px 40px rgba(136, 21, 56, 0.25)';
-        });
-
-        // Project title
-        const title = document.createElement('h2');
-        title.className = 'projectTitel';
-        title.textContent = project.projectTitel || 'Untitled Project';
-
-        // Project description
-        const description = document.createElement('p');
-        description.className = 'projectBeschrijving';
-        const fullDescription = project.projectBeschrijving || 'Geen beschrijving beschikbaar.';
-        
-        // Truncate description if too long
-        const maxLength = 300;
-        description.textContent = fullDescription.length > maxLength 
-            ? fullDescription.substring(0, maxLength) + '...'
-            : fullDescription;        // Student info (multiple students support)
-        const studentInfo = document.createElement('div');
-        studentInfo.className = 'student-info';
-        studentInfo.style.cssText = `
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #dee2e6;
-            font-size: 0.9rem;
-            color: #666;
-        `;
-
-        // Handle multiple students or single student
-        if (project.studenten && Array.isArray(project.studenten)) {
-            // Multiple students working on this project
-            const studentsHeader = document.createElement('div');
-            studentsHeader.style.cssText = `
-                font-weight: 600;
-                color: #881538;
-                margin-bottom: 0.5rem;
-                font-size: 0.9rem;
-            `;
-            studentsHeader.innerHTML = `👥 Team (${project.studenten.length} ${project.studenten.length === 1 ? 'student' : 'studenten'}):`;
-            studentInfo.appendChild(studentsHeader);
-
-            project.studenten.forEach((student, studentIndex) => {
-                const studentDiv = document.createElement('div');
-                studentDiv.style.cssText = `
-                    margin-bottom: 0.4rem;
-                    padding: 0.5rem;
-                    background: #f8f9fa;
-                    border-radius: 6px;
-                    border-left: 3px solid #881538;
-                `;
-
-                const studentName = student.studentNaam || 
-                                  (student.voornaam && student.achternaam ? `${student.voornaam} ${student.achternaam}` : `Student ${student.studentnummer}`);
-                
-                const nameSpan = document.createElement('div');
-                nameSpan.style.cssText = `
-                    font-weight: 600;
-                    color: #881538;
-                    margin-bottom: 0.2rem;
-                `;
-                nameSpan.textContent = studentName;
-                studentDiv.appendChild(nameSpan);                if (student.opleiding || student.opleidingsrichting) {
-                    const studySpan = document.createElement('div');
-                    studySpan.style.cssText = `
-                        color: #666;
-                        font-size: 0.8rem;
-                    `;
-                    const studyInfo = student.opleidingsrichting || student.opleiding;
-                    studySpan.innerHTML = `🎓 ${studyInfo}`;
-                    studentDiv.appendChild(studySpan);
-                }
-
-                studentInfo.appendChild(studentDiv);
-            });
-        } else {
-            // Single student (backward compatibility)
-            const studentName = project.studentNaam || 
-                              (project.voornaam && project.achternaam ? `${project.voornaam} ${project.achternaam}` : null);
-            
-            if (studentName) {
-                const nameSpan = document.createElement('span');
-                nameSpan.style.cssText = `
-                    font-weight: 600;
-                    color: #881538;
-                    display: block;
-                    margin-bottom: 0.25rem;
-                `;
-                nameSpan.innerHTML = `👤 ${studentName}`;
-                studentInfo.appendChild(nameSpan);
-            }            if (project.opleiding || project.opleidingsrichting) {
-                const studySpan = document.createElement('span');
-                studySpan.style.cssText = `
-                    color: #666;
-                    font-size: 0.85rem;
-                `;
-                const studyInfo = project.opleidingsrichting || project.opleiding;
-                studySpan.innerHTML = `🎓 ${studyInfo}`;
-                studentInfo.appendChild(studySpan);
-            }
-        }        // Create table number display for bottom left
-        const tableInfo = document.createElement('div');
-        tableInfo.style.cssText = `
-            position: absolute;
-            bottom: 1rem;
-            left: 1rem;
-            background: #881538;
-            color: white;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(136, 21, 56, 0.3);
-            z-index: 10;
-        `;
-
-        // Get table number(s) for display
-        let tableNumbers = [];
-        if (project.studenten && Array.isArray(project.studenten)) {
-            // Multiple students - get unique table numbers
-            tableNumbers = [...new Set(project.studenten
-                .map(s => s.tafelNr)
-                .filter(nr => nr !== undefined && nr !== null)
-            )];
-        } else if (project.tafelNr) {
-            // Single student
-            if (Array.isArray(project.tafelNr)) {
-                tableNumbers = project.tafelNr;
-            } else {
-                tableNumbers = [project.tafelNr];
-            }
-        }
-
-        if (tableNumbers.length > 0) {
-            const tableDisplay = tableNumbers.length > 1 
-                ? `Tafels ${tableNumbers.join(', ')}` 
-                : `Tafel ${tableNumbers[0]}`;
-            tableInfo.innerHTML = `📍 ${tableDisplay}`;
-        } else {
-            tableInfo.innerHTML = `📍 Tafel TBD`;
-        }        // Make article position relative and add bottom padding for table info
-        article.style.position = 'relative';
-        article.style.paddingBottom = '4rem'; // More space for table badge// Assemble card
-        article.appendChild(title);
-        article.appendChild(description);
-        if (studentInfo.children.length > 0) {
-            article.appendChild(studentInfo);
-        }
-        article.appendChild(tableInfo);
-
-        return article;
-    }
-
-    showNoResults(container) {
-        const noResults = document.createElement('div');
-        noResults.className = 'no-results';
-        noResults.innerHTML = `
-            <h3>🔍 Geen projecten gevonden</h3>
-            <p>Er zijn geen projecten die voldoen aan je zoekcriteria.</p>
-            <button class="retry-btn" onclick="location.reload()">
-                <i class="fas fa-redo"></i> Vernieuwen
-            </button>
-        `;
-        container.appendChild(noResults);
-    }
-
-    showErrorState(message) {
-        const container = document.querySelector('.projectTegels');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="error-state">
-                <h3><i class="fas fa-exclamation-triangle"></i> Fout bij laden</h3>
-                <p>${message}</p>
-                <button class="retry-btn" onclick="location.reload()">
-                    <i class="fas fa-redo"></i> Probeer opnieuw
-                </button>
-            </div>
-        `;
-    }
-
-    updateStatsBar() {
-        const statsText = document.querySelector('.stats-text');
-        if (statsText) {
-            const total = this.projects.length;
-            const filtered = this.filteredProjects.length;
-              if (filtered === total) {
-                statsText.textContent = `${total} innovatieve projecten beschikbaar voor gesprekken`;
-            } else {
-                statsText.textContent = `${filtered} van ${total} projecten gevonden`;
-            }
-        }
-    }
-
-    groupProjectsByName(projects) {
-        const grouped = {};
-
-        projects.forEach(project => {
-            const name = project.projectTitel || 'Onbekend Project';
-
-            if (!grouped[name]) {
-                grouped[name] = {
-                    projectTitel: name,
-                    projectBeschrijving: project.projectBeschrijving,
-                    studenten: []
-                };
-            }
-
-            // Add student info
-            grouped[name].studenten.push({
-                studentnummer: project.studentnummer,
-                studentNaam: project.studentNaam,
-                voornaam: project.voornaam,
-                achternaam: project.achternaam,
-                email: project.email,
-                opleiding: project.opleiding,
-                opleidingsrichting: project.opleidingsrichting,
-                tafelNr: project.tafelNr,
-                leerjaar: project.leerjaar
-            });
-        });
-
-        // Convert back to array
-        return Object.values(grouped);
-    }
-
-    // Public API
-    refresh() {
-        console.log('🔄 Refreshing projects...');
-        this.loadProjects().then(() => {
-            this.filterAndRenderProjects();
-        }).catch(error => {
-            console.error('❌ Error refreshing projects:', error);
-            this.showErrorState('Er ging iets mis bij het verversen van de projecten.');
-        });
+function initializeElements() {
+    console.log('🔍 Finding DOM elements...');
+    
+    studentsGrid = document.querySelector('.students-grid, .student-grid, .card-grid, #studentsGrid');
+    searchInput = document.querySelector('.search-input, #searchInput, input[type="text"]');
+    filterDropdown = document.querySelector('.filter-dropdown, #filterDropdown');
+    loadingOverlay = document.querySelector('.loading-overlay, #loadingOverlay');
+    noResultsMessage = document.querySelector('.no-results, #noResults');
+    paginationControls = document.querySelector('.pagination, #pagination');
+    
+    console.log('📋 Elements found:', {
+        studentsGrid: !!studentsGrid,
+        searchInput: !!searchInput,
+        filterDropdown: !!filterDropdown,
+        loadingOverlay: !!loadingOverlay
+    });
+    
+    // If main containers not found, try to create them
+    if (!studentsGrid) {
+        studentsGrid = document.querySelector('.main-content, .content, main, body');
+        console.log('⚠️ Using fallback container for students grid');
     }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing ProjectenManager...');
-    window.projectenManager = new ProjectenManager();
-});
-
-// Utility function for external use
-window.refreshProjects = () => {
-    if (window.projectenManager) {
-        window.projectenManager.refresh();
+function initializeSearch() {
+    if (searchInput) {
+        console.log('🔍 Setting up search functionality...');
+        
+        searchInput.addEventListener('input', debounce(handleSearch, 300));
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSearch();
+            }
+        });
     }
-};
+    
+    if (filterDropdown) {
+        filterDropdown.addEventListener('change', handleFilterChange);
+    }
+}
 
-console.log('✅ Alle Projecten script loaded successfully');
+// ===== DATA LOADING =====
+async function loadStudents() {
+    console.log('📡 Loading students from API...');
+    
+    try {
+        showLoading(true);
+        
+        const response = await fetch(STUDENTEN_API);
+        console.log(`📡 API Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 Raw API data:', data);
+        
+        if (data.success && Array.isArray(data.data)) {
+            allStudents = data.data;
+            console.log(`✅ Loaded ${allStudents.length} students`);
+            
+            if (allStudents.length > 0) {
+                console.log('📋 Sample student:', allStudents[0]);
+            }
+        } else if (Array.isArray(data)) {
+            allStudents = data;
+            console.log(`✅ Loaded ${allStudents.length} students (direct array)`);
+        } else {
+            console.warn('⚠️ Unexpected API response format:', data);
+            allStudents = [];
+        }
+        
+        // Set initial filtered students to all students
+        filteredStudents = [...allStudents];
+        
+        // Render students
+        renderStudents();
+        updateStudentCount();
+        
+    } catch (error) {
+        console.error('❌ Error loading students:', error);
+        showError(`Kon studenten niet laden: ${error.message}`);
+        
+        // Load fallback data for testing
+        loadFallbackStudents();
+    } finally {
+        showLoading(false);
+    }
+}
+
+function loadFallbackStudents() {
+    console.log('🔄 Loading fallback student data...');
+    
+    allStudents = [
+        {
+            id: 1,
+            studentnummer: 12345,
+            voornaam: "John",
+            achternaam: "Doe",
+            email: "john.doe@student.ehb.be",
+            opleiding: "Toegepaste Informatica",
+            opleidingsrichting: "Software Development",
+            leerjaar: 3,
+            beschrijving: "Derdejaarsstudent met passie voor full-stack development en AI.",
+            projectTitel: "Kokende AI Robot",
+            projectBeschrijving: "Een innovatieve AI-robot die zelfstandig kan koken.",
+            tafelNr: 5
+        },
+        {
+            id: 2,
+            studentnummer: 12346,
+            voornaam: "Ben",
+            achternaam: "Huur",
+            email: "ben.huur@student.ehb.be",
+            opleiding: "Toegepaste Informatica",
+            opleidingsrichting: "System & Network Administration",
+            leerjaar: 3,
+            beschrijving: "Student met passie voor backend development en cloudtechnologieën.",
+            projectTitel: "SmartLine Inspector",
+            projectBeschrijving: "Vision-gebaseerd edge-systeem voor kwaliteitscontrole.",
+            tafelNr: 8
+        },
+        {
+            id: 3,
+            studentnummer: 12347,
+            voornaam: "Sarah",
+            achternaam: "Johnson",
+            email: "sarah.johnson@student.ehb.be",
+            opleiding: "Electronica-ICT",
+            opleidingsrichting: "Embedded Systems",
+            leerjaar: 3,
+            beschrijving: "Gespecialiseerd in IoT en embedded systemen met focus op duurzaamheid.",
+            projectTitel: "Green Energy Monitor",
+            projectBeschrijving: "IoT-platform voor monitoring van zonnepanelen.",
+            tafelNr: 12
+        }
+    ];
+    
+    filteredStudents = [...allStudents];
+    renderStudents();
+    updateStudentCount();
+    
+    console.log(`🔄 Loaded ${allStudents.length} fallback students`);
+}
+
+// ===== RENDERING =====
+function renderStudents() {
+    if (!studentsGrid) {
+        console.error('❌ Students grid container not found');
+        return;
+    }
+    
+    console.log(`🎨 Rendering ${filteredStudents.length} students...`);
+    
+    if (filteredStudents.length === 0) {
+        showNoResults();
+        return;
+    }
+    
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const studentsToShow = filteredStudents.slice(startIndex, endIndex);
+    
+    console.log(`📄 Page ${currentPage}: showing ${startIndex}-${endIndex} of ${filteredStudents.length}`);
+    
+    // Generate student cards HTML
+    const studentCardsHTML = studentsToShow.map(student => createStudentCard(student)).join('');
+    
+    // Update the grid
+    studentsGrid.innerHTML = studentCardsHTML;
+    
+    // Add click handlers
+    addStudentClickHandlers();
+    
+    // Update pagination
+    updatePagination();
+    
+    console.log(`✅ Rendered ${studentsToShow.length} student cards`);
+}
+
+function createStudentCard(student) {
+    const voornaam = student.voornaam || '';
+    const achternaam = student.achternaam || '';
+    const fullName = `${voornaam} ${achternaam}`.trim() || 'Onbekende Student';
+    const email = student.email || '';
+    const opleiding = student.opleiding || '';
+    const opleidingsrichting = student.opleidingsrichting || '';
+    const leerjaar = student.leerjaar || '';
+    const beschrijving = student.beschrijving || `Student ${opleiding} aan de Erasmushogeschool Brussel.`;
+    const projectTitel = student.projectTitel || '';
+    const id = student.id || student.studentnummer;
+    const tafelNr = student.tafelNr || '';
+    
+    // Truncate description if too long
+    const truncatedDescription = beschrijving.length > 120 ? 
+        beschrijving.substring(0, 120) + '...' : beschrijving;
+    
+    return `
+        <div class="student-card" data-student-id="${id}" onclick="openStudentDetail(${id})">
+            <div class="student-header">
+                <h3 class="student-name">${fullName}</h3>
+                ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
+            </div>
+            
+            <div class="student-content">
+                <div class="student-education">
+                    ${opleiding ? `<span class="education-main">🎓 ${opleiding}</span>` : ''}
+                    ${opleidingsrichting ? `<span class="education-track">${opleidingsrichting}</span>` : ''}
+                    ${leerjaar ? `<span class="education-year">Jaar ${leerjaar}</span>` : ''}
+                </div>
+                
+                <p class="student-description">${truncatedDescription}</p>
+                
+                ${projectTitel ? `
+                    <div class="student-project">
+                        <strong>Project:</strong> ${projectTitel}
+                    </div>
+                ` : ''}
+                
+                <div class="student-footer">
+                    ${email ? `<span class="student-email">📧 ${email}</span>` : ''}
+                    
+                    <button class="btn-detail" onclick="event.stopPropagation(); openStudentDetail(${id})">
+                        Bekijk Profiel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function addStudentClickHandlers() {
+    const studentCards = document.querySelectorAll('.student-card');
+    
+    studentCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            const studentId = this.getAttribute('data-student-id');
+            openStudentDetail(studentId);
+        });
+    });
+    
+    console.log(`✅ Added click handlers to ${studentCards.length} student cards`);
+}
+
+// ===== SEARCH & FILTERING =====
+function handleSearch() {
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    
+    console.log(`🔍 Searching for: "${searchTerm}"`);
+    
+    if (searchTerm === '') {
+        // Show all students if search is empty
+        filteredStudents = [...allStudents];
+    } else {
+        // Filter students based on search term
+        filteredStudents = allStudents.filter(student => {
+            const fullName = `${student.voornaam || ''} ${student.achternaam || ''}`.toLowerCase();
+            const email = (student.email || '').toLowerCase();
+            const opleiding = (student.opleiding || '').toLowerCase();
+            const opleidingsrichting = (student.opleidingsrichting || '').toLowerCase();
+            const beschrijving = (student.beschrijving || '').toLowerCase();
+            const projectTitel = (student.projectTitel || '').toLowerCase();
+            
+            return fullName.includes(searchTerm) ||
+                   email.includes(searchTerm) ||
+                   opleiding.includes(searchTerm) ||
+                   opleidingsrichting.includes(searchTerm) ||
+                   beschrijving.includes(searchTerm) ||
+                   projectTitel.includes(searchTerm);
+        });
+    }
+    
+    currentPage = 1; // Reset to first page
+    renderStudents();
+    updateStudentCount();
+    
+    console.log(`🔍 Search results: ${filteredStudents.length} students found`);
+}
+
+function handleFilterChange() {
+    const filterValue = filterDropdown ? filterDropdown.value : '';
+    
+    console.log(`📊 Filtering by: "${filterValue}"`);
+    
+    if (filterValue === '' || filterValue === 'all') {
+        filteredStudents = [...allStudents];
+    } else {
+        filteredStudents = allStudents.filter(student => {
+            const opleiding = (student.opleiding || '').toLowerCase();
+            return opleiding.includes(filterValue.toLowerCase());
+        });
+    }
+    
+    currentPage = 1; // Reset to first page
+    renderStudents();
+    updateStudentCount();
+}
+
+// ===== PAGINATION =====
+function updatePagination() {
+    if (!paginationControls) return;
+    
+    const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+    
+    if (totalPages <= 1) {
+        paginationControls.style.display = 'none';
+        return;
+    }
+    
+    paginationControls.style.display = 'flex';
+    
+    let paginationHTML = '';
+    
+    // Previous button
+    if (currentPage > 1) {
+        paginationHTML += `<button onclick="goToPage(${currentPage - 1})" class="page-btn">❮ Vorige</button>`;
+    }
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        const activeClass = i === currentPage ? 'active' : '';
+        paginationHTML += `<button onclick="goToPage(${i})" class="page-btn ${activeClass}">${i}</button>`;
+    }
+    
+    // Next button
+    if (currentPage < totalPages) {
+        paginationHTML += `<button onclick="goToPage(${currentPage + 1})" class="page-btn">Volgende ❯</button>`;
+    }
+    
+    paginationControls.innerHTML = paginationHTML;
+}
+
+function goToPage(page) {
+    currentPage = page;
+    renderStudents();
+    
+    // Scroll to top of students grid
+    if (studentsGrid) {
+        studentsGrid.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// ===== UI HELPERS =====
+function showLoading(show) {
+    if (loadingOverlay) {
+        loadingOverlay.style.display = show ? 'flex' : 'none';
+    }
+    
+    if (studentsGrid && show) {
+        studentsGrid.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Studenten laden...</p>
+            </div>
+        `;
+    }
+}
+
+function showNoResults() {
+    if (studentsGrid) {
+        studentsGrid.innerHTML = `
+            <div class="no-results">
+                <h3>Geen studenten gevonden</h3>
+                <p>Probeer je zoekterm aan te passen of verwijder filters.</p>
+                <button onclick="clearSearch()" class="btn-clear">Zoekterm wissen</button>
+            </div>
+        `;
+    }
+}
+
+function showError(message) {
+    if (studentsGrid) {
+        studentsGrid.innerHTML = `
+            <div class="error-state">
+                <h3>⚠️ Fout bij laden</h3>
+                <p>${message}</p>
+                <button onclick="loadStudents()" class="btn-retry">Opnieuw proberen</button>
+            </div>
+        `;
+    }
+}
+
+function updateStudentCount() {
+    const countElement = document.querySelector('.student-count, #studentCount');
+    if (countElement) {
+        countElement.textContent = `${filteredStudents.length} student${filteredStudents.length !== 1 ? 'en' : ''}`;
+    }
+    
+    // Update page title
+    document.title = `Alle Studenten (${filteredStudents.length}) - CareerLaunch EHB`;
+}
+
+// ===== URL PARAMETER HANDLING =====
+function handleURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    const idParam = urlParams.get('id');
+    
+    if (searchParam && searchInput) {
+        console.log(`🔗 URL search parameter: ${searchParam}`);
+        searchInput.value = searchParam;
+        // Search will be triggered after students are loaded
+        setTimeout(() => handleSearch(), 500);
+    }
+    
+    if (idParam) {
+        console.log(`🔗 URL ID parameter: ${idParam}`);
+        // Delay opening detail to ensure students are loaded
+        setTimeout(() => openStudentDetail(idParam), 1000);
+    }
+}
+
+// ===== DETAIL NAVIGATION =====
+function openStudentDetail(studentId) {
+    console.log(`🔗 Opening student detail: ${studentId}`);
+    
+    // Find the student in our data
+    const student = allStudents.find(s => 
+        s.id == studentId || 
+        s.studentnummer == studentId
+    );
+    
+    if (student) {
+        // Store student data for detail page
+        localStorage.setItem('selectedStudent', JSON.stringify(student));
+        
+        // Navigate to detail page
+        window.location.href = `/student-detail?id=${studentId}`;
+    } else {
+        console.warn(`⚠️ Student ${studentId} not found in loaded data`);
+        alert('Student details niet beschikbaar');
+    }
+}
+
+// ===== UTILITY FUNCTIONS =====
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function clearSearch() {
+    if (searchInput) {
+        searchInput.value = '';
+        handleSearch();
+    }
+}
+
+function refreshStudents() {
+    console.log('🔄 Manual refresh triggered');
+    allStudents = [];
+    filteredStudents = [];
+    loadStudents();
+}
+
+// ===== GLOBAL FUNCTIONS =====
+// Make functions available globally for onclick handlers
+window.openStudentDetail = openStudentDetail;
+window.goToPage = goToPage;
+window.clearSearch = clearSearch;
+window.refreshStudents = refreshStudents;
+
+// ===== DEBUG INFO =====
+console.log('🎓 Alle Studenten Script Info:');
+console.log('   📡 API Endpoint:', STUDENTEN_API);
+console.log('   🌐 Current URL:', window.location.href);
+console.log('   📄 Items per page:', itemsPerPage);
+
+console.log('✅ Alle Studenten - Script loaded and ready!');
