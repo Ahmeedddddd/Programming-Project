@@ -353,51 +353,50 @@ class StudentGegevens {
     enableProjectEditMode() {
         console.log("✏️ Enabling project edit mode");
         this.projectEditMode = true;
-        this.editMode = false; // Zorg dat algemene bewerkingsmodus uit staat
+        this.editMode = false;
 
         document.getElementById("viewControls").style.display = "none";
         document.getElementById("editControls").style.display = "none";
         document.getElementById("projectEditControls").style.display = "flex";
 
-        // Verberg alle display-mode spans en toon alle edit-mode inputs/textareas
-        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.editable-field .edit-mode').forEach(el => {
-            const fieldId = el.id.replace('edit-', '');
-            let value = '';
-            // Haal de waarde op basis van de correcte mapping (project of algemeen)
-            const mappedProjectField = this.getProjectFieldMapping(fieldId);
-            const mappedGeneralField = this.getFieldMapping(fieldId);
+        // Itereren over ALLE editable fields
+        document.querySelectorAll('.editable-field').forEach(fieldDiv => {
+            const fieldId = fieldDiv.getAttribute('data-field');
+            const displaySpan = fieldDiv.querySelector('.display-mode');
+            const editInput = fieldDiv.querySelector('.edit-mode');
 
-            if (mappedProjectField) {
-                value = this.studentData[mappedProjectField] || '';
-            } else if (mappedGeneralField) {
-                // Als het geen projectveld is, maar wel een algemeen veld
-                value = this.studentData[mappedGeneralField] || '';
-            }
+            // Bepaal of dit een project, bewerkbaar veld is
+            const isProjectEditableField = ['project-titel', 'project-beschrijving', 'over-mezelf', 'github-url', 'cv-url', 'linkedin-url'].includes(fieldId);
 
-            el.value = value;
-            el.style.display = (el.tagName === 'TEXTAREA' ? 'block' : 'inline-block'); // Blok voor textarea, inline-block voor input
-            // Pas style aan indien nodig, bijv. `el.style.width = '100%'` voor inputs
-            if (el.tagName === 'INPUT') {
-                el.style.width = '250px'; // Consistent met algemene inputs
-                el.style.marginLeft = '0.5rem';
-                el.style.padding = '0.5rem';
-                el.style.border = '2px solid #881538';
-                el.style.borderRadius = '8px';
-            } else if (el.tagName === 'TEXTAREA') {
-                el.style.width = '100%';
-                el.style.minHeight = '80px';
-                el.style.padding = '0.75rem';
-                el.style.border = '2px solid #881538';
-                el.style.borderRadius = '8px';
-                el.style.fontFamily = 'inherit';
-                el.style.resize = 'vertical';
+            if (isProjectEditableField) {
+                // Toon de input, verberg de span
+                if (displaySpan) displaySpan.style.display = 'none';
+                if (editInput) {
+                    editInput.value = this.getProjectFieldValue(fieldId); // Gebruik project mapping
+                    editInput.style.display = (editInput.tagName === 'TEXTAREA' ? 'block' : 'inline-block');
+                    // Stijlconsistentie
+                    if (editInput.tagName === 'INPUT') {
+                        editInput.style.width = '250px';
+                        editInput.style.marginLeft = '0.5rem';
+                        editInput.style.padding = '0.5rem';
+                        editInput.style.border = '2px solid #881538';
+                        editInput.style.borderRadius = '8px';
+                    } else if (editInput.tagName === 'TEXTAREA') {
+                        editInput.style.width = '100%';
+                        editInput.style.minHeight = '80px';
+                        editInput.style.padding = '0.75rem';
+                        editInput.style.border = '2px solid #881538';
+                        editInput.style.borderRadius = '8px';
+                        editInput.style.fontFamily = 'inherit';
+                        editInput.style.resize = 'vertical';
+                    }
+                }
+            } else {
+                // Dit veld is niet project-bewerkbaar, zorg dat het in display mode blijft
+                if (displaySpan) displaySpan.style.display = 'inline-block'; // of 'block'
+                if (editInput) editInput.style.display = 'none';
             }
         });
-
-        // Specifieke uitzondering: studentnummer en academiejjaar zijn niet-bewerkbaar en hebben geen edit-mode
-        document.querySelector('[data-field="studentnummer"] .field-value').style.display = 'inline-block';
-        document.querySelector('[data-field="academiejaar"] .field-value').style.display = 'inline-block';
     }
 
 
@@ -405,20 +404,17 @@ class StudentGegevens {
     disableProjectEditMode() {
         console.log("❌ Disabling project edit mode");
         this.projectEditMode = false;
-
-        // Reset project data to initial state if cancelled
-        this.studentData = { ...this.initialStudentData };
+        this.studentData = { ...this.initialStudentData }; // Reset data op annuleren
 
         document.getElementById("viewControls").style.display = "flex";
         document.getElementById("editControls").style.display = "none";
         document.getElementById("projectEditControls").style.display = "none";
 
-        // Verberg alle edit-mode inputs/textareas en toon alle display-mode spans
         document.querySelectorAll('.editable-field .edit-mode').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'inline-block');
+        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'inline-block'); // Of 'block' voor textarea spans
 
-        this.displayProjectInfo(); // Herstel projectveld weergave met oorspronkelijke data
-        this.displayStudentGegevens(); // Zorg dat ook de algemene gegevens correct zijn (ongewijzigd)
+        this.displayProjectInfo();
+        this.displayStudentGegevens();
     }
 
     // Deze functies zijn NIET meer nodig in de nieuwe aanpak
@@ -607,19 +603,17 @@ class StudentGegevens {
     disableEditMode() {
         console.log("❌ Disabling general edit mode");
         this.editMode = false;
-
-        // Reset student data to initial state if cancelled
-        this.studentData = { ...this.initialStudentData };
+        this.studentData = { ...this.initialStudentData }; // Reset data op annuleren
 
         document.getElementById("viewControls").style.display = "flex";
         document.getElementById("editControls").style.display = "none";
+        document.getElementById("projectEditControls").style.display = "none"; // Zorg dat project edit controls ook verborgen zijn
 
-        // Verberg alle edit-mode inputs en toon alle display-mode spans
         document.querySelectorAll('.editable-field .edit-mode').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'inline-block');
+        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'inline-block'); // Of 'block' voor textarea spans
 
-        this.displayStudentGegevens(); // Herstel de weergave met de oorspronkelijke data
-        this.displayProjectInfo(); // Zorg dat ook projectgegevens correct zijn (ongewijzigd)
+        this.displayStudentGegevens();
+        this.displayProjectInfo();
     }
 
     // DEZE FUNCTIES ZIJN VERWIJDERD OF LEEG GEMAAKT NU DE HTML EN LOGICA IS AANGEPAST.
@@ -727,16 +721,16 @@ class StudentGegevens {
         console.log("💾 Saving general student changes");
 
         const generalData = {};
-        // Selecteer ALLE inputs met class 'edit-input' die GEEN project-gerelateerd veld zijn
-        const editInputs = document.querySelectorAll(
-            '.editable-field .edit-mode:not([id^="edit-project-"]):not([id="edit-github-url"]):not([id="edit-cv-url"]):not([id="edit-linkedin-url"]):not([id="edit-tafel-nummer"]):not([id="edit-over-mezelf"])'
-        );
+        // Selecteer alleen de edit-mode inputs die werkelijk bewerkbaar zijn voor algemene gegevens
+        const generalEditableFieldIds = ['email', 'telefoon', 'opleiding', 'opleidingsrichting', 'straatnaam', 'huisnummer', 'bus', 'postcode', 'gemeente'];
 
-        editInputs.forEach((input) => {
-            const fieldId = input.id.replace("edit-", "");
-            const mappedField = this.getFieldMapping(fieldId);
-            if (mappedField) {
-                generalData[mappedField] = input.value.trim();
+        generalEditableFieldIds.forEach(fieldId => {
+            const input = document.getElementById(`edit-${fieldId}`);
+            if (input) {
+                const mappedField = this.getFieldMapping(fieldId);
+                if (mappedField) {
+                    generalData[mappedField] = input.value.trim();
+                }
             }
         });
 
