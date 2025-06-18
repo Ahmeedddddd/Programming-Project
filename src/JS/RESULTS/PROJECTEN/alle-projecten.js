@@ -1,480 +1,341 @@
-// src/JS/RESULTS/STUDENTEN/alle-studenten.js - FIXED VERSION
-
-/**
- * 🎓 ALLE STUDENTEN - COMPREHENSIVE FIX
- * 
- * Fixed:
- * ✅ API data loading
- * ✅ Student card rendering
- * ✅ Search functionality
- * ✅ URL parameter handling
- * ✅ Better error handling
- * ✅ Loading states
- */
-
-// ===== CONFIGURATION =====
-const API_BASE_URL = 'http://localhost:8383';
-const STUDENTEN_API = `${API_BASE_URL}/api/studenten`;
+// src/JS/RESULTS/PROJECTEN/alle-projecten.js
+// ==========================================
 
 // ===== GLOBAL VARIABLES =====
-let allStudents = [];
-let filteredStudents = [];
-let currentPage = 1;
-const itemsPerPage = 12;
-
-// ===== DOM ELEMENTS =====
-let studentsGrid;
-let searchInput;
-let filterDropdown;
-let loadingOverlay;
-let noResultsMessage;
-let paginationControls;
+let allProjects = [];
+let groupedProjects = [];
+let filteredProjects = [];
+let currentFilters = {
+    search: '',
+    opleiding: 'alle',
+    type: 'alle' // 'alle', 'individueel', 'groep'
+};
 
 // ===== INITIALIZATION =====
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎓 Alle Studenten - Initializing...');
-    initializeElements();
-    initializeSearch();
-    loadStudents();
-    handleURLParameters();
-});
-
-function initializeElements() {
-    console.log('🔍 Finding DOM elements...');
-    
-    studentsGrid = document.querySelector('.students-grid, .student-grid, .card-grid, #studentsGrid');
-    searchInput = document.querySelector('.search-input, #searchInput, input[type="text"]');
-    filterDropdown = document.querySelector('.filter-dropdown, #filterDropdown');
-    loadingOverlay = document.querySelector('.loading-overlay, #loadingOverlay');
-    noResultsMessage = document.querySelector('.no-results, #noResults');
-    paginationControls = document.querySelector('.pagination, #pagination');
-    
-    console.log('📋 Elements found:', {
-        studentsGrid: !!studentsGrid,
-        searchInput: !!searchInput,
-        filterDropdown: !!filterDropdown,
-        loadingOverlay: !!loadingOverlay
-    });
-    
-    // If main containers not found, try to create them
-    if (!studentsGrid) {
-        studentsGrid = document.querySelector('.main-content, .content, main, body');
-        console.log('⚠️ Using fallback container for students grid');
-    }
-}
-
-function initializeSearch() {
-    if (searchInput) {
-        console.log('🔍 Setting up search functionality...');
-        
-        searchInput.addEventListener('input', debounce(handleSearch, 300));
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSearch();
-            }
-        });
-    }
-    
-    if (filterDropdown) {
-        filterDropdown.addEventListener('change', handleFilterChange);
-    }
-}
-
-// ===== DATA LOADING =====
-async function loadStudents() {
-    console.log('📡 Loading students from API...');
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Initializing alle-projecten page...');
     
     try {
-        showLoading(true);
-        
-        const response = await fetch(STUDENTEN_API);
-        console.log(`📡 API Response status: ${response.status}`);
+        await loadProjects();
+        setupEventListeners();
+        restoreScrollPosition();
+    } catch (error) {
+        console.error('❌ Initialization failed:', error);
+        showError('Er ging iets mis bij het laden van de projecten');
+    }
+});
+
+// ===== DATA LOADING =====
+async function loadProjects() {
+    console.log('📊 Loading projects...');
+    showLoading(true);
+    
+    try {
+        const response = await fetch('http://localhost:8383/api/projecten', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('📦 Raw API data:', data);
         
         if (data.success && Array.isArray(data.data)) {
-            allStudents = data.data;
-            console.log(`✅ Loaded ${allStudents.length} students`);
+            allProjects = data.data;
+            console.log(`✅ Loaded ${allProjects.length} project entries`);
             
-            if (allStudents.length > 0) {
-                console.log('📋 Sample student:', allStudents[0]);
-            }
-        } else if (Array.isArray(data)) {
-            allStudents = data;
-            console.log(`✅ Loaded ${allStudents.length} students (direct array)`);
+            // FIX: Group projects by projectId to handle multiple students
+            groupedProjects = groupProjectsByProjectId(allProjects);
+            filteredProjects = [...groupedProjects];
+            
+            console.log(`✅ Grouped into ${groupedProjects.length} unique projects`);
+            
+            renderProjects();
         } else {
-            console.warn('⚠️ Unexpected API response format:', data);
-            allStudents = [];
+            throw new Error('Invalid data format received');
         }
         
-        // Set initial filtered students to all students
-        filteredStudents = [...allStudents];
-        
-        // Render students
-        renderStudents();
-        updateStudentCount();
-        
     } catch (error) {
-        console.error('❌ Error loading students:', error);
-        showError(`Kon studenten niet laden: ${error.message}`);
-        
-        // Load fallback data for testing
-        loadFallbackStudents();
+        console.error('❌ Failed to load projects:', error);
+        showError('Kon projecten niet laden. Probeer later opnieuw.');
     } finally {
         showLoading(false);
     }
 }
 
-function loadFallbackStudents() {
-    console.log('🔄 Loading fallback student data...');
+// ===== PROJECT GROUPING FIX =====
+function groupProjectsByProjectId(rawProjects) {
+    console.log('📊 Grouping projects by ID...');
     
-    allStudents = [
-        {
-            id: 1,
-            studentnummer: 12345,
-            voornaam: "John",
-            achternaam: "Doe",
-            email: "john.doe@student.ehb.be",
-            opleiding: "Toegepaste Informatica",
-            opleidingsrichting: "Software Development",
-            leerjaar: 3,
-            beschrijving: "Derdejaarsstudent met passie voor full-stack development en AI.",
-            projectTitel: "Kokende AI Robot",
-            projectBeschrijving: "Een innovatieve AI-robot die zelfstandig kan koken.",
-            tafelNr: 5
-        },
-        {
-            id: 2,
-            studentnummer: 12346,
-            voornaam: "Ben",
-            achternaam: "Huur",
-            email: "ben.huur@student.ehb.be",
-            opleiding: "Toegepaste Informatica",
-            opleidingsrichting: "System & Network Administration",
-            leerjaar: 3,
-            beschrijving: "Student met passie voor backend development en cloudtechnologieën.",
-            projectTitel: "SmartLine Inspector",
-            projectBeschrijving: "Vision-gebaseerd edge-systeem voor kwaliteitscontrole.",
-            tafelNr: 8
-        },
-        {
-            id: 3,
-            studentnummer: 12347,
-            voornaam: "Sarah",
-            achternaam: "Johnson",
-            email: "sarah.johnson@student.ehb.be",
-            opleiding: "Electronica-ICT",
-            opleidingsrichting: "Embedded Systems",
-            leerjaar: 3,
-            beschrijving: "Gespecialiseerd in IoT en embedded systemen met focus op duurzaamheid.",
-            projectTitel: "Green Energy Monitor",
-            projectBeschrijving: "IoT-platform voor monitoring van zonnepanelen.",
-            tafelNr: 12
+    const grouped = rawProjects.reduce((acc, project) => {
+        const projectId = project.projectId || project.id;
+        
+        if (!acc[projectId]) {
+            // First occurrence of this project
+            acc[projectId] = {
+                projectId: projectId,
+                projectTitel: project.projectTitel || project.titel,
+                projectBeschrijving: project.projectBeschrijving || project.beschrijving,
+                tafelNr: project.tafelNr,
+                students: []
+            };
         }
-    ];
+        
+        // Add student to project
+        acc[projectId].students.push({
+            studentnummer: project.studentnummer,
+            voornaam: project.voornaam || project.studentVoornaam,
+            achternaam: project.achternaam || project.studentAchternaam,
+            naam: project.studentnaam || `${project.voornaam || ''} ${project.achternaam || ''}`.trim(),
+            opleiding: project.opleiding || project.opleidingsrichting,
+            email: project.email || project.studentEmail
+        });
+        
+        return acc;
+    }, {});
     
-    filteredStudents = [...allStudents];
-    renderStudents();
-    updateStudentCount();
+    // Convert to array and enhance with computed properties
+    const projects = Object.values(grouped).map(project => ({
+        ...project,
+        studentCount: project.students.length,
+        studentNames: project.students.map(s => s.naam).join(', '),
+        studentNumbers: project.students.map(s => s.studentnummer).join(','),
+        opleidingen: [...new Set(project.students.map(s => s.opleiding).filter(Boolean))].join(' & '),
+        isGroupProject: project.students.length > 1
+    }));
     
-    console.log(`🔄 Loaded ${allStudents.length} fallback students`);
+    console.log(`✅ Grouped ${rawProjects.length} entries into ${projects.length} unique projects`);
+    return projects;
 }
 
 // ===== RENDERING =====
-function renderStudents() {
-    if (!studentsGrid) {
-        console.error('❌ Students grid container not found');
+function renderProjects() {
+    const container = document.querySelector('.projects-grid, #projectsGrid');
+    if (!container) {
+        console.error('❌ Projects container not found');
         return;
     }
     
-    console.log(`🎨 Rendering ${filteredStudents.length} students...`);
-    
-    if (filteredStudents.length === 0) {
-        showNoResults();
+    if (filteredProjects.length === 0) {
+        container.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <p>Geen projecten gevonden</p>
+            </div>
+        `;
         return;
     }
     
-    // Calculate pagination
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const studentsToShow = filteredStudents.slice(startIndex, endIndex);
+    const projectsHTML = filteredProjects.map((project, index) => 
+        createProjectCard(project, index)
+    ).join('');
     
-    console.log(`📄 Page ${currentPage}: showing ${startIndex}-${endIndex} of ${filteredStudents.length}`);
+    container.innerHTML = projectsHTML;
     
-    // Generate student cards HTML
-    const studentCardsHTML = studentsToShow.map(student => createStudentCard(student)).join('');
-    
-    // Update the grid
-    studentsGrid.innerHTML = studentCardsHTML;
-    
-    // Add click handlers
-    addStudentClickHandlers();
-    
-    // Update pagination
-    updatePagination();
-    
-    console.log(`✅ Rendered ${studentsToShow.length} student cards`);
+    // Add click handlers after rendering
+    addProjectClickHandlers();
 }
 
-function createStudentCard(student) {
-    const voornaam = student.voornaam || '';
-    const achternaam = student.achternaam || '';
-    const fullName = `${voornaam} ${achternaam}`.trim() || 'Onbekende Student';
-    const email = student.email || '';
-    const opleiding = student.opleiding || '';
-    const opleidingsrichting = student.opleidingsrichting || '';
-    const leerjaar = student.leerjaar || '';
-    const beschrijving = student.beschrijving || `Student ${opleiding} aan de Erasmushogeschool Brussel.`;
-    const projectTitel = student.projectTitel || '';
-    const id = student.id || student.studentnummer;
-    const tafelNr = student.tafelNr || '';
+function createProjectCard(project, index) {
+    const {
+        projectId,
+        projectTitel,
+        projectBeschrijving,
+        studentNames,
+        studentCount,
+        opleidingen,
+        tafelNr,
+        isGroupProject
+    } = project;
     
-    // Truncate description if too long
-    const truncatedDescription = beschrijving.length > 120 ? 
-        beschrijving.substring(0, 120) + '...' : beschrijving;
+    const truncatedDescription = projectBeschrijving && projectBeschrijving.length > 150 ? 
+        projectBeschrijving.substring(0, 150) + '...' : 
+        projectBeschrijving || 'Geen beschrijving beschikbaar.';
     
     return `
-        <div class="student-card" data-student-id="${id}" onclick="openStudentDetail(${id})">
-            <div class="student-header">
-                <h3 class="student-name">${fullName}</h3>
-                ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
+        <article class="project-card ${isGroupProject ? 'group-project' : 'individual-project'}" 
+                 data-project-id="${projectId}"
+                 style="animation-delay: ${index * 0.05}s">
+            <div class="project-header">
+                <h3 class="project-title">
+                    ${isGroupProject ? '<i class="fas fa-users"></i>' : '<i class="fas fa-user"></i>'}
+                    ${projectTitel}
+                </h3>
+                ${tafelNr ? `<span class="table-badge">Tafel ${tafelNr}</span>` : ''}
             </div>
             
-            <div class="student-content">
-                <div class="student-education">
-                    ${opleiding ? `<span class="education-main">🎓 ${opleiding}</span>` : ''}
-                    ${opleidingsrichting ? `<span class="education-track">${opleidingsrichting}</span>` : ''}
-                    ${leerjaar ? `<span class="education-year">Jaar ${leerjaar}</span>` : ''}
+            <div class="project-content">
+                <p class="project-description">
+                    ${truncatedDescription}
+                </p>
+                
+                <div class="project-students">
+                    <strong>${studentCount > 1 ? 'Studenten' : 'Student'}:</strong>
+                    <span class="student-names">${studentNames}</span>
                 </div>
                 
-                <p class="student-description">${truncatedDescription}</p>
-                
-                ${projectTitel ? `
-                    <div class="student-project">
-                        <strong>Project:</strong> ${projectTitel}
-                    </div>
-                ` : ''}
-                
-                <div class="student-footer">
-                    ${email ? `<span class="student-email">📧 ${email}</span>` : ''}
-                    
-                    <button class="btn-detail" onclick="event.stopPropagation(); openStudentDetail(${id})">
-                        Bekijk Profiel
-                    </button>
+                <div class="project-meta">
+                    ${opleidingen ? `
+                        <span class="opleiding-tag">
+                            <i class="fas fa-graduation-cap"></i>
+                            ${opleidingen}
+                        </span>
+                    ` : ''}
+                    ${isGroupProject ? 
+                      `<span class="group-tag">
+                        <i class="fas fa-handshake"></i>
+                        Groepsproject (${studentCount})
+                      </span>` : 
+                      '<span class="individual-tag">Individueel project</span>'}
                 </div>
             </div>
-        </div>
+            
+            <div class="project-footer">
+                <button class="view-project-btn" data-project-id="${projectId}">
+                    Bekijk Project
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </article>
     `;
 }
 
-function addStudentClickHandlers() {
-    const studentCards = document.querySelectorAll('.student-card');
-    
-    studentCards.forEach(card => {
-        card.addEventListener('click', function(e) {
-            e.preventDefault();
-            const studentId = this.getAttribute('data-student-id');
-            openStudentDetail(studentId);
+// ===== NAVIGATION FIX =====
+function addProjectClickHandlers() {
+    // Add click handlers to project cards
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.style.cursor = 'pointer';
+        
+        card.addEventListener('click', (e) => {
+            // Don't navigate if clicking on a button
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                return;
+            }
+            
+            const projectId = card.dataset.projectId;
+            if (projectId) {
+                navigateToProject(projectId);
+            }
         });
     });
     
-    console.log(`✅ Added click handlers to ${studentCards.length} student cards`);
+    // Also handle button clicks
+    document.querySelectorAll('.view-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const projectId = btn.dataset.projectId;
+            if (projectId) {
+                navigateToProject(projectId);
+            }
+        });
+    });
 }
 
-// ===== SEARCH & FILTERING =====
-function handleSearch() {
-    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+// FIX: Navigate to correct project detail page
+function navigateToProject(projectId) {
+    console.log('🔗 Navigeren naar project:', projectId);
     
-    console.log(`🔍 Searching for: "${searchTerm}"`);
+    // Save scroll position
+    sessionStorage.setItem('alleProjectenScrollPosition', window.pageYOffset.toString());
     
-    if (searchTerm === '') {
-        // Show all students if search is empty
-        filteredStudents = [...allStudents];
-    } else {
-        // Filter students based on search term
-        filteredStudents = allStudents.filter(student => {
-            const fullName = `${student.voornaam || ''} ${student.achternaam || ''}`.toLowerCase();
-            const email = (student.email || '').toLowerCase();
-            const opleiding = (student.opleiding || '').toLowerCase();
-            const opleidingsrichting = (student.opleidingsrichting || '').toLowerCase();
-            const beschrijving = (student.beschrijving || '').toLowerCase();
-            const projectTitel = (student.projectTitel || '').toLowerCase();
+    // Navigate to project detail page
+    window.location.href = `/zoekbalk-projecten?id=${projectId}`;
+}
+
+// ===== FILTER FUNCTIONALITY =====
+function setupEventListeners() {
+    // Search input
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce((e) => {
+            currentFilters.search = e.target.value.toLowerCase();
+            applyFilters();
+        }, 300));
+    }
+    
+    // Type filter (individual/group)
+    const typeFilter = document.querySelector('#typeFilter');
+    if (typeFilter) {
+        typeFilter.addEventListener('change', (e) => {
+            currentFilters.type = e.target.value;
+            applyFilters();
+        });
+    }
+    
+    // Opleiding filter
+    const opleidingFilter = document.querySelector('#opleidingFilter');
+    if (opleidingFilter) {
+        opleidingFilter.addEventListener('change', (e) => {
+            currentFilters.opleiding = e.target.value;
+            applyFilters();
+        });
+    }
+    
+    // Sort buttons
+    const sortByStudents = document.querySelector('#sortByStudents');
+    if (sortByStudents) {
+        sortByStudents.addEventListener('click', () => {
+            sortProjects('students');
+        });
+    }
+    
+    const sortByName = document.querySelector('#sortByName');
+    if (sortByName) {
+        sortByName.addEventListener('click', () => {
+            sortProjects('name');
+        });
+    }
+}
+
+function applyFilters() {
+    filteredProjects = groupedProjects.filter(project => {
+        // Search filter
+        if (currentFilters.search) {
+            const searchTerm = currentFilters.search.toLowerCase();
+            const matchesSearch = 
+                project.projectTitel.toLowerCase().includes(searchTerm) ||
+                project.projectBeschrijving.toLowerCase().includes(searchTerm) ||
+                project.studentNames.toLowerCase().includes(searchTerm) ||
+                (project.opleidingen && project.opleidingen.toLowerCase().includes(searchTerm));
             
-            return fullName.includes(searchTerm) ||
-                   email.includes(searchTerm) ||
-                   opleiding.includes(searchTerm) ||
-                   opleidingsrichting.includes(searchTerm) ||
-                   beschrijving.includes(searchTerm) ||
-                   projectTitel.includes(searchTerm);
-        });
-    }
-    
-    currentPage = 1; // Reset to first page
-    renderStudents();
-    updateStudentCount();
-    
-    console.log(`🔍 Search results: ${filteredStudents.length} students found`);
-}
-
-function handleFilterChange() {
-    const filterValue = filterDropdown ? filterDropdown.value : '';
-    
-    console.log(`📊 Filtering by: "${filterValue}"`);
-    
-    if (filterValue === '' || filterValue === 'all') {
-        filteredStudents = [...allStudents];
-    } else {
-        filteredStudents = allStudents.filter(student => {
-            const opleiding = (student.opleiding || '').toLowerCase();
-            return opleiding.includes(filterValue.toLowerCase());
-        });
-    }
-    
-    currentPage = 1; // Reset to first page
-    renderStudents();
-    updateStudentCount();
-}
-
-// ===== PAGINATION =====
-function updatePagination() {
-    if (!paginationControls) return;
-    
-    const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
-    
-    if (totalPages <= 1) {
-        paginationControls.style.display = 'none';
-        return;
-    }
-    
-    paginationControls.style.display = 'flex';
-    
-    let paginationHTML = '';
-    
-    // Previous button
-    if (currentPage > 1) {
-        paginationHTML += `<button onclick="goToPage(${currentPage - 1})" class="page-btn">❮ Vorige</button>`;
-    }
-    
-    // Page numbers
-    for (let i = 1; i <= totalPages; i++) {
-        const activeClass = i === currentPage ? 'active' : '';
-        paginationHTML += `<button onclick="goToPage(${i})" class="page-btn ${activeClass}">${i}</button>`;
-    }
-    
-    // Next button
-    if (currentPage < totalPages) {
-        paginationHTML += `<button onclick="goToPage(${currentPage + 1})" class="page-btn">Volgende ❯</button>`;
-    }
-    
-    paginationControls.innerHTML = paginationHTML;
-}
-
-function goToPage(page) {
-    currentPage = page;
-    renderStudents();
-    
-    // Scroll to top of students grid
-    if (studentsGrid) {
-        studentsGrid.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-
-// ===== UI HELPERS =====
-function showLoading(show) {
-    if (loadingOverlay) {
-        loadingOverlay.style.display = show ? 'flex' : 'none';
-    }
-    
-    if (studentsGrid && show) {
-        studentsGrid.innerHTML = `
-            <div class="loading-state">
-                <div class="loading-spinner"></div>
-                <p>Studenten laden...</p>
-            </div>
-        `;
-    }
-}
-
-function showNoResults() {
-    if (studentsGrid) {
-        studentsGrid.innerHTML = `
-            <div class="no-results">
-                <h3>Geen studenten gevonden</h3>
-                <p>Probeer je zoekterm aan te passen of verwijder filters.</p>
-                <button onclick="clearSearch()" class="btn-clear">Zoekterm wissen</button>
-            </div>
-        `;
-    }
-}
-
-function showError(message) {
-    if (studentsGrid) {
-        studentsGrid.innerHTML = `
-            <div class="error-state">
-                <h3>⚠️ Fout bij laden</h3>
-                <p>${message}</p>
-                <button onclick="loadStudents()" class="btn-retry">Opnieuw proberen</button>
-            </div>
-        `;
-    }
-}
-
-function updateStudentCount() {
-    const countElement = document.querySelector('.student-count, #studentCount');
-    if (countElement) {
-        countElement.textContent = `${filteredStudents.length} student${filteredStudents.length !== 1 ? 'en' : ''}`;
-    }
-    
-    // Update page title
-    document.title = `Alle Studenten (${filteredStudents.length}) - CareerLaunch EHB`;
-}
-
-// ===== URL PARAMETER HANDLING =====
-function handleURLParameters() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchParam = urlParams.get('search');
-    const idParam = urlParams.get('id');
-    
-    if (searchParam && searchInput) {
-        console.log(`🔗 URL search parameter: ${searchParam}`);
-        searchInput.value = searchParam;
-        // Search will be triggered after students are loaded
-        setTimeout(() => handleSearch(), 500);
-    }
-    
-    if (idParam) {
-        console.log(`🔗 URL ID parameter: ${idParam}`);
-        // Delay opening detail to ensure students are loaded
-        setTimeout(() => openStudentDetail(idParam), 1000);
-    }
-}
-
-// ===== DETAIL NAVIGATION =====
-function openStudentDetail(studentId) {
-    console.log(`🔗 Opening student detail: ${studentId}`);
-    
-    // Find the student in our data
-    const student = allStudents.find(s => 
-        s.id == studentId || 
-        s.studentnummer == studentId
-    );
-    
-    if (student) {
-        // Store student data for detail page
-        localStorage.setItem('selectedStudent', JSON.stringify(student));
+            if (!matchesSearch) return false;
+        }
         
-        // Navigate to detail page
-        window.location.href = `/student-detail?id=${studentId}`;
-    } else {
-        console.warn(`⚠️ Student ${studentId} not found in loaded data`);
-        alert('Student details niet beschikbaar');
+        // Type filter
+        if (currentFilters.type !== 'alle') {
+            if (currentFilters.type === 'groep' && !project.isGroupProject) return false;
+            if (currentFilters.type === 'individueel' && project.isGroupProject) return false;
+        }
+        
+        // Opleiding filter
+        if (currentFilters.opleiding !== 'alle') {
+            if (!project.opleidingen || !project.opleidingen.includes(currentFilters.opleiding)) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    renderProjects();
+    updateResultsCount();
+}
+
+function sortProjects(sortBy) {
+    switch(sortBy) {
+        case 'students':
+            filteredProjects.sort((a, b) => b.studentCount - a.studentCount);
+            break;
+        case 'name':
+            filteredProjects.sort((a, b) => a.projectTitel.localeCompare(b.projectTitel));
+            break;
     }
+    
+    renderProjects();
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -490,31 +351,101 @@ function debounce(func, wait) {
     };
 }
 
-function clearSearch() {
-    if (searchInput) {
-        searchInput.value = '';
-        handleSearch();
+function showLoading(show) {
+    const loader = document.querySelector('#loadingOverlay, .loading');
+    if (loader) {
+        loader.style.display = show ? 'flex' : 'none';
     }
 }
 
-function refreshStudents() {
-    console.log('🔄 Manual refresh triggered');
-    allStudents = [];
-    filteredStudents = [];
-    loadStudents();
+function showError(message) {
+    const container = document.querySelector('.projects-grid, #projectsGrid');
+    if (container) {
+        container.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>${message}</p>
+                <button onclick="location.reload()">Probeer opnieuw</button>
+            </div>
+        `;
+    }
 }
 
-// ===== GLOBAL FUNCTIONS =====
-// Make functions available globally for onclick handlers
-window.openStudentDetail = openStudentDetail;
-window.goToPage = goToPage;
-window.clearSearch = clearSearch;
-window.refreshStudents = refreshStudents;
+function updateResultsCount() {
+    const countElement = document.querySelector('.results-count, [data-count="projects"]');
+    if (countElement) {
+        countElement.textContent = `${filteredProjects.length} project${filteredProjects.length !== 1 ? 'en' : ''}`;
+    }
+}
 
-// ===== DEBUG INFO =====
-console.log('🎓 Alle Studenten Script Info:');
-console.log('   📡 API Endpoint:', STUDENTEN_API);
-console.log('   🌐 Current URL:', window.location.href);
-console.log('   📄 Items per page:', itemsPerPage);
+function restoreScrollPosition() {
+    const scrollPos = sessionStorage.getItem('alleProjectenScrollPosition');
+    if (scrollPos) {
+        window.scrollTo(0, parseInt(scrollPos));
+        sessionStorage.removeItem('alleProjectenScrollPosition');
+    }
+}
 
-console.log('✅ Alle Studenten - Script loaded and ready!');
+// ===== ADD GROUP PROJECT STYLES =====
+const groupProjectStyles = `
+<style>
+.group-project {
+    border: 2px solid #881538;
+    position: relative;
+}
+
+.group-project::before {
+    content: 'Groepsproject';
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: #881538;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.project-students {
+    margin: 10px 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+}
+
+.student-names {
+    color: #333;
+    font-weight: normal;
+}
+
+.group-tag {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.individual-tag {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+</style>
+`;
+
+// Add styles on load
+document.head.insertAdjacentHTML('beforeend', groupProjectStyles);
+
+// ===== EXPORT FOR TESTING =====
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        loadProjects,
+        groupProjectsByProjectId,
+        renderProjects,
+        navigateToProject
+    };
+}

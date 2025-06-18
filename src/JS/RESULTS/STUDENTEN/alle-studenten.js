@@ -1,58 +1,41 @@
 // src/JS/RESULTS/STUDENTEN/alle-studenten.js
-// JavaScript voor alle studenten pagina - toont alle studenten en navigeert naar detail
+// ==========================================   
 
-// Wacht tot DOM geladen is
-document.addEventListener('DOMContentLoaded', async () => {
-    await initializeStudentPage();
-});
-
-// Globale variabelen
+// ===== GLOBAL VARIABLES =====
 let allStudents = [];
 let filteredStudents = [];
 let currentFilters = {
     search: '',
-    jaar: '',
-    specialization: 'Alle'
+    jaar: 'alle',
+    opleiding: 'alle'
 };
 
-// ===== MAIN INITIALIZATION =====
-async function initializeStudentPage() {
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🎓 Initializing alle-studenten page...');
+    
     try {
-        showLoadingState();
-        
-        // Laad alle studenten
-        await loadAllStudents();
-        
-        // Setup filter functionaliteit
-        setupFilters();
-        
-        // Setup search functionaliteit
-        setupSearch();
-        
-        // Setup specialization pills
-        setupSpecializationPills();
-        
-        // Render studenten
-        renderStudents(allStudents);
-        
-        // Update stats
-        updateStats();
-        
-        hideLoadingState();
-        
-        console.log('✅ Student pagina geïnitialiseerd met', allStudents.length, 'studenten');
-        
+        await loadStudents();
+        setupEventListeners();
+        restoreScrollPosition();
     } catch (error) {
-        console.error('❌ Fout bij laden van studenten pagina:', error);
-        showErrorState();
+        console.error('❌ Initialization failed:', error);
+        showError('Er ging iets mis bij het laden van de studenten');
     }
-}
+});
 
-// ===== API CALLS =====
-async function loadAllStudents() {
+// ===== DATA LOADING =====
+async function loadStudents() {
+    console.log('📊 Loading students...');
+    showLoading(true);
+    
     try {
-        const API_BASE = 'http://localhost:3301';
-        const response = await fetch(`${API_BASE}/api/studenten`);
+        const response = await fetch('http://localhost:8383/api/studenten', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,120 +43,138 @@ async function loadAllStudents() {
         
         const data = await response.json();
         
-        if (data.success && data.data) {
+        if (data.success && Array.isArray(data.data)) {
             allStudents = data.data;
             filteredStudents = [...allStudents];
-            console.log('📊 Studenten geladen:', allStudents.length);
+            console.log(`✅ Loaded ${allStudents.length} students`);
+            
+            renderStudents();
         } else {
-            throw new Error('Invalid response format');
+            throw new Error('Invalid data format received');
         }
         
     } catch (error) {
-        console.error('❌ Fout bij laden studenten:', error);
-        
-        // Fallback: gebruik mock data als API niet beschikbaar is
-        allStudents = getMockStudents();
-        filteredStudents = [...allStudents];
-        
-        showNotification('⚠️ Offline modus: test data wordt gebruikt', 'warning');
+        console.error('❌ Failed to load students:', error);
+        showError('Kon studenten niet laden. Probeer later opnieuw.');
+    } finally {
+        showLoading(false);
     }
 }
 
 // ===== RENDERING =====
-function renderStudents(students) {
-    const container = document.querySelector('.studentTegels');
-    
+function renderStudents() {
+    const container = document.querySelector('.students-grid, #studentsGrid');
     if (!container) {
-        console.error('❌ .studentTegels container niet gevonden');
+        console.error('❌ Students container not found');
         return;
     }
     
-    if (!students || students.length === 0) {
+    if (filteredStudents.length === 0) {
         container.innerHTML = `
             <div class="no-results">
-                <h3>Geen studenten gevonden</h3>
-                <p>Probeer je zoekopdracht aan te passen of de filters te wijzigen.</p>
+                <i class="fas fa-search"></i>
+                <p>Geen studenten gevonden</p>
             </div>
         `;
         return;
     }
     
-    // Clear bestaande content
-    container.innerHTML = '';
+    const studentsHTML = filteredStudents.map((student, index) => 
+        createStudentCard(student, index)
+    ).join('');
     
-    // Render elke student
-    students.forEach((student, index) => {
-        const studentElement = createStudentCard(student, index);
-        container.appendChild(studentElement);
-    });
+    container.innerHTML = studentsHTML;
     
-    // Add animations
-    animateCards();
+    // Add click handlers after rendering
+    addStudentClickHandlers();
 }
 
 function createStudentCard(student, index) {
-    const article = document.createElement('article');
-    article.className = 'studentTegel';
-    article.style.animationDelay = `${index * 0.1}s`;
+    const year = getStudentYear(student.studentnummer);
+    const yearText = `${year}e jaar`;
+    const projectInfo = student.projectTitel ? 
+        `<div class="project-preview">
+            <strong>📚 Project:</strong> ${student.projectTitel}
+        </div>` : '';
     
-    // Bepaal beschrijving (gebruik overMezelf of projectBeschrijving)
-    let beschrijving = student.overMezelf || student.projectBeschrijving || 'Geen beschrijving beschikbaar.';
-    
-    // Limiteer beschrijving lengte
-    if (beschrijving.length > 300) {
-        beschrijving = beschrijving.substring(0, 300) + '...';
-    }
-    
-    // Bepaal specialization/opleiding
-    const specialization = student.opleidingsrichting || student.opleiding || 'Onbekend';
-    
-    // Bepaal jaar op basis van studentnummer (simpele logica)
-    const jaar = getStudentYear(student.studentnummer);
-    
-    article.innerHTML = `
-        <button class="connect-btn" onclick="navigateToStudent(${student.studentnummer})">💬 Connect</button>
-        <h2 class="studentNaam">${student.voornaam} ${student.achternaam}</h2>
-        <div class="student-meta">
-            <span class="specialization-tag">${specialization}</span>
-            <span class="year-tag">${jaar}e jaar</span>
-        </div>
-        <p class="studentBeschrijving">${beschrijving}</p>
-        ${student.projectTitel ? `
-            <div class="project-preview">
-                <strong>📚 Project:</strong> ${student.projectTitel}
+    return `
+        <article class="studentTegel student-card" 
+                 data-student-id="${student.studentnummer}"
+                 data-studentnummer="${student.studentnummer}"
+                 style="animation-delay: ${index * 0.05}s">
+            <div class="student-header">
+                <h3 class="student-name">${student.voornaam} ${student.achternaam}</h3>
+                <span class="student-number">#${student.studentnummer}</span>
             </div>
-        ` : ''}
-        <div class="student-tags">
-            ${student.gemeente ? `<span class="location-tag">📍 ${student.gemeente}</span>` : ''}
-            ${student.email ? `<span class="email-tag">📧 Contact mogelijk</span>` : ''}
-        </div>
+            
+            <div class="student-meta">
+                <span class="specialization-tag">${student.opleiding || 'Toegepaste Informatica'}</span>
+                <span class="year-tag">${yearText}</span>
+            </div>
+            
+            ${projectInfo}
+            
+            <div class="student-tags">
+                ${student.gemeente ? `<span class="location-tag">📍 ${student.gemeente}</span>` : ''}
+                ${student.email ? `<span class="email-tag">📧 Contact mogelijk</span>` : ''}
+            </div>
+            
+            <div class="student-actions">
+                <button class="view-profile-btn" data-student-id="${student.studentnummer}">
+                    Bekijk Profiel
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </article>
     `;
-    
-    // Add click handler voor hele card
-    article.addEventListener('click', (e) => {
-        // Alleen navigeren als niet op de connect button geklikt
-        if (!e.target.classList.contains('connect-btn')) {
-            navigateToStudent(student.studentnummer);
-        }
-    });
-    
-    return article;
 }
 
-// ===== NAVIGATION =====
+// ===== NAVIGATION FIX =====
+function addStudentClickHandlers() {
+    // FIX: Add click handlers to navigate to zoekbalk-studenten
+    document.querySelectorAll('.student-card').forEach(card => {
+        card.style.cursor = 'pointer';
+        
+        card.addEventListener('click', (e) => {
+            // Don't navigate if clicking on a button
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                return;
+            }
+            
+            const studentId = card.dataset.studentId || card.dataset.studentnummer;
+            if (studentId) {
+                navigateToStudent(studentId);
+            }
+        });
+    });
+    
+    // Also handle button clicks
+    document.querySelectorAll('.view-profile-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const studentId = btn.dataset.studentId;
+            if (studentId) {
+                navigateToStudent(studentId);
+            }
+        });
+    });
+}
+
+// FIX: Navigate to correct student detail page
 function navigateToStudent(studentnummer) {
     console.log('🔗 Navigeren naar student:', studentnummer);
     
-    // Navigeer naar detail pagina met student ID als parameter
-    window.location.href = `/zoekbalkStudenten?id=${studentnummer}`;
+    // Save scroll position
+    sessionStorage.setItem('alleStudentenScrollPosition', window.pageYOffset.toString());
+    
+    // FIX: Navigate to zoekbalk-studenten instead of alle-studenten
+    window.location.href = `/zoekbalk-studenten?id=${studentnummer}`;
 }
 
 // ===== FILTER FUNCTIONALITY =====
-function setupFilters() {
+function setupEventListeners() {
+    // Search input
     const searchInput = document.querySelector('.search-input');
-    const filterSelect = document.querySelector('.filter-select');
-    const filterBtn = document.querySelector('.filter-btn');
-    
     if (searchInput) {
         searchInput.addEventListener('input', debounce((e) => {
             currentFilters.search = e.target.value.toLowerCase();
@@ -181,173 +182,74 @@ function setupFilters() {
         }, 300));
     }
     
-    if (filterSelect) {
-        filterSelect.addEventListener('change', (e) => {
+    // Year filter
+    const yearFilter = document.querySelector('#yearFilter');
+    if (yearFilter) {
+        yearFilter.addEventListener('change', (e) => {
             currentFilters.jaar = e.target.value;
             applyFilters();
         });
     }
     
-    if (filterBtn) {
-        filterBtn.addEventListener('click', () => {
+    // Opleiding filter
+    const opleidingFilter = document.querySelector('#opleidingFilter');
+    if (opleidingFilter) {
+        opleidingFilter.addEventListener('change', (e) => {
+            currentFilters.opleiding = e.target.value;
             applyFilters();
-            showNotification('🔍 Filters toegepast', 'info');
         });
     }
-}
-
-function setupSpecializationPills() {
-    const pills = document.querySelectorAll('.specialization-pill');
     
-    pills.forEach(pill => {
-        pill.addEventListener('click', () => {
-            // Remove active from all
-            pills.forEach(p => p.classList.remove('active'));
-            
-            // Add active to clicked
-            pill.classList.add('active');
-            
-            // Update filter
-            currentFilters.specialization = pill.textContent.trim();
-            applyFilters();
+    // Filter button
+    const filterBtn = document.querySelector('.filter-btn');
+    if (filterBtn) {
+        filterBtn.addEventListener('click', () => {
+            toggleFilterPanel();
         });
-    });
+    }
 }
 
 function applyFilters() {
     filteredStudents = allStudents.filter(student => {
         // Search filter
         if (currentFilters.search) {
-            const searchTerm = currentFilters.search;
-            const searchableText = `${student.voornaam} ${student.achternaam} ${student.projectTitel || ''} ${student.opleiding || ''} ${student.opleidingsrichting || ''}`.toLowerCase();
-            if (!searchableText.includes(searchTerm)) {
-                return false;
-            }
+            const searchTerm = currentFilters.search.toLowerCase();
+            const fullName = `${student.voornaam} ${student.achternaam}`.toLowerCase();
+            const matchesSearch = 
+                fullName.includes(searchTerm) ||
+                student.studentnummer.toString().includes(searchTerm) ||
+                (student.opleiding && student.opleiding.toLowerCase().includes(searchTerm)) ||
+                (student.projectTitel && student.projectTitel.toLowerCase().includes(searchTerm));
+            
+            if (!matchesSearch) return false;
         }
         
         // Year filter
-        if (currentFilters.jaar && currentFilters.jaar !== 'Alle jaren') {
+        if (currentFilters.jaar !== 'alle') {
             const studentYear = getStudentYear(student.studentnummer);
-            const filterYear = parseInt(currentFilters.jaar.replace('e jaar', ''));
-            if (studentYear !== filterYear) {
-                return false;
-            }
+            if (studentYear.toString() !== currentFilters.jaar) return false;
         }
         
-        // Specialization filter
-        if (currentFilters.specialization !== 'Alle') {
-            const studentSpec = student.opleidingsrichting || student.opleiding || '';
-            if (currentFilters.specialization !== 'Toegepaste Informatica' && 
-                !studentSpec.toLowerCase().includes(currentFilters.specialization.toLowerCase())) {
-                return false;
-            }
+        // Opleiding filter
+        if (currentFilters.opleiding !== 'alle') {
+            if (!student.opleiding || student.opleiding !== currentFilters.opleiding) return false;
         }
         
         return true;
     });
     
-    renderStudents(filteredStudents);
-    updateStats();
+    renderStudents();
+    updateResultsCount();
 }
 
 // ===== UTILITY FUNCTIONS =====
 function getStudentYear(studentnummer) {
-    // Simpele logica: laatste digit van studentnummer
     const lastDigit = parseInt(studentnummer.toString().slice(-1));
     if (lastDigit >= 0 && lastDigit <= 3) return 1;
     if (lastDigit >= 4 && lastDigit <= 6) return 2;
     return 3;
 }
 
-function updateStats() {
-    const statsText = document.querySelector('.stats-text');
-    if (statsText) {
-        const count = filteredStudents.length;
-        statsText.textContent = `🎓 ${count} studenten beschikbaar voor netwerkgesprekken`;
-    }
-}
-
-function setupSearch() {
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-        searchInput.placeholder = "Zoek studenten op naam, project of vaardigheden...";
-    }
-}
-
-// ===== LOADING STATES =====
-function showLoadingState() {
-    const container = document.querySelector('.studentTegels');
-    if (container) {
-        container.innerHTML = `
-            <div class="loading-state">
-                <div class="loader"></div>
-                <p>Studenten laden...</p>
-            </div>
-        `;
-    }
-}
-
-function hideLoadingState() {
-    // Loading wordt vervangen door renderStudents()
-}
-
-function showErrorState() {
-    const container = document.querySelector('.studentTegels');
-    if (container) {
-        container.innerHTML = `
-            <div class="error-state">
-                <h3>⚠️ Fout bij laden</h3>
-                <p>Er ging iets mis bij het ophalen van de studenten.</p>
-                <button onclick="location.reload()" class="retry-btn">🔄 Probeer opnieuw</button>
-            </div>
-        `;
-    }
-}
-
-// ===== ANIMATIONS =====
-function animateCards() {
-    const cards = document.querySelectorAll('.studentTegel');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-}
-
-// ===== MOCK DATA (fallback) =====
-function getMockStudents() {
-    return [
-        {
-            studentnummer: 232,
-            voornaam: 'John',
-            achternaam: 'Doe',
-            email: 'john.doe@student.ehb.be',
-            opleiding: 'Toegepaste informatica',
-            opleidingsrichting: 'Intelligent Robotics',
-            projectTitel: 'Kokende AI Robot',
-            gemeente: 'Gent',
-            overMezelf: 'Ik ben John Doe, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel, altijd op zoek naar de volgende technische uitdaging.'
-        },
-        {
-            studentnummer: 233,
-            voornaam: 'Jeretom',
-            achternaam: 'Carnomina',
-            email: 'jeretom@student.ehb.be',
-            opleiding: 'Toegepaste informatica',
-            opleidingsrichting: 'Software Engineering',
-            projectTitel: 'NeuroTrack',
-            gemeente: 'Antwerpen',
-            overMezelf: 'Derdejaarsstudent met voorliefde voor multidisciplinaire hardware-software integratie.'
-        }
-    ];
-}
-
-// ===== UTILITIES =====
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -360,16 +262,71 @@ function debounce(func, wait) {
     };
 }
 
-function showNotification(message, type = 'info') {
-    // Gebruik het bestaande notification system
-    if (window.showNotification) {
-        window.showNotification(message, type);
-    } else if (window.toast) {
-        window.toast[type] && window.toast[type](message);
-    } else {
-        console.log(`📢 ${type.toUpperCase()}: ${message}`);
+function showLoading(show) {
+    const loader = document.querySelector('#loadingOverlay, .loading');
+    if (loader) {
+        loader.style.display = show ? 'flex' : 'none';
     }
 }
 
-// ===== GLOBAL FUNCTION (voor HTML onclick) =====
-window.navigateToStudent = navigateToStudent;
+function showError(message) {
+    const container = document.querySelector('.students-grid, #studentsGrid');
+    if (container) {
+        container.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>${message}</p>
+                <button onclick="location.reload()">Probeer opnieuw</button>
+            </div>
+        `;
+    }
+}
+
+function updateResultsCount() {
+    const countElement = document.querySelector('.results-count, [data-count="students"]');
+    if (countElement) {
+        countElement.textContent = `${filteredStudents.length} student${filteredStudents.length !== 1 ? 'en' : ''}`;
+    }
+}
+
+function restoreScrollPosition() {
+    const scrollPos = sessionStorage.getItem('alleStudentenScrollPosition');
+    if (scrollPos) {
+        window.scrollTo(0, parseInt(scrollPos));
+        sessionStorage.removeItem('alleStudentenScrollPosition');
+    }
+}
+
+function toggleFilterPanel() {
+    const filterPanel = document.querySelector('.filter-panel');
+    if (filterPanel) {
+        filterPanel.classList.toggle('active');
+    }
+}
+
+// ===== NOTIFICATION SYSTEM =====
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    const container = document.querySelector('#notification-container') || document.body;
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// ===== EXPORT FOR TESTING =====
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        loadStudents,
+        renderStudents,
+        navigateToStudent,
+        getStudentYear
+    };
+}

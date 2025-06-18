@@ -118,34 +118,52 @@ async function handleLogin(event) {
 
 // Handle successful login
 async function handleLoginSuccess(data) {
-    console.log('✅ Login successful:', data);
-    
     try {
-        // Store authentication data
-        if (data.token) {
-            localStorage.setItem('authToken', data.token);
-        }
+        console.log('✅ Login successful:', data);
         
-        if (data.userType) {
-            localStorage.setItem('userType', data.userType);
-        }
+        // Store auth data in localStorage
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userType', data.userType);
+        localStorage.setItem('userEmail', data.email || data.user?.email);
+        localStorage.setItem('userId', data.userId || data.user?.id);
+        localStorage.setItem('userName', data.name || data.user?.name || '');
         
-        if (data.user && data.user.email) {
-            localStorage.setItem('userEmail', data.user.email);
-        }
-        
-        // Store additional user data
+        // Store full user data if available
         if (data.user) {
             localStorage.setItem('userData', JSON.stringify(data.user));
         }
         
-        showSuccessMessage('Succesvol ingelogd! U wordt doorgestuurd...');
+        showSuccessMessage(`Welkom terug! U wordt doorgestuurd...`);
         
-        // Wait a moment for the user to see the success message
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait for user to see success message
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Redirect to appropriate homepage
-        redirectToHomepage(data.userType);
+        // FIX: Correct redirect based on user type
+        let targetUrl;
+        switch(data.userType) {
+            case 'student':
+                targetUrl = '/student-homepage';
+                console.log('🎓 Redirecting student to:', targetUrl);
+                break;
+                
+            case 'bedrijf':
+                targetUrl = '/bedrijf-homepage';
+                console.log('🏢 Redirecting bedrijf to:', targetUrl);
+                break;
+                
+            case 'organisator':
+                targetUrl = '/organisator-homepage';
+                console.log('👔 Redirecting organisator to:', targetUrl);
+                break;
+                
+            default:
+                console.warn('❓ Unknown user type:', data.userType);
+                targetUrl = '/';
+        }
+        
+        // FIX: Use replace to prevent back button issues
+        console.log(`🚀 Final redirect to: ${targetUrl}`);
+        window.location.replace(targetUrl);
         
     } catch (error) {
         console.error('❌ Error handling login success:', error);
@@ -153,33 +171,89 @@ async function handleLoginSuccess(data) {
         
         // Fallback redirect after error
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.replace('/');
         }, 2000);
     }
 }
 
-// Redirect to appropriate homepage based on user type
-function redirectToHomepage(userType) {
-    let targetUrl;
+// FIX: Update the form submit handler as well
+async function handleLogin(event) {
+    event.preventDefault();
     
-    switch(userType) {
-        case 'student':
-            targetUrl = '/student-homepage';
-            break;
-        case 'bedrijf':
-            targetUrl = '/bedrijf-homepage';
-            break;
-        case 'organisator':
-            targetUrl = '/organisator-homepage';
-            break;
-        default:
-            console.warn('❓ Unknown user type:', userType);
-            targetUrl = '/';
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    
+    // Validation
+    if (!email || !password) {
+        showErrorMessage('Vul alle velden in');
+        return;
     }
     
-    console.log(`🚀 Redirecting to: ${targetUrl}`);
-    window.location.href = targetUrl;
+    if (!isValidEmail(email)) {
+        showErrorMessage('Ongeldig e-mailadres');
+        return;
+    }
+    
+    try {
+        showLoading(true);
+        
+        const response = await fetch('http://localhost:8383/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Login mislukt');
+        }
+        
+        if (data.success) {
+            // FIX: Pass the full data object to handleLoginSuccess
+            await handleLoginSuccess(data);
+        } else {
+            throw new Error(data.message || 'Login mislukt');
+        }
+        
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        showErrorMessage(error.message || 'Er is een fout opgetreden. Probeer het later opnieuw.');
+    } finally {
+        showLoading(false);
+    }
 }
+
+// FIX: Add a check on page load to redirect if already logged in
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is already logged in
+    const authToken = localStorage.getItem('authToken');
+    const userType = localStorage.getItem('userType');
+    
+    if (authToken && userType) {
+        console.log('🔍 User already logged in, redirecting...');
+        
+        let targetUrl;
+        switch(userType) {
+            case 'student':
+                targetUrl = '/student-homepage';
+                break;
+            case 'bedrijf':
+                targetUrl = '/bedrijf-homepage';
+                break;
+            case 'organisator':
+                targetUrl = '/organisator-homepage';
+                break;
+            default:
+                targetUrl = '/';
+        }
+        
+        window.location.replace(targetUrl);
+    }
+});
 
 // ===== UTILITY FUNCTIONS =====
 
