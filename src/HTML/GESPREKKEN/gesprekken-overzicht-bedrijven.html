@@ -6,24 +6,25 @@
   <title>Gesprekken overzicht bedrijven</title>
   <link rel="stylesheet" href="/src/CSS/style.css">
   <link rel="stylesheet" href="/src/CSS/GESPREKKEN/gesprekken-overzicht-bedrijven.css">
+  <script src="/js/navigation-manager.js"></script>
+    <script src="/js/role-manager.js"></script>
 </head>
 <body>
   <div class="container">
-    <div class="nav">
-      <div class="logo">
-        <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-      </div>
-      <div class="navBar">
-        <a href="/index.html" class="navItem active">Home</a>
-        <a href="/programma" class="navItem">Programma</a>
-        <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
-        <a href="/info" class="navItem">Info</a>
-      </div>
-      <div class="pfpContainer">
-        <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle" />
-      </div>
-    </div>
+    <!-- Dynamic Navigation -->
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar">
+                <!-- Navigation items will be dynamically populated -->
+            </div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+            </div>
+        </div>
 
+      
     <section class="gesprekkenKaart">
       <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
       <div class="gesprekkenTable">
