@@ -81,10 +81,12 @@
 <!-- Zoekbalk - Identiek -->
 <section class="searchSection">
   <div class="searchBar">
-    <input placeholder="Zoek studenten, projecten..."></input>
+    <input class="search-input" placeholder="Zoek studenten, projecten..." list="search-suggestions" />
+    <datalist id="search-suggestions"></datalist>
     <button class="searchBtn"><img src="" alt="Zoek" /></button>
   </div>
 </section>
+<div id="searchResults"></div>
 
      <main class="main-content">
        
@@ -320,3 +322,4 @@
         }
     }
 </script>
+<script type="module" src="/src/JS/BEDRIJVEN/zoekbalkBedrijvenHomepage.js"></script>
