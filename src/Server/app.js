@@ -372,7 +372,7 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/register.html"));
+  res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/account-aanmaken.html"));
 });
 
 app.get("/programmaVoormidag", (req, res) => {
