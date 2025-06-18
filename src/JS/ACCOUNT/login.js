@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeLoginSystem() {
-    console.log('🔐 Initializing fixed login system...');
-    console.log('📡 API Base URL:', API_BASE_URL);
-    console.log('🔗 Login Endpoint:', LOGIN_ENDPOINT);
     
     // Get DOM elements
     loginForm = document.getElementById('loginForm');
@@ -42,7 +39,6 @@ function initializeLoginSystem() {
         passwordInput.addEventListener('input', clearErrorMessages);
     }
     
-    console.log('✅ Fixed login system initialized with correct port');
 }
 
 // Check if user is already logged in
@@ -51,7 +47,6 @@ function checkExistingLogin() {
     const userType = localStorage.getItem('userType');
     
     if (authToken && userType) {
-        console.log('🔄 User already logged in, redirecting...');
         redirectToHomepage(userType);
     }
 }
@@ -78,9 +73,6 @@ async function handleLogin(event) {
             showErrorMessage('Voer een geldig email adres in');
             return;
         }
-        
-        console.log('🔄 Attempting login for:', email);
-        console.log('📡 Using endpoint:', LOGIN_ENDPOINT);
         
         // 📨 LOGIN REQUEST - FIXED ENDPOINT
         const response = await fetch(LOGIN_ENDPOINT, {
@@ -150,7 +142,7 @@ async function handleLoginSuccess(data) {
         showSuccessMessage('Succesvol ingelogd! U wordt doorgestuurd...');
         
         // Wait a moment for the user to see the success message
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Redirect to appropriate homepage
         redirectToHomepage(data.userType);
@@ -279,11 +271,3 @@ function showSuccessMessage(message) {
         loginForm.parentNode.insertBefore(successDiv, loginForm);
     }
 }
-
-// ===== DEBUGGING INFO =====
-console.log('🔧 Login System Debug Info:');
-console.log('   📡 API Base URL:', API_BASE_URL);
-console.log('   🔗 Login Endpoint:', LOGIN_ENDPOINT);
-console.log('   🌐 Current URL:', window.location.href);
-console.log('   📍 Current Port:', window.location.port);
-console.log('✅ Fixed login script loaded with correct configuration');
