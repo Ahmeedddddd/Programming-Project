@@ -249,31 +249,3 @@
 }
 
 /* Extra visuele verbeteringen */
-.plattegrond::before {
-    content: "🌅";
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 1rem;
-}
-
-.sideBar::before {
-    content: "⏰";
-    font-size: 1.5rem;
-    display: block;
-    text-align: center;
-    margin-bottom: 1rem;
-}
-
-/* Time indicator voor voormiddag */
-.sideBar::after {
-    content: "9:00 - 12:00";
-    display: block;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #881538;
-    font-weight: 600;
-    margin-top: 1rem;
-    padding: 0.5rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}

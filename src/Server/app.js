@@ -391,6 +391,14 @@ app.get("/register", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/register.html"));
 });
 
+app.get("/programmaVoormidag", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-voormidag.html"));
+});
+
+app.get("/programmaNamidag", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-namidag.html"));
+});
+
 // INFO pages
 app.get("/info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
@@ -422,10 +430,6 @@ app.get("/mijn-project", requireRole(["student"]), (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/mijn-project.html"));
 });
 
-app.get("/programma-student", requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/STUDENTEN/programmaStudent.html"));
-});
-
 // ===== BEDRIJF ACCOUNT ROUTES =====
 app.get("/account-bedrijf", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/account-bedrijf.html"));
@@ -439,9 +443,6 @@ app.get("/tarieven", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/tarieven.html"));
 });
 
-app.get("/programma-bedrijven", requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/BEDRIJVEN/programmaBedrijven.html"));
-});
 
 // ===== ORGANISATOR ACCOUNT ROUTES =====
 app.get("/account-organisator", requireRole(["organisator"]), (req, res) => {
