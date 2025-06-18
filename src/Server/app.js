@@ -72,19 +72,9 @@ app.use("/src/CSS", express.static(path.join(__dirname, "../CSS")));
 app.use("/src/JS", express.static(path.join(__dirname, "../JS")));
 app.use("/images", express.static(path.join(__dirname, "../../public/images")));
 
-// ===== DYNAMIC SCRIPTS =====
-app.get("/js/role-manager.js", async (req, res) => {
-  try {
-    res.setHeader("Content-Type", "application/javascript");
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    const script = await generateClientSideScript();
-    res.send(script);
-  } catch (error) {
-    console.error("❌ Error generating role manager script:", error);
-    res.status(500).send("console.error('Failed to load role manager');");
-  }
-});
+// ===== FIXED DYNAMIC SCRIPTS - NO MORE DUPLICATE CLASSES =====
 
+// Navigation Manager - Full script with EnhancedNavigationManager
 app.get("/js/navigation-manager.js", async (req, res) => {
   try {
     res.setHeader("Content-Type", "application/javascript");
@@ -94,6 +84,68 @@ app.get("/js/navigation-manager.js", async (req, res) => {
   } catch (error) {
     console.error("❌ Error generating navigation manager script:", error);
     res.status(500).send("console.error('Failed to load navigation manager');");
+  }
+});
+
+// Role Manager - Just utilities, NO class declaration
+app.get("/js/role-manager.js", async (req, res) => {
+  try {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    
+    // Generate a simple utility script that doesn't redeclare classes
+    const utilityScript = `
+/**
+ * 🔧 ROLE MANAGER UTILITIES - NO CLASS REDECLARATION
+ * Simple utilities without class redeclaration
+ * Generated at: ${new Date().toISOString()}
+ */
+
+console.log('🔧 Role Manager utilities loaded');
+
+// Simple utility functions that don't conflict with navigation manager
+window.roleUtilities = {
+  checkAuthStatus: () => window.navigationManager ? window.navigationManager.isLoggedIn() : false,
+  getUserType: () => window.navigationManager ? window.navigationManager.getUserType() : 'guest',
+  getCurrentUser: () => window.navigationManager ? window.navigationManager.getUser() : null,
+  refreshUI: () => window.navigationManager ? window.navigationManager.refresh() : null
+};
+
+// Backward compatibility
+window.checkAuthStatus = window.roleUtilities.checkAuthStatus;
+window.getUserType = window.roleUtilities.getUserType;
+window.refreshRoleUI = window.roleUtilities.refreshUI;
+
+// Toggle menu function
+function toggleMenu() {
+  const sideMenu = document.getElementById('sideMenu');
+  const overlay = document.querySelector('.menu-overlay');
+  
+  if (sideMenu && overlay) {
+    const isOpen = sideMenu.classList.contains('active');
+    
+    if (isOpen) {
+      sideMenu.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    } else {
+      sideMenu.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+}
+
+// Make toggle function global
+window.toggleMenu = toggleMenu;
+
+console.log('✅ Role utilities ready - no conflicts');
+`;
+    
+    res.send(utilityScript);
+  } catch (error) {
+    console.error("❌ Error generating role manager utilities:", error);
+    res.status(500).send("console.error('Failed to load role utilities');");
   }
 });
 
@@ -300,11 +352,15 @@ app.get("/programma", (req, res) => {
 });
 
 app.get("/alle-bedrijven", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/alle-bedrijven.html"));
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html"));
 });
 
 app.get("/alle-projecten", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/alle-projecten.html"));
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html"));
+});
+
+app.get("/alle-studenten", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html"));
 });
 
 app.get("/zoekbalk-projecten", (req, res) => {
