@@ -560,48 +560,46 @@ class StudentGegevens {
     // ✏️ Edit Mode Management
     // Aangepaste enableEditMode
     enableEditMode() {
-    console.log("✏️ Enabling general edit mode");
-    this.editMode = true;
-    this.projectEditMode = false;
+        console.log("✏️ Enabling general edit mode");
+        this.editMode = true;
+        this.projectEditMode = false;
 
-    document.getElementById("viewControls").style.display = "none";
-    document.getElementById("editControls").style.display = "flex";
-    document.getElementById("projectEditControls").style.display = "none";
+        document.getElementById("viewControls").style.display = "none";
+        document.getElementById("editControls").style.display = "flex";
+        document.getElementById("projectEditControls").style.display = "none";
 
-    // Itereren over ALLE editable fields
-    document.querySelectorAll('.editable-field').forEach(fieldDiv => {
-        const fieldId = fieldDiv.getAttribute('data-field');
-        const displaySpan = fieldDiv.querySelector('.display-mode');
-        const editInput = fieldDiv.querySelector('.edit-mode');
+        // Itereren over ALLE editable fields
+        document.querySelectorAll('.editable-field').forEach(fieldDiv => {
+            const fieldId = fieldDiv.getAttribute('data-field');
+            const displaySpan = fieldDiv.querySelector('.display-mode');
+            const editInput = fieldDiv.querySelector('.edit-mode');
 
-        // Bepaal of dit een algemeen, bewerkbaar veld is
-        const isGeneralEditableField = ['email', 'telefoon', 'opleiding', 'opleidingsrichting', 'straatnaam', 'huisnummer', 'bus', 'postcode', 'gemeente'].includes(fieldId);
+            // Bepaal of dit een algemeen, bewerkbaar veld is
+            const isGeneralEditableField = ['email', 'telefoon', 'opleiding', 'opleidingsrichting', 'straatnaam', 'huisnummer', 'bus', 'postcode', 'gemeente'].includes(fieldId);
 
-        if (isGeneralEditableField) {
-            // Toon de input, verberg de span
-            if (displaySpan) displaySpan.style.display = 'none';
-            if (editInput) {
-                editInput.value = this.getFieldValue(fieldId); // Vult de input
-                editInput.style.display = (editInput.tagName === 'TEXTAREA' ? 'block' : 'inline-block');
-                // Stijlconsistentie
-                editInput.style.width = '250px';
-                editInput.style.marginLeft = '0.5rem';
-                editInput.style.padding = '0.5rem';
-                editInput.style.border = '2px solid #881538';
-                editInput.style.borderRadius = '8px';
+            if (isGeneralEditableField) {
+                // Toon de input, verberg de span
+                if (displaySpan) displaySpan.style.display = 'none';
+                if (editInput) {
+                    editInput.value = this.getFieldValue(fieldId); // Vult de input
+                    editInput.style.display = (editInput.tagName === 'TEXTAREA' ? 'block' : 'inline-block');
+                    // Stijlconsistentie
+                    editInput.style.width = '250px';
+                    editInput.style.marginLeft = '0.5rem';
+                    editInput.style.padding = '0.5rem';
+                    editInput.style.border = '2px solid #881538';
+                    editInput.style.borderRadius = '8px';
+                }
+            } else {
+                // Dit veld is niet algemeen bewerkbaar, zorg dat het in display mode blijft
+                if (displaySpan) displaySpan.style.display = 'inline-block'; // of 'block' voor tekstarea's
+                if (editInput) editInput.style.display = 'none';
             }
-        } else {
-            // Dit veld is niet algemeen bewerkbaar, zorg dat het in display mode blijft
-            if (displaySpan) displaySpan.style.display = 'inline-block'; // of 'block' voor tekstarea's
-            if (editInput) editInput.style.display = 'none';
-        }
-    });
-        // Zorg ervoor dat de display-mode voor projectvelden zichtbaar blijft
-        document.querySelectorAll('[data-field^="project-"] .display-mode, [data-field="tafel-nummer"] .display-mode, [data-field="over-mezelf"] .display-mode').forEach(el => el.style.display = 'inline-block');
+        });
 
-         // Specifieke uitzondering: studentnummer en academiejjaar zijn niet-bewerkbaar en hebben geen edit-mode
-        document.querySelector('[data-field="studentnummer"] .field-value').style.display = 'inline-block';
-        document.querySelector('[data-field="academiejaar"] .field-value').style.display = 'inline-block';
+        // Specifieke niet-bewerkbare velden die sowieso altijd in display mode zijn:
+        // Deze hebben geen editable-field class en geen edit-mode input, dus ze worden niet geraakt door bovenstaande loop
+        // studentnummer, academiejaar, voornaam, achternaam, leerjaar, tafel-nummer
     }
 
 
@@ -660,21 +658,21 @@ class StudentGegevens {
     }
 
     getFieldValue(fieldId) {
-    const mapping = {
-        email: "email",
-        telefoon: "gsm_nummer",
-        opleiding: "opleiding",
-        opleidingsrichting: "opleidingsrichting",
-        straatnaam: "straatnaam",
-        huisnummer: "huisnummer",
-        bus: "bus",
-        postcode: "postcode",
-        gemeente: "gemeente",
-    };
+        const mapping = {
+            email: "email",
+            telefoon: "gsm_nummer",
+            opleiding: "opleiding",
+            opleidingsrichting: "opleidingsrichting",
+            straatnaam: "straatnaam",
+            huisnummer: "huisnummer",
+            bus: "bus",
+            postcode: "postcode",
+            gemeente: "gemeente",
+        };
 
-    const dataField = mapping[fieldId];
-    return dataField ? this.studentData[dataField] || "" : "";
-}
+        const dataField = mapping[fieldId];
+        return dataField ? this.studentData[dataField] || "" : "";
+    }
 
     // 📝 Form Handling (Aangepast)
     setupEventListeners() {
