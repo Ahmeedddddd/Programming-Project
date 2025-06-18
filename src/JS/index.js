@@ -152,6 +152,17 @@ class UniversalDataFetcher {
         console.log('📡 Endpoints:', this.endpoints);
     }
 
+    getFetchUrl(endpointKey) {
+        // endpointKey: 'bedrijven', 'studenten', 'projecten'
+        const base = this.endpoints[endpointKey];
+        if (this.homepageType === 'student' || this.homepageType === 'bedrijf' || this.homepageType === 'guest') {
+            if (endpointKey === 'bedrijven') return `${base}?limit=4`;
+            if (endpointKey === 'studenten') return `${base}?limit=4`;
+            if (endpointKey === 'projecten') return `${base}?limit=4`;
+        }
+        return base;
+    }
+
     async fetchAPI(endpoint, retries = 2) {
         console.log(`📡 Fetching: ${endpoint} (${retries} retries left)`);
         
@@ -210,9 +221,9 @@ class UniversalDataFetcher {
         try {
             // Fetch data in parallel with error handling for each
             const [bedrijven, studenten, projecten] = await Promise.allSettled([
-                this.fetchAPI(this.endpoints.bedrijven),
-                this.fetchAPI(this.endpoints.studenten),
-                this.fetchAPI(this.endpoints.projecten)
+                this.fetchAPI(this.getFetchUrl('bedrijven')),
+                this.fetchAPI(this.getFetchUrl('studenten')),
+                this.fetchAPI(this.getFetchUrl('projecten'))
             ]);
 
             // Process results
@@ -575,7 +586,7 @@ class CardRenderer {
             
             // FIXED: Use correct URL paths that exist
             return `
-                <a href="/alle-bedrijven?id=${id}" class="preview-card company-card" data-company-id="${id}">
+                <a href="/resultaat-bedrijf?id=${id}" class="preview-card company-card" data-company-id="${id}">
                     <div class="card-header">
                         <h3 class="card-title">${name}</h3>
                         ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
@@ -618,7 +629,7 @@ class CardRenderer {
             
             // FIXED: Use correct URL paths that exist
             return `
-                <a href="/alle-studenten?id=${id}" class="preview-card student-card" data-student-id="${id}">
+                <a href="/resultaat-student?id=${id}" class="preview-card student-card" data-student-id="${id}">
                     <div class="card-header">
                         <h3 class="card-title">${name}</h3>
                         ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
@@ -675,7 +686,7 @@ class CardRenderer {
             
             // FIXED: Use correct URL paths that exist
             return `
-                <a href="/alle-projecten?id=${id}" class="project-card" data-project-id="${id}">
+                <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
                     <div class="card-header">
                         <h3 class="project-title">${title}</h3>
                         ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
