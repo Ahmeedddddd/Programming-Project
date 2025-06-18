@@ -10,22 +10,20 @@
 <body>
     <!-- Navigatie -->
     <div class="container">
+          <!-- Dynamic Navigation -->
         <div class="nav">
             <div class="logo">
                 <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
             </div>
             <div class="navBar">
-                <a href="/index.html" class="navItem active">Home</a>
-                <a href="/programma" class="navItem">Programma</a>
-                <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
-                <a href="/info" class="navItem">Info</a>
+                <!-- Navigation items will be dynamically populated -->
             </div>
             <div class="pfpContainer">
                 <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
             </div>
         </div>
 
-        <!-- Verborgen sidebar -->
+        <!-- Dynamic Sidebar -->
         <div class="sideMenu" id="sideMenu">
             <!-- Geanimeerde achtergrond laag -->
             <div class="menu-bg-animation"></div>
@@ -36,27 +34,22 @@
             <div class="sideMenu-header">
                 <div>
                     <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-                    <p class="sideMenu-subtitle">Menu</p>
+                    <p class="sideMenu-subtitle">Organisator Menu</p>
                 </div>
                 <button class="sideMenu-closeBtn" onclick="toggleMenu()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <!-- Menu content -->
+            <!-- Menu content - dynamically populated -->
             <div class="sideMenu-content">
-                <a href="/login">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
-                </a>
-                <a href="/contacteer">
-                    <i class="fas fa-envelope"></i>
-                    Contact us
-                </a>
-                
-                <hr class="sideMenu-divider">
+                <!-- Dynamic navigation items will be inserted here -->
             </div>
         </div>
+            
+            
+            
+        
 
         <div class="container">
             <div class="header">
