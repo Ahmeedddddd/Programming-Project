@@ -24,21 +24,23 @@ const guestHomepagePath = path.join(__dirname, "../../../public/index.html");
 
 // ===== ROUTE IMPORTS =====
 let registratieRoutes,
-  authRoutes,
-  bedrijfRoutes,
-  reservatiesRoutes,
-  studentRoutes,
-  organisatorRoutes,
-  projectRoutes;
+    authRoutes,
+    bedrijfRoutes,
+    reservatiesRoutes,
+    studentRoutes,
+    organisatorRoutes,
+    projectRoutes,
+    tafelRoutes;
 
 try {
-  registratieRoutes = require("./ROUTES/registratie");
-  authRoutes = require("./ROUTES/auth");
-  bedrijfRoutes = require("./ROUTES/bedrijf");
-  reservatiesRoutes = require("./ROUTES/reservaties");
-  studentRoutes = require("./ROUTES/student");
-  organisatorRoutes = require("./ROUTES/organisator");
-  projectRoutes = require("./ROUTES/project");
+  registratieRoutes    = require("./ROUTES/registratie");
+  authRoutes           = require("./ROUTES/auth");
+  bedrijfRoutes        = require("./ROUTES/bedrijf");
+  reservatiesRoutes    = require("./ROUTES/reservaties");
+  studentRoutes        = require("./ROUTES/student");
+  organisatorRoutes    = require("./ROUTES/organisator");
+  projectRoutes        = require("./ROUTES/project");
+  tafelRoutes          = require("./ROUTES/tafel");
   console.log("✅ All route modules loaded successfully");
 } catch (error) {
   console.error("❌ Error loading route modules:", error.message);
@@ -204,6 +206,8 @@ try {
   console.log("✅ Organisator routes mounted");
   app.use("/api/projecten", projectRoutes);
   console.log("✅ Project routes mounted");
+  app.use("/api/tafels", tafelRoutes);
+  console.log("✅ Tafel routes mounted");
 } catch (error) {
   console.error("❌ Failed to mount one or more API routes:", error);
 }
