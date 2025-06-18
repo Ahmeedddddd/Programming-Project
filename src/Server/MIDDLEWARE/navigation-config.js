@@ -63,13 +63,12 @@ const NAVIGATION_CONFIG = {
     ]
   },
 
+  // ===== FIXED ORGANISATOR CONFIG - REMOVED UNWANTED ITEMS =====
   organisator: {
     navbar: [
       { href: "/organisator-homepage", text: "Dashboard" },
       { href: "/admin-panel", text: "Admin Panel" },
       { href: "/overzicht-organisator", text: "Overzicht" },
-      { href: "/alle-studenten", text: "Studenten" },
-      { href: "/alle-bedrijven", text: "Bedrijven" },
       { href: "/account-organisator", text: "Account", highlight: true }
     ],
     sidebar: [
@@ -78,8 +77,6 @@ const NAVIGATION_CONFIG = {
       { divider: true },
       { href: "/admin-panel", text: "Admin Panel", icon: "fas fa-cogs" },
       { href: "/overzicht-organisator", text: "Overzicht", icon: "fas fa-chart-bar" },
-      { href: "/alle-studenten", text: "Studenten Beheer", icon: "fas fa-users" },
-      { href: "/alle-bedrijven", text: "Bedrijven Beheer", icon: "fas fa-building" },
       { divider: true },
       { action: "logout", text: "Uitloggen", icon: "fas fa-sign-out-alt", danger: true }
     ]

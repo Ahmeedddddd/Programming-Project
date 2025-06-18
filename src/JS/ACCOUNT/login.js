@@ -1,7 +1,7 @@
-// src/JS/ACCOUNT/login.js - FIXED VERSION WITH DIRECT HOMEPAGE REDIRECT
+// src/JS/ACCOUNT/login.js - FIXED VERSION WITH CORRECT PORT
 
-// Configuration
-const API_BASE_URL = 'http://localhost:3301';
+// ===== FIXED CONFIGURATION - CORRECT PORT =====
+const API_BASE_URL = 'http://localhost:8383';  // FIXED: Changed from 3301 to 8383
 const LOGIN_ENDPOINT = API_BASE_URL + '/api/auth/login';
 
 // DOM Elements
@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeLoginSystem() {
+    console.log('🔐 Initializing fixed login system...');
+    console.log('📡 API Base URL:', API_BASE_URL);
+    console.log('🔗 Login Endpoint:', LOGIN_ENDPOINT);
+    
     // Get DOM elements
     loginForm = document.getElementById('loginForm');
     emailInput = document.getElementById('loginEmail');
@@ -38,10 +42,21 @@ function initializeLoginSystem() {
         passwordInput.addEventListener('input', clearErrorMessages);
     }
     
-    console.log('🔐 Fixed login system initialized');
+    console.log('✅ Fixed login system initialized with correct port');
 }
 
-// 🎯 MAIN LOGIN HANDLER - Fixed for direct homepage redirect
+// Check if user is already logged in
+function checkExistingLogin() {
+    const authToken = localStorage.getItem('authToken');
+    const userType = localStorage.getItem('userType');
+    
+    if (authToken && userType) {
+        console.log('🔄 User already logged in, redirecting...');
+        redirectToHomepage(userType);
+    }
+}
+
+// 🎯 MAIN LOGIN HANDLER - Fixed with correct endpoint
 async function handleLogin(event) {
     event.preventDefault();
     
@@ -65,22 +80,27 @@ async function handleLogin(event) {
         }
         
         console.log('🔄 Attempting login for:', email);
+        console.log('📡 Using endpoint:', LOGIN_ENDPOINT);
         
-        // 📨 LOGIN REQUEST
+        // 📨 LOGIN REQUEST - FIXED ENDPOINT
         const response = await fetch(LOGIN_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email: email, password: password })
+            body: JSON.stringify({ 
+                email: email, 
+                password: password 
+            })
         });
         
-        console.log('📡 Response status: ' + response.status);
+        console.log('📡 Response status:', response.status);
         
         const data = await response.json();
+        console.log('📦 Response data:', data);
         
         if (!response.ok) {
-            throw new Error(data.message || 'Login failed: ' + response.status);
+            throw new Error(data.message || `Login failed: ${response.status}`);
         }
         
         // ✅ SUCCESS
@@ -88,143 +108,85 @@ async function handleLogin(event) {
         
     } catch (error) {
         console.error('❌ Login error:', error);
-        handleLoginError(error);
+        
+        // Show user-friendly error messages
+        if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            showErrorMessage('Verbindingsfout. Controleer of de server draait.');
+        } else if (error.message.includes('401') || error.message.includes('credentials')) {
+            showErrorMessage('Onjuiste email of wachtwoord');
+        } else if (error.message.includes('429')) {
+            showErrorMessage('Te veel loginpogingen. Probeer later opnieuw.');
+        } else {
+            showErrorMessage(error.message || 'Er is iets misgegaan bij het inloggen');
+        }
     } finally {
         showLoading(false);
     }
 }
 
-// 🔧 FIXED: Handle successful login with direct homepage redirect
+// Handle successful login
 async function handleLoginSuccess(data) {
     console.log('✅ Login successful:', data);
     
-    // 💾 Store authentication data
-    if (data.token && data.user) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userType', data.user.userType);
-        localStorage.setItem('userEmail', data.user.email);
-        localStorage.setItem('userName', data.user.naam || '');
-        localStorage.setItem('userId', data.user.userId || '');
-        
-        // 🆕 NIEUWE: Set cookies for server-side access
-        document.cookie = `authToken=${data.token}; path=/; SameSite=Lax; max-age=86400`;
-        document.cookie = `userType=${data.user.userType}; path=/; SameSite=Lax; max-age=86400`;
-        
-        console.log('🔑 Auth data stored:', {
-            userType: data.user.userType,
-            email: data.user.email,
-            naam: data.user.naam,
-            inLocalStorage: true,
-            inCookies: true
-        });
-    }
-    
-    // Show success message
-    showSuccessMessage('Login succesvol! Je wordt doorgestuurd naar je homepage...');
-    
-    // 🆕 FIXED: Direct redirect to specific homepage based on user type
-    const targetHomepage = getHomepageForUserType(data.user.userType);
-    
-    setTimeout(function() {
-        console.log(`🏠 Redirecting ${data.user.userType} to: ${targetHomepage}`);
-        window.location.href = targetHomepage;
-    }, 1000);
-}
-
-// 🆕 NEW: Get homepage URL for user type
-function getHomepageForUserType(userType) {
-    switch(userType) {
-        case 'student':
-            return '/student-homepage';
-        case 'bedrijf':
-            return '/bedrijf-homepage';
-        case 'organisator':
-            return '/organisator-homepage';
-        default:
-            console.warn('❓ Unknown user type:', userType);
-            return '/';
-    }
-}
-
-// Handle login errors
-function handleLoginError(error) {
-    let errorMessage = 'Er ging iets mis bij het inloggen. Probeer het opnieuw.';
-    
-    if (error.message.includes('401') || error.message.includes('credentials') || error.message.includes('wachtwoord')) {
-        errorMessage = 'Onjuist email adres of wachtwoord.';
-    } else if (error.message.includes('404') || error.message.includes('niet gevonden')) {
-        errorMessage = 'Geen account gevonden met dit email adres.';
-    } else if (error.message.includes('500')) {
-        errorMessage = 'Server probleem. Contacteer de administrator.';
-    } else if (error.message.includes('network') || error.message.includes('fetch')) {
-        errorMessage = 'Verbindingsprobleem. Controleer je internetverbinding.';
-    } else if (error.message) {
-        errorMessage = error.message;
-    }
-    
-    showErrorMessage(errorMessage);
-}
-
-// 🔧 FIXED: Check existing login with direct redirect
-function checkExistingLogin() {
-    const token = localStorage.getItem('authToken');
-    const userType = localStorage.getItem('userType');
-    
-    if (token && userType) {
-        console.log('🔍 Existing login found, verifying...');
-        verifyTokenAndRedirect(token, userType);
-    }
-}
-
-// 🔧 FIXED: Verify existing token with direct redirect
-async function verifyTokenAndRedirect(token, userType) {
     try {
-        const response = await fetch(API_BASE_URL + '/api/auth/me', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const userData = await response.json();
-            if (userData.success) {
-                console.log('✅ Valid token found, redirecting to specific homepage...');
-                showInfoMessage('Je bent al ingelogd. Je wordt doorgestuurd naar je homepage...');
-                
-                const targetHomepage = getHomepageForUserType(userType);
-                setTimeout(function() {
-                    console.log(`🏠 Redirecting existing user (${userType}) to: ${targetHomepage}`);
-                    window.location.href = targetHomepage;
-                }, 1000);
-                return;
-            }
+        // Store authentication data
+        if (data.token) {
+            localStorage.setItem('authToken', data.token);
         }
         
-        // Token is invalid, clear it
-        console.log('⚠️ Token invalid, clearing...');
-        clearAuthData();
+        if (data.userType) {
+            localStorage.setItem('userType', data.userType);
+        }
+        
+        if (data.user && data.user.email) {
+            localStorage.setItem('userEmail', data.user.email);
+        }
+        
+        // Store additional user data
+        if (data.user) {
+            localStorage.setItem('userData', JSON.stringify(data.user));
+        }
+        
+        showSuccessMessage('Succesvol ingelogd! U wordt doorgestuurd...');
+        
+        // Wait a moment for the user to see the success message
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Redirect to appropriate homepage
+        redirectToHomepage(data.userType);
         
     } catch (error) {
-        console.log('⚠️ Token verification failed, continuing with login');
-        clearAuthData();
+        console.error('❌ Error handling login success:', error);
+        showErrorMessage('Login succesvol, maar er is een fout opgetreden bij het doorsturen');
+        
+        // Fallback redirect after error
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 2000);
     }
 }
 
-// Clear authentication data
-function clearAuthData() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
+// Redirect to appropriate homepage based on user type
+function redirectToHomepage(userType) {
+    let targetUrl;
     
-    // 🆕 NEW: Clear cookies
-    document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = 'userType=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    switch(userType) {
+        case 'student':
+            targetUrl = '/student-homepage';
+            break;
+        case 'bedrijf':
+            targetUrl = '/bedrijf-homepage';
+            break;
+        case 'organisator':
+            targetUrl = '/organisator-homepage';
+            break;
+        default:
+            console.warn('❓ Unknown user type:', userType);
+            targetUrl = '/';
+    }
     
-    console.log('🧹 Auth data cleared (localStorage + cookies)');
+    console.log(`🚀 Redirecting to: ${targetUrl}`);
+    window.location.href = targetUrl;
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -239,103 +201,89 @@ function showLoading(show) {
         loadingOverlay.style.display = show ? 'flex' : 'none';
     }
     
+    // Disable form during loading
     if (loginForm) {
         const inputs = loginForm.querySelectorAll('input, button');
-        inputs.forEach(function(input) {
+        inputs.forEach(input => {
             input.disabled = show;
         });
     }
 }
 
-function showSuccessMessage(message) {
-    showMessage(message, 'success');
+function clearErrorMessages() {
+    const errorElements = document.querySelectorAll('.error-message, .success-message');
+    errorElements.forEach(el => el.remove());
 }
 
 function showErrorMessage(message) {
-    showMessage(message, 'error');
-}
-
-function showInfoMessage(message) {
-    showMessage(message, 'info');
-}
-
-function showMessage(message, type) {
-    if (!type) type = 'info';
+    clearErrorMessages();
     
-    // Remove existing messages
-    const existingMessages = document.querySelectorAll('.login-message');
-    existingMessages.forEach(function(msg) {
-        msg.remove();
-    });
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.cssText = `
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border: 1px solid #f87171;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    `;
     
-    // Create message element
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'login-message ' + type;
-    messageDiv.innerHTML = '<span>' + message + '</span><button onclick="this.parentElement.remove()" class="close-btn">&times;</button>';
+    errorDiv.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i>
+        <span>${message}</span>
+    `;
     
-    // Add styling
-    let backgroundColor, textColor, borderColor;
-    if (type === 'success') {
-        backgroundColor = '#d4edda';
-        textColor = '#155724';
-        borderColor = '#c3e6cb';
-    } else if (type === 'error') {
-        backgroundColor = '#f8d7da';
-        textColor = '#721c24';
-        borderColor = '#f1aeb5';
-    } else {
-        backgroundColor = '#cce7ff';
-        textColor = '#004085';
-        borderColor = '#99d1ff';
-    }
-    
-    messageDiv.style.cssText = 'padding: 12px 16px; margin: 10px 0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: ' + backgroundColor + '; color: ' + textColor + '; border: 1px solid ' + borderColor + ';';
-    
-    messageDiv.querySelector('.close-btn').style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; padding: 0; margin-left: 10px; color: inherit;';
-    
-    // Insert before form
-    if (loginForm) {
-        loginForm.parentNode.insertBefore(messageDiv, loginForm);
+    // Insert before the form
+    if (loginForm && loginForm.parentNode) {
+        loginForm.parentNode.insertBefore(errorDiv, loginForm);
     }
     
     // Auto-remove after 5 seconds
-    setTimeout(function() {
-        if (messageDiv.parentNode) {
-            messageDiv.remove();
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.remove();
         }
     }, 5000);
 }
 
-function clearErrorMessages() {
-    const messages = document.querySelectorAll('.login-message');
-    messages.forEach(function(msg) {
-        msg.remove();
-    });
+function showSuccessMessage(message) {
+    clearErrorMessages();
+    
+    const successDiv = document.createElement('div');
+    successDiv.className = 'success-message';
+    successDiv.style.cssText = `
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border: 1px solid #34d399;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    `;
+    
+    successDiv.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>${message}</span>
+    `;
+    
+    // Insert before the form
+    if (loginForm && loginForm.parentNode) {
+        loginForm.parentNode.insertBefore(successDiv, loginForm);
+    }
 }
 
-// 🔧 FIXED: Enhanced logout function
-window.logout = async function() {
-    try {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            await fetch(API_BASE_URL + '/api/auth/logout', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                }
-            });
-        }
-    } catch (error) {
-        console.error('❌ Logout error:', error);
-    } finally {
-        // Clear all stored data
-        clearAuthData();
-        sessionStorage.clear();
-        
-        console.log('🚪 User logged out successfully');
-        window.location.href = '/login';
-    }
-};
-
-console.log('✅ FIXED login system loaded - Direct homepage redirect enabled');
+// ===== DEBUGGING INFO =====
+console.log('🔧 Login System Debug Info:');
+console.log('   📡 API Base URL:', API_BASE_URL);
+console.log('   🔗 Login Endpoint:', LOGIN_ENDPOINT);
+console.log('   🌐 Current URL:', window.location.href);
+console.log('   📍 Current Port:', window.location.port);
+console.log('✅ Fixed login script loaded with correct configuration');
