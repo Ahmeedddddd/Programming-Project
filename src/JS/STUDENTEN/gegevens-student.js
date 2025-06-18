@@ -663,13 +663,10 @@ class StudentGegevens {
 
     getFieldValue(fieldId) {
     const mapping = {
-        voornaam: "voornaam",
-        achternaam: "achternaam",
         email: "email",
         telefoon: "gsm_nummer",
         opleiding: "opleiding",
         opleidingsrichting: "opleidingsrichting",
-        leerjaar: "leerjaar",
         straatnaam: "straatnaam",
         huisnummer: "huisnummer",
         bus: "bus",
