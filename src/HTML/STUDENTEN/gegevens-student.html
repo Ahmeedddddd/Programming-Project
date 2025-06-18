@@ -72,10 +72,11 @@
                     </div>
 
                     <div class="ehbGrid tweekolomnig mb-2">
-                        <div class="ehbVeld naam editable-field" data-field="voornaam">
-                            <strong>Voornaam:</strong> <span class="field-value">Laden...</span>
+                        <div class="ehbVeld mb-2" data-field="voornaam">
+                            <strong>Voornaam:</strong>
+                            <span class="field-value">Laden...</span>
                         </div>
-                        <div class="ehbVeld naam editable-field" data-field="achternaam">
+                        <div class="ehbVeld mb-2" data-field="achternaam">
                             <strong>Achternaam:</strong> <span class="field-value">Laden...</span>
                         </div>
                     </div>
@@ -86,10 +87,12 @@
 
                     <div class="ehbGrid tweekolomnig mb-2">
                         <div class="ehbVeld email editable-field" data-field="email">
-                            <strong>Email:</strong> <span class="field-value">Laden...</span>
+                            <strong>Email:</strong> <span class="field-value display-mode">Laden...</span> <input
+                                type="text" id="edit-email" class="edit-input edit-mode" style="display: none;">
                         </div>
                         <div class="ehbVeld telefoon editable-field" data-field="telefoon">
-                            <strong>Telefoon:</strong> <span class="field-value">Laden...</span>
+                            <strong>Telefoon:</strong> <span class="field-value display-mode">Laden...</span> <input
+                                type="text" id="edit-telefoon" class="edit-input edit-mode" style="display: none;">
                         </div>
                     </div>
 
@@ -99,10 +102,13 @@
 
                     <div class="ehbGrid tweekolomnig mb-2">
                         <div class="ehbVeld editable-field" data-field="opleiding">
-                            <strong>Opleiding:</strong> <span class="field-value">Laden...</span>
+                            <strong>Opleiding:</strong> <span class="field-value display-mode">Laden...</span> <input
+                                type="text" id="edit-opleiding" class="edit-input edit-mode" style="display: none;">
                         </div>
                         <div class="ehbVeld editable-field" data-field="opleidingsrichting">
-                            <strong>Opleidingsrichting:</strong> <span class="field-value">Laden...</span>
+                            <strong>Opleidingsrichting:</strong> <span class="field-value display-mode">Laden...</span>
+                            <input type="text" id="edit-opleidingsrichting" class="edit-input edit-mode"
+                                style="display: none;">
                         </div>
                     </div>
 
@@ -115,23 +121,22 @@
                     </div>
 
                     <div class="ehbVeld mb-2 editable-field" data-field="project-titel">
-                        <strong>Project Titel:</strong> <span class="field-value">Laden...</span>
+                        <strong>Project Titel:</strong> <span class="field-value display-mode">Laden...</span> <input
+                            type="text" id="edit-project-titel" class="edit-input edit-mode" style="display: none;">
                     </div>
 
                     <div class="ehbVeld mb-2 editable-field" data-field="project-beschrijving"
                         style="min-height: 100px; padding: 1.5rem;">
                         <strong>Project Beschrijving:</strong><br><br>
-                        <span class="field-value">Laden...</span>
+                        <span class="field-value display-mode">Laden...</span> <textarea id="edit-project-beschrijving"
+                            class="project-edit-input edit-mode" rows="6" style="display: none;"></textarea>
                     </div>
 
                     <div class="ehbVeld mb-2 editable-field" data-field="over-mezelf"
                         style="min-height: 100px; padding: 1.5rem;">
                         <strong>Over Mezelf:</strong><br><br>
-                        <span class="field-value">Laden...</span>
-                    </div>
-
-                    <div class="ehbVeld mb-2 editable-field" data-field="tafel-nummer">
-                        <strong>Tafel Nummer:</strong> <span class="field-value">Laden...</span>
+                        <span class="field-value display-mode">Laden...</span> <input type="text" id="edit-over-mezelf"
+                            class="edit-input edit-mode" style="display: none;">
                     </div>
 
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
@@ -140,14 +145,17 @@
 
                     <div class="ehbGrid tweekolomnig mb-2">
                         <div class="ehbVeld editable-field" data-field="github-url" id="github-link">
-                            <strong>GitHub:</strong> <span class="field-value">Laden...</span>
+                            <strong>GitHub:</strong> <span class="field-value display-mode">Laden...</span> <input
+                                type="text" id="edit-github-url" class="edit-input edit-mode" style="display: none;">
                         </div>
                         <div class="ehbVeld editable-field" data-field="linkedin-url" id="linkedin-link">
-                            <strong>LinkedIn:</strong> <span class="field-value">Laden...</span>
+                            <strong>LinkedIn:</strong> <span class="field-value display-mode">Laden...</span> <input
+                                type="text" id="edit-linkedin-url" class="edit-input edit-mode" style="display: none;">
                         </div>
                     </div>
                     <div class="ehbVeld mb-2 editable-field" data-field="cv-url" id="cv-link">
-                        <strong>CV:</strong> <span class="field-value">Laden...</span>
+                        <strong>CV:</strong> <span class="field-value display-mode">Laden...</span> <input type="text"
+                            id="edit-cv-url" class="edit-input edit-mode" style="display: none;">
                     </div>
 
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
@@ -173,24 +181,29 @@
 
                     <div class="ehbGrid tweekolomnig mb-2">
                         <div class="ehbVeld editable-field" data-field="straatnaam">
-                            <strong>Straatnaam:</strong> <span class="field-value">Laden...</span>
+                            <strong>Straatnaam:</strong> <span class="field-value display-mode">Laden...</span> <input type="text" id="edit-straatnaam"
+                                class="edit-input edit-mode" style="display: none;">
                         </div>
                         <div class="ehbVeld editable-field" data-field="huisnummer">
-                            <strong>Huisnummer:</strong> <span class="field-value">Laden...</span>
+                            <strong>Huisnummer:</strong> <span class="field-value display-mode">Laden...</span> <input type="text" id="edit-huisnummer"
+                                class="edit-input edit-mode" style="display: none;">
                         </div>
                     </div>
 
                     <div class="ehbGrid tweekolomnig mb-2">
                         <div class="ehbVeld editable-field" data-field="bus">
-                            <strong>Bus:</strong> <span class="field-value">-</span>
+                            <strong>Bus:</strong> <span class="field-value display-mode">Laden...</span> <input type="text" id="edit-bus"
+                                class="edit-input edit-mode" style="display: none;">
                         </div>
                         <div class="ehbVeld editable-field" data-field="postcode">
-                            <strong>Postcode:</strong> <span class="field-value">Laden...</span>
+                            <strong>Postcode:</strong> <span class="field-value display-mode">Laden...</span> <input type="text" id="edit-postcode"
+                                class="edit-input edit-mode" style="display: none;">
                         </div>
                     </div>
 
                     <div class="ehbVeld mb-2 editable-field" data-field="gemeente">
-                        <strong>Gemeente:</strong> <span class="field-value">Laden...</span>
+                        <strong>Gemeente:</strong> <span class="field-value display-mode">Laden...</span> <input type="text" id="edit-gemeente"
+                                class="edit-input edit-mode" style="display: none;">
                     </div>
 
                     <div class="ehbSectieHeader" style="margin-bottom: 1.5rem; margin-top: 2rem;">
