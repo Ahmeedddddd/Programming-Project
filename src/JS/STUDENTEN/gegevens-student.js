@@ -560,44 +560,42 @@ class StudentGegevens {
     // ✏️ Edit Mode Management
     // Aangepaste enableEditMode
     enableEditMode() {
-        console.log("✏️ Enabling general edit mode");
-        this.editMode = true;
-        this.projectEditMode = false; // Zorg dat project bewerkingsmodus uit staat
+    console.log("✏️ Enabling general edit mode");
+    this.editMode = true;
+    this.projectEditMode = false;
 
-        document.getElementById("viewControls").style.display = "none";
-        document.getElementById("editControls").style.display = "flex";
-        document.getElementById("projectEditControls").style.display = "none";
+    document.getElementById("viewControls").style.display = "none";
+    document.getElementById("editControls").style.display = "flex";
+    document.getElementById("projectEditControls").style.display = "none";
 
-        // Verberg alle display-mode spans en toon alle edit-mode inputs
-        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.editable-field .edit-mode').forEach(el => {
-            const fieldId = el.id.replace('edit-', '');
-            // Filter om alleen algemene velden te bewerken in deze modus
-            if (!this.getProjectFieldMapping(fieldId)) { // Als het GEEN projectveld is
-                 const value = this.getFieldValue(fieldId);
-                 el.value = value;
-                 el.style.display = (el.tagName === 'TEXTAREA' ? 'block' : 'inline-block');
-                 // Stijl consistentie met je HTML
-                 if (el.tagName === 'INPUT') {
-                     el.style.width = '250px';
-                     el.style.marginLeft = '0.5rem';
-                     el.style.padding = '0.5rem';
-                     el.style.border = '2px solid #881538';
-                     el.style.borderRadius = '8px';
-                 } else if (el.tagName === 'TEXTAREA') {
-                     el.style.width = '100%';
-                     el.style.minHeight = '80px';
-                     el.style.padding = '0.75rem';
-                     el.style.border = '2px solid #881538';
-                     el.style.borderRadius = '8px';
-                     el.style.fontFamily = 'inherit';
-                     el.style.resize = 'vertical';
-                 }
-            } else {
-                // Als het wel een projectveld is, houd het dan verborgen (of in display mode)
-                el.style.display = 'none';
+    // Itereren over ALLE editable fields
+    document.querySelectorAll('.editable-field').forEach(fieldDiv => {
+        const fieldId = fieldDiv.getAttribute('data-field');
+        const displaySpan = fieldDiv.querySelector('.display-mode');
+        const editInput = fieldDiv.querySelector('.edit-mode');
+
+        // Bepaal of dit een algemeen, bewerkbaar veld is
+        const isGeneralEditableField = ['email', 'telefoon', 'opleiding', 'opleidingsrichting', 'straatnaam', 'huisnummer', 'bus', 'postcode', 'gemeente'].includes(fieldId);
+
+        if (isGeneralEditableField) {
+            // Toon de input, verberg de span
+            if (displaySpan) displaySpan.style.display = 'none';
+            if (editInput) {
+                editInput.value = this.getFieldValue(fieldId); // Vult de input
+                editInput.style.display = (editInput.tagName === 'TEXTAREA' ? 'block' : 'inline-block');
+                // Stijlconsistentie
+                editInput.style.width = '250px';
+                editInput.style.marginLeft = '0.5rem';
+                editInput.style.padding = '0.5rem';
+                editInput.style.border = '2px solid #881538';
+                editInput.style.borderRadius = '8px';
             }
-        });
+        } else {
+            // Dit veld is niet algemeen bewerkbaar, zorg dat het in display mode blijft
+            if (displaySpan) displaySpan.style.display = 'inline-block'; // of 'block' voor tekstarea's
+            if (editInput) editInput.style.display = 'none';
+        }
+    });
         // Zorg ervoor dat de display-mode voor projectvelden zichtbaar blijft
         document.querySelectorAll('[data-field^="project-"] .display-mode, [data-field="tafel-nummer"] .display-mode, [data-field="over-mezelf"] .display-mode').forEach(el => el.style.display = 'inline-block');
 
