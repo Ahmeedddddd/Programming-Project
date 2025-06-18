@@ -81,11 +81,13 @@
 
 <!-- Zoekbalk - Identiek -->
 <section class="searchSection">
-  <div class="searchBar">
-    <input placeholder="Zoek bedrijven, projecten..."></input>
-    <button class="searchBtn"><img src="" alt="Zoek" /></button>
-  </div>
-</section>
+    <div class="searchBar">
+      <input class="search-input" placeholder="Zoek bedrijven, projecten..." list="search-suggestions" />
+      <datalist id="search-suggestions"></datalist>
+      <button class="searchBtn"><img src="" alt="Zoek" /></button>
+    </div>
+  </section>
+  <div id="searchResults"></div>
 
 <!-- Student Quick Actions - Gebruikt bestaande styling -->
 <section class="content-sections">
@@ -497,5 +499,6 @@ async function loadRecommendedCompanies() {
 }
 </script>
 <script type="module" src="/src/JS/index.js"></script>
+<script type="module" src="/src/JS/STUDENTEN/zoekbalkStudentHomepage.js"></script>
 </body>
 </html>
