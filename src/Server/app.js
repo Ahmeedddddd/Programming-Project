@@ -412,7 +412,7 @@ app.get("/account-student", requireAuth, (req, res) => {
   );
 });
 
-app.get("/gegevens-student", requireAuth, (req, res) => {
+app.get("/gegevensStudent", requireAuth, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html")
   );
@@ -431,7 +431,7 @@ app.get("/account-bedrijf", requireAuth, (req, res) => {
   );
 });
 
-app.get("/gegevens-bedrijf", requireAuth, (req, res) => {
+app.get("/gegevensBedrijf", requireAuth, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html")
   );
@@ -448,7 +448,7 @@ app.get("/account-organisator", requireRole(["organisator"]), (req, res) => {
   );
 });
 
-app.get("/gegevens-organisator", requireRole(["organisator"]), (req, res) => {
+app.get("/gegevensOrganisator", requireRole(["organisator"]), (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html")
   );
