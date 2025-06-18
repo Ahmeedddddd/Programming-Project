@@ -323,7 +323,7 @@ app.get("/programma", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
 });
 
-app.get("/alle-bedrijven", (req, res) => {
+app.get("/alleBedrijven", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
   );
