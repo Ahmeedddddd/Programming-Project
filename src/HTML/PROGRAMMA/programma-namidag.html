@@ -64,9 +64,14 @@
             
             <aside class="sideBar">
                 <h2 class="sidebarTitle">Overzicht Tafels</h2>
-                
-                <!-- 🆕 Interactieve zoekbalk -->                <div class="sidebarZoekbalk" title="Klik om te zoeken">
-                    Zoek een tafel...
+                  <!-- 🆕 Interactieve zoekbalk -->
+                <div class="search-container">
+                    <input type="text" 
+                           class="sidebarZoekbalk" 
+                           id="tafelSearch"
+                           placeholder="Zoek tafel, project of bedrijf..." 
+                           title="Zoek in de lijst met tafels">
+                    <i class="fas fa-search search-icon"></i>
                 </div>
                 
                 <!-- 🆕 Tafel lijst wordt dynamisch gegenereerd -->
@@ -102,14 +107,6 @@
                     <div class="plattegrond-overlay">
                         <!-- Hotspots kunnen hier dynamisch worden toegevoegd -->
                     </div>                </div>
-
-                <!-- 🆕 Extra info voor namiddag -->
-                <div class="namiddag-info">
-                    <div class="info-card">
-                        <h4>Namiddag Concept</h4>
-                        <p>Tijdens de namiddag zitten bedrijven aan vaste tafels en lopen studenten rond om verschillende bedrijven te bezoeken en te netwerken.</p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
