@@ -310,32 +310,6 @@ class StudentGegevens {
             progressBar.style.width = `${completionPercentage}%`;
             progressBar.textContent = `${completionPercentage}% compleet`;
         }
-
-        const projectStats = document.getElementById("project-stats");
-        if (projectStats) {
-            // Bestaande stat items verwijderen om duplicatie te voorkomen
-            projectStats.innerHTML = "";
-            const tafelNrElement = document.createElement("div");
-            tafelNrElement.className = "stat-item ehbVeld";
-            tafelNrElement.innerHTML = `<strong>Tafel:</strong> <span class="field-value">${
-                data.tafelNr || "Niet toegewezen"
-            }</span>`;
-            projectStats.appendChild(tafelNrElement);
-
-            const leerjaarElement = document.createElement("div");
-            leerjaarElement.className = "stat-item ehbVeld";
-            leerjaarElement.innerHTML = `<strong>Leerjaar:</strong> <span class="field-value">${
-                data.leerjaar || "Niet ingevuld"
-            }</span>`;
-            projectStats.appendChild(leerjaarElement);
-
-            const opleidingElement = document.createElement("div");
-            opleidingElement.className = "stat-item ehbVeld";
-            opleidingElement.innerHTML = `<strong>Opleiding:</strong> <span class="field-value">${
-                data.opleiding || "Niet ingevuld"
-            }</span>`;
-            projectStats.appendChild(opleidingElement);
-        }
     }
 
     calculateProjectCompletion(data) {
