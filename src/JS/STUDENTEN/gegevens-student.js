@@ -687,6 +687,26 @@ class StudentGegevens {
         return typeMapping[fieldId] || "text";
     }
 
+    getFieldValue(fieldId) {
+    const mapping = {
+        voornaam: "voornaam",
+        achternaam: "achternaam",
+        email: "email",
+        telefoon: "gsm_nummer",
+        opleiding: "opleiding",
+        opleidingsrichting: "opleidingsrichting",
+        leerjaar: "leerjaar",
+        straatnaam: "straatnaam",
+        huisnummer: "huisnummer",
+        bus: "bus",
+        postcode: "postcode",
+        gemeente: "gemeente",
+    };
+
+    const dataField = mapping[fieldId];
+    return dataField ? this.studentData[dataField] || "" : "";
+}
+
     // 📝 Form Handling (Aangepast)
     setupEventListeners() {
         console.log("👂 Setting up event listeners");
