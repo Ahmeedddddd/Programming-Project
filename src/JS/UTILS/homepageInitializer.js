@@ -1,3 +1,4 @@
+// DIT BESTAND WORDT NIET MEER GEBRUIKT. Gebruik index.js als universele homepage initializer.
 // src/JS/UTILS/homepageInitializer.js - Enhanced Homepage Features
 
 /**
