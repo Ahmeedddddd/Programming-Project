@@ -146,7 +146,7 @@ class PlattegrondNamiddagManager {
             editIndicator.innerHTML = `
                 <div class="organisator-controls">
                     <span class="edit-badge">👔 Organisator Modus - Namiddag</span>
-                    <button id="refreshTafels" class="refresh-btn">🔄 Vernieuwen</button>
+                    <button id="refreshTafels" class="refresh-btn">Vernieuwen</button>
                 </div>
             `;
             container.insertBefore(editIndicator, container.firstChild);
@@ -157,13 +157,11 @@ class PlattegrondNamiddagManager {
         if (sidebarTitle) {
             sidebarTitle.innerHTML = '⚙️ Tafel Beheer <small>(Klik om te bewerken)</small>';
         }
-    }
-
-    setupVisitorUI() {
+    }    setupVisitorUI() {
         // Update sidebar titel voor bezoekers
         const sidebarTitle = document.querySelector('.sidebarTitle');
         if (sidebarTitle) {
-            sidebarTitle.innerHTML = '🏢 Bedrijven Overzicht <small>(Klik voor details)</small>';
+            sidebarTitle.innerHTML = 'Bedrijven Overzicht <small>(Klik voor details)</small>';
         }
     }
 
@@ -188,11 +186,10 @@ class PlattegrondNamiddagManager {
                 const bedrijf = tafel.items[0]; // Voor namiddag is het meestal 1 bedrijf per tafel
                 const naam = bedrijf.naam || 'Onbekend bedrijf';
                 const sector = bedrijf.sector || 'Algemeen';
-                
-                listItem.innerHTML = `
+                  listItem.innerHTML = `
                     <div class="tafel-content">
                         <strong>Tafel ${tafel.tafelNr}: ${naam}</strong>
-                        <small class="bedrijf-sector">🏢 ${sector}</small>
+                        <small class="bedrijf-sector">${sector}</small>
                     </div>
                 `;
 
@@ -234,7 +231,7 @@ class PlattegrondNamiddagManager {
 
     addEmptyTafels() {
         const sidebarList = document.querySelector('.sidebarTafels');
-        const maxTafels = 15; // Maximaal aantal tafels
+        const maxTafels = 100; // Maximaal aantal tafels
         const bezetteTafels = Object.keys(this.tafelData).map(Number);
 
         for (let i = 1; i <= maxTafels; i++) {
@@ -294,9 +291,8 @@ class PlattegrondNamiddagManager {
             const response = await fetch('http://localhost:3301/api/bedrijven');
             const result = await response.json();
 
-            if (result.success) {
-                this.availableBedrijven = result.data;
-                console.log('🏢 Available bedrijven loaded:', this.availableBedrijven.length);
+            if (result.success) {                this.availableBedrijven = result.data;
+                console.log('Available bedrijven loaded:', this.availableBedrijven.length);
             }
         } catch (error) {
             console.error('❌ Error loading available bedrijven:', error);
@@ -315,17 +311,16 @@ class PlattegrondNamiddagManager {
                     ${tafel.items && tafel.items.length > 0 ? `
                         <div class="current-assignment">
                             <h4>Huidige toewijzing:</h4>
-                            <div class="current-bedrijf">
-                                <strong>${tafel.items[0].naam}</strong><br>
-                                <small>🏢 ${tafel.items[0].sector || 'Geen sector'}</small>
+                            <div class="current-bedrijf">                                <strong>${tafel.items[0].naam}</strong><br>
+                                <small>${tafel.items[0].sector || 'Geen sector'}</small>
                             </div>
                             <button class="remove-btn" onclick="window.plattegrondNamiddagManager.removeBedrijfFromTafel(${tafel.items[0].id})">
-                                🗑️ Verwijderen
+                                Verwijderen
                             </button>
                         </div>
                         <hr>
                     ` : `
-                        <p>📭 Deze tafel heeft geen toewijzing</p>
+                        <p>Deze tafel heeft geen toewijzing</p>
                     `}
                     
                     <div class="assign-new">
@@ -340,13 +335,13 @@ class PlattegrondNamiddagManager {
                             `).join('')}
                         </select>
                         <button class="assign-btn" onclick="window.plattegrondNamiddagManager.assignBedrijfToTafel(${tafel.tafelNr})">
-                            ✅ Toewijzen
+                            Toewijzen
                         </button>
                     </div>
                     
                     <div class="modal-actions">
                         <button class="cancel-btn" onclick="window.plattegrondNamiddagManager.closeModal()">
-                            ❌ Annuleren
+                            Annuleren
                         </button>
                     </div>
                 </div>
@@ -436,38 +431,33 @@ class PlattegrondNamiddagManager {
             if (e.key === 'Escape') {
                 this.closeModal();
             }
-        });
-
-        // Search functionality
+        });        // Search functionality
         const searchInput = document.querySelector('.sidebarZoekbalk');
         if (searchInput) {
-            searchInput.addEventListener('click', () => {
-                this.setupSearchFunctionality();
+            searchInput.addEventListener('input', (e) => {
+                this.filterTafels(e.target.value);
             });
-        }
-    }
-
-    setupSearchFunctionality() {
-        const searchContainer = document.querySelector('.sidebarZoekbalk');
-        searchContainer.innerHTML = `
-            <input type="text" id="tafelSearch" placeholder="Zoek tafel, bedrijf of sector..." class="search-input">
-        `;
-
-        const searchInput = document.getElementById('tafelSearch');
-        searchInput.addEventListener('input', (e) => {
-            this.filterTafels(e.target.value);
-        });
-
-        searchInput.focus();
-    }
-
-    filterTafels(searchTerm) {
+            
+            // Clear search when escape is pressed
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    this.filterTafels('');
+                    searchInput.blur();
+                }
+            });
+        }    }    filterTafels(searchTerm) {
         const tafelItems = document.querySelectorAll('.tafel-item');
         const term = searchTerm.toLowerCase();
 
         tafelItems.forEach(item => {
-            const content = item.textContent.toLowerCase();
-            if (content.includes(term)) {
+            // Get bedrijf name and sector for searching, exclude irrelevant info
+            const bedrijfInfo = item.querySelector('strong')?.textContent.toLowerCase() || '';
+            const sectorInfo = item.querySelector('.bedrijf-sector')?.textContent.toLowerCase() || '';
+            
+            const searchableContent = bedrijfInfo + ' ' + sectorInfo;
+            
+            if (searchableContent.includes(term)) {
                 item.style.display = 'block';
             } else {
                 item.style.display = 'none';
