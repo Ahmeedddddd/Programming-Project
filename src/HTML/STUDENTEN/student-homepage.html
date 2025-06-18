@@ -77,13 +77,22 @@
         <a href="/mijnProject" class="section-btn1">Mijn Project Beheren</a>
       </section>
 
-      <!-- Zoekbalk - Identiek -->
-      <section class="searchSection">
-        <div class="searchBar">
-          <input placeholder="Zoek bedrijven, projecten..."></input>
-          <button class="searchBtn"><img src="" alt="Zoek" /></button>
-        </div>
-      </section>
+      <!-- Zoekbalk -->
+<section class="searchSection">
+    <div class="searchBar">
+      <input 
+        type="text"
+        class="search-input"
+        list="search-suggestions"
+        placeholder="Zoeken in bedrijven, studenten" 
+      />
+      <datalist id="search-suggestions"></datalist>
+    </div>
+    <div id="searchResults" class="search-results"></div>
+  </section>
+  
+    <!-- Éénmaal de resultaten‐container -->
+    <div id="searchResults" class="search-results"></div>
 
       <!-- Student Quick Actions - Gebruikt bestaande styling -->
       <section class="content-sections">
