@@ -24,21 +24,23 @@ const guestHomepagePath = path.join(__dirname, "../../../public/index.html");
 
 // ===== ROUTE IMPORTS =====
 let registratieRoutes,
-  authRoutes,
-  bedrijfRoutes,
-  reservatiesRoutes,
-  studentRoutes,
-  organisatorRoutes,
-  projectRoutes;
+    authRoutes,
+    bedrijfRoutes,
+    reservatiesRoutes,
+    studentRoutes,
+    organisatorRoutes,
+    projectRoutes,
+    tafelRoutes;
 
 try {
-  registratieRoutes = require("./ROUTES/registratie");
-  authRoutes = require("./ROUTES/auth");
-  bedrijfRoutes = require("./ROUTES/bedrijf");
-  reservatiesRoutes = require("./ROUTES/reservaties");
-  studentRoutes = require("./ROUTES/student");
-  organisatorRoutes = require("./ROUTES/organisator");
-  projectRoutes = require("./ROUTES/project");
+  registratieRoutes    = require("./ROUTES/registratie");
+  authRoutes           = require("./ROUTES/auth");
+  bedrijfRoutes        = require("./ROUTES/bedrijf");
+  reservatiesRoutes    = require("./ROUTES/reservaties");
+  studentRoutes        = require("./ROUTES/student");
+  organisatorRoutes    = require("./ROUTES/organisator");
+  projectRoutes        = require("./ROUTES/project");
+  tafelRoutes          = require("./ROUTES/tafel");
   console.log("✅ All route modules loaded successfully");
 } catch (error) {
   console.error("❌ Error loading route modules:", error.message);
@@ -204,6 +206,8 @@ try {
   console.log("✅ Organisator routes mounted");
   app.use("/api/projecten", projectRoutes);
   console.log("✅ Project routes mounted");
+  app.use("/api/tafels", tafelRoutes);
+  console.log("✅ Tafel routes mounted");
 } catch (error) {
   console.error("❌ Failed to mount one or more API routes:", error);
 }
@@ -267,97 +271,46 @@ app.get("/index.html", (req, res) => {
 });
 
 // AUTH-PROTECTED role-specific homepages
-app.get("/student-homepage", (req, res) => {
-  console.log("📄 Student homepage requested");
-
+app.get('/student-homepage', (req, res) => {
   const user = getCurrentUser(req);
-
-  if (!user) {
-    console.log("❌ No authenticated user - redirecting to guest homepage");
-    return res.redirect("/");
-  }
-
-  if (user.userType !== "student") {
-    console.log(
-      `❌ Wrong user type (${user.userType}) for student page - redirecting to correct homepage`
-    );
-
+  console.log('🔍 [ROUTE] /student-homepage - user:', user && user.email, '-', user && user.userType);
+  if (!user) return res.redirect('/');
+  if (user.userType !== 'student') {
     switch (user.userType) {
-      case "bedrijf":
-        return res.redirect("/bedrijf-homepage");
-      case "organisator":
-        return res.redirect("/organisator-homepage");
-      default:
-        return res.redirect("/");
+      case 'bedrijf': return res.redirect('/bedrijf-homepage');
+      case 'organisator': return res.redirect('/organisator-homepage');
+      default: return res.redirect('/');
     }
   }
-
-  console.log("✅ Serving student homepage");
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/STUDENTEN/student-homepage.html")
-  );
+  res.sendFile(path.join(__dirname, '../../src/HTML/STUDENTEN/student-homepage.html'));
 });
 
-app.get("/bedrijf-homepage", (req, res) => {
-  console.log("📄 Bedrijf homepage requested");
-
+app.get('/bedrijf-homepage', (req, res) => {
   const user = getCurrentUser(req);
-
-  if (!user) {
-    console.log("❌ No authenticated user - redirecting to guest homepage");
-    return res.redirect("/");
-  }
-
-  if (user.userType !== "bedrijf") {
-    console.log(
-      `❌ Wrong user type (${user.userType}) for bedrijf page - redirecting to correct homepage`
-    );
-
+  console.log('🔍 [ROUTE] /bedrijf-homepage - user:', user && user.email, '-', user && user.userType);
+  if (!user) return res.redirect('/');
+  if (user.userType !== 'bedrijf') {
     switch (user.userType) {
-      case "student":
-        return res.redirect("/student-homepage");
-      case "organisator":
-        return res.redirect("/organisator-homepage");
-      default:
-        return res.redirect("/");
+      case 'student': return res.redirect('/student-homepage');
+      case 'organisator': return res.redirect('/organisator-homepage');
+      default: return res.redirect('/');
     }
   }
-
-  console.log("✅ Serving bedrijf homepage");
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/BEDRIJVEN/homepage-bedrijf.html")
-  );
+  res.sendFile(path.join(__dirname, '../../src/HTML/BEDRIJVEN/homepage-bedrijf.html'));
 });
 
-app.get("/organisator-homepage", (req, res) => {
-  console.log("📄 Organisator homepage requested");
-
+app.get('/organisator-homepage', (req, res) => {
   const user = getCurrentUser(req);
-
-  if (!user) {
-    console.log("❌ No authenticated user - redirecting to guest homepage");
-    return res.redirect("/");
-  }
-
-  if (user.userType !== "organisator") {
-    console.log(
-      `❌ Wrong user type (${user.userType}) for organisator page - redirecting to correct homepage`
-    );
-
+  console.log('🔍 [ROUTE] /organisator-homepage - user:', user && user.email, '-', user && user.userType);
+  if (!user) return res.redirect('/');
+  if (user.userType !== 'organisator') {
     switch (user.userType) {
-      case "student":
-        return res.redirect("/student-homepage");
-      case "bedrijf":
-        return res.redirect("/bedrijf-homepage");
-      default:
-        return res.redirect("/");
+      case 'student': return res.redirect('/student-homepage');
+      case 'bedrijf': return res.redirect('/bedrijf-homepage');
+      default: return res.redirect('/');
     }
   }
-
-  console.log("✅ Serving organisator homepage");
-  res.sendFile(
-    path.join(__dirname, "../../src/HTML/ORGANISATOR/organisator-homepage.html")
-  );
+  res.sendFile(path.join(__dirname, '../../src/HTML/ORGANISATOR/organisator-homepage.html'));
 });
 
 console.log("✅ AUTH-PROTECTED homepage routes loaded");
@@ -622,3 +575,23 @@ app.listen(port, () => {
 });
 
 console.log("✅ CareerLaunch Frontend Server Setup Complete");
+
+function redirectToHomepage(userType) {
+    console.log('🚀 redirectToHomepage aangeroepen met userType:', userType);
+    let targetUrl;
+    switch(userType) {
+        case 'student':
+            targetUrl = '/student-homepage';
+            break;
+        case 'bedrijf':
+            targetUrl = '/bedrijf-homepage';
+            break;
+        case 'organisator':
+            targetUrl = '/organisator-homepage';
+            break;
+        default:
+            targetUrl = '/';
+    }
+    console.log(`🚀 Redirecting to: ${targetUrl}`);
+    window.location.href = targetUrl;
+}

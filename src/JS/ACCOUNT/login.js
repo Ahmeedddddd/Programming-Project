@@ -124,6 +124,8 @@ async function handleLoginSuccess(data) {
         // Store authentication data
         if (data.token) {
             localStorage.setItem('authToken', data.token);
+            // Zet JWT ook als cookie voor backend
+            document.cookie = `authToken=${data.token}; path=/; SameSite=Lax`;
         }
         
         if (data.userType) {
@@ -139,13 +141,12 @@ async function handleLoginSuccess(data) {
             localStorage.setItem('userData', JSON.stringify(data.user));
         }
         
-        showSuccessMessage('Succesvol ingelogd! U wordt doorgestuurd...');
-        
-        // Wait a moment for the user to see the success message
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Redirect to appropriate homepage
-        redirectToHomepage(data.userType);
+        showSuccessMessage('Succesvol ingelogd! U wordt over 10 seconden doorgestuurd...');
+        console.log('⏳ Start 10s delay');
+        await new Promise(resolve => setTimeout(resolve, 10000));
+        console.log('⏩ Delay voorbij, redirect nu');
+        const userType = data.userType || (data.user && data.user.userType);
+        redirectToHomepage(userType);
         
     } catch (error) {
         console.error('❌ Error handling login success:', error);
@@ -160,6 +161,7 @@ async function handleLoginSuccess(data) {
 
 // Redirect to appropriate homepage based on user type
 function redirectToHomepage(userType) {
+    console.log('🚀 redirectToHomepage aangeroepen met userType:', userType);
     let targetUrl;
     
     switch(userType) {

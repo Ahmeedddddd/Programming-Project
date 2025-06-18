@@ -10,12 +10,13 @@
 
 /* Main Layout */
 .overzichtContainer {
-    max-width: 1400px;
+    max-width: 1080px;
     margin: 0 auto;
     padding: 2rem;
     display: flex;
     gap: 2rem;
     align-items: flex-start;
+    justify-content: center;
 }
 
 /* Sidebar Styling */
@@ -23,10 +24,14 @@
     background: white;
     border-radius: 16px;
     padding: 2rem;
+    padding-top: 0.5rem;
     box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-    width: 320px;
-    min-width: 280px;
+    width: 500px;
+    min-width: 500px;
+    height: 793px;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebarTitle {
@@ -39,27 +44,68 @@
     border-bottom: 2px solid #881538;
 }
 
-.sidebarZoekbalk {
-    background: #f8f9fa;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
+/* 🔍 Search container styling */
+.search-container {
+    position: relative;
     margin-bottom: 1.5rem;
-    color: #666;
-    font-style: italic;
-    transition: all 0.3s ease;
-    cursor: pointer;
 }
 
-.sidebarZoekbalk:hover {
+.sidebarZoekbalk {
+    width: 100%;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    color: #495057;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    box-sizing: border-box;
+}
+
+.sidebarZoekbalk::placeholder {
+    color: #868e96;
+    font-style: italic;
+}
+
+.sidebarZoekbalk:focus {
     border-color: #881538;
     background: white;
+    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
+    transform: translateY(-1px);
+}
+
+.sidebarZoekbalk:hover:not(:focus) {
+    border-color: #adb5bd;
+    background: white;
+    transform: translateY(-0.5px);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #868e96;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+    pointer-events: none;
+}
+
+.search-container:focus-within .search-icon {
+    color: #881538;
 }
 
 .sidebarTafels {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: block;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.5rem;
 }
 
 .sidebarTafels li {
@@ -113,35 +159,38 @@
 
 /* Plattegrond Sectie */
 .plattegrond {
-    flex: 1;
+    width: 500px;
+    max-width: 500px;
+    flex-shrink: 0;
     background: white;
     border-radius: 16px;
     padding: 2rem;
+    padding-top: 0.5rem;
     box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .plattegrond h3 {
     color: #881538;
     font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #881538;
     display: inline-block;
 }
 
 #plattegrondImg {
+    width: 100%;
     max-width: 100%;
     height: auto;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-#plattegrondImg:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 30px rgba(136, 21, 56, 0.2);
+    object-fit: contain;
 }
 
 /* Loading Overlay (indien aanwezig) */
@@ -172,30 +221,69 @@
     100% { transform: rotate(360deg); }
 }
 
+/* Custom Scrollbar Styling voor Sidebar */
+.sidebarTafels::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebarTafels::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.sidebarTafels::-webkit-scrollbar-thumb {
+    background: #881538;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.sidebarTafels::-webkit-scrollbar-thumb:hover {
+    background: #661028;
+}
+
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .overzichtContainer {
         flex-direction: column;
         padding: 1rem;
+        max-width: 100%;
     }
-    
-    .sideBar {
+      .sideBar {
         width: 100%;
-        order: 2;
+        max-width: 100%;
+        min-width: unset;
+        height: auto;
+        max-height: 500px;
+        order: 1;
     }
     
     .plattegrond {
-        order: 1;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        order: 2;
     }
 }
 
 @media (max-width: 768px) {
+    .overzichtContainer {
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
     .sideBar {
         padding: 1.5rem;
+        width: 100%;
+        max-width: 100%;
+        min-width: unset;
+        height: auto;
+        max-height: 400px;
     }
     
     .plattegrond {
         padding: 1.5rem;
+        width: 100%;
+        max-width: 100%;
     }
     
     .sidebarTitle,
@@ -207,6 +295,15 @@
         padding: 0.8rem;
         font-size: 0.9rem;
     }
+    
+    .search-container {
+        margin-bottom: 1rem;
+    }
+    
+    .sidebarZoekbalk {
+        font-size: 0.9rem;
+        padding: 0.7rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -215,15 +312,44 @@
         gap: 1rem;
     }
     
-    .sideBar,
+    .sideBar {
+        padding: 1rem;
+        width: 100%;
+        max-width: 100%;
+        min-width: unset;
+        height: auto;
+        max-height: 350px;
+    }
+    
     .plattegrond {
         padding: 1rem;
+        width: 100%;
+        max-width: 100%;
     }
     
     .sidebarTitle,
     .plattegrond h3 {
-        font-size: 1.2rem;
-        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .sidebarTafels li {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-container {
+        margin-bottom: 0.8rem;
+    }
+    
+    .sidebarZoekbalk {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+    
+    #plattegrondImg {
+        max-width: 95%;
     }
 }
 

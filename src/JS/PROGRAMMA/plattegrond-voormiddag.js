@@ -232,7 +232,7 @@ class PlattegrondVoormiddagManager {
 
     addEmptyTafels() {
         const sidebarList = document.querySelector('.sidebarTafels');
-        const maxTafels = 15; // Maximaal aantal tafels
+        const maxTafels = 100; // Maximaal aantal tafels
         const bezetteTafels = Object.keys(this.tafelData).map(Number);
 
         for (let i = 1; i <= maxTafels; i++) {
@@ -434,38 +434,37 @@ class PlattegrondVoormiddagManager {
             if (e.key === 'Escape') {
                 this.closeModal();
             }
-        });
-
-        // Search functionality
+        });        // Search functionality
         const searchInput = document.querySelector('.sidebarZoekbalk');
         if (searchInput) {
-            searchInput.addEventListener('click', () => {
-                this.setupSearchFunctionality();
+            searchInput.addEventListener('input', (e) => {
+                this.filterTafels(e.target.value);
+            });
+            
+            // Clear search when escape is pressed
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    this.filterTafels('');
+                    searchInput.blur();
+                }
             });
         }
-    }
-
-    setupSearchFunctionality() {
-        const searchContainer = document.querySelector('.sidebarZoekbalk');
-        searchContainer.innerHTML = `
-            <input type="text" id="tafelSearch" placeholder="Zoek tafel, project of student..." class="search-input">
-        `;
-
-        const searchInput = document.getElementById('tafelSearch');
-        searchInput.addEventListener('input', (e) => {
-            this.filterTafels(e.target.value);
-        });
-
-        searchInput.focus();
-    }
-
-    filterTafels(searchTerm) {
+    }    filterTafels(searchTerm) {
         const tafelItems = document.querySelectorAll('.tafel-item');
         const term = searchTerm.toLowerCase();
 
         tafelItems.forEach(item => {
-            const content = item.textContent.toLowerCase();
-            if (content.includes(term)) {
+            // Get project title and student names for searching, exclude student count
+            const projectTitle = item.querySelector('strong')?.textContent.toLowerCase() || '';
+            const studentInfo = item.querySelector('.student-name')?.textContent.toLowerCase() || '';
+            
+            // Remove the student count part (like "Studenten (3):") from search
+            const studentNamesOnly = studentInfo.replace(/studenten\s*\(\d+\):\s*/i, '');
+            
+            const searchableContent = projectTitle + ' ' + studentNamesOnly;
+            
+            if (searchableContent.includes(term)) {
                 item.style.display = 'block';
             } else {
                 item.style.display = 'none';
