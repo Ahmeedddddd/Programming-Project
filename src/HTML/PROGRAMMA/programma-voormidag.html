@@ -3,91 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programma Voormiddag</title>
+    <title>Programma Voormiddag - Interactieve Plattegrond</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/PROGRAMMA/programma-voormiddag.css">
     
+    <!-- 🆕 Font Awesome voor icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navigatie -->
-<div class="container">
-  <div class="nav">
-  <div class="logo">
-    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-  </div>
-  <div class="navBar">
-    <a href="/index.html" class="navItem active">Home</a>
-    <a href="/programma" class="navItem">Programma</a>
-    <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
-    <a href="/info" class="navItem">Info</a>
-  </div>
-  <div class="pfpContainer">
-    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-    </div>
-  </div>
+    <div class="container">
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar">
+                <a href="/index.html" class="navItem">Home</a>
+                <a href="/programma" class="navItem">Programma</a>
+                <a href="/gesprekkenOverzicht" class="navItem">Mijn gesprekken</a>
+                <a href="/info" class="navItem">Info</a>
+            </div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+            </div>
+        </div>
 
+        <!-- Verborgen sidebar -->
+        <div class="sideMenu" id="sideMenu">
+            <!-- Geanimeerde achtergrond laag -->
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+            
+            <!-- Header met titel -->
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Menu</p>
+                </div>                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    Sluiten
+                </button>
+            </div>
+            
+            <!-- Menu content -->
+            <div class="sideMenu-content">                <a href="/login">
+                    Login
+                </a>                <a href="/contacteer">
+                    Contact us
+                </a>
+                
+                <hr class="sideMenu-divider">
+            </div>        </div>
 
-<!-- Verborgen sidebar -->
-<div class="sideMenu" id="sideMenu">
-  <!-- Geanimeerde achtergrond laag -->
-  <div class="menu-bg-animation"></div>
-<div class="menu-bg-animation"></div>
-<div class="sparkles"></div>
-  
-  <!-- Header met titel -->
-  <div class="sideMenu-header">
-    <div>
-      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-      <p class="sideMenu-subtitle">Menu</p>
-    </div>
-    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-  
-  <!-- Menu content -->
-  <div class="sideMenu-content">
-    <a href="/login">
-      <i class="fas fa-sign-in-alt"></i>
-      Login
-    </a>
-    <a href="/contacteer">
-      <i class="fas fa-envelope"></i>
-      Contact us
-    </a>
-    
-    <hr class="sideMenu-divider">
-  </div>
-</div>
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Programma Voormiddag</h1>
+            <p class="page-subtitle">9:00 - 12:00</p>
+        </div>
 
-    <!-- Main Content -->
-    <div class="overzichtContainer">
-        <aside class="sideBar">
-            <h2 class="sidebarTitle">Overzicht Tafels</h2>
-            <div class="sidebarZoekbalk">Zoek een tafel...</div>
-            <ul class="sidebarTafels">
-                <li>Tafel 1: Kokende AI robot</li>
-                <li>Tafel 2: Smartline Inspector</li>
-                <li>Tafel 3: NeuroTrack</li>
-                <li>Tafel 4: Architect Viewer</li>
-                <li>Tafel 5: Embedded IoT-Sensornode met Rust</li>
-                <li>Tafel 6: Geïntegreerd campus-beheer via Cisco DNA Center</li>
-                <li>Tafel 7: High-Performance Web-Api in Rust</li>
-            </ul>
-        </aside>
-        
-        <div class="plattegrond">
-            <h3>Plattegrond Voormiddag</h3>
-            <img src="/public/plattegrondTafels.png" id="plattegrondImg" alt="Plattegrond Voormiddag">
+        <!-- Main Content -->
+        <div class="overzichtContainer">
+            <!-- 🆕 Organisator controls worden dynamisch toegevoegd door JavaScript -->
+            
+            <aside class="sideBar">
+                <h2 class="sidebarTitle">Overzicht Tafels</h2>
+                
+                <!-- 🆕 Interactieve zoekbalk -->                <div class="sidebarZoekbalk" title="Klik om te zoeken">
+                    Zoek een tafel...
+                </div>
+                
+                <!-- 🆕 Tafel lijst wordt dynamisch gegenereerd -->
+                <ul class="sidebarTafels">
+                    <!-- JavaScript laadt hier de tafels -->
+                    <li class="skeleton-item">
+                        <div class="skeleton-content">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line small"></div>
+                        </div>
+                    </li>
+                    <li class="skeleton-item">
+                        <div class="skeleton-content">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line small"></div>
+                        </div>
+                    </li>
+                    <li class="skeleton-item">
+                        <div class="skeleton-content">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line small"></div>
+                        </div>
+                    </li>                </ul>
+            </aside>
+            
+            <div class="plattegrond">                <h3>
+                    Plattegrond
+                </h3><!-- 🆕 Plattegrond met interactiviteit -->
+                <div class="plattegrond-wrapper">
+                    <img src="/images/plattegrondProgramma.jpeg" id="plattegrondImg" alt="Plattegrond Voormiddag">
+                    
+                    <!-- 🆕 Overlay voor interactieve hotspots (optioneel voor toekomstige uitbreidingen) -->
+                    <div class="plattegrond-overlay">
+                        <!-- Hotspots kunnen hier dynamisch worden toegevoegd -->
+                    </div>                </div>
+            </div>
         </div>
     </div>
+
+    <!-- 🆕 Notification container -->
+    <div id="notification-container" class="notification-container"></div>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
         <div class="loader"></div>
+        <p>Tafel gegevens laden...</p>
     </div>
 
+    <!-- Scripts -->
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script type="module" src="/src/JS/PROGRAMMA/programma-qol.js"></script>
+    <!-- 🆕 NIEUWE SCRIPT VOOR PLATTEGROND FUNCTIONALITEIT -->
+    <script type="module" src="/src/JS/PROGRAMMA/plattegrond-voormiddag.js"></script>
+
+    <!-- 🆕 Extra CSS voor nieuwe elementen -->
+    <style>
+        /* Skeleton loading styles */
+        .skeleton-item {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-content {
+            animation: skeleton-loading 1.5s infinite ease-in-out;
+        }
+
+        .skeleton-line {
+            background: #e9ecef;
+            height: 16px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-line.small {
+            width: 70%;
+            height: 12px;
+        }
+
+        @keyframes skeleton-loading {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Status indicator */
+        .status-indicator {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #881538, #A91B47);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-time {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Plattegrond wrapper */
+        .plattegrond-wrapper {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .plattegrond-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Legenda */
+        .plattegrond-legenda {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #881538;
+        }
+
+        .plattegrond-legenda h4 {
+            color: #881538;
+            margin-bottom: 1rem;
+        }
+
+        .legenda-items {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legenda-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legenda-color.student {
+            background: #881538;
+        }
+
+        .legenda-color.available {
+            background: #28a745;
+        }
+
+        /* Notification container */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #881538;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-left-color: #dc3545;
+        }
+
+        .notification.success {
+            border-left-color: #28a745;
+        }
+
+        .notification.info {
+            border-left-color: #17a2b8;
+        }
+
+        /* Page Header Styling */        .page-header {
+            text-align: center;
+            padding: 1rem 0;
+            background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .legenda-items {
+                gap: 1rem;
+            }
+            
+            .legenda-item {
+                font-size: 0.9rem;
+            }
+            
+            .status-indicator {
+                padding: 0.75rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .page-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </body>
 </html>
