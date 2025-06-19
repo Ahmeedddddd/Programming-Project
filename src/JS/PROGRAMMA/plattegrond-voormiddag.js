@@ -324,27 +324,11 @@ class PlattegrondVoormiddagManager {
                         <hr>
                     ` : `
                         <p>📭 Deze tafel heeft geen toewijzing</p>
-                    `}
-                      <div class="assign-new">
+                    `}                    <div class="assign-new">
                         <h4>Student toewijzen:</h4>
                         <select id="studentSelect" class="student-select">
                             <option value="">Selecteer een student...</option>
-                            ${[...this.availableStudents]
-                                .sort((a, b) => {
-                                    // Beschikbare studenten (geen tafelNr) komen eerst
-                                    if (!a.tafelNr && b.tafelNr) return -1;
-                                    if (a.tafelNr && !b.tafelNr) return 1;
-                                    // Binnen dezelfde categorie: sorteer op naam
-                                    const nameA = `${a.voornaam} ${a.achternaam}`;
-                                    const nameB = `${b.voornaam} ${b.achternaam}`;
-                                    return nameA.localeCompare(nameB);
-                                })
-                                .map(student => `
-                                    <option value="${student.studentnummer}" ${student.tafelNr ? 'disabled' : ''}>
-                                        ${student.voornaam} ${student.achternaam} - ${student.projectTitel}
-                                        ${student.tafelNr ? ` (Tafel ${student.tafelNr})` : ''}
-                                    </option>
-                                `).join('')}
+                            ${this.buildStudentenOptgroups()}
                         </select>
                         <button class="assign-btn" onclick="window.plattegrondManager.assignStudentToTafel(${tafel.tafelNr})">
                             ✅ Toewijzen
@@ -547,29 +531,90 @@ class PlattegrondVoormiddagManager {
             // Clear loading state
             studentSelect.innerHTML = '<option value="">Selecteer student...</option>';
             
-            // Sorteer studenten: beschikbare eerst, dan toegewezen
-            const sortedStudents = [...this.availableStudents].sort((a, b) => {
-                // Beschikbare studenten (geen tafelNr) komen eerst
-                if (!a.tafelNr && b.tafelNr) return -1;
-                if (a.tafelNr && !b.tafelNr) return 1;
-                // Binnen dezelfde categorie: sorteer op naam
-                return a.naam.localeCompare(b.naam);
-            });
+            // Sorteer studenten in groepen
+            const beschikbareStudenten = this.availableStudents.filter(s => !s.tafelNr)
+                .sort((a, b) => {
+                    const nameA = `${a.voornaam} ${a.achternaam}`;
+                    const nameB = `${b.voornaam} ${b.achternaam}`;
+                    return nameA.localeCompare(nameB);
+                });
+            const toegewezenStudenten = this.availableStudents.filter(s => s.tafelNr)
+                .sort((a, b) => {
+                    const nameA = `${a.voornaam} ${a.achternaam}`;
+                    const nameB = `${b.voornaam} ${b.achternaam}`;
+                    return nameA.localeCompare(nameB);
+                });
             
-            // Add sorted students
-            sortedStudents.forEach(student => {
-                const option = document.createElement('option');
-                option.value = student.studentnummer;
-                option.textContent = `${student.naam} - ${student.projectTitel || 'Geen project'}`;
-                if (student.tafelNr) {
+            // Add beschikbare studenten met header
+            if (beschikbareStudenten.length > 0) {
+                const optgroupBeschikbaar = document.createElement('optgroup');
+                optgroupBeschikbaar.label = '📋 Nog aan te duiden projecten';
+                beschikbareStudenten.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.studentnummer;
+                    option.textContent = `${student.voornaam} ${student.achternaam} - ${student.projectTitel || 'Geen project'}`;
+                    optgroupBeschikbaar.appendChild(option);
+                });
+                studentSelect.appendChild(optgroupBeschikbaar);
+            }
+            
+            // Add toegewezen studenten met header
+            if (toegewezenStudenten.length > 0) {
+                const optgroupAssigned = document.createElement('optgroup');
+                optgroupAssigned.label = '✅ Al aangeduide projecten';
+                toegewezenStudenten.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.studentnummer;
+                    option.textContent = `${student.voornaam} ${student.achternaam} - ${student.projectTitel || 'Geen project'} (Tafel ${student.tafelNr})`;
                     option.disabled = true;
-                    option.textContent += ` (Tafel ${student.tafelNr})`;
-                }
-                studentSelect.appendChild(option);
-            });
+                    optgroupAssigned.appendChild(option);
+                });
+                studentSelect.appendChild(optgroupAssigned);
+            }
             
             console.log('🔄 Modal updated with students data');
         }
+    }
+
+    buildStudentenOptgroups() {
+        const beschikbareStudenten = this.availableStudents.filter(s => !s.tafelNr)
+            .sort((a, b) => {
+                const nameA = `${a.voornaam} ${a.achternaam}`;
+                const nameB = `${b.voornaam} ${b.achternaam}`;
+                return nameA.localeCompare(nameB);
+            });
+        const toegewezenStudenten = this.availableStudents.filter(s => s.tafelNr)
+            .sort((a, b) => {
+                const nameA = `${a.voornaam} ${a.achternaam}`;
+                const nameB = `${b.voornaam} ${b.achternaam}`;
+                return nameA.localeCompare(nameB);
+            });
+        
+        let html = '';
+        
+        // Beschikbare studenten
+        if (beschikbareStudenten.length > 0) {
+            html += '<optgroup label="📋 Nog aan te duiden projecten">';
+            beschikbareStudenten.forEach(student => {
+                html += `<option value="${student.studentnummer}">
+                    ${student.voornaam} ${student.achternaam} - ${student.projectTitel}
+                </option>`;
+            });
+            html += '</optgroup>';
+        }
+        
+        // Toegewezen studenten
+        if (toegewezenStudenten.length > 0) {
+            html += '<optgroup label="✅ Al aangeduide projecten">';
+            toegewezenStudenten.forEach(student => {
+                html += `<option value="${student.studentnummer}" disabled>
+                    ${student.voornaam} ${student.achternaam} - ${student.projectTitel} (Tafel ${student.tafelNr})
+                </option>`;
+            });
+            html += '</optgroup>';
+        }
+        
+        return html;
     }
 }
 

@@ -332,24 +332,10 @@ class PlattegrondNamiddagManager {
                     ` : `
                         <p>Deze tafel heeft geen toewijzing</p>
                     `}                      <div class="assign-new">
-                        <h4>Bedrijf toewijzen:</h4>
-                        <select id="bedrijfSelect" class="bedrijf-select">
+                        <h4>Bedrijf toewijzen:</h4>                        <select id="bedrijfSelect" class="bedrijf-select">
                             ${this.availableBedrijven && this.availableBedrijven.length > 0 ? `
                                 <option value="">Selecteer een bedrijf...</option>
-                                ${[...this.availableBedrijven]
-                                    .sort((a, b) => {
-                                        // Beschikbare bedrijven (geen tafelNr) komen eerst
-                                        if (!a.tafelNr && b.tafelNr) return -1;
-                                        if (a.tafelNr && !b.tafelNr) return 1;
-                                        // Binnen dezelfde categorie: sorteer op naam
-                                        return a.naam.localeCompare(b.naam);
-                                    })
-                                    .map(bedrijf => `
-                                        <option value="${bedrijf.bedrijfsnummer}" ${bedrijf.tafelNr ? 'disabled' : ''}>
-                                            ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'}
-                                            ${bedrijf.tafelNr ? ` (Tafel ${bedrijf.tafelNr})` : ''}
-                                        </option>
-                                    `).join('')}
+                                ${this.buildBedrijvenOptgroups()}
                             ` : `
                                 <option value="">Bedrijven laden...</option>
                             `}
@@ -408,6 +394,39 @@ class PlattegrondNamiddagManager {
             
             console.log('🔄 Modal updated with bedrijven data');
         }
+    }
+
+    buildBedrijvenOptgroups() {
+        const beschikbareBedrijven = this.availableBedrijven.filter(b => !b.tafelNr)
+            .sort((a, b) => a.naam.localeCompare(b.naam));
+        const toegewezenBedrijven = this.availableBedrijven.filter(b => b.tafelNr)
+            .sort((a, b) => a.naam.localeCompare(b.naam));
+        
+        let html = '';
+        
+        // Beschikbare bedrijven
+        if (beschikbareBedrijven.length > 0) {
+            html += '<optgroup label="📋 Nog aan te duiden bedrijven">';
+            beschikbareBedrijven.forEach(bedrijf => {
+                html += `<option value="${bedrijf.bedrijfsnummer}">
+                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'}
+                </option>`;
+            });
+            html += '</optgroup>';
+        }
+        
+        // Toegewezen bedrijven
+        if (toegewezenBedrijven.length > 0) {
+            html += '<optgroup label="✅ Al aangeduide bedrijven">';
+            toegewezenBedrijven.forEach(bedrijf => {
+                html += `<option value="${bedrijf.bedrijfsnummer}" disabled>
+                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'} (Tafel ${bedrijf.tafelNr})
+                </option>`;
+            });
+            html += '</optgroup>';
+        }
+        
+        return html;
     }
 
     async assignBedrijfToTafel(tafelNr) {
