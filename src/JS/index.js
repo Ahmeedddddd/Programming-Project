@@ -252,55 +252,8 @@ class UniversalDataFetcher {
 
             // === PROJECT BUNDELING ===
             if (allProjects.length > 0) {
-                const bundelMap = new Map();
-                allProjects.forEach((p, i) => {
-                    const normTitel = (p.titel || p.projectTitel || p.naam || '').trim().toLowerCase();
-                    if (!normTitel) {
-                        console.warn(`[BUNDEL] Project zonder titel op index ${i}:`, p);
-                        return;
-                    }
-                    if (!bundelMap.has(normTitel)) {
-                        bundelMap.set(normTitel, {
-                            titel: p.titel || p.projectTitel || p.naam || 'Onbekend Project',
-                            beschrijving: p.beschrijving || p.projectBeschrijving || '',
-                            technologieen: p.technologieën || p.technologien || p.opleidingsrichting || '',
-                            studenten: [],
-                            tafelNrs: new Set(),
-                            ids: new Set(),
-                        });
-                    }
-                    // Voeg student toe
-                    const studentNaam = p.studentNaam || `${p.voornaam || ''} ${p.achternaam || ''}`.trim() || p.naam || '';
-                    const tafelNr = p.tafelNr || p.tafelnummer || p.tafelNummer || null;
-                    bundelMap.get(normTitel).studenten.push({
-                        naam: studentNaam,
-                        voornaam: p.voornaam,
-                        achternaam: p.achternaam,
-                        tafelNr,
-                        studentnummer: p.studentnummer,
-                        email: p.email,
-                        opleiding: p.opleiding,
-                        opleidingsrichting: p.opleidingsrichting
-                    });
-                    if (tafelNr) bundelMap.get(normTitel).tafelNrs.add(tafelNr);
-                    if (p.id || p.projectId) bundelMap.get(normTitel).ids.add(p.id || p.projectId);
-                });
-                // Maak gebundelde array
-                const gebundeld = Array.from(bundelMap.values()).map(b => {
-                    const uniekeTafels = Array.from(b.tafelNrs).filter(t => t && t !== 'TBD');
-                    return {
-                        titel: b.titel,
-                        beschrijving: b.beschrijving,
-                        technologieen: b.technologieen,
-                        studenten: b.studenten,
-                        tafelNr: uniekeTafels.length === 1 ? uniekeTafels[0] : (uniekeTafels.length > 1 ? uniekeTafels.join(', ') : null),
-                        ids: Array.from(b.ids)
-                    };
-                });
-                console.log('[BUNDEL] Gebundelde projecten:', gebundeld);
-                console.log(`[BUNDEL] Origineel aantal: ${allProjects.length}, na bundeling: ${gebundeld.length}`);
-                window.allProjects = gebundeld;
-                allProjects = gebundeld;
+                // Gebruik backenddata direct, geen extra bundeling!
+                window.allProjects = allProjects;
             } else if (allStudents.length > 0) {
                 // Alleen als er GEEN projecten zijn, fallback naar extractie uit studenten
                 console.log('🔄 [DEBUG] Backend returned no projects, extracting from students...');
@@ -725,21 +678,22 @@ class CardRenderer {
             const description = project.beschrijving || project.projectBeschrijving || 'Geen beschrijving beschikbaar';
             const id = project.id || project.projectId || '';
             const technologieen = project.technologieën || project.technologien || project.opleidingsrichting || '';
-            console.log(`[RENDER] Card ${idx}: id=${id}, titel=${title}, studenten=`, project.studenten, 'studentNaam:', project.studentNaam, 'tafelNr:', project.tafelNr);
             // 1. Als project.studenten een array is: toon per student
             if (Array.isArray(project.studenten) && project.studenten.length > 0) {
                 const studenten = project.studenten;
-                const studentListHTML = studenten.map(s => {
-                    const naam = (s.voornaam || s.achternaam) ? `${s.voornaam || ''} ${s.achternaam || ''}`.trim() : (s.naam || 'Onbekende student');
-                    const tafel = s.tafelNr ? `<span style='color:#666;font-weight:400'>(Tafel ${s.tafelNr})</span>` : '';
-                    return `<div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${naam} ${tafel}</div>`;
-                }).join('');
-                // Toon tafelNr bovenaan als ALLE studenten hetzelfde tafelNr hebben (en niet leeg/null)
+                // Verzamel alle unieke, niet-lege tafelNrs van studenten
+                const uniekeTafels = [...new Set(studenten.map(s => s.tafelNr).filter(t => t != null && t !== '' && t !== 'TBD'))];
+                // Toon tafelNr bovenaan alleen als ALLE studenten hetzelfde tafelNr hebben (en niet leeg)
                 let tafelDisplay = '';
-                const uniekeTafels = [...new Set(studenten.map(s => s.tafelNr).filter(t => t != null && t !== ''))];
-                if (uniekeTafels.length === 1) {
+                if (uniekeTafels.length === 1 && studenten.every(s => s.tafelNr === uniekeTafels[0])) {
                     tafelDisplay = `<span class="table-number">Tafel ${uniekeTafels[0]}</span>`;
                 }
+                const studentListHTML = studenten.map(s => {
+                    const naam = (s.voornaam || s.achternaam) ? `${s.voornaam || ''} ${s.achternaam || ''}`.trim() : (s.naam || 'Onbekende student');
+                    // Toon ALLEEN de eigen tafelNr van de student, of leeg als die ontbreekt
+                    const tafel = (s.tafelNr && s.tafelNr !== 'TBD') ? `<span style='color:#666;font-weight:400'>(Tafel ${s.tafelNr})</span>` : '';
+                    return `<div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${naam} ${tafel}</div>`;
+                }).join('');
                 return `
                     <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
                         <div class="card-header">
