@@ -241,6 +241,191 @@
     background: #661028;
 }
 
+/* 🎨 Modal en Dropdown Styling */
+
+/* Modal overlay styling */
+.tafel-assignment-modal, .bedrijf-assignment-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 10000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1;
+}
+
+.modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 2 !important;
+    margin: 0 !important;
+}
+
+.modal-content h3 {
+    color: #881538;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.current-assignment {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.current-project, .current-bedrijf {
+    margin-bottom: 1rem;
+}
+
+.assign-new {
+    margin-top: 1rem;
+}
+
+.assign-new h4 {
+    color: #881538;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Beautiful dropdown styling */
+.bedrijf-select, .project-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    margin-bottom: 1rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bedrijf-select:focus, .project-select:focus {
+    outline: none;
+    border-color: #881538;
+    box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.bedrijf-select:hover, .project-select:hover {
+    border-color: #A91B47;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Beautiful optgroup styling */
+.bedrijf-select optgroup, .project-select optgroup {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #881538;
+    background: #f8f9fa;
+    padding: 0.5rem 0;
+    margin: 0.25rem 0;
+}
+
+.bedrijf-select option, .project-select option {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    color: #333;
+    background: white;
+    border: none;
+}
+
+.bedrijf-select option:hover, .project-select option:hover {
+    background: #f8f9fa;
+    color: #881538;
+}
+
+.bedrijf-select option:disabled, .project-select option:disabled {
+    color: #6c757d;
+    background: #f1f3f4;
+    font-style: italic;
+}
+
+.bedrijf-select option[value=""], .project-select option[value=""] {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Button styling */
+.assign-btn, .remove-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.assign-btn {
+    background: #881538;
+    color: white;
+}
+
+.assign-btn:hover {
+    background: #A91B47;
+    transform: translateY(-2px);
+}
+
+.remove-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.remove-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.cancel-btn {
+    background: #6c757d;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .overzichtContainer {
