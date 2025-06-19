@@ -74,4 +74,7 @@ router.get('/', bedrijfController.getAllBedrijven);
 // DIT MOET ALS LAATSTE omdat :bedrijfsnummer alles kan matchen
 router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
 
+// Voeg deze route toe vóór de parameter route :bedrijfsnummer
+router.get('/:bedrijfsnummer/slots', bedrijfController.getAvailableTimeSlots);
+
 module.exports = router;

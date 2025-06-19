@@ -3,96 +3,88 @@ const express = require("express");
 const router = express.Router();
 const Reservatie = require("../MODELS/reservatie"); // Zorg dat dit pad klopt
 const { authenticateToken, requireRole } = require("../MIDDLEWARE/auth"); // Zorg dat dit pad klopt
+const Notificatie = require('../MODELS/notificatie');
 
 const EVENT_DATE_STRING = "2025-06-25"; // De vaste datum van het evenement
 
-// Student vraagt een reservatie aan
+// Student of bedrijf vraagt een reservatie aan
 router.post(
   "/request",
   authenticateToken,
-  requireRole(["student"]),
+  requireRole(["student", "bedrijf"]),
   async (req, res) => {
-    const { bedrijfsnummer, tijdslot } = req.body; // 'datum' is niet meer nodig uit frontend, we gebruiken EVENT_DATE_STRING
-    const studentnummer = req.user.studentnummer;
+    const { bedrijfsnummer, studentnummer, tijdslot } = req.body;
+    const user = req.user;
+    let reserverendeStudent = null;
+    let reserverendBedrijf = null;
 
-    if (!studentnummer || !bedrijfsnummer || !tijdslot) {
+    if (user.rol === 'student') {
+      reserverendeStudent = user.studentnummer || user.userId || user.gebruikersId;
+      reserverendBedrijf = bedrijfsnummer;
+    } else if (user.rol === 'bedrijf') {
+      reserverendeStudent = studentnummer;
+      reserverendBedrijf = user.bedrijfsnummer || user.userId || user.gebruikersId;
+    }
+
+    // Split tijdslot in startTijd en eindTijd
+    let startTijd = null, eindTijd = null;
+    if (tijdslot && tijdslot.includes('-')) {
+      [startTijd, eindTijd] = tijdslot.split('-').map(t => t.trim());
+    }
+
+    if (!reserverendeStudent || !reserverendBedrijf || !startTijd || !eindTijd) {
       return res.status(400).json({
         success: false,
-        message:
-          "Ontbrekende gegevens voor reservatie. Zorg dat tijdslot is geselecteerd.",
+        message: `Ontbrekende gegevens voor reservatie. Ontvangen: studentnummer=${reserverendeStudent}, bedrijfsnummer=${reserverendBedrijf}, startTijd=${startTijd}, eindTijd=${eindTijd}`
       });
     }
 
     try {
-      const [startTimeStr, endTimeStr] = tijdslot.split("-");
-      // BELANGRIJK: We creëren Date objecten met de VASTE EVENT_DATE_STRING
-      const startTijd = new Date(
-        `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{startTimeStr}:00`
-      );
-      const eindTijd = new Date(
-        `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{endTimeStr}:00`
-      );
-
-      // Controleer op conflicten voor student EN bedrijf
-      const conflicts = await Reservatie.checkTimeConflicts(
-        studentnummer,
-        bedrijfsnummer,
-        startTijd,
-        eindTijd
-      );
-      if (conflicts.length > 0) {
-        const studentConflict = conflicts.some(
-          (c) => c.studentnummer === studentnummer
-        );
-        const companyConflict = conflicts.some(
-          (c) => c.bedrijfsnummer === bedrijfsnummer
-        );
-
-        if (studentConflict && companyConflict) {
-          return res.status(409).json({
-            success: false,
-            message:
-              "Dit tijdslot conflicteert met jouw planning én de planning van het bedrijf.",
-          });
-        } else if (studentConflict) {
-          return res.status(409).json({
-            success: false,
-            message:
-              "Dit tijdslot conflicteert met een reeds geplande afspraak in jouw agenda.",
-          });
-        } else if (companyConflict) {
-          return res.status(409).json({
-            success: false,
-            message: "Dit tijdslot is al bezet of aangevraagd bij het bedrijf.",
-          });
-        }
+      // Controleer op tijdsconflicten (bevestigde afspraken)
+      const conflicts = await Reservatie.checkTimeConflicts(reserverendeStudent, reserverendBedrijf, startTijd, eindTijd);
+      if (conflicts && conflicts.some(r => r.status === 'bevestigd')) {
+        return res.status(409).json({
+          success: false,
+          message: 'Dit tijdslot is al bezet door een bevestigde afspraak.'
+        });
       }
 
       const reservatieId = await Reservatie.create({
-        studentnummer,
-        bedrijfsnummer,
-        startTijd: startTijd.toTimeString().split(" ")[0], // Sla alleen de tijd op als string "HH:MM:SS"
-        eindTijd: eindTijd.toTimeString().split(" ")[0], // Sla alleen de tijd op als string "HH:MM:SS"
-        status: "aangevraagd",
+        studentnummer: reserverendeStudent,
+        bedrijfsnummer: reserverendBedrijf,
+        startTijd,
+        eindTijd,
+        status: 'aangevraagd'
       });
 
       if (reservatieId) {
+        // Notificatie voor de andere partij
+        if (user.rol === 'student') {
+          await Notificatie.create({
+            bedrijfsnummer: reserverendBedrijf,
+            type: 'reservering_aanvraag',
+            boodschap: `Nieuwe reserveringsaanvraag van student ${reserverendeStudent} voor tijdslot ${startTijd}-${eindTijd}.`
+          });
+        } else if (user.rol === 'bedrijf') {
+          await Notificatie.create({
+            studentnummer: reserverendeStudent,
+            type: 'reservering_aanvraag',
+            boodschap: `Nieuwe reserveringsaanvraag van bedrijf ${reserverendBedrijf} voor tijdslot ${startTijd}-${eindTijd}.`
+          });
+        }
         res.status(201).json({
           success: true,
-          message:
-            "Reservatie succesvol aangevraagd. Wacht op bevestiging van het bedrijf.",
+          message: 'Reservatie succesvol aangevraagd. Wacht op bevestiging.',
           reservatieId,
         });
       } else {
-        res
-          .status(500)
-          .json({ success: false, message: "Kon reservatie niet aanmaken." });
+        res.status(500).json({ success: false, message: 'Kon reservatie niet aanmaken.' });
       }
     } catch (error) {
-      console.error("Error creating reservation request:", error);
+      console.error('Error creating reservation request:', error);
       res.status(500).json({
         success: false,
-        message: "Interne serverfout bij het aanvragen van de afspraak.",
+        message: 'Interne serverfout bij het aanvragen van de afspraak.',
       });
     }
   }
@@ -104,18 +96,15 @@ router.get(
   authenticateToken,
   requireRole(["student"]),
   async (req, res) => {
-    const studentnummer = req.user.studentnummer;
+    // Pak altijd het juiste studentnummer uit de token
+    const studentnummer = req.user.studentnummer || req.user.userId || req.user.gebruikersId;
     try {
       const reservaties = await Reservatie.getByStudent(studentnummer);
       // Voor de frontend, voeg de vaste datum toe aan de tijdvelden
       const formattedReservations = reservaties.map((r) => ({
         ...r,
-        startTijd: new Date(
-          `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{r.startTijd}`
-        ).toISOString(),
-        eindTijd: new Date(
-          `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{r.eindTijd}`
-        ).toISOString(),
+        startTijd: new Date(`${EVENT_DATE_STRING}T${r.startTijd}`).toISOString(),
+        eindTijd: new Date(`${EVENT_DATE_STRING}T${r.eindTijd}`).toISOString(),
       }));
       res.status(200).json({ success: true, data: formattedReservations });
     } catch (error) {
@@ -134,18 +123,16 @@ router.get(
   authenticateToken,
   requireRole(["bedrijf"]),
   async (req, res) => {
-    const bedrijfsnummer = req.user.bedrijfsnummer;
+    console.log("[DEBUG] req.user object:", req.user);
+    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
+    console.log("[DEBUG] Bedrijfsnummer uit token:", bedrijfsnummer);
     try {
       const reservaties = await Reservatie.getByBedrijf(bedrijfsnummer);
       // Voor de frontend, voeg de vaste datum toe aan de tijdvelden
       const formattedReservations = reservaties.map((r) => ({
         ...r,
-        startTijd: new Date(
-          `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{r.startTijd}`
-        ).toISOString(),
-        eindTijd: new Date(
-          `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{r.eindTijd}`
-        ).toISOString(),
+        startTijd: new Date(`${EVENT_DATE_STRING}T${r.startTijd}`).toISOString(),
+        eindTijd: new Date(`${EVENT_DATE_STRING}T${r.eindTijd}`).toISOString(),
       }));
       res.status(200).json({ success: true, data: formattedReservations });
     } catch (error) {
@@ -165,7 +152,7 @@ router.put(
   requireRole(["bedrijf"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const bedrijfsnummer = req.user.bedrijfsnummer;
+    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
 
     try {
       const reservatie = await Reservatie.getById(afspraakId);
@@ -188,6 +175,12 @@ router.put(
       });
 
       if (affectedRows > 0) {
+        // Notificatie voor student: geaccepteerd
+        await Notificatie.create({
+          studentnummer: reservatie.studentnummer,
+          type: 'reservering_geaccepteerd',
+          boodschap: `Je reservering bij bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} is geaccepteerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+        });
         res
           .status(200)
           .json({ success: true, message: "Reservatie succesvol bevestigd." });
@@ -214,7 +207,7 @@ router.put(
   requireRole(["bedrijf"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const bedrijfsnummer = req.user.bedrijfsnummer;
+    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
     const { reden } = req.body;
 
     try {
@@ -238,6 +231,12 @@ router.put(
       const affectedRows = await Reservatie.update(afspraakId, updateData);
 
       if (affectedRows > 0) {
+        // Notificatie voor student: geweigerd
+        await Notificatie.create({
+          studentnummer: reservatie.studentnummer,
+          type: 'reservering_geweigerd',
+          boodschap: `Je reservering bij bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} is geweigerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+        });
         res
           .status(200)
           .json({ success: true, message: "Reservatie succesvol geweigerd." });
@@ -310,4 +309,9 @@ router.put(
   }
 );
 
+/* LET OP: Tijdslot mag alleen als bezet worden beschouwd als er een bevestigde afspraak is
+Dit moet je ook in de frontend meenemen bij het tonen van slots (optioneel: backend kan een endpoint bieden)
+In de backend: check alleen op status 'bevestigd' bij het bepalen van bezette slots
+(Dit kan in de functie checkTimeConflicts of in de logica voor het ophalen van beschikbare slots)
+*/
 module.exports = router;
