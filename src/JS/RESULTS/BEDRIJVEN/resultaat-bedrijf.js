@@ -76,6 +76,18 @@ class BedrijfDetailManager {
       this.configureFixedDatePlanningUI();
       // Laad direct de planning voor de vaste datum
       await this.loadCompanyPlanning(this.bedrijfId, EVENT_DATE_FOR_PLANNING);
+
+      // Zet altijd de juiste bedrijf-id in de reserveren-link
+      const reserveerLink = document.getElementById('reserveerLink');
+      if (reserveerLink && this.bedrijfId) {
+        reserveerLink.href = `/reservatie?bedrijfId=${this.bedrijfId}`;
+        reserveerLink.classList.remove('disabled');
+        reserveerLink.onclick = null;
+      } else if (reserveerLink) {
+        reserveerLink.href = '#';
+        reserveerLink.classList.add('disabled');
+        reserveerLink.onclick = (e) => { e.preventDefault(); alert('Geen bedrijf geselecteerd.'); };
+      }
     } catch (error) {
       console.error("❌ Initialisatie mislukt:", error);
       this.showError(

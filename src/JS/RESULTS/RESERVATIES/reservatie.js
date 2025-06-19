@@ -2,12 +2,24 @@ let selectedSlot   = null;
 let currentDate    = new Date();
 let availableSlots = [];
 
+function getCompanyIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('bedrijfId');
+}
+
+const COMPANY_ID = getCompanyIdFromUrl();
+
+// Extra check: als er geen bedrijfId is, stop en redirect
+if (!COMPANY_ID) {
+  alert('Geen bedrijf geselecteerd. Je wordt teruggestuurd naar het bedrijvenoverzicht.');
+  window.location.href = '/alle-bedrijven';
+}
+
 function formatDate(date) {
   return date.toLocaleDateString('nl-NL', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 }
-
 
 function formatDateForAPI(date) {
   return date.toISOString().split('T')[0];
@@ -16,17 +28,20 @@ function formatDateForAPI(date) {
 // 1) Bedrijfsnaam + logo ophalen
 async function loadCompanyInfo() {
   try {
-    const resp    = await fetch(`${API_BASE_URL}/companies/${COMPANY_ID}`);
+    const resp = await fetch(`/api/bedrijven/${COMPANY_ID}`);
     if (!resp.ok) throw new Error();
-    const company = await resp.json();
-    document.getElementById('companyName').textContent = company.name;
-    document.getElementById('companyLogo').src         = company.logo_url;
-    document.getElementById('companyLogo').alt         = `Logo van ${company.name}`;
+    const result = await resp.json();
+    const company = result.data;
+    document.getElementById('companyName').textContent = company.naam;
+    document.getElementById('companyLogo').alt         = `Logo van ${company.naam}`;
+    // Optioneel: logo
+    if (company.logo_url) {
+      document.getElementById('companyLogo').src = company.logo_url;
+    }
   } catch {
     console.warn('Kon bedrijfsgegevens niet laden');
   }
 }
-
 
 // 2) Tijdslots ophalen voor gegeven datum
 async function loadTimeSlots(date) {
@@ -39,20 +54,20 @@ async function loadTimeSlots(date) {
   errorEl.style.display   = 'none';
 
   try {
-    const d    = formatDateForAPI(date);
-    const resp = await fetch(
-      `${API_BASE_URL}/companies/${COMPANY_ID}/slots?date=${d}`
-    );
+    const resp = await fetch(`/api/bedrijven/${COMPANY_ID}/slots`);
     if (!resp.ok) throw new Error();
-    const data = await resp.json();
-    availableSlots = data.slots || [];
-
+    const result = await resp.json();
+    availableSlots = (result.data || []).map(slot => ({
+      start_time: slot.start,
+      end_time: slot.end,
+      is_available: slot.available !== false, // fallback: true als niet opgegeven
+      id: slot.id || `${slot.start}-${slot.end}`
+    }));
     if (availableSlots.length) {
       const first = availableSlots[0].start_time;
       const last  = availableSlots[availableSlots.length-1].end_time;
       document.getElementById('timeRange').textContent = `${first} – ${last}`;
     }
-
     displayTimeSlots();
   } catch {
     generateMockSlots();
@@ -82,7 +97,6 @@ function generateMockSlots() {
   displayTimeSlots();
 }
 
-
 // 4) Slots renderen
 function displayTimeSlots() {
   const container = document.getElementById('timeSlots');
@@ -100,11 +114,14 @@ function displayTimeSlots() {
     el.className      = `time-slot ${slot.is_available?'available':'occupied'}`;
     el.innerHTML      = `<div class="time-label">${slot.start_time} – ${slot.end_time}</div>`;
     el.dataset.slotId = slot.id;
-    if (slot.is_available) el.addEventListener('click', () => selectSlot(el, slot));
+    if (slot.is_available) {
+      el.addEventListener('click', () => selectSlot(el, slot));
+    } else {
+      el.title = 'Dit tijdslot is al bezet';
+    }
     container.appendChild(el);
   });
 }
-
 
 // 5) Slot selecteren
 function selectSlot(el, slot) {
@@ -118,7 +135,6 @@ function selectSlot(el, slot) {
   document.getElementById('reserveBtn').disabled = false;
 }
 
-
 // 6) Reservering versturen
 async function makeReservation() {
   if (!selectedSlot) return;
@@ -128,22 +144,13 @@ async function makeReservation() {
   btn.textContent= 'Reserveren…';
 
   try {
-    const resp = await fetch(`${API_BASE_URL}/reservations`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        slot_id:    selectedSlot.id,
-        student_id: STUDENT_ID,
-        company_id: COMPANY_ID,
-        date:       formatDateForAPI(currentDate)
-      })
-    });
-    if (!resp.ok) throw new Error();
-    alert(`✅ Reservering geplaatst voor ${formatDate(currentDate)} om ${selectedSlot.start_time}`);
-    selectedSlot.is_available = false;
-    displayTimeSlots();
-    selectedSlot = null;
-    document.getElementById('selectedInfo').classList.remove('show');
+    const success = await window.ReservatieService.requestReservation(COMPANY_ID, `${selectedSlot.start_time}-${selectedSlot.end_time}`);
+    if (success) {
+      selectedSlot.is_available = false;
+      displayTimeSlots();
+      selectedSlot = null;
+      document.getElementById('selectedInfo').classList.remove('show');
+    }
   } catch {
     alert('❌ Reservering mislukt.');
   } finally {
@@ -156,7 +163,6 @@ async function makeReservation() {
 function goBack() {
   window.history.back();
 }
-
 
 // 8) Init: toon datum als tekst en laad alles
 async function init() {
