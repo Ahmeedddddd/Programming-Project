@@ -787,5 +787,344 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+/ Global variables
+let currentUser = null;
+
+// === MODAL FUNCTIONS ===
+function openPasswordModal() {
+    document.getElementById('passwordModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+
+    // Get current user info
+    getCurrentUser();
+
+    // Focus on first input
+    setTimeout(() => {
+        document.getElementById('currentPassword').focus();
+    }, 100);
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+
+    // Reset form
+    document.getElementById('passwordChangeForm').reset();
+    document.getElementById('modalMessage').innerHTML = '';
+    document.getElementById('passwordStrengthMeter').style.display = 'none';
+    document.getElementById('savePasswordBtn').disabled = true;
+
+    // Reset requirements
+    resetPasswordRequirements();
+}
+
+// === PASSWORD VISIBILITY TOGGLE ===
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    const icon = button.querySelector('i');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+// === PASSWORD STRENGTH VALIDATION ===
+function validatePasswordStrength(password) {
+    const requirements = {
+        minLength: password.length >= 8,
+        hasUppercase: /[A-Z]/.test(password),
+        hasLowercase: /[a-z]/.test(password),
+        hasNumbers: /\d/.test(password),
+        hasSpecialChars: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        noCommonPatterns: !/(password|123456|qwerty|admin|welcome|login)/i.test(password)
+    };
+
+    const score = Object.values(requirements).filter(Boolean).length;
+    const isValid = score >= 6 && requirements.minLength;
+
+    return {
+        requirements,
+        score,
+        maxScore: 6,
+        isValid,
+        level: getSecurityLevel(score),
+        message: getSecurityMessage(score)
+    };
+}
+
+function getSecurityLevel(score) {
+    if (score >= 6) return 'maximum';
+    if (score >= 5) return 'strong';
+    if (score >= 3) return 'medium';
+    return 'weak';
+}
+
+function getSecurityMessage(score) {
+    if (score >= 6) return 'Uitstekend - Maximale beveiliging';
+    if (score >= 5) return 'Sterk - Goede beveiliging';
+    if (score >= 3) return 'Gemiddeld - Kan beter';
+    return 'Zwak - Niet veilig genoeg';
+}
+
+function updatePasswordStrength(password) {
+    const meter = document.getElementById('passwordStrengthMeter');
+
+    if (!password) {
+        meter.style.display = 'none';
+        return false;
+    }
+
+    meter.style.display = 'block';
+
+    const validation = validatePasswordStrength(password);
+    const { requirements, score, level, message } = validation;
+
+    // Update progress bar
+    const progressBar = document.getElementById('strengthBar');
+    const progressText = document.getElementById('strengthText');
+
+    const percentage = (score / 6) * 100;
+    progressBar.style.width = percentage + '%';
+    progressBar.className = `strength-fill strength-${level}`;
+    progressText.textContent = `Wachtwoord sterkte: ${message}`;
+
+    // Update requirements list
+    updateRequirement('req-length', requirements.minLength);
+    updateRequirement('req-uppercase', requirements.hasUppercase);
+    updateRequirement('req-lowercase', requirements.hasLowercase);
+    updateRequirement('req-number', requirements.hasNumbers);
+    updateRequirement('req-special', requirements.hasSpecialChars);
+    updateRequirement('req-patterns', requirements.noCommonPatterns);
+
+    return validation.isValid;
+}
+
+function updateRequirement(elementId, isValid) {
+    const element = document.getElementById(elementId);
+    const icon = element.querySelector('.requirement-icon');
+
+    if (isValid) {
+        element.className = 'valid';
+        icon.className = 'requirement-icon valid';
+        icon.textContent = '✓';
+    } else {
+        element.className = 'invalid';
+        icon.className = 'requirement-icon invalid';
+        icon.textContent = '✗';
+    }
+}
+
+function resetPasswordRequirements() {
+    const requirements = ['req-length', 'req-uppercase', 'req-lowercase', 'req-number', 'req-special', 'req-patterns'];
+    requirements.forEach(req => updateRequirement(req, false));
+}
+
+// === FORM VALIDATION ===
+function validateForm() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    const hasCurrentPassword = currentPassword.length > 0;
+    const hasValidNewPassword = updatePasswordStrength(newPassword);
+    const passwordsMatch = newPassword === confirmPassword && newPassword.length > 0;
+
+    const isValid = hasCurrentPassword && hasValidNewPassword && passwordsMatch;
+
+    document.getElementById('savePasswordBtn').disabled = !isValid;
+
+    return isValid;
+}
+
+// === USER MANAGEMENT ===
+async function getCurrentUser() {
+    try {
+        // Try to get user from session storage
+        currentUser = {
+            gebruikersId: sessionStorage.getItem('gebruikersId') || localStorage.getItem('gebruikersId'),
+            userType: sessionStorage.getItem('userType') || localStorage.getItem('userType'),
+            email: sessionStorage.getItem('email') || localStorage.getItem('email')
+        };
+
+        console.log('Current user:', currentUser);
+    } catch (error) {
+        console.error('Error getting current user:', error);
+    }
+}
+
+// === PASSWORD CHANGE API ===
+async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        showMessage('Wachtwoorden komen niet overeen', 'error');
+        return;
+    }
+
+    // Validate strength
+    if (!updatePasswordStrength(newPassword)) {
+        showMessage('Nieuw wachtwoord voldoet niet aan alle beveiligingseisen', 'error');
+        return;
+    }
+
+    // Show loading state
+    const saveBtn = document.getElementById('savePasswordBtn');
+    const originalContent = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<div class="loading-spinner"></div> Bezig met opslaan...';
+    saveBtn.disabled = true;
+
+    try {
+        const response = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                gebruikersId: currentUser?.gebruikersId,
+                currentPassword: currentPassword,
+                newPassword: newPassword
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showMessage('Wachtwoord succesvol gewijzigd! 🎉', 'success');
+
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                closePasswordModal();
+            }, 2000);
+        } else {
+            showMessage(result.message || 'Er ging iets mis bij het wijzigen van het wachtwoord', 'error');
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        showMessage('Netwerkfout: Kan geen verbinding maken met de server', 'error');
+    } finally {
+        // Restore button
+        saveBtn.innerHTML = originalContent;
+        saveBtn.disabled = false;
+        validateForm();
+    }
+}
+
+// === MESSAGE DISPLAY ===
+function showMessage(message, type = 'info') {
+    const messageContainer = document.getElementById('modalMessage');
+    const className = type === 'error' ? 'error-message' : 'success-message';
+    const icon = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+
+    messageContainer.innerHTML = `
+        <div class="${className}">
+            <i class="${icon}"></i>
+            ${message}
+        </div>
+    `;
+
+    // Auto-hide success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            messageContainer.innerHTML = '';
+        }, 5000);
+    }
+}
+
+// === EVENT LISTENERS ===
+document.addEventListener('DOMContentLoaded', function () {
+    // Password input event listeners
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const currentPasswordInput = document.getElementById('currentPassword');
+
+    if (newPasswordInput) {
+        newPasswordInput.addEventListener('input', function () {
+            updatePasswordStrength(this.value);
+            validateForm();
+        });
+    }
+
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', validateForm);
+    }
+
+    if (currentPasswordInput) {
+        currentPasswordInput.addEventListener('input', validateForm);
+    }
+
+    // Save button click
+    const saveBtn = document.getElementById('savePasswordBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', changePassword);
+    }
+
+    // Form submit prevention
+    const form = document.getElementById('passwordChangeForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (validateForm()) {
+                changePassword();
+            }
+        });
+    }
+
+    // Close modal on outside click
+    const modal = document.getElementById('passwordModal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closePasswordModal();
+            }
+        });
+    }
+
+    // Escape key to close modal
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && document.getElementById('passwordModal').style.display === 'block') {
+            closePasswordModal();
+        }
+    });
+
+    // Connect existing password change buttons
+    connectPasswordChangeButtons();
+});
+
+// === INTEGRATION HELPER ===
+function connectPasswordChangeButtons() {
+    // Find all password change buttons and connect them
+    const buttons = document.querySelectorAll('button');
+
+    buttons.forEach(button => {
+        const buttonText = button.textContent || button.innerText;
+        const buttonHTML = button.innerHTML;
+
+        // Check if this is a password change button
+        if ((buttonText.includes('Wachtwoord') && buttonText.includes('Wijzigen')) ||
+            buttonHTML.includes('fa-key')) {
+
+            // Remove any existing onclick handlers
+            button.removeAttribute('onclick');
+
+            // Add new event listener
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                openPasswordModal();
+            });
+
+            console.log('✅ Connected password change button:', button);
+        }
+    });
+}
+
 // Export for module usage
 export default StudentGegevens;
