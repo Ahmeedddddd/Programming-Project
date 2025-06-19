@@ -112,18 +112,16 @@ router.get(
   authenticateToken,
   requireRole(["bedrijf"]),
   async (req, res) => {
-    const bedrijfsnummer = req.user.bedrijfsnummer;
+    console.log("[DEBUG] req.user object:", req.user);
+    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
+    console.log("[DEBUG] Bedrijfsnummer uit token:", bedrijfsnummer);
     try {
       const reservaties = await Reservatie.getByBedrijf(bedrijfsnummer);
       // Voor de frontend, voeg de vaste datum toe aan de tijdvelden
       const formattedReservations = reservaties.map((r) => ({
         ...r,
-        startTijd: new Date(
-          `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{r.startTijd}`
-        ).toISOString(),
-        eindTijd: new Date(
-          `<span class="math-inline">\{EVENT\_DATE\_STRING\}T</span>{r.eindTijd}`
-        ).toISOString(),
+        startTijd: new Date(`${EVENT_DATE_STRING}T${r.startTijd}`).toISOString(),
+        eindTijd: new Date(`${EVENT_DATE_STRING}T${r.eindTijd}`).toISOString(),
       }));
       res.status(200).json({ success: true, data: formattedReservations });
     } catch (error) {
@@ -143,7 +141,7 @@ router.put(
   requireRole(["bedrijf"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const bedrijfsnummer = req.user.bedrijfsnummer;
+    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
 
     try {
       const reservatie = await Reservatie.getById(afspraakId);
@@ -198,7 +196,7 @@ router.put(
   requireRole(["bedrijf"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const bedrijfsnummer = req.user.bedrijfsnummer;
+    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
     const { reden } = req.body;
 
     try {

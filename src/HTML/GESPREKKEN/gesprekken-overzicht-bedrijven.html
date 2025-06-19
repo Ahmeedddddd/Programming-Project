@@ -27,45 +27,24 @@
       
     <section class="gesprekkenKaart">
       <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
-      <div class="gesprekkenTable">
+      <div class="gesprekkenTable" id="bedrijfGesprekkenTable">
         <div class="gesprekkenTableHeader">
           <div>Naam student</div>
           <div>Tijdslot</div>
           <div>Locatie</div>
           <div>Actie</div>
         </div>
-        <div class="gesprekkenTableRow">
-          <div>John Doe</div>
-          <div>16:00-16:30</div>
-          <div class="locatieCel">Tafel 1</div>
-          <div class="gesprekkenActions">
-            <button class="actieBtn bevestigBtn">
-              <span class="actieIcon">&#9745;</span> Bevestig
-            </button>
-            <button class="actieBtn verwijderBtn">
-              <span class="actieIcon">&#128465;</span> Verwijder
-            </button>
-          </div>
-        </div>
-        <div class="gesprekkenTableRow">
-          <div>Jeretom Carnomina</div>
-          <div>14:00-14:30</div>
-          <div class="locatieCel">Tafel 1</div>
-          <div class="gesprekkenActions">
-            <button class="actieBtn bevestigBtn">
-              <span class="actieIcon">&#9745;</span> Bevestig
-            </button>
-            <button class="actieBtn verwijderBtn">
-              <span class="actieIcon">&#128465;</span> Verwijder
-            </button>
-          </div>
-        </div>
+        <!-- Dynamisch geladen gesprekken komen hieronder -->
       </div>
+      <div id="loadingBedrijfGesprekken" style="display:none; text-align:center; padding:1rem;">Laden...</div>
+      <div id="noBedrijfGesprekken" style="display:none; text-align:center; padding:1rem;">Geen gesprekken gevonden.</div>
+      <div id="errorBedrijfGesprekken" style="display:none; color:red; text-align:center; padding:1rem;"></div>
     </section>
     
   </div>
 
-
-  
+  <script src="/src/JS/api.js"></script>
+  <script src="/src/JS/reservatieService.js"></script>
+  <script src="/src/JS/GESPREKKEN/gesprekkenBedrijf.js"></script>
 </body>
 </html>

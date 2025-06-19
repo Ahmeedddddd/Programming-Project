@@ -1,6 +1,8 @@
 // src/JS/GESPREKKEN/gesprekkenBedrijf.js
 // Requires api.js, reservatieService.js, and notification-system.js
 
+console.log("✅ gesprekkenBedrijf.js geladen (studentenstructuur)");
+
 const EVENT_DATE_STRING_GESPREKKEN = '2025-06-25'; // De vaste datum van het evenement
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -25,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         try {
+            // Gebruik de ReservatieService om de bedrijfsgesprekken op te halen
             const meetings = await ReservatieService.getCompanyReservations();
 
             if (meetings && meetings.length > 0) {
@@ -36,8 +39,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     row.className = 'gesprekkenTableRow';
                     row.dataset.reservatieId = meeting.id;
 
+                    // Backend stuurt nu ISO strings, dus direct parsen.
                     const startDate = new Date(meeting.startTijd);
                     const endDate = new Date(meeting.eindTijd);
+                    // Formatteer de tijden
                     const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const timeSlotDisplay = `${formattedStartTime}-${formattedEndTime}`;
@@ -46,9 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let statusHtml = `<div class="status-${meeting.status}">${displayStatus}</div>`;
                     if (meeting.status === 'geweigerd') {
                         statusHtml = `<div class="status-geweigerd" style="color: #dc3545; font-weight: bold;">Geweigerd${meeting.redenWeigering ? ': ' + meeting.redenWeigering : ''}</div>`;
-                    }
-                    if (meeting.status === 'bevestigd') {
-                        statusHtml = `<div class="status-bevestigd" style="color: #28a745; font-weight: bold;">Bevestigd</div>`;
                     }
 
                     row.innerHTML = `
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             showLoading(true);
                             const success = await ReservatieService.acceptReservation(reservatieId);
                             if (success) {
-                                await loadCompanyGesprekken(); // Reload data
+                                await loadCompanyGesprekken(); // Herlaad data na succesvolle actie
                             }
                             showLoading(false);
                         }
@@ -94,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             showLoading(true);
                             const success = await ReservatieService.rejectReservation(reservatieId, reden);
                             if (success) {
-                                await loadCompanyGesprekken(); // Reload data
+                                await loadCompanyGesprekken(); // Herlaad data na succesvolle actie
                             }
                             showLoading(false);
                         }
@@ -108,10 +110,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error loading company conversations:', error);
             if (errorMessage) {
-                errorMessage.textContent = `Fout bij het laden van gesprekken: ${error.message}`;
+                errorMessage.textContent = `Fout bij het laden van je gesprekken: ${error.message}`;
                 errorMessage.style.display = 'block';
             }
-            if (window.showNotification) showNotification(`Fout bij het laden van gesprekken: ${error.message}`, 'error');
+            if (window.showNotification) window.showNotification(`Fout bij het laden van gesprekken: ${error.message}`, 'error');
         } finally {
             if (loadingMessage) loadingMessage.style.display = 'none';
         }
@@ -119,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initial load
     loadCompanyGesprekken();
-
+    
     // Ensure showLoading and showNotification are available (assuming they are in notification-system.js)
     window.showNotification = window.showNotification || function(message, type = 'success') { console.log(message); };
     window.showLoading = window.showLoading || function(show) { 

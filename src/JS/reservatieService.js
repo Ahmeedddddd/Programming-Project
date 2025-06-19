@@ -1,3 +1,5 @@
+console.log("✅ reservatieService.js geladen");
+
 // Fallback voor showNotification als deze niet bestaat
 if (typeof window.showNotification !== 'function') {
     window.showNotification = function(msg, type) { alert(msg); };
