@@ -287,7 +287,7 @@ class PlattegrondVoormiddagManager {
 
     async loadAvailableStudents() {
         try {
-            const response = await fetch('http://localhost:3301/api/studenten?hasProject=true');
+            const response = await fetch('http://localhost:8383/api/studenten?hasProject=true');
             const result = await response.json();
 
             if (result.success) {
@@ -325,17 +325,26 @@ class PlattegrondVoormiddagManager {
                     ` : `
                         <p>📭 Deze tafel heeft geen toewijzing</p>
                     `}
-                    
-                    <div class="assign-new">
+                      <div class="assign-new">
                         <h4>Student toewijzen:</h4>
                         <select id="studentSelect" class="student-select">
                             <option value="">Selecteer een student...</option>
-                            ${this.availableStudents.map(student => `
-                                <option value="${student.studentnummer}" ${student.tafelNr ? 'disabled' : ''}>
-                                    ${student.voornaam} ${student.achternaam} - ${student.projectTitel}
-                                    ${student.tafelNr ? ` (Tafel ${student.tafelNr})` : ''}
-                                </option>
-                            `).join('')}
+                            ${[...this.availableStudents]
+                                .sort((a, b) => {
+                                    // Beschikbare studenten (geen tafelNr) komen eerst
+                                    if (!a.tafelNr && b.tafelNr) return -1;
+                                    if (a.tafelNr && !b.tafelNr) return 1;
+                                    // Binnen dezelfde categorie: sorteer op naam
+                                    const nameA = `${a.voornaam} ${a.achternaam}`;
+                                    const nameB = `${b.voornaam} ${b.achternaam}`;
+                                    return nameA.localeCompare(nameB);
+                                })
+                                .map(student => `
+                                    <option value="${student.studentnummer}" ${student.tafelNr ? 'disabled' : ''}>
+                                        ${student.voornaam} ${student.achternaam} - ${student.projectTitel}
+                                        ${student.tafelNr ? ` (Tafel ${student.tafelNr})` : ''}
+                                    </option>
+                                `).join('')}
                         </select>
                         <button class="assign-btn" onclick="window.plattegrondManager.assignStudentToTafel(${tafel.tafelNr})">
                             ✅ Toewijzen
@@ -365,7 +374,7 @@ class PlattegrondVoormiddagManager {
 
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:3301/api/tafels/student/${studentId}/tafel/${tafelNr}`, {
+            const response = await fetch(`http://localhost:8383/api/tafels/student/${studentId}/tafel/${tafelNr}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -373,12 +382,12 @@ class PlattegrondVoormiddagManager {
                 }
             });
 
-            const result = await response.json();
-
-            if (result.success) {
+            const result = await response.json();            if (result.success) {
                 this.showSuccess(`Student toegewezen aan tafel ${tafelNr}!`);
                 this.closeModal();
                 await this.loadTafelData(); // Herlaad data
+                // Cache invalideren zodat studenten lijst wordt ververst
+                this.availableStudents = [];
             } else {
                 throw new Error(result.message || 'Toewijzing mislukt');
             }
@@ -391,7 +400,7 @@ class PlattegrondVoormiddagManager {
     async removeStudentFromTafel(studentId) {
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:3301/api/tafels/student/${studentId}`, {
+            const response = await fetch(`http://localhost:8383/api/tafels/student/${studentId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -399,12 +408,29 @@ class PlattegrondVoormiddagManager {
                 }
             });
 
-            const result = await response.json();
-
-            if (result.success) {
+            const result = await response.json();            if (result.success) {
                 this.showSuccess('Student verwijderd van tafel!');
-                this.closeModal();
+                // NIET de modal sluiten, maar verversen voor directe nieuwe toewijzing
                 await this.loadTafelData(); // Herlaad data
+                
+                // Cache invalideren zodat studenten lijst wordt ververst
+                this.availableStudents = [];
+                await this.loadAvailableStudents(); // Herlaad beschikbare studenten
+                
+                // Update de modal met nieuwe gegevens (tafel is nu leeg)
+                const currentModal = document.querySelector('.tafel-assignment-modal');
+                if (currentModal) {
+                    const tafelNr = this.selectedTafel.tafelNr;
+                    const updatedTafel = { tafelNr: tafelNr, items: [] }; // Tafel is nu leeg
+                    this.selectedTafel = updatedTafel;
+                    
+                    // Vervang modal content
+                    const newModal = this.createAssignmentModal(updatedTafel);
+                    currentModal.innerHTML = newModal.innerHTML;
+                    
+                    // Update dropdown met nieuwe studenten
+                    this.updateModalWithStudents(currentModal, updatedTafel);
+                }
             } else {
                 throw new Error(result.message || 'Verwijdering mislukt');
             }
@@ -515,6 +541,35 @@ class PlattegrondVoormiddagManager {
         } else {
             alert(`${type.toUpperCase()}: ${message}`);
         }
+    }    updateModalWithStudents(modal, tafel) {
+        const studentSelect = modal.querySelector('#studentSelect');
+        if (studentSelect && this.availableStudents) {
+            // Clear loading state
+            studentSelect.innerHTML = '<option value="">Selecteer student...</option>';
+            
+            // Sorteer studenten: beschikbare eerst, dan toegewezen
+            const sortedStudents = [...this.availableStudents].sort((a, b) => {
+                // Beschikbare studenten (geen tafelNr) komen eerst
+                if (!a.tafelNr && b.tafelNr) return -1;
+                if (a.tafelNr && !b.tafelNr) return 1;
+                // Binnen dezelfde categorie: sorteer op naam
+                return a.naam.localeCompare(b.naam);
+            });
+            
+            // Add sorted students
+            sortedStudents.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.studentnummer;
+                option.textContent = `${student.naam} - ${student.projectTitel || 'Geen project'}`;
+                if (student.tafelNr) {
+                    option.disabled = true;
+                    option.textContent += ` (Tafel ${student.tafelNr})`;
+                }
+                studentSelect.appendChild(option);
+            });
+            
+            console.log('🔄 Modal updated with students data');
+        }
     }
 }
 
@@ -523,7 +578,6 @@ window.plattegrondManager = null;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM loaded, initializing PlattegrondVoormiddagManager...');
     window.plattegrondManager = new PlattegrondVoormiddagManager();
 });
 
