@@ -51,30 +51,28 @@ class BedrijfDetailManager {
 
       if (!this.bedrijfId) {
         console.error("❌ Geen bedrijf ID gevonden in URL");
-        console.log("🔧 Huidige URL:", window.location.href);
-        console.log("🔧 Verwacht formaat: /resultaat-bedrijf?id=1");
-
         // Probeer het eerste beschikbare bedrijf te laden als fallback
         await this.loadFirstAvailableBedrijf();
-        // Als loadFirstAvailableBedrijf het bedrijfId succesvol zet, gaat de rest van init verder.
-        // Als het faalt, toont het een error en is bedrijfId nog steeds null.
         if (!this.bedrijfId) {
-          // Nog steeds geen bedrijfId na fallback poging
           this.showError(
             "Geen bedrijf ID gevonden en geen bedrijven beschikbaar. Ga terug naar alle bedrijven."
           );
           this.displayErrorState();
+          // Zet reserveren-link uit
+          const reserveerLink = document.getElementById('reserveerLink');
+          if (reserveerLink) {
+            reserveerLink.href = '#';
+            reserveerLink.classList.add('disabled');
+            reserveerLink.onclick = (e) => { e.preventDefault(); alert('Geen bedrijf geselecteerd.'); };
+          }
           return;
         }
       }
 
       console.log("🎯 Laden bedrijf met ID:", this.bedrijfId);
-      await this.loadBedrijfDetail(); // Laad details van het nu geldige bedrijfId
+      await this.loadBedrijfDetail();
       this.setupEventListeners();
-
-      // Configureer de vaste datum in de planner UI
       this.configureFixedDatePlanningUI();
-      // Laad direct de planning voor de vaste datum
       await this.loadCompanyPlanning(this.bedrijfId, EVENT_DATE_FOR_PLANNING);
 
       // Zet altijd de juiste bedrijf-id in de reserveren-link
@@ -94,14 +92,13 @@ class BedrijfDetailManager {
         "Er ging iets mis bij het laden van de bedrijfsgegevens: " +
           error.message
       );
-      this.displayErrorState(); // Toon de error state HTML bij init faling
+      this.displayErrorState();
     }
   }
 
   getBedrijfIdFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
-    console.log("🔍 Bedrijf ID from URL:", id);
     return id;
   }
 

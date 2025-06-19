@@ -36,21 +36,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                     row.className = 'gesprekkenTableRow';
                     row.dataset.reservatieId = meeting.id;
 
-                    // Backend stuurt nu ISO strings, dus direct parsen.
                     const startDate = new Date(meeting.startTijd);
                     const endDate = new Date(meeting.eindTijd);
-                    
-                    // Formatteer de tijden correct met template literals
                     const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const timeSlotDisplay = `${formattedStartTime}-${formattedEndTime}`;
-                    
                     const displayStatus = meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1);
+
+                    let statusHtml = `<div class="status-${meeting.status}">${displayStatus}</div>`;
+                    if (meeting.status === 'geweigerd') {
+                        statusHtml = `<div class="status-geweigerd" style="color: #dc3545; font-weight: bold;">Geweigerd${meeting.redenWeigering ? ': ' + meeting.redenWeigering : ''}</div>`;
+                    }
+                    if (meeting.status === 'bevestigd') {
+                        statusHtml = `<div class="status-bevestigd" style="color: #28a745; font-weight: bold;">Bevestigd</div>`;
+                    }
 
                     row.innerHTML = `
                         <div>${meeting.studentNaam || 'Onbekende Student'}</div>
                         <div>${timeSlotDisplay} op ${startDate.toLocaleDateString('nl-BE')}</div>
-                        <div class="status-${meeting.status}">${displayStatus}</div>
+                        <div class="locatieCel">${meeting.locatie || '-'}</div>
+                        ${statusHtml}
                         <div class="gesprekkenActions">
                             ${meeting.status === 'aangevraagd' ?
                                 `<button class="actieBtn bevestigBtn accept-reservation" data-id="${meeting.id}">

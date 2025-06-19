@@ -48,12 +48,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                     const displayStatus = meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1);
 
+                    let statusHtml = `<div class="status-${meeting.status}">${displayStatus}</div>`;
+                    if (meeting.status === 'geweigerd') {
+                        statusHtml = `<div class="status-geweigerd" style="color: #dc3545; font-weight: bold;">Geweigerd${meeting.redenWeigering ? ': ' + meeting.redenWeigering : ''}</div>`;
+                    }
+
                     row.innerHTML = `
                         <div>${meeting.bedrijfNaam}</div>
                         <div>${timeSlotDisplay} op ${startDate.toLocaleDateString('nl-BE')}</div>
-                        <div class="status-${meeting.status}">${displayStatus}</div>
+                        ${statusHtml}
                         <div class="gesprekkenActions">
-                            ${meeting.status === 'aangevraagd' || meeting.status === 'bevestigd' ?
+                            ${meeting.status === 'aangevraagd' ?
                                 `<button class="actieBtn verwijderBtn cancel-reservation" data-id="${meeting.id}">
                                     <span class="actieIcon">&#128465;</span> Annuleer
                                 </button>` :
