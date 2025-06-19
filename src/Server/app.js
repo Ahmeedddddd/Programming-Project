@@ -556,6 +556,10 @@ app.get(
   requireAuth,
   redirectWithParams("/bedrijfgegevens", "/gegevensBedrijf")
 )
+
+const passwordChangeRoutes = require('./ROUTES/auth/change-password');
+app.use('/api/auth', passwordChangeRoutes);
+
 // Add remaining legacy routes for bedrijf, student, project, programma, etc.
 
 // ===== ERROR HANDLING =====
