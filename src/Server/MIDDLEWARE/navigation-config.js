@@ -46,7 +46,7 @@ const NAVIGATION_CONFIG = {
   bedrijf: {
     navbar: [
       { href: "/bedrijf-homepage", text: "Home" },
-      { href: "/programma-bedrijven", text: "Programma" },
+      { href: "/programma", text: "Programma" },
       { href: "/gesprekkenOverzichtBedrijven", text: "Gesprekken" },
       { href: "/alleStudenten", text: "Studenten" },
       { href: "/account-bedrijf", text: "Account", highlight: true }
