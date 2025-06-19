@@ -8,8 +8,7 @@ const Bedrijf = require('../MODELS/bedrijf');
 const tafelController = {
 
   // ===== PUBLIC ENDPOINTS =====
-
-  // GET /api/tafels/voormiddag - Studenten aan tafels (voormiddag)
+  // GET /api/tafels/voormiddag - Projecten aan tafels (voormiddag)
   async getVoormiddagTafels(req, res) {
     try {
       console.log('📡 Fetching voormiddag tafel assignments...');
@@ -29,30 +28,56 @@ const tafelController = {
         WHERE s.tafelNr IS NOT NULL 
         AND s.projectTitel IS NOT NULL 
         AND s.projectTitel != ''
-        ORDER BY s.tafelNr ASC
+        ORDER BY s.tafelNr ASC, s.projectTitel ASC
       `);
 
-      // Groepeer per tafel
+      // Groepeer per tafel en dan per project
       const tafelGroepen = {};
+      const projectGroepen = {};
+      
       rows.forEach(student => {
         const tafelNr = student.tafelNr;
+        const projectTitel = student.projectTitel;
+        
+        // Groepeer studenten per project
+        if (!projectGroepen[projectTitel]) {
+          projectGroepen[projectTitel] = {
+            projectTitel: projectTitel,
+            projectBeschrijving: student.projectBeschrijving,
+            studenten: [],
+            tafelNr: tafelNr
+          };
+        }
+        
+        projectGroepen[projectTitel].studenten.push({
+          studentnummer: student.studentnummer,
+          naam: `${student.voornaam} ${student.achternaam}`,
+          email: student.email,
+          opleiding: student.opleiding,
+          opleidingsrichting: student.opleidingsrichting
+        });
+      });
+
+      // Converteer naar tafel structuur met projecten
+      Object.values(projectGroepen).forEach(project => {
+        const tafelNr = project.tafelNr;
         if (!tafelGroepen[tafelNr]) {
           tafelGroepen[tafelNr] = {
             tafelNr: tafelNr,
-            type: 'student',
+            type: 'project',
             periode: 'voormiddag',
             items: []
           };
         }
+        
         tafelGroepen[tafelNr].items.push({
-          id: student.studentnummer,
-          naam: `${student.voornaam} ${student.achternaam}`,
-          titel: student.projectTitel,
-          beschrijving: student.projectBeschrijving,
-          opleiding: student.opleiding,
-          opleidingsrichting: student.opleidingsrichting,
-          email: student.email,
-          type: 'student'
+          id: project.projectTitel, // Gebruik project titel als ID
+          naam: project.projectTitel,
+          titel: project.projectTitel,
+          beschrijving: project.projectBeschrijving,
+          studenten: project.studenten,
+          aantalStudenten: project.studenten.length,
+          type: 'project'
         });
       });
 
@@ -61,7 +86,7 @@ const tafelController = {
         data: Object.values(tafelGroepen),
         count: Object.keys(tafelGroepen).length,
         periode: 'voormiddag',
-        message: 'Voormiddag tafel toewijzingen opgehaald'
+        message: 'Voormiddag project toewijzingen opgehaald'
       });
 
     } catch (error) {
