@@ -1,6 +1,5 @@
-// src/Server/CONTROLLERS/bedrijfController.js
-
-const { pool } = require('../CONFIG/database');
+//src/Server/CONTROLLERS/bedrijfController.js
+const Bedrijf = require('../MODELS/bedrijf');
 const { validationResult } = require('express-validator');
 
 const bedrijfController = {
@@ -10,59 +9,17 @@ const bedrijfController = {
   // GET /api/bedrijven - Alle bedrijven ophalen
   async getAllBedrijven(req, res) {
     try {
-      console.log('📋 [bedrijfController] getAllBedrijven called');
-      
       let limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
-      if (isNaN(limit) || limit < 1) limit = 50; // Default limit
-      
+      if (isNaN(limit) || limit < 1) limit = null;
       const searchTerm = req.query.search || '';
-      
-      let query = `
-        SELECT 
-          bedrijfsnummer,
-          bedrijfsnaam,
-          email,
-          website,
-          stad,
-          beschrijving,
-          sector,
-          werknemers,
-          logo_url,
-          created_at
-        FROM bedrijven 
-        WHERE 1=1
-      `;
-      
-      const queryParams = [];
-      let paramCount = 0;
-
-      // Add search filter if provided
-      if (searchTerm) {
-        paramCount++;
-        query += ` AND (bedrijfsnaam ILIKE $${paramCount} OR beschrijving ILIKE $${paramCount} OR sector ILIKE $${paramCount})`;
-        queryParams.push(`%${searchTerm}%`);
-      }
-
-      query += ` ORDER BY bedrijfsnaam ASC`;
-      
-      if (limit) {
-        paramCount++;
-        query += ` LIMIT $${paramCount}`;
-        queryParams.push(limit);
-      }
-
-      const result = await pool.query(query, queryParams);
-      
-      console.log(`✅ [bedrijfController] Found ${result.rows.length} bedrijven`);
-      
+      const bedrijven = await Bedrijf.getAll(limit, searchTerm);
       res.json({
         success: true,
-        data: result.rows,
-        count: result.rows.length,
-        searchTerm: searchTerm || null
+        data: bedrijven,
+        count: bedrijven.length
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error fetching companies:', error);
+      console.error('Error fetching companies:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to fetch companies',
@@ -74,41 +31,18 @@ const bedrijfController = {
   // GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
   async getBedrijf(req, res) {
     try {
-      console.log('🔍 [bedrijfController] getBedrijf called');
       const { bedrijfsnummer } = req.params;
       
       if (!bedrijfsnummer || isNaN(bedrijfsnummer)) {
         return res.status(400).json({ 
           success: false,
-          error: 'Invalid bedrijfsnummer provided',
-          message: 'Ongeldig bedrijfsnummer'
+          error: 'Invalid bedrijfsnummer provided' 
         });
       }
 
-      const query = `
-        SELECT 
-          bedrijfsnummer,
-          bedrijfsnaam,
-          email,
-          website,
-          adres,
-          postcode,
-          stad,
-          beschrijving,
-          sector,
-          werknemers,
-          logo_url,
-          contactpersoon_naam,
-          contactpersoon_functie,
-          created_at
-        FROM bedrijven 
-        WHERE bedrijfsnummer = $1
-      `;
-
-      const result = await pool.query(query, [bedrijfsnummer]);
+      const bedrijf = await Bedrijf.getById(bedrijfsnummer);
       
-      if (result.rows.length === 0) {
-        console.log('❌ [bedrijfController] Bedrijf not found:', bedrijfsnummer);
+      if (!bedrijf) {
         return res.status(404).json({ 
           success: false,
           error: 'Company not found',
@@ -116,14 +50,12 @@ const bedrijfController = {
         });
       }
       
-      console.log('✅ [bedrijfController] Bedrijf found:', result.rows[0].bedrijfsnaam);
-      
       res.json({
         success: true,
-        data: result.rows[0]
+        data: bedrijf
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error fetching company:', error);
+      console.error('Error fetching company:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to fetch company',
@@ -134,49 +66,23 @@ const bedrijfController = {
 
   // ===== AUTHENTICATED ENDPOINTS =====
 
-  // GET /api/bedrijven/profile - Eigen bedrijfsgegevens bekijken
+  // GET /api/bedrijf/profile - Eigen bedrijfsgegevens bekijken
   async getOwnProfile(req, res) {
     try {
-      console.log('👤 [bedrijfController] getOwnProfile called for user:', req.user?.email);
+      // req.user.userId bevat het bedrijfsnummer voor bedrijven
+      const bedrijfsnummer = req.user.userId;
       
-      if (!req.user || req.user.userType !== 'bedrijf') {
-        console.log('❌ [bedrijfController] Unauthorized access attempt');
-        return res.status(403).json({ 
+      if (!bedrijfsnummer) {
+        return res.status(400).json({ 
           success: false,
-          error: 'Access denied',
-          message: 'Alleen bedrijven kunnen hun eigen profiel bekijken'
+          error: 'Bedrijfsnummer not found in token',
+          message: 'Uw sessie is ongeldig, log opnieuw in'
         });
       }
 
-      // Get bedrijf data based on user email (since bedrijven are identified by email)
-      const query = `
-        SELECT 
-          bedrijfsnummer,
-          bedrijfsnaam,
-          email,
-          telefoonnummer,
-          website,
-          adres,
-          postcode,
-          stad,
-          beschrijving,
-          sector,
-          werknemers,
-          logo_url,
-          contactpersoon_naam,
-          contactpersoon_functie,
-          contactpersoon_email,
-          contactpersoon_telefoon,
-          created_at,
-          updated_at
-        FROM bedrijven 
-        WHERE email = $1
-      `;
-
-      const result = await pool.query(query, [req.user.email]);
+      const bedrijf = await Bedrijf.getById(bedrijfsnummer);
       
-      if (result.rows.length === 0) {
-        console.log('❌ [bedrijfController] No bedrijf found for email:', req.user.email);
+      if (!bedrijf) {
         return res.status(404).json({ 
           success: false,
           error: 'Bedrijf not found',
@@ -184,16 +90,13 @@ const bedrijfController = {
         });
       }
 
-      const bedrijf = result.rows[0];
-      console.log('✅ [bedrijfController] Profile loaded for:', bedrijf.bedrijfsnaam);
-
       res.json({
         success: true,
         data: bedrijf,
         message: 'Bedrijfsprofiel succesvol opgehaald'
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error fetching own profile:', error);
+      console.error('Error fetching own profile:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to fetch company profile',
@@ -202,11 +105,9 @@ const bedrijfController = {
     }
   },
 
-  // PUT /api/bedrijven/profile - Eigen bedrijfsgegevens bijwerken
+  // PUT /api/bedrijf/profile - Eigen bedrijfsgegevens bijwerken
   async updateOwnProfile(req, res) {
     try {
-      console.log('📝 [bedrijfController] updateOwnProfile called for user:', req.user?.email);
-      
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ 
@@ -216,86 +117,40 @@ const bedrijfController = {
         });
       }
 
-      if (!req.user || req.user.userType !== 'bedrijf') {
-        return res.status(403).json({ 
+      const bedrijfsnummer = req.user.userId;
+      
+      if (!bedrijfsnummer) {
+        return res.status(400).json({ 
           success: false,
-          error: 'Access denied',
-          message: 'Alleen bedrijven kunnen hun eigen profiel bijwerken'
+          error: 'Bedrijfsnummer not found in token'
         });
       }
 
-      // First check if bedrijf exists
-      const checkQuery = 'SELECT bedrijfsnummer FROM bedrijven WHERE email = $1';
-      const checkResult = await pool.query(checkQuery, [req.user.email]);
+      // Voorkom dat ze hun eigen ID kunnen wijzigen
+      const updateData = { ...req.body };
+      delete updateData.bedrijfsnummer;
+      delete updateData.id;
 
-      if (checkResult.rows.length === 0) {
+      const affectedRows = await Bedrijf.update(bedrijfsnummer, updateData);
+      
+      if (affectedRows === 0) {
         return res.status(404).json({ 
           success: false,
-          error: 'Bedrijf not found',
+          error: 'Company not found',
           message: 'Uw bedrijfsprofiel werd niet gevonden'
         });
       }
 
-      // Prepare update data (exclude sensitive fields)
-      const updateData = { ...req.body };
-      delete updateData.bedrijfsnummer;
-      delete updateData.email; // Don't allow email changes
-      delete updateData.created_at;
-      delete updateData.updated_at;
-
-      // Build dynamic update query
-      const allowedFields = [
-        'bedrijfsnaam', 'telefoonnummer', 'website', 'adres', 'postcode', 'stad',
-        'beschrijving', 'sector', 'werknemers', 'logo_url', 'contactpersoon_naam',
-        'contactpersoon_functie', 'contactpersoon_email', 'contactpersoon_telefoon'
-      ];
-
-      const updates = [];
-      const values = [];
-      let paramCount = 0;
-
-      for (const [key, value] of Object.entries(updateData)) {
-        if (allowedFields.includes(key) && value !== undefined) {
-          paramCount++;
-          updates.push(`${key} = $${paramCount}`);
-          values.push(value);
-        }
-      }
-
-      if (updates.length === 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'No valid fields to update',
-          message: 'Geen geldige velden om bij te werken'
-        });
-      }
-
-      // Add updated_at and email parameter
-      paramCount++;
-      updates.push(`updated_at = $${paramCount}`);
-      values.push(new Date());
-
-      paramCount++;
-      values.push(req.user.email);
-
-      const updateQuery = `
-        UPDATE bedrijven 
-        SET ${updates.join(', ')}
-        WHERE email = $${paramCount}
-        RETURNING *
-      `;
-
-      const result = await pool.query(updateQuery, values);
-
-      console.log('✅ [bedrijfController] Profile updated successfully');
+      // Haal updated data op
+      const updatedBedrijf = await Bedrijf.getById(bedrijfsnummer);
 
       res.json({ 
         success: true,
         message: 'Bedrijfsprofiel succesvol bijgewerkt',
-        data: result.rows[0]
+        data: updatedBedrijf
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error updating own profile:', error);
+      console.error('Error updating own profile:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to update company profile',
@@ -309,8 +164,6 @@ const bedrijfController = {
   // POST /api/bedrijven - Nieuw bedrijf aanmaken (alleen organisator)
   async createBedrijf(req, res) {
     try {
-      console.log('➕ [bedrijfController] createBedrijf called');
-      
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ 
@@ -320,55 +173,20 @@ const bedrijfController = {
         });
       }
 
-      const {
-        bedrijfsnaam, email, telefoonnummer, website, adres, postcode, stad,
-        beschrijving, sector, werknemers, logo_url, contactpersoon_naam,
-        contactpersoon_functie, contactpersoon_email, contactpersoon_telefoon
-      } = req.body;
-
-      // Check if bedrijf already exists
-      const checkQuery = 'SELECT bedrijfsnummer FROM bedrijven WHERE email = $1';
-      const checkResult = await pool.query(checkQuery, [email]);
-
-      if (checkResult.rows.length > 0) {
-        return res.status(409).json({ 
-          success: false,
-          error: 'Company already exists',
-          message: 'Er bestaat al een bedrijf met dit email-adres'
-        });
-      }
-
-      const insertQuery = `
-        INSERT INTO bedrijven (
-          bedrijfsnaam, email, telefoonnummer, website, adres, postcode, stad,
-          beschrijving, sector, werknemers, logo_url, contactpersoon_naam,
-          contactpersoon_functie, contactpersoon_email, contactpersoon_telefoon,
-          created_at, updated_at
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-        ) RETURNING *
-      `;
-
-      const values = [
-        bedrijfsnaam, email, telefoonnummer, website, adres, postcode, stad,
-        beschrijving, sector, werknemers, logo_url, contactpersoon_naam,
-        contactpersoon_functie, contactpersoon_email, contactpersoon_telefoon
-      ];
-
-      const result = await pool.query(insertQuery, values);
-
-      console.log('✅ [bedrijfController] Bedrijf created:', result.rows[0].bedrijfsnaam);
+      const bedrijfId = await Bedrijf.create(req.body);
       
       res.status(201).json({
         success: true,
         message: 'Company created successfully',
-        data: result.rows[0]
+        data: {
+          bedrijfsnummer: bedrijfId,
+          ...req.body
+        }
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error creating company:', error);
+      console.error('Error creating company:', error);
       
-      if (error.code === '23505') { // PostgreSQL unique violation
+      if (error.code === 'ER_DUP_ENTRY') {
         res.status(409).json({ 
           success: false,
           error: 'Company already exists',
@@ -387,8 +205,6 @@ const bedrijfController = {
   // PUT /api/bedrijven/:bedrijfsnummer - Bedrijf bijwerken (organisator of bedrijf zelf)
   async updateBedrijf(req, res) {
     try {
-      console.log('📝 [bedrijfController] updateBedrijf called');
-      
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ 
@@ -400,21 +216,8 @@ const bedrijfController = {
 
       const { bedrijfsnummer } = req.params;
       
-      // Check if bedrijf exists
-      const checkQuery = 'SELECT email FROM bedrijven WHERE bedrijfsnummer = $1';
-      const checkResult = await pool.query(checkQuery, [bedrijfsnummer]);
-
-      if (checkResult.rows.length === 0) {
-        return res.status(404).json({ 
-          success: false,
-          error: 'Company not found',
-          message: 'Bedrijf niet gevonden'
-        });
-      }
-
-      // Check permissions: organisator can edit any, bedrijf can only edit their own
-      const bedrijfEmail = checkResult.rows[0].email;
-      if (req.user.userType === 'bedrijf' && req.user.email !== bedrijfEmail) {
+      // Check of bedrijf zichzelf wil updaten of organisator is
+      if (req.user.userType === 'bedrijf' && req.user.userId !== parseInt(bedrijfsnummer)) {
         return res.status(403).json({ 
           success: false,
           error: 'Forbidden',
@@ -422,63 +225,23 @@ const bedrijfController = {
         });
       }
 
-      // Prepare update data
-      const updateData = { ...req.body };
-      delete updateData.bedrijfsnummer;
-      delete updateData.created_at;
-
-      // Build dynamic update query
-      const allowedFields = [
-        'bedrijfsnaam', 'email', 'telefoonnummer', 'website', 'adres', 'postcode', 'stad',
-        'beschrijving', 'sector', 'werknemers', 'logo_url', 'contactpersoon_naam',
-        'contactpersoon_functie', 'contactpersoon_email', 'contactpersoon_telefoon'
-      ];
-
-      const updates = [];
-      const values = [];
-      let paramCount = 0;
-
-      for (const [key, value] of Object.entries(updateData)) {
-        if (allowedFields.includes(key) && value !== undefined) {
-          paramCount++;
-          updates.push(`${key} = $${paramCount}`);
-          values.push(value);
-        }
-      }
-
-      if (updates.length === 0) {
-        return res.status(400).json({
+      const affectedRows = await Bedrijf.update(bedrijfsnummer, req.body);
+      
+      if (affectedRows === 0) {
+        return res.status(404).json({ 
           success: false,
-          error: 'No valid fields to update'
+          error: 'Company not found',
+          message: 'Bedrijf niet gevonden'
         });
       }
-
-      // Add updated_at and bedrijfsnummer parameter
-      paramCount++;
-      updates.push(`updated_at = $${paramCount}`);
-      values.push(new Date());
-
-      paramCount++;
-      values.push(bedrijfsnummer);
-
-      const updateQuery = `
-        UPDATE bedrijven 
-        SET ${updates.join(', ')}
-        WHERE bedrijfsnummer = $${paramCount}
-        RETURNING *
-      `;
-
-      const result = await pool.query(updateQuery, values);
-
-      console.log('✅ [bedrijfController] Bedrijf updated successfully');
 
       res.json({ 
         success: true,
         message: 'Company updated successfully',
-        data: result.rows[0]
+        bedrijfsnummer: bedrijfsnummer
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error updating company:', error);
+      console.error('Error updating company:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to update company',
@@ -490,7 +253,6 @@ const bedrijfController = {
   // DELETE /api/bedrijven/:bedrijfsnummer - Bedrijf verwijderen (alleen organisator)
   async deleteBedrijf(req, res) {
     try {
-      console.log('🗑️ [bedrijfController] deleteBedrijf called');
       const { bedrijfsnummer } = req.params;
       
       if (!bedrijfsnummer || isNaN(bedrijfsnummer)) {
@@ -500,11 +262,9 @@ const bedrijfController = {
         });
       }
 
-      // Check if bedrijf exists
-      const checkQuery = 'SELECT bedrijfsnaam FROM bedrijven WHERE bedrijfsnummer = $1';
-      const checkResult = await pool.query(checkQuery, [bedrijfsnummer]);
-
-      if (checkResult.rows.length === 0) {
+      const affectedRows = await Bedrijf.delete(bedrijfsnummer);
+      
+      if (affectedRows === 0) {
         return res.status(404).json({ 
           success: false,
           error: 'Company not found',
@@ -512,21 +272,13 @@ const bedrijfController = {
         });
       }
 
-      const bedrijfsnaam = checkResult.rows[0].bedrijfsnaam;
-
-      // Delete the bedrijf
-      const deleteQuery = 'DELETE FROM bedrijven WHERE bedrijfsnummer = $1';
-      await pool.query(deleteQuery, [bedrijfsnummer]);
-
-      console.log('✅ [bedrijfController] Bedrijf deleted:', bedrijfsnaam);
-
       res.json({ 
         success: true,
         message: 'Company deleted successfully',
         bedrijfsnummer: bedrijfsnummer
       });
     } catch (error) {
-      console.error('❌ [bedrijfController] Error deleting company:', error);
+      console.error('Error deleting company:', error);
       res.status(500).json({ 
         success: false,
         error: 'Failed to delete company',
@@ -536,15 +288,12 @@ const bedrijfController = {
   }
 };
 
-// Legacy export for backwards compatibility
 exports.register = async (req, res) => {
   try {
-    console.log('📝 [bedrijfController] Legacy register endpoint called');
+    // Hier je registratie-logica
     const bedrijfData = req.body;
-    res.status(201).json({ 
-      message: 'Bedrijf succesvol geregistreerd', 
-      bedrijf: bedrijfData 
-    });
+    // Bijvoorbeeld: const nieuwBedrijf = await BedrijfModel.create(bedrijfData);
+    res.status(201).json({ message: 'Bedrijf succesvol geregistreerd', bedrijf: bedrijfData });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
