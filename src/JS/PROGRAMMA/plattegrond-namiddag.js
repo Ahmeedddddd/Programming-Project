@@ -11,9 +11,7 @@ class PlattegrondNamiddagManager {
         this.selectedTafel = null;
         this.availableBedrijven = [];
         this.init();
-    }
-
-    async init() {
+    }    async init() {
         try {
             console.log('Initializing PlattegrondNamiddagManager...');
             
@@ -22,6 +20,11 @@ class PlattegrondNamiddagManager {
             
             // Laad tafel data
             await this.loadTafelData();
+            
+            // Pre-load bedrijven data voor organisatoren
+            if (this.isOrganisator) {
+                this.loadAvailableBedrijven(); // Async load in background
+            }
             
             // Setup UI
             this.setupUI();
@@ -270,12 +273,8 @@ class PlattegrondNamiddagManager {
         } else {
             this.showInfo('Geen bedrijf gegevens beschikbaar');
         }
-    }
-
-    async showTafelAssignmentModal(tafel) {
-        // Laad beschikbare bedrijven
-        await this.loadAvailableBedrijven();
-
+    }    async showTafelAssignmentModal(tafel) {
+        // Toon modal direct voor snellere UX
         const modal = this.createAssignmentModal(tafel);
         document.body.appendChild(modal);
 
@@ -284,15 +283,27 @@ class PlattegrondNamiddagManager {
             const firstButton = modal.querySelector('button, select');
             if (firstButton) firstButton.focus();
         }, 100);
-    }
-
-    async loadAvailableBedrijven() {
+        
+        // Laad bedrijven in achtergrond als nog niet geladen
+        if (!this.availableBedrijven || this.availableBedrijven.length === 0) {
+            await this.loadAvailableBedrijven();
+            // Update modal met bedrijven data
+            this.updateModalWithBedrijven(modal, tafel);
+        }
+    }    async loadAvailableBedrijven() {
+        // Cache check - laad alleen als nog niet geladen
+        if (this.availableBedrijven && this.availableBedrijven.length > 0) {
+            console.log('📦 Using cached bedrijven data');
+            return;
+        }
+        
         try {
-            const response = await fetch('http://localhost:3301/api/bedrijven');
+            const response = await fetch('http://localhost:8383/api/bedrijven');
             const result = await response.json();
 
-            if (result.success) {                this.availableBedrijven = result.data;
-                console.log('Available bedrijven loaded:', this.availableBedrijven.length);
+            if (result.success) {
+                this.availableBedrijven = result.data;
+                console.log('✅ Available bedrijven loaded:', this.availableBedrijven.length);
             }
         } catch (error) {
             console.error('❌ Error loading available bedrijven:', error);
@@ -313,26 +324,21 @@ class PlattegrondNamiddagManager {
                             <h4>Huidige toewijzing:</h4>
                             <div class="current-bedrijf">                                <strong>${tafel.items[0].naam}</strong><br>
                                 <small>${tafel.items[0].sector || 'Geen sector'}</small>
-                            </div>
-                            <button class="remove-btn" onclick="window.plattegrondNamiddagManager.removeBedrijfFromTafel(${tafel.items[0].id})">
+                            </div>                            <button class="remove-btn" onclick="window.plattegrondNamiddagManager.removeBedrijfFromTafel('${tafel.items[0].id}')">
                                 Verwijderen
                             </button>
                         </div>
                         <hr>
                     ` : `
                         <p>Deze tafel heeft geen toewijzing</p>
-                    `}
-                    
-                    <div class="assign-new">
-                        <h4>Bedrijf toewijzen:</h4>
-                        <select id="bedrijfSelect" class="bedrijf-select">
-                            <option value="">Selecteer een bedrijf...</option>
-                            ${this.availableBedrijven.map(bedrijf => `
-                                <option value="${bedrijf.bedrijfsnummer}" ${bedrijf.tafelNr ? 'disabled' : ''}>
-                                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'}
-                                    ${bedrijf.tafelNr ? ` (Tafel ${bedrijf.tafelNr})` : ''}
-                                </option>
-                            `).join('')}
+                    `}                      <div class="assign-new">
+                        <h4>Bedrijf toewijzen:</h4>                        <select id="bedrijfSelect" class="bedrijf-select">
+                            ${this.availableBedrijven && this.availableBedrijven.length > 0 ? `
+                                <option value="">Selecteer een bedrijf...</option>
+                                ${this.buildBedrijvenOptgroups()}
+                            ` : `
+                                <option value="">Bedrijven laden...</option>
+                            `}
                         </select>
                         <button class="assign-btn" onclick="window.plattegrondNamiddagManager.assignBedrijfToTafel(${tafel.tafelNr})">
                             Toewijzen
@@ -349,6 +355,78 @@ class PlattegrondNamiddagManager {
         `;
 
         return modal;
+    }    updateModalWithBedrijven(modal, tafel) {
+        const bedrijfSelect = modal.querySelector('#bedrijfSelect');
+        if (bedrijfSelect && this.availableBedrijven) {
+            // Clear loading state
+            bedrijfSelect.innerHTML = '<option value="">Selecteer bedrijf...</option>';
+            
+            // Sorteer bedrijven: beschikbare eerst, dan toegewezen
+            const beschikbareBedrijven = this.availableBedrijven.filter(b => !b.tafelNr)
+                .sort((a, b) => a.naam.localeCompare(b.naam));
+            const toegewezenBedrijven = this.availableBedrijven.filter(b => b.tafelNr)
+                .sort((a, b) => a.naam.localeCompare(b.naam));
+            
+            // Add beschikbare bedrijven met header
+            if (beschikbareBedrijven.length > 0) {
+                const optgroupBeschikbaar = document.createElement('optgroup');
+                optgroupBeschikbaar.label = '📋 Nog aan te duiden bedrijven';
+                beschikbareBedrijven.forEach(bedrijf => {
+                    const option = document.createElement('option');
+                    option.value = bedrijf.bedrijfsnummer;
+                    option.textContent = `${bedrijf.naam} - ${bedrijf.sector || 'Geen sector'}`;
+                    optgroupBeschikbaar.appendChild(option);
+                });
+                bedrijfSelect.appendChild(optgroupBeschikbaar);
+            }            // Add toegewezen bedrijven met header
+            if (toegewezenBedrijven.length > 0) {
+                const optgroupAssigned = document.createElement('optgroup');
+                optgroupAssigned.label = '✅ Al aangeduide bedrijven';
+                toegewezenBedrijven.forEach(bedrijf => {
+                    const option = document.createElement('option');
+                    option.value = bedrijf.bedrijfsnummer;
+                    option.textContent = `${bedrijf.naam} - ${bedrijf.sector || 'Geen sector'} (Tafel ${bedrijf.tafelNr})`;
+                    option.disabled = true;
+                    optgroupAssigned.appendChild(option);
+                });
+                bedrijfSelect.appendChild(optgroupAssigned);
+            }
+            
+            console.log('🔄 Modal updated with bedrijven data');
+        }
+    }
+
+    buildBedrijvenOptgroups() {
+        const beschikbareBedrijven = this.availableBedrijven.filter(b => !b.tafelNr)
+            .sort((a, b) => a.naam.localeCompare(b.naam));
+        const toegewezenBedrijven = this.availableBedrijven.filter(b => b.tafelNr)
+            .sort((a, b) => a.naam.localeCompare(b.naam));
+        
+        let html = '';
+        
+        // Beschikbare bedrijven
+        if (beschikbareBedrijven.length > 0) {
+            html += '<optgroup label="📋 Nog aan te duiden bedrijven">';
+            beschikbareBedrijven.forEach(bedrijf => {
+                html += `<option value="${bedrijf.bedrijfsnummer}">
+                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'}
+                </option>`;
+            });
+            html += '</optgroup>';
+        }
+        
+        // Toegewezen bedrijven
+        if (toegewezenBedrijven.length > 0) {
+            html += '<optgroup label="✅ Al aangeduide bedrijven">';
+            toegewezenBedrijven.forEach(bedrijf => {
+                html += `<option value="${bedrijf.bedrijfsnummer}" disabled>
+                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'} (Tafel ${bedrijf.tafelNr})
+                </option>`;
+            });
+            html += '</optgroup>';
+        }
+        
+        return html;
     }
 
     async assignBedrijfToTafel(tafelNr) {
@@ -358,11 +436,8 @@ class PlattegrondNamiddagManager {
         if (!bedrijfId) {
             this.showError('Selecteer eerst een bedrijf');
             return;
-        }
-
-        try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:3301/api/tafels/bedrijf/${bedrijfId}/tafel/${tafelNr}`, {
+        }        try {
+            const token = localStorage.getItem('authToken');            const response = await fetch(`http://localhost:8383/api/tafels/bedrijf/${bedrijfId}/tafel/${tafelNr}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -370,12 +445,12 @@ class PlattegrondNamiddagManager {
                 }
             });
 
-            const result = await response.json();
-
-            if (result.success) {
+            const result = await response.json();            if (result.success) {
                 this.showSuccess(`Bedrijf toegewezen aan tafel ${tafelNr}!`);
                 this.closeModal();
                 await this.loadTafelData(); // Herlaad data
+                // Cache invalideren zodat bedrijven lijst wordt ververst
+                this.availableBedrijven = [];
             } else {
                 throw new Error(result.message || 'Toewijzing mislukt');
             }
@@ -383,12 +458,12 @@ class PlattegrondNamiddagManager {
             console.error('❌ Error assigning bedrijf:', error);
             this.showError('Toewijzing mislukt: ' + error.message);
         }
-    }
-
-    async removeBedrijfFromTafel(bedrijfId) {
+    }    async removeBedrijfFromTafel(bedrijfId) {
         try {
+            console.log('🗑️ Removing bedrijf with ID:', bedrijfId);
+            
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:3301/api/tafels/bedrijf/${bedrijfId}`, {
+            const response = await fetch(`http://localhost:8383/api/tafels/bedrijf/${bedrijfId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -396,12 +471,29 @@ class PlattegrondNamiddagManager {
                 }
             });
 
-            const result = await response.json();
-
-            if (result.success) {
+            const result = await response.json();            if (result.success) {
                 this.showSuccess('Bedrijf verwijderd van tafel!');
-                this.closeModal();
+                // NIET de modal sluiten, maar verversen voor directe nieuwe toewijzing
                 await this.loadTafelData(); // Herlaad data
+                
+                // Cache invalideren zodat bedrijven lijst wordt ververst
+                this.availableBedrijven = [];
+                await this.loadAvailableBedrijven(); // Herlaad beschikbare bedrijven
+                
+                // Update de modal met nieuwe gegevens (tafel is nu leeg)
+                const currentModal = document.querySelector('.tafel-assignment-modal');
+                if (currentModal) {
+                    const tafelNr = this.selectedTafel.tafelNr;
+                    const updatedTafel = { tafelNr: tafelNr, items: [] }; // Tafel is nu leeg
+                    this.selectedTafel = updatedTafel;
+                    
+                    // Vervang modal content
+                    const newModal = this.createAssignmentModal(updatedTafel);
+                    currentModal.innerHTML = newModal.innerHTML;
+                    
+                    // Update dropdown met nieuwe bedrijven
+                    this.updateModalWithBedrijven(currentModal, updatedTafel);
+                }
             } else {
                 throw new Error(result.message || 'Verwijdering mislukt');
             }

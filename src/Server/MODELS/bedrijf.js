@@ -123,30 +123,33 @@ class Bedrijf {
         }
     }
 
-    static async update(bedrijfsnummer, bedrijfData) {
-        console.log('📡 Bedrijf.update called:', { bedrijfsnummer, bedrijfData });
+    // Update bedrijf gegevens
+    static async update(bedrijfsnummer, updates) {
+        console.log('🔄 Bedrijf.update called with:', { bedrijfsnummer, updates });
         
         try {
-            const {
-                TVA_nummer, naam, email, gsm_nummer, sector,
-                huisnummer, straatnaam, gemeente, postcode, bus, land,
-                tafelNr, bechrijving
-            } = bedrijfData;
-
-            const sql = `
-                UPDATE BEDRIJF SET
-                    TVA_nummer = ?, naam = ?, email = ?, gsm_nummer = ?, sector = ?,
-                    huisnummer = ?, straatnaam = ?, gemeente = ?, postcode = ?, bus = ?, land = ?,
-                    tafelNr = ?, bechrijving = ?
-                WHERE bedrijfsnummer = ?`;
-
-            const [result] = await pool.query(sql, [
-                TVA_nummer, naam, email, gsm_nummer, sector,
-                huisnummer, straatnaam, gemeente, postcode, bus, land,
-                tafelNr, bechrijving, bedrijfsnummer
-            ]);
-
-            console.log('✅ Updated bedrijf, affected rows:', result.affectedRows);
+            // Bouw de SET clause dynamisch op
+            const setFields = [];
+            const values = [];
+            
+            for (const [key, value] of Object.entries(updates)) {
+                setFields.push(`${key} = ?`);
+                values.push(value);
+            }
+            
+            if (setFields.length === 0) {
+                throw new Error('Geen velden om te updaten');
+            }
+            
+            const sql = `UPDATE BEDRIJF SET ${setFields.join(', ')} WHERE bedrijfsnummer = ?`;
+            values.push(bedrijfsnummer);
+            
+            console.log('📋 Update SQL query:', sql);
+            console.log('📋 Update params:', values);
+            
+            const [result] = await pool.query(sql, values);
+            
+            console.log(`✅ Updated ${result.affectedRows} bedrijf record(s)`);
             return result.affectedRows;
             
         } catch (error) {

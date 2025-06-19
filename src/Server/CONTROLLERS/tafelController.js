@@ -311,16 +311,21 @@ const tafelController = {
         message: 'Er ging iets mis bij het verwijderen van de student van de tafel'
       });
     }
-  },
-
-  // DELETE /api/tafels/bedrijf/:bedrijfsnummer
+  },  // DELETE /api/tafels/bedrijf/:bedrijfsnummer
   async verwijderBedrijfVanTafel(req, res) {
     try {
       const { bedrijfsnummer } = req.params;
       
       console.log(`🗑️ Removing bedrijf ${bedrijfsnummer} from tafel`);
+      console.log('📋 Request params:', req.params);
+
+      // Debug: Check if Bedrijf model and update function exist
+      console.log('📋 Bedrijf model:', typeof Bedrijf);
+      console.log('📋 Bedrijf.update function:', typeof Bedrijf.update);
 
       const result = await Bedrijf.update(bedrijfsnummer, { tafelNr: null });
+
+      console.log('📊 Update result from model:', result);
 
       if (result === 0) {
         return res.status(404).json({
@@ -338,6 +343,9 @@ const tafelController = {
 
     } catch (error) {
       console.error('❌ Error removing bedrijf from tafel:', error);
+      console.error('❌ Error name:', error.name);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
       res.status(500).json({
         success: false,
         error: 'Failed to remove bedrijf from tafel',
