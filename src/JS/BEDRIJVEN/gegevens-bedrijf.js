@@ -30,22 +30,21 @@ window.showNotification = function (message, type = "success") {
     }, 4000);
 };
 
-class BedrijfGegevens { // Naam van klasse gewijzigd
+class BedrijfGegevens {
     constructor() {
         console.log("📝 BedrijfGegevens constructor aangeroepen");
         this.token = localStorage.getItem("authToken");
-        this.bedrijfData = null; // studentData naar bedrijfData
-        this.initialBedrijfData = null; // initialStudentData naar initialBedrijfData
+        this.bedrijfData = null;
+        this.initialBedrijfData = null;
         this.editMode = false;
-        // projectEditMode is verwijderd, omdat dit niet van toepassing is op bedrijven
-        this.form = document.getElementById("bedrijfForm"); // studentForm naar bedrijfForm
+        this.form = document.getElementById("bedrijfForm");
 
         // Initialize
         this.init();
     }
 
     async init() {
-        console.log("🚀 Initializing BedrijfGegevens"); // Console log aangepast
+        console.log("🚀 Initializing BedrijfGegevens");
         if (!this.token) {
             console.warn("⚠️ No token found");
             this.redirectToLogin();
@@ -55,7 +54,6 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
         try {
             await this.loadBedrijfGegevens();
             this.setupEventListeners();
-            // setupProjectHandling is verwijderd
         } catch (error) {
             console.error("❌ Initialisatie mislukt:", error);
             this.showError("Er ging iets mis bij het laden van je gegevens");
@@ -63,13 +61,13 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
     }
 
     // 📡 API Calls
-    async loadBedrijfGegevens() { // Naam van functie gewijzigd
-        console.log("📡 Loading bedrijf gegevens..."); // Console log aangepast
+    async loadBedrijfGegevens() {
+        console.log("📡 Loading bedrijf gegevens...");
         try {
             this.showLoading(true);
 
             const response = await fetch(
-                "http://localhost:3301/api/bedrijven/profile", // API endpoint gewijzigd
+                "http://localhost:3301/api/bedrijven/profile",
                 {
                     method: "GET",
                     headers: {
@@ -91,7 +89,7 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
                     .json()
                     .catch(() => ({ message: response.statusText || "Onbekende fout" }));
                 console.error(
-                    "❌ Fout bij laden bedrijfgegevens, respons:", // Console log aangepast
+                    "❌ Fout bij laden bedrijfgegevens, respons:",
                     errorResult
                 );
                 throw new Error(`HTTP ${response.status}: ${errorResult.message}`);
@@ -101,41 +99,40 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
             console.log("📦 API Result:", result);
 
             if (result.success) {
-                this.bedrijfData = result.data; // studentData naar bedrijfData
-                this.initialBedrijfData = { ...result.data }; // initialStudentData naar initialBedrijfData
-                console.log("✅ Bedrijf data loaded:", this.bedrijfData); // Console log aangepast
-                this.displayBedrijfGegevens(); // Naam van functie gewijzigd
-                // displayProjectInfo is verwijderd
+                this.bedrijfData = result.data;
+                this.initialBedrijfData = { ...result.data };
+                console.log("✅ Bedrijf data loaded:", this.bedrijfData);
+                this.displayBedrijfGegevens();
             } else {
-                console.error("❌ Server gaf aan dat laden mislukt is:", result); // Console log aangepast
+                console.error("❌ Server gaf aan dat laden mislukt is:", result);
                 throw new Error(result.message || "Onbekende fout bij laden");
             }
         } catch (error) {
-            console.error("❌ Error loading bedrijf gegevens:", error); // Console log aangepast
+            console.error("❌ Error loading bedrijf gegevens:", error);
             this.showError("Kan gegevens niet laden: " + error.message);
         } finally {
             this.showLoading(false);
         }
     }
 
-    async updateBedrijfGegevens(updatedFields) { // Naam van functie gewijzigd
-        console.log("📝 Preparing to update bedrijf gegevens..."); // Console log aangepast
+    async updateBedrijfGegevens(updatedFields) {
+        console.log("📝 Preparing to update bedrijf gegevens...");
         console.log("💡 Fields to update:", updatedFields);
 
-        this.bedrijfData = { ...this.bedrijfData, ...updatedFields }; // studentData naar bedrijfData
+        this.bedrijfData = { ...this.bedrijfData, ...updatedFields };
 
         try {
             this.showLoading(true);
 
             const response = await fetch(
-                "http://localhost:3301/api/bedrijven/profile", // API endpoint gewijzigd
+                "http://localhost:3301/api/bedrijven/profile",
                 {
                     method: "PUT",
                     headers: {
                         Authorization: `Bearer ${this.token}`,
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(this.bedrijfData), // studentData naar bedrijfData
+                    body: JSON.stringify(this.bedrijfData),
                 }
             );
 
@@ -151,17 +148,14 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
             console.log("📝 Update API response result:", result);
 
             if (response.ok && result.success) {
-                this.bedrijfData = result.data; // studentData naar bedrijfData
-                this.initialBedrijfData = { ...result.data }; // initialStudentData naar initialBedrijfData
-                this.displayBedrijfGegevens(); // Naam van functie gewijzigd
-                // displayProjectInfo is verwijderd
+                this.bedrijfData = result.data;
+                this.initialBedrijfData = { ...result.data };
+                this.displayBedrijfGegevens();
                 this.disableEditMode(); // Schakel de algemene bewerkingsmodus uit
-                // disableProjectEditMode is verwijderd
                 this.showSuccess("Gegevens succesvol bijgewerkt!");
             } else {
-                this.bedrijfData = { ...this.initialBedrijfData }; // studentData naar bedrijfData
-                this.displayBedrijfGegevens(); // Naam van functie gewijzigd
-                // displayProjectInfo is verwijderd
+                this.bedrijfData = { ...this.initialBedrijfData };
+                this.displayBedrijfGegevens();
 
                 console.error(
                     "❌ Fout bij bijwerken, HTTP Status:",
@@ -176,7 +170,7 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
                 );
             }
         } catch (error) {
-            console.error("❌ Error updating bedrijf:", error); // Console log aangepast
+            console.error("❌ Error updating bedrijf:", error);
             this.showError("Update mislukt: " + error.message);
         } finally {
             this.showLoading(false);
@@ -184,14 +178,14 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
     }
 
     // 🎨 UI Updates
-    displayBedrijfGegevens() { // Naam van functie gewijzigd
-        console.log("🎨 Displaying bedrijf gegevens"); // Console log aangepast
-        if (!this.bedrijfData) { // studentData naar bedrijfData
-            console.warn("⚠️ No bedrijf data to display"); // Console log aangepast
+    displayBedrijfGegevens() {
+        console.log("🎨 Displaying bedrijf gegevens");
+        if (!this.bedrijfData) {
+            console.warn("⚠️ No bedrijf data to display");
             return;
         }
 
-        const data = this.bedrijfData; // studentData naar bedrijfData
+        const data = this.bedrijfData;
 
         // Update bedrijf gegevens (allemaal niet-bewerkbaar in de HTML, maar worden hier bijgewerkt)
         this.updateField("bedrijfsnummer", data.bedrijfsnummer);
@@ -231,11 +225,6 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
         console.log("✅ UI updated successfully");
     }
 
-    // PROJECT MANAGEMENT functies zijn volledig verwijderd
-    // updateProjectLinks, updateProjectStats, calculateProjectCompletion, setupProjectHandling,
-    // enableProjectEditMode, disableProjectEditMode, getProjectFieldValue, getProjectFieldLabel,
-    // getFieldPlaceholder (project-specifiek), saveProjectChanges, getProjectFieldMapping, validateProjectData zijn verwijderd
-
     isValidUrl(string) { // Deze functie behouden voor algemene URL validatie indien nodig in de toekomst.
         try {
             new URL(string);
@@ -261,14 +250,12 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
     }
 
     // ✏️ Edit Mode Management
-    enableEditMode() { // Aangepast voor Bedrijf
-        console.log("✏️ Enabling edit mode for Bedrijf"); // Console log aangepast
+    enableEditMode() {
+        console.log("✏️ Enabling edit mode for Bedrijf");
         this.editMode = true;
-        // projectEditMode is verwijderd, was this.projectEditMode = false;
 
         document.getElementById("viewControls").style.display = "none";
         document.getElementById("editControls").style.display = "flex";
-        // projectEditControls is verwijderd
         
         // Definieer hier expliciet welke velden voor een bedrijf bewerkbaar zijn
         const companyEditableFieldIds = [
@@ -304,25 +291,21 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
         // bedrijfsnummer, account-status, last-login etc. worden niet geraakt door de .editable-field selector
     }
 
-    disableEditMode() { // Aangepast voor Bedrijf
-        console.log("❌ Disabling edit mode for Bedrijf"); // Console log aangepast
+    disableEditMode() {
+        console.log("❌ Disabling edit mode for Bedrijf");
         this.editMode = false;
-        this.bedrijfData = { ...this.initialBedrijfData }; // studentData naar bedrijfData
+        this.bedrijfData = { ...this.initialBedrijfData };
 
         document.getElementById("viewControls").style.display = "flex";
         document.getElementById("editControls").style.display = "none";
-        // projectEditControls is verwijderd
 
         document.querySelectorAll('.editable-field .edit-mode').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'inline-block');
 
-        this.displayBedrijfGegevens(); // Naam van functie gewijzigd
-        // displayProjectInfo is verwijderd
+        this.displayBedrijfGegevens();    
     }
 
-    // createEditableFields en createEditableProjectFields zijn verwijderd.
-
-    getFieldMapping(fieldId) { // Aangepast voor Bedrijf
+    getFieldMapping(fieldId) {
         const mapping = {
             'bedrijfsnaam': 'naam',
             'tva-nummer': 'TVA_nummer',
@@ -339,18 +322,17 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
         return mapping[fieldId];
     }
 
-    getInputType(fieldId) { // Aangepast voor Bedrijf (geen leerjaar meer, etc.)
+    getInputType(fieldId) {
         const typeMapping = {
             email: "email",
             telefoon: "tel",
             postcode: "text",
             huisnummer: "text",
-            // leerjaar is verwijderd
         };
         return typeMapping[fieldId] || "text";
     }
 
-    getFieldValue(fieldId) { // Aangepast voor Bedrijf (mapping is al in getFieldMapping)
+    getFieldValue(fieldId) {
         const mappedField = this.getFieldMapping(fieldId);
         return mappedField ? this.bedrijfData[mappedField] || "" : "";
     }
@@ -372,9 +354,9 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
         }
 
         // Save button for general data
-        const saveGeneralBtn = document.getElementById("saveGeneralBtn"); // ID gewijzigd van saveBtn naar saveGeneralBtn
+        const saveGeneralBtn = document.getElementById("saveGeneralBtn");
         if (saveGeneralBtn) {
-            saveGeneralBtn.addEventListener("click", () => this.saveChanges()); // Naam van functie gewijzigd
+            saveGeneralBtn.addEventListener("click", () => this.saveChanges());
         }
 
         // Project specifieke knoppen zijn verwijderd
@@ -387,8 +369,8 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
         }
     }
 
-    async saveChanges() { // Naam van functie gewijzigd van saveGeneralChanges
-        console.log("💾 Saving company changes"); // Console log aangepast
+    async saveChanges() {
+        console.log("💾 Saving company changes");
 
         const formData = {};
         // Lijst van bewerkbare velden voor bedrijven
@@ -407,8 +389,8 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
             }
         });
 
-        console.log("📦 Company data to save:", formData); // Console log aangepast
-        await this.updateBedrijfGegevens(formData); // Naam van functie gewijzigd
+        console.log("📦 Company data to save:", formData);
+        await this.updateBedrijfGegevens(formData);
     }
 
 
@@ -451,14 +433,14 @@ class BedrijfGegevens { // Naam van klasse gewijzigd
 
 // 🚀 Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🎯 DOM Content Loaded, initializing BedrijfGegevens"); // Console log aangepast
+    console.log("🎯 DOM Content Loaded, initializing BedrijfGegevens");
     try {
-        window.bedrijfGegevensManager = new BedrijfGegevens(); // Naam van instantie gewijzigd
-        console.log("✅ BedrijfGegevens initialized successfully"); // Console log aangepast
+        window.bedrijfGegevensManager = new BedrijfGegevens();
+        console.log("✅ BedrijfGegevens initialized successfully");
     } catch (error) {
-        console.error("❌ Failed to initialize BedrijfGegevens:", error); // Console log aangepast
+        console.error("❌ Failed to initialize BedrijfGegevens:", error);
     }
 });
 
 // Export for module usage
-export default BedrijfGegevens; // Naam van export gewijzigd
+export default BedrijfGegevens;
