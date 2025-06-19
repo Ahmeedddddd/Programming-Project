@@ -114,13 +114,32 @@ function displayTimeSlots() {
     el.className      = `time-slot ${slot.is_available?'available':'occupied'}`;
     el.innerHTML      = `<div class="time-label">${slot.start_time} – ${slot.end_time}</div>`;
     el.dataset.slotId = slot.id;
-    if (slot.is_available) {
-      el.addEventListener('click', () => selectSlot(el, slot));
-    } else {
-      el.title = 'Dit tijdslot is al bezet';
-    }
     container.appendChild(el);
   });
+
+  // Voeg event delegation toe na het renderen van de tijdslots (eenmalig)
+  if (!container.dataset.listenerAdded) {
+    container.addEventListener('click', function(e) {
+      let slotDiv = e.target;
+      while (slotDiv && !slotDiv.classList.contains('time-slot')) {
+        slotDiv = slotDiv.parentElement;
+      }
+      if (!slotDiv || !slotDiv.classList.contains('available')) return;
+      const slotId = slotDiv.dataset.slotId;
+      const slotObj = availableSlots.find(s => String(s.id) === String(slotId));
+      console.debug('[Tijdslot selectie] Geklikt op slotId:', slotId, 'gevonden slotObj:', slotObj);
+      if (!slotObj) return;
+      document.querySelectorAll('.time-slot.selected')
+              .forEach(x => x.classList.remove('selected'));
+      slotDiv.classList.add('selected');
+      selectedSlot = slotObj;
+      console.debug('[Tijdslot selectie] selectedSlot is nu:', selectedSlot);
+      document.getElementById('selectedTime').textContent = `${slotObj.start_time} – ${slotObj.end_time}`;
+      document.getElementById('selectedInfo').classList.add('show');
+      document.getElementById('reserveBtn').disabled = false;
+    });
+    container.dataset.listenerAdded = 'true';
+  }
 }
 
 // 5) Slot selecteren
@@ -137,22 +156,42 @@ function selectSlot(el, slot) {
 
 // 6) Reservering versturen
 async function makeReservation() {
-  if (!selectedSlot) return;
+  if (!selectedSlot) {
+    console.error('[makeReservation] Geen selectedSlot!');
+    return;
+  }
   const btn      = document.getElementById('reserveBtn');
   const original = btn.textContent;
   btn.disabled   = true;
   btn.textContent= 'Reserveren…';
 
   try {
+    console.debug('[makeReservation] Verstuur reservering met:', {
+      bedrijfId: COMPANY_ID,
+      tijdslot: `${selectedSlot.start_time}-${selectedSlot.end_time}`,
+      selectedSlot
+    });
     const success = await window.ReservatieService.requestReservation(COMPANY_ID, `${selectedSlot.start_time}-${selectedSlot.end_time}`);
     if (success) {
       selectedSlot.is_available = false;
       displayTimeSlots();
       selectedSlot = null;
       document.getElementById('selectedInfo').classList.remove('show');
+      document.getElementById('reserveBtn').disabled = true;
+      if (selectedSlot && document.querySelector(`[data-slot-id='${selectedSlot.id}']`)) {
+        const slotDiv = document.querySelector(`[data-slot-id='${selectedSlot.id}']`);
+        if (slotDiv) slotDiv.classList.add('pending');
+      }
+    } else {
+      alert('❌ Reservering mislukt (geen success). Zie console voor details.');
     }
-  } catch {
-    alert('❌ Reservering mislukt.');
+  } catch (err) {
+    console.error('❌ Fout bij reserveren:', err);
+    if (err && err.message) {
+      alert('❌ Reservering mislukt: ' + err.message);
+    } else {
+      alert('❌ Reservering mislukt: Onbekende fout. Zie console voor details.');
+    }
   } finally {
     btn.textContent = original;
     btn.disabled    = true;
@@ -173,3 +212,25 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// Verwijder de globale eventlistener uit DOMContentLoaded (alleen reserveer-knop blijft)
+document.addEventListener('DOMContentLoaded', () => {
+  // Reserveer-knop eventlistener (vervangt inline onclick)
+  const reserveBtn = document.getElementById('reserveBtn');
+  if (reserveBtn) {
+    reserveBtn.replaceWith(reserveBtn.cloneNode(true)); // verwijder evt. oude listeners
+    const newReserveBtn = document.getElementById('reserveBtn');
+    newReserveBtn.addEventListener('click', (e) => {
+      if (!selectedSlot) {
+        window.showNotification('Selecteer eerst een tijdslot voordat je reserveert.', 'warning');
+        e.preventDefault();
+        return false;
+      }
+      // Disable knop om dubbele calls te voorkomen
+      newReserveBtn.disabled = true;
+      makeReservation().finally(() => {
+        newReserveBtn.disabled = false;
+      });
+    });
+  }
+});

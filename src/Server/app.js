@@ -30,7 +30,8 @@ let registratieRoutes,
     studentRoutes,
     organisatorRoutes,
     projectRoutes,
-    tafelRoutes;
+    tafelRoutes,
+    notificatieRoutes;
 
 try {
   registratieRoutes    = require("./ROUTES/registratie");
@@ -41,6 +42,7 @@ try {
   organisatorRoutes    = require("./ROUTES/organisator");
   projectRoutes        = require("./ROUTES/project");
   tafelRoutes          = require("./ROUTES/tafel");
+  notificatieRoutes    = require("./ROUTES/notificatie");
   console.log("✅ All route modules loaded successfully");
 } catch (error) {
   console.error("❌ Error loading route modules:", error.message);
@@ -208,6 +210,8 @@ try {
   console.log("✅ Project routes mounted");
   app.use("/api/tafels", tafelRoutes);
   console.log("✅ Tafel routes mounted");
+  app.use("/api/notificaties", notificatieRoutes);
+  console.log("✅ Notificatie routes mounted");
 } catch (error) {
   console.error("❌ Failed to mount one or more API routes:", error);
 }

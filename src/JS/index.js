@@ -19,6 +19,9 @@ let allCompanies = [];
 let allStudents = [];
 let allProjects = [];
 
+// ===== NOTIFICATIE POLLING =====
+let notificationPollingInterval = null;
+
 // ===== CONFIGURATION =====
 const API_CONFIG = {
     baseURL: 'http://localhost:8383',
@@ -941,3 +944,51 @@ window.allStudents = allStudents;
 window.allProjects = allProjects;
 
 console.log('✅ [DEBUG] FIXED VERSION: Universal Homepage Initializer loaded - DUPLICATE LOGIC REMOVED!');
+
+// ===== NOTIFICATIE POLLING =====
+async function fetchAndShowNotifications() {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    try {
+        const res = await fetch('/api/notificaties/unread', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+            for (const notif of data.data) {
+                window.showNotification(notif.boodschap, notif.type === 'reservering_geweigerd' ? 'warning' : (notif.type === 'reservering_geaccepteerd' ? 'success' : 'info'));
+                // Markeer als gelezen
+                await fetch(`/api/notificaties/${notif.notificatieId}/read`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+            }
+        }
+    } catch (e) {
+        // Silent fail
+    }
+}
+
+function startNotificationPolling() {
+    if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+    fetchAndShowNotifications(); // direct bij start
+    notificationPollingInterval = setInterval(fetchAndShowNotifications, 30000);
+}
+
+function stopNotificationPolling() {
+    if (notificationPollingInterval) {
+        clearInterval(notificationPollingInterval);
+        notificationPollingInterval = null;
+    }
+}
+
+// Start polling na login, stop bij logout
+window.addEventListener('DOMContentLoaded', () => {
+    const userType = localStorage.getItem('userType');
+    const token = localStorage.getItem('authToken');
+    if (token && (userType === 'student' || userType === 'bedrijf')) {
+        startNotificationPolling();
+    }
+});
+window.addEventListener('logout', stopNotificationPolling);

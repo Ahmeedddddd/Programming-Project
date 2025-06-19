@@ -188,7 +188,6 @@ class Reservatie {
       let setClause = "status = ?";
       const params = [status];
       if (updateData.hasOwnProperty("redenWeigering")) {
-        // Controleer of redenWeigering aanwezig is
         setClause += ", redenWeigering = ?";
         params.push(updateData.redenWeigering);
       }
@@ -197,6 +196,24 @@ class Reservatie {
         `UPDATE AFSPRAAK SET ${setClause} WHERE afspraakId = ?`,
         [...params, id]
       );
+
+      // Extra logica: als status 'bevestigd', weiger alle andere aanvragen voor hetzelfde bedrijf en tijdslot
+      if (status === 'bevestigd') {
+        // Haal de details van deze afspraak op
+        const [rows] = await pool.query(
+          `SELECT bedrijfsnummer, startTijd, eindTijd FROM AFSPRAAK WHERE afspraakId = ?`,
+          [id]
+        );
+        if (rows.length > 0) {
+          const { bedrijfsnummer, startTijd, eindTijd } = rows[0];
+          // Zet alle andere aanvragen voor dit bedrijf en tijdslot op 'geweigerd'
+          await pool.query(
+            `UPDATE AFSPRAAK SET status = 'geweigerd', redenWeigering = 'Tijdslot reeds bevestigd voor andere student.'
+             WHERE bedrijfsnummer = ? AND startTijd = ? AND eindTijd = ? AND status = 'aangevraagd' AND afspraakId != ?`,
+            [bedrijfsnummer, startTijd, eindTijd, id]
+          );
+        }
+      }
 
       return result.affectedRows;
     } catch (error) {
