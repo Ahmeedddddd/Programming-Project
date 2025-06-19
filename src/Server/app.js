@@ -367,6 +367,12 @@ app.get("/gesprekkenOverzichtStudenten", (req, res) => {
   );
 });
 
+app.get("/gesprekkenOverzichtBedrijven", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html")
+  );
+});
+
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
 });
