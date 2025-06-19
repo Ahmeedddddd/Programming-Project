@@ -14,7 +14,7 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.datum,  
                     a.startTijd,
                     a.eindTijd,
                     a.status,
