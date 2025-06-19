@@ -260,35 +260,78 @@ app.get('/api/projecten', async (req, res) => {
 
     console.log('🔍 [DEBUG] Fetching projects with tafelNr...');
 
+    // Haal alle studenten met project op
     const [rows] = await connection.query(`
       SELECT 
-        MIN(studentnummer) as id,
+        studentnummer as id,
         projectTitel as titel,
         projectTitel as naam,
-        MIN(projectBeschrijving) as beschrijving,
-        GROUP_CONCAT(CONCAT(voornaam, ' ', achternaam) SEPARATOR ', ') as studentNaam,
-        GROUP_CONCAT(email SEPARATOR ', ') as studentEmail,
-        GROUP_CONCAT(studentnummer SEPARATOR ', ') as studentnummers,
-        MIN(opleiding) as opleiding,
-        MIN(opleidingsrichting) as opleidingsrichting,
-        MIN(tafelNr) as tafelNr,
-        COUNT(*) as aantalStudenten
+        projectBeschrijving as beschrijving,
+        voornaam,
+        achternaam,
+        email,
+        opleiding,
+        opleidingsrichting,
+        tafelNr
       FROM STUDENT 
       WHERE projectTitel IS NOT NULL 
         AND projectTitel != ''
         AND projectBeschrijving IS NOT NULL 
         AND projectBeschrijving != ''
-      GROUP BY projectTitel, projectBeschrijving
-      ORDER BY projectTitel
+      ORDER BY projectTitel, achternaam, voornaam
     `);
 
-    console.log(`🔍 [DEBUG] Projects fetched: ${rows.length} grouped projects`);
-    if (rows.length > 0) {
+    // Bundel per projectTitel
+    const projectMap = new Map();
+    rows.forEach(student => {
+      const key = (student.titel || '').trim().toLowerCase();
+      if (!projectMap.has(key)) {
+        projectMap.set(key, {
+          titel: student.titel,
+          naam: student.naam,
+          beschrijving: student.beschrijving,
+          studenten: [],
+          tafelNrs: new Set(),
+        });
+      }
+      projectMap.get(key).studenten.push({
+        voornaam: student.voornaam,
+        achternaam: student.achternaam,
+        email: student.email,
+        studentnummer: student.id,
+        opleiding: student.opleiding,
+        opleidingsrichting: student.opleidingsrichting,
+        tafelNr: student.tafelNr
+      });
+      if (student.tafelNr !== null && student.tafelNr !== undefined && student.tafelNr !== '' && student.tafelNr !== 'TBD') {
+        projectMap.get(key).tafelNrs.add(student.tafelNr);
+      }
+    });
+
+    // Maak array van projecten, bepaal tafelNr alleen als ALLE studenten hetzelfde nummer hebben
+    const projects = Array.from(projectMap.values()).map(p => {
+      const uniekeTafels = Array.from(p.tafelNrs);
+      let tafelNr = '';
+      if (uniekeTafels.length === 1 && p.studenten.every(s => s.tafelNr === uniekeTafels[0])) {
+        tafelNr = uniekeTafels[0];
+      }
+      return {
+        titel: p.titel,
+        naam: p.naam,
+        beschrijving: p.beschrijving,
+        studenten: p.studenten,
+        tafelNr: tafelNr,
+        aantalStudenten: p.studenten.length
+      };
+    });
+
+    console.log(`🔍 [DEBUG] Projects fetched: ${projects.length} grouped projects`);
+    if (projects.length > 0) {
       console.log('🔍 [DEBUG] Sample project with tafelNr:', {
-        titel: rows[0].titel,
-        tafelNr: rows[0].tafelNr,
-        aantalStudenten: rows[0].aantalStudenten,
-        studenten: rows[0].studentNaam
+        titel: projects[0].titel,
+        tafelNr: projects[0].tafelNr,
+        aantalStudenten: projects[0].aantalStudenten,
+        studenten: projects[0].studenten.map(s => s.voornaam + ' ' + s.achternaam).join(', ')
       });
     }
 
@@ -296,8 +339,8 @@ app.get('/api/projecten', async (req, res) => {
     
     res.json({
       success: true,
-      data: rows,
-      count: rows.length
+      data: projects,
+      count: projects.length
     });
 
   } catch (error) {
