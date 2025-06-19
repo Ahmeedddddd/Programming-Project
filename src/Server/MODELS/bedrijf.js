@@ -4,7 +4,7 @@ const { pool } = require('../CONFIG/database'); // Zorg dat dit pad klopt
 
 class Bedrijf {
     static async getAll(limit = null, searchTerm = '') {
-        console.log('📡 Bedrijf.getAll called with:', { limit, searchTerm });
+        console.log('\ud83d\udce1 Bedrijf.getAll called with:', { limit, searchTerm });
         
         try {
             // START with base SELECT and FROM - NO ORDER BY yet
@@ -34,17 +34,17 @@ class Bedrijf {
             query += ` ORDER BY naam`;
 
             // Add LIMIT at the end if specified
-            if (limit && limit > 0) {
+            if (limit && !isNaN(limit) && limit > 0) {
                 query += ` LIMIT ?`;
                 params.push(limit);
             }
 
-            console.log('📋 Final SQL query:', query);
-            console.log('📋 Query params:', params);
+            console.log('\ud83d\udccb Final SQL query:', query);
+            console.log('\ud83d\udccb Query params:', params);
 
             const [rows] = await pool.query(query, params);
             
-            console.log(`✅ Found ${rows.length} bedrijven`);
+            console.log(`\u2705 Found ${rows.length} bedrijven`);
             
             return rows.map(row => {
                 // Parse beschikbareTijdslots from JSON string to array
@@ -62,7 +62,7 @@ class Bedrijf {
             });
             
         } catch (error) {
-            console.error('❌ Error in Bedrijf.getAll:', error);
+            console.error('\u274c Error in Bedrijf.getAll:', error);
             throw error;
         }
     }

@@ -1,41 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>reservatie</title>
+    <title>Reservatie</title>
     <link rel="stylesheet" href="/src/CSS/RESULTS/RESERVATIES/reservatie.css">
-    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
-     <div class="reservation-container">
-    <div class="company-header">
-      <button class="back-button" onclick="goBack()">←</button>
-      <h1 class="company-name" id="companyName">Bedrijf</h1>
-      <div class="company-logo-placeholder">
-        <img id="companyLogo" src="#" alt="Bedrijfslogo">
-      </div>
+    <div class="container">
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
+            </div>
+            <div class="navBar"><!-- Navigation items worden dynamisch toegevoegd --></div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+            </div>
+        </div>
+        <main>
+            <div class="reservation-container">
+                <div class="company-header">
+                    <button class="back-button" onclick="goBack()">←</button>
+                    <h1 class="company-name" id="companyName">Bedrijf</h1>
+                    <div class="company-logo-placeholder">
+                        <img id="companyLogo" src="#" alt="Bedrijfslogo">
+                    </div>
+                </div>
+                <div class="date-display">
+                    <div class="current-date" id="currentDate">—</div>
+                </div>
+                <div class="time-range" id="timeRange">—</div>
+                <div id="errorMessage" class="error" style="display:none;"></div>
+                <div class="selected-info" id="selectedInfo">
+                    <strong>Geselecteerd tijdslot:</strong> <span id="selectedTime"></span>
+                </div>
+                <div id="loadingMessage" class="loading" style="display:none;">
+                    Tijdslots laden...
+                </div>
+                <div class="time-slots" id="timeSlots"></div>
+                <button class="reserve-button" id="reserveBtn" disabled onclick="makeReservation()">
+                    Reserveren
+                </button>
+            </div>
+        </main>
     </div>
-
-    <div class="date-display">
-      <div class="current-date" id="currentDate">—</div>
+    <div class="sideMenu" id="sideMenu">
+        <div class="menu-bg-animation"></div>
+        <div class="menu-bg-animation"></div>
+        <div class="sparkles"></div>
+        <div class="sideMenu-header">
+            <div>
+                <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                <p class="sideMenu-subtitle">Menu</p>
+            </div>
+            <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sideMenu-content"><!-- Dynamisch gevuld --></div>
     </div>
-
-     <div class="time-range" id="timeRange">—</div>
-    <div id="errorMessage" class="error" style="display:none;"></div>
-    <div class="selected-info" id="selectedInfo">
-      <strong>Geselecteerd tijdslot:</strong> <span id="selectedTime"></span>
-    </div>
-    <div id="loadingMessage" class="loading" style="display:none;">
-      Tijdslots laden...
-    </div>
-    <div class="time-slots" id="timeSlots"></div>
-    <button class="reserve-button" id="reserveBtn" disabled onclick="makeReservation()">
-      Reserveren
-    </button>
-  </div>
-    
-  <script src="/src/JS/RESULTS/RESERVATIES/reservatie.js"></script>
+    <!-- Scripts -->
+    <script src="/js/navigation-manager.js"></script>
+    <script src="/js/role-manager.js"></script>
+    <script src="/src/JS/RESULTS/RESERVATIES/reservatie.js"></script>
 </body>
 </html>

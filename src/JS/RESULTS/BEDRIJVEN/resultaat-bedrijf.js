@@ -99,9 +99,8 @@ class BedrijfDetailManager {
         "🔄 Geen ID opgegeven, laden van het eerste beschikbare bedrijf..."
       );
 
-      // Gebruik fetchWithAuth, maar zorg dat /api/bedrijven publiek toegankelijk is OF dat je al ingelogd bent.
-      // Als je oningelogd deze route benadert, zal fetchWithAuth redirecten naar /login.
-      const response = await window.fetchWithAuth("/api/bedrijven");
+      // Gebruik fetch zonder Authorization header zodat gasten deze pagina kunnen zien
+      const response = await fetch("/api/bedrijven");
 
       if (response.ok) {
         const data = await response.json();
@@ -114,7 +113,7 @@ class BedrijfDetailManager {
           );
 
           // Update URL zonder redirect voor een betere gebruikerservaring
-          const newUrl = `<span class="math-inline">\{window\.location\.pathname\}?id\=</span>{this.bedrijfId}`;
+          const newUrl = `${window.location.pathname}?id=${this.bedrijfId}`;
           window.history.replaceState({}, "", newUrl);
 
           return; // Keer terug, de hoofd init() flow zal loadBedrijfDetail aanroepen
@@ -139,10 +138,8 @@ class BedrijfDetailManager {
     try {
       this.showLoading(true);
 
-      // Gebruik window.fetchWithAuth en relatieve URL
-      const response = await window.fetchWithAuth(
-        `/api/bedrijven/${this.bedrijfId}`
-      );
+      // FIX: Gebruik fetch zonder Authorization header zodat gasten deze pagina kunnen zien
+      const response = await fetch(`/api/bedrijven/${this.bedrijfId}`);
 
       console.log("📡 API Response status:", response.status);
 
@@ -175,10 +172,8 @@ class BedrijfDetailManager {
 
   async loadContactpersoon() {
     try {
-      // Gebruik window.fetchWithAuth en relatieve URL
-      const response = await window.fetchWithAuth(
-        `/api/contactpersonen/bedrijf/${this.bedrijfId}`
-      );
+      // Gebruik fetch zonder Authorization header zodat gasten deze pagina kunnen zien
+      const response = await fetch(`/api/contactpersonen/bedrijf/${this.bedrijfId}`);
 
       if (response.ok) {
         const result = await response.json();
@@ -229,9 +224,7 @@ class BedrijfDetailManager {
 
     try {
       // Stuur de vaste datum mee, ook al negeert de backend de datum query voor AFSPRAAK
-      const response = await window.fetchWithAuth(
-        `/api/bedrijven/<span class="math-inline">\{companyId\}/planning/</span>{EVENT_DATE_FOR_PLANNING}`
-      );
+      const response = await fetch(`/api/bedrijven/${companyId}/planning/${date}`);
       const result = await response.json();
 
       if (!response.ok) {
@@ -599,7 +592,7 @@ class BedrijfDetailManager {
       `Beste ${this.bedrijfData.naam},\n\nIk heb jullie profiel bekeken op CareerLaunch en zou graag in contact komen.\n\nMet vriendelijke groeten`
     );
 
-    window.location.href = `mailto:<span class="math-inline">\{email\}?subject\=</span>{subject}&body=${body}`;
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   }
 
   goBack() {

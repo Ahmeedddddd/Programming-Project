@@ -70,9 +70,8 @@ class AlleBedrijvenManager {
       return;
     }
     try {
-      this.showLoading(true); // FIX: Gebruik fetchWithAuth en relatieve URL
-      const response = await window.fetchWithAuth("/api/bedrijven", {
-        // Gebruik window.fetchWithAuth
+      this.showLoading(true); // FIX: Gebruik fetch zonder Authorization header zodat gasten deze pagina kunnen zien
+      const response = await fetch("/api/bedrijven", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -147,33 +146,35 @@ class AlleBedrijvenManager {
   }
 
   createBedrijfCard(bedrijf, index) {
-    const article = document.createElement("article");
-    article.className = "bedrijfTegel";
-    article.style.animationDelay = `${index * 0.1}s`; // Add click handler for navigation
-    article.addEventListener("click", () => {
-      // FIX: Navigeer naar het nieuwe, gestandaardiseerde URL-formaat
+    const card = document.createElement('a');
+    card.className = 'bedrijfTegel';
+    card.href = `/resultaat-bedrijf?id=${bedrijf.bedrijfsnummer}`;
+    card.style.animationDelay = `${index * 0.1}s`;
+    card.addEventListener("click", () => {
       this.navigateToBedrijfDetail(bedrijf.bedrijfsnummer);
-    }); // Get company icon based on sector
-
+    });
     // Get description or fallback
     const beschrijving =
       bedrijf.bechrijving ||
       bedrijf.beschrijving ||
       "Meer informatie beschikbaar op de detailpagina.";
-
-    article.innerHTML = `
-      <h2 class="bedrijfNaam"> ${bedrijf.naam}</h2>
+    // Extra info
+    const email = bedrijf.email ? `<span class='bedrijf-email'><i class='fas fa-envelope'></i> ${bedrijf.email}</span>` : '';
+    const telefoon = bedrijf.gsm_nummer ? `<span class='bedrijf-telefoon'><i class='fas fa-phone'></i> ${bedrijf.gsm_nummer}</span>` : '';
+    card.innerHTML = `
+      <h2 class="bedrijfNaam">${bedrijf.naam}</h2>
       <p class="bedrijfSector">${bedrijf.sector}</p>
-      <p class="bedrijfBeschrijving">
-        ${beschrijving}
-      </p>
+      <p class="bedrijfBeschrijving">${beschrijving}</p>
       <div class="bedrijf-info">
         <span class="bedrijf-locatie">📍 ${bedrijf.gemeente}</span>
         <span class="bedrijf-tafel">🏷️ Tafel ${bedrijf.tafelNr || "TBD"}</span>
       </div>
+      <div class="bedrijf-contact" style="margin-top:0.5rem; font-size:0.9em; color:#881538; display:flex; gap:1.5rem; flex-wrap:wrap;">
+        ${email}
+        ${telefoon}
+      </div>
     `;
-
-    return article;
+    return card;
   }
 
   navigateToBedrijfDetail(bedrijfsnummer) {

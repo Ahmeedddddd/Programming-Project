@@ -96,7 +96,7 @@ class ProjectDetailManager {
             if (data && (data.success !== false)) {
                 const allProjects = data.data || data || [];
                 
-                // Filter projects to find the main project and all students working on it
+                // Zoek het project van de juiste student
                 const targetProject = allProjects.find(project => 
                     project.studentnummer == this.projectId && 
                     project.projectTitel && 
@@ -104,11 +104,12 @@ class ProjectDetailManager {
                 );
                 
                 if (targetProject) {
-                    // Find all students working on the same project
-                    const projectTitle = targetProject.projectTitel.trim();
+                    // Gebruik genormaliseerde projecttitel als sleutel
+                    const projectTitleKey = targetProject.projectTitel.trim().toLowerCase();
+                    // Vind alle studenten met exact dezelfde (genormaliseerde) projecttitel
                     const allStudentsOnProject = allProjects.filter(project => 
                         project.projectTitel && 
-                        project.projectTitel.trim() === projectTitle
+                        project.projectTitel.trim().toLowerCase() === projectTitleKey
                     );
 
                     this.projectData = {
@@ -132,7 +133,7 @@ class ProjectDetailManager {
                                 email: student.email,
                                 opleiding: student.opleiding,
                                 opleidingsrichting: student.opleidingsrichting,
-                                tafelNr: student.tafelNr || student.tafelNummer || student.tafelnummer,
+                                tafelNr: student.tafelNr || student.tafelNummer || student.tafelnummer || 'TBD',
                                 studentnummer: student.studentnummer,
                                 voornaam: student.voornaam,
                                 achternaam: student.achternaam

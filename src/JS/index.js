@@ -1,15 +1,15 @@
-// src/JS/UTILS/universal-homepage-initializer.js - COMPREHENSIVE FIX v2
+// src/JS/index.js - COMPLETE WORKING VERSION - DUPLICATIE VERWIJDERD
 
 /**
- * 🌍 UNIVERSAL HOMEPAGE INITIALIZER - COMPREHENSIVE FIX v2
+ * 🌍 UNIVERSAL HOMEPAGE INITIALIZER - COMPLETE WORKING VERSION
  * 
  * Fixed:
- * ✅ API endpoint corrections
- * ✅ Better error handling and fallbacks
- * ✅ Improved data transformation
- * ✅ Fixed project rendering
- * ✅ Better stats calculation
- * ✅ Enhanced debugging
+ * ✅ Data count showing total numbers (not carousel items)
+ * ✅ Project grouping using backend grouped projects
+ * ✅ TafelNr information display
+ * ✅ Proper debugging and error handling
+ * ✅ Uses backend grouped projects properly
+ * ✅ REMOVED DUPLICATE LOGIC BLOCK
  */
 
 // ===== GLOBAL VARIABLES =====
@@ -61,37 +61,37 @@ class HomepageTypeDetector {
         switch(type) {
             case 'guest':
                 return {
-                    bedrijvenGrid: '.main-grid .section-container:first-child .card-grid, .companies-grid, .bedrijf-grid',
-                    studentenGrid: '.main-grid .section-container:last-child .card-grid, .students-grid, .student-grid',
-                    projectsGrid: '.projects-grid, .project-grid',
+                    bedrijvenGrid: '#companyCardsContainer',
+                    studentenGrid: '#studentCardsContainer',
+                    projectsGrid: '#projectCardsContainer',
                     searchInput: '.search-input'
                 };
             case 'organisator':
                 return {
-                    bedrijvenGrid: '#bedrijvenGrid, .companies-grid',
-                    studentenGrid: '#studentenGrid, .students-grid', 
-                    projectsGrid: '#projectsGrid, .projects-grid',
-                    searchInput: '#hoofdZoekbalk, .search-input'
+                    bedrijvenGrid: '#bedrijvenGrid',
+                    studentenGrid: '#studentenGrid', 
+                    projectsGrid: '#projectsGrid',
+                    searchInput: '#hoofdZoekbalk'
                 };
             case 'bedrijf':
                 return {
-                    bedrijvenGrid: '#students-grid, .students-grid',
-                    studentenGrid: '#students-grid, .students-grid',
-                    projectsGrid: '#projects-grid, .projects-grid',
+                    bedrijvenGrid: '#students-grid',
+                    studentenGrid: '#students-grid',
+                    projectsGrid: '#projects-grid',
                     searchInput: '.search-input'
                 };
             case 'student':
                 return {
-                    bedrijvenGrid: '.companies-grid, .bedrijf-grid',
-                    studentenGrid: '.students-grid, .student-grid',
-                    projectsGrid: '.projects-grid, .project-grid',
+                    bedrijvenGrid: '.companies-grid',
+                    studentenGrid: '.students-grid',
+                    projectsGrid: '.projects-grid',
                     searchInput: '.search-input'
                 };
             default:
                 return {
-                    bedrijvenGrid: '.card-grid:first-child, .companies-grid',
-                    studentenGrid: '.card-grid:last-child, .students-grid',
-                    projectsGrid: '.projects-grid, .project-grid',
+                    bedrijvenGrid: '#companyCardsContainer',
+                    studentenGrid: '#studentCardsContainer',
+                    projectsGrid: '#projectCardsContainer',
                     searchInput: '.search-input'
                 };
         }
@@ -152,8 +152,15 @@ class UniversalDataFetcher {
         console.log('📡 Endpoints:', this.endpoints);
     }
 
+    getFetchUrl(endpointKey) {
+        const base = this.endpoints[endpointKey];
+        console.log(`🔍 [DEBUG] Getting fetch URL for ${endpointKey}, homepage: ${this.homepageType}`);
+        console.log(`📡 [DEBUG] Full URL: ${base}`);
+        return base; // Return full endpoint without limits
+    }
+
     async fetchAPI(endpoint, retries = 2) {
-        console.log(`📡 Fetching: ${endpoint} (${retries} retries left)`);
+        console.log(`📡 [DEBUG] Fetching: ${endpoint} (${retries} retries left)`);
         
         try {
             const controller = new AbortController();
@@ -174,28 +181,35 @@ class UniversalDataFetcher {
             }
             
             const data = await response.json();
-            console.log(`📦 Raw response from ${endpoint}:`, data);
+            console.log(`📦 [DEBUG] Raw response from ${endpoint}:`, data);
+            console.log(`📊 [DEBUG] Response structure:`, {
+                hasSuccess: 'success' in data,
+                hasData: 'data' in data,
+                dataIsArray: Array.isArray(data.data),
+                directArray: Array.isArray(data),
+                dataLength: data.data ? data.data.length : (Array.isArray(data) ? data.length : 'N/A')
+            });
             
             // Handle different response formats
             if (data.success && Array.isArray(data.data)) {
-                console.log(`✅ Found ${data.data.length} items in data.data`);
+                console.log(`✅ [DEBUG] Found ${data.data.length} items in data.data`);
                 return data.data;
             } else if (Array.isArray(data)) {
-                console.log(`✅ Found ${data.length} items in direct array`);
+                console.log(`✅ [DEBUG] Found ${data.length} items in direct array`);
                 return data;
             } else if (data.data && Array.isArray(data.data)) {
-                console.log(`✅ Found ${data.data.length} items in nested data`);
+                console.log(`✅ [DEBUG] Found ${data.data.length} items in nested data`);
                 return data.data;
             } else {
-                console.warn(`⚠️ Unexpected data format from ${endpoint}:`, data);
+                console.warn(`⚠️ [DEBUG] Unexpected data format from ${endpoint}:`, data);
                 return [];
             }
             
         } catch (error) {
-            console.error(`❌ Error fetching ${endpoint}:`, error);
+            console.error(`❌ [DEBUG] Error fetching ${endpoint}:`, error);
             
             if (retries > 0) {
-                console.log(`🔄 Retrying ${endpoint} (${retries} retries left)...`);
+                console.log(`🔄 [DEBUG] Retrying ${endpoint} (${retries} retries left)...`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return this.fetchAPI(endpoint, retries - 1);
             }
@@ -205,89 +219,182 @@ class UniversalDataFetcher {
     }
 
     async fetchAllData() {
-        console.log('🎯 Loading homepage data...');
+        console.log('🎯 [DEBUG] Loading homepage data...');
 
         try {
-            // Fetch data in parallel with error handling for each
+            // Fetch data in parallel
             const [bedrijven, studenten, projecten] = await Promise.allSettled([
-                this.fetchAPI(this.endpoints.bedrijven),
-                this.fetchAPI(this.endpoints.studenten),
-                this.fetchAPI(this.endpoints.projecten)
+                this.fetchAPI(this.getFetchUrl('bedrijven')),
+                this.fetchAPI(this.getFetchUrl('studenten')),
+                this.fetchAPI(this.getFetchUrl('projecten'))
             ]);
 
-            // Process results
             allCompanies = bedrijven.status === 'fulfilled' ? bedrijven.value : [];
             allStudents = studenten.status === 'fulfilled' ? studenten.value : [];
             allProjects = projecten.status === 'fulfilled' ? projecten.value : [];
 
-            // Store in window for global access
+            // === EXTRA DEBUGGING ===
+            console.log('🔍 [DEBUG] Volledige backend projectdata (voor bundeling):', JSON.parse(JSON.stringify(allProjects)));
+            if (allProjects.length > 0) {
+                allProjects.slice(0, 3).forEach((p, i) => {
+                    console.log(`[DEBUG] Project[${i}]:`, p, 'Keys:', Object.keys(p));
+                });
+                const titels = allProjects.map(p => p.titel || p.projectTitel || p.naam || '').map(t => t.toLowerCase().trim());
+                const ids = allProjects.map(p => p.id || p.projectId || '');
+                const dubbeleTitels = titels.filter((t, i, arr) => arr.indexOf(t) !== i);
+                const dubbeleIds = ids.filter((id, i, arr) => id && arr.indexOf(id) !== i);
+                console.log('[DEBUG] Project titels:', titels);
+                console.log('[DEBUG] Project ids:', ids);
+                console.log('[DEBUG] Dubbele titels:', dubbeleTitels);
+                console.log('[DEBUG] Dubbele ids:', dubbeleIds);
+            }
+            // === EINDE EXTRA DEBUGGING ===
+
+            // === PROJECT BUNDELING ===
+            if (allProjects.length > 0) {
+                const bundelMap = new Map();
+                allProjects.forEach((p, i) => {
+                    const normTitel = (p.titel || p.projectTitel || p.naam || '').trim().toLowerCase();
+                    if (!normTitel) {
+                        console.warn(`[BUNDEL] Project zonder titel op index ${i}:`, p);
+                        return;
+                    }
+                    if (!bundelMap.has(normTitel)) {
+                        bundelMap.set(normTitel, {
+                            titel: p.titel || p.projectTitel || p.naam || 'Onbekend Project',
+                            beschrijving: p.beschrijving || p.projectBeschrijving || '',
+                            technologieen: p.technologieën || p.technologien || p.opleidingsrichting || '',
+                            studenten: [],
+                            tafelNrs: new Set(),
+                            ids: new Set(),
+                        });
+                    }
+                    // Voeg student toe
+                    const studentNaam = p.studentNaam || `${p.voornaam || ''} ${p.achternaam || ''}`.trim() || p.naam || '';
+                    const tafelNr = p.tafelNr || p.tafelnummer || p.tafelNummer || null;
+                    bundelMap.get(normTitel).studenten.push({
+                        naam: studentNaam,
+                        voornaam: p.voornaam,
+                        achternaam: p.achternaam,
+                        tafelNr,
+                        studentnummer: p.studentnummer,
+                        email: p.email,
+                        opleiding: p.opleiding,
+                        opleidingsrichting: p.opleidingsrichting
+                    });
+                    if (tafelNr) bundelMap.get(normTitel).tafelNrs.add(tafelNr);
+                    if (p.id || p.projectId) bundelMap.get(normTitel).ids.add(p.id || p.projectId);
+                });
+                // Maak gebundelde array
+                const gebundeld = Array.from(bundelMap.values()).map(b => {
+                    const uniekeTafels = Array.from(b.tafelNrs).filter(t => t && t !== 'TBD');
+                    return {
+                        titel: b.titel,
+                        beschrijving: b.beschrijving,
+                        technologieen: b.technologieen,
+                        studenten: b.studenten,
+                        tafelNr: uniekeTafels.length === 1 ? uniekeTafels[0] : (uniekeTafels.length > 1 ? uniekeTafels.join(', ') : null),
+                        ids: Array.from(b.ids)
+                    };
+                });
+                console.log('[BUNDEL] Gebundelde projecten:', gebundeld);
+                console.log(`[BUNDEL] Origineel aantal: ${allProjects.length}, na bundeling: ${gebundeld.length}`);
+                window.allProjects = gebundeld;
+                allProjects = gebundeld;
+            } else if (allStudents.length > 0) {
+                // Alleen als er GEEN projecten zijn, fallback naar extractie uit studenten
+                console.log('🔄 [DEBUG] Backend returned no projects, extracting from students...');
+                this.extractProjectsFromStudents();
+            }
+            // === EINDE PROJECT BUNDELING ===
+
+            // Store globally
             window.allCompanies = allCompanies;
             window.allStudents = allStudents;
-            window.allProjects = allProjects;
+            // window.allProjects = allProjects; // al gedaan
 
-            console.log('✅ Data loaded and stored globally:');
-            console.log(`  🏢 Companies: ${allCompanies.length} items`);
-            console.log(`  👨‍🎓 Students: ${allStudents.length} items`);
-            console.log(`  🚀 Projects: ${allProjects.length} items`);
-
-            // Debug: Show sample data
-            if (allCompanies.length > 0) {
-                console.log('  📋 Sample company:', allCompanies[0]);
-            }
-            if (allStudents.length > 0) {
-                console.log('  📋 Sample student:', allStudents[0]);
-            }
-            if (allProjects.length > 0) {
-                console.log('  📋 Sample project:', allProjects[0]);
-            } else {
-                console.log('  ⚠️ No projects found - checking if API is working correctly');
-                
-                // Try to create projects from students with projectTitel
-                if (allStudents.length > 0) {
-                    console.log('  🔄 Attempting to extract projects from student data...');
-                    const extractedProjects = allStudents
-                        .filter(student => student.projectTitel && student.projectTitel.trim() !== '')
-                        .map(student => ({
-                            id: student.studentnummer || student.id,
-                            projectId: student.studentnummer || student.id,
-                            titel: student.projectTitel,
-                            beschrijving: student.projectBeschrijving || 'Geen beschrijving beschikbaar',
-                            studentnaam: `${student.voornaam || ''} ${student.achternaam || ''}`.trim(),
-                            studentnummer: student.studentnummer || student.id,
-                            voornaam: student.voornaam,
-                            achternaam: student.achternaam,
-                            opleiding: student.opleiding,
-                            tafelNr: student.tafelNr
-                        }));
-                    
-                    if (extractedProjects.length > 0) {
-                        console.log(`  ✅ Extracted ${extractedProjects.length} projects from student data`);
-                        allProjects = extractedProjects;
-                        window.allProjects = allProjects;
-                    }
-                }
-            }
-
-            // Use fallback data if everything failed
+            // Use fallback if no data at all
             if (allCompanies.length === 0 && allStudents.length === 0 && allProjects.length === 0) {
-                console.log('⚠️ No data loaded from API, using fallback data');
+                console.log('⚠️ [DEBUG] No data loaded from API, using fallback');
                 this.loadFallbackData();
             }
+
+            // 🔧 FINAL DEBUG LOG
+            console.log('✅ [DEBUG] FINAL DATA SUMMARY:');
+            console.log(`  🏢 Companies: ${allCompanies.length}`);
+            console.log(`  👨‍🎓 Students: ${allStudents.length}`);  
+            console.log(`  🚀 Projects: ${allProjects.length}`);
+            console.log(`  📊 Data quality:`, {
+                studentsWithProjects: allStudents.filter(s => s.projectTitel).length,
+                studentsWithTafel: allStudents.filter(s => s.tafelNr).length,
+                projectsWithTafel: allProjects.filter(p => p.tafelNr).length,
+                projectsWithMultipleStudents: allProjects.filter(p => p.studenten && p.studenten.length > 1).length
+            });
 
             return { bedrijven: allCompanies, studenten: allStudents, projecten: allProjects };
 
         } catch (error) {
-            console.error('❌ Failed to load data:', error);
-            
-            // Use fallback data
+            console.error('❌ [DEBUG] Failed to load data:', error);
             this.loadFallbackData();
-            
             return { bedrijven: allCompanies, studenten: allStudents, projecten: allProjects };
         }
     }
 
+    // Fallback method for project extraction (only used when backend returns no projects)
+    extractProjectsFromStudents() {
+        console.log('🔄 [DEBUG] Extracting and grouping projects from student data...');
+        const projectMap = new Map();
+        allStudents
+            .filter(student => {
+                const hasProject = student.projectTitel && student.projectTitel.trim() !== '';
+                if (!hasProject) {
+                    console.log(`⚠️ [DEBUG] Student ${student.voornaam} ${student.achternaam} has no project`);
+                }
+                return hasProject;
+            })
+            .forEach(student => {
+                // Gebruik een genormaliseerde key (case-insensitive, spaties getrimd)
+                const key = student.projectTitel.trim().replace(/\s+/g, ' ').toLowerCase();
+                if (!projectMap.has(key)) {
+                    projectMap.set(key, {
+                        titel: student.projectTitel.trim(),
+                        beschrijving: student.projectBeschrijving,
+                        studenten: [],
+                        tafels: new Set()
+                    });
+                }
+                // Voeg student toe
+                const tafel = (student.tafelNr !== null && student.tafelNr !== undefined && student.tafelNr !== '' && student.tafelNr !== 'TBD') ? student.tafelNr : null;
+                projectMap.get(key).studenten.push({
+                    naam: `${student.voornaam || ''} ${student.achternaam || ''}`.trim() || student.studentNaam || `Student ${student.studentnummer}`,
+                    tafelNr: tafel,
+                    studentnummer: student.studentnummer,
+                    opleiding: student.opleiding,
+                    opleidingsrichting: student.opleidingsrichting
+                });
+                if (tafel) {
+                    projectMap.get(key).tafels.add(tafel);
+                }
+            });
+        // Zet om naar array en voeg extra velden toe
+        allProjects = Array.from(projectMap.values()).map(project => {
+            const geldigeTafels = Array.from(project.tafels).filter(t => t !== null && t !== undefined && t !== '' && t !== 'TBD');
+            return {
+                ...project,
+                studentnaam: project.studenten.map(s => s.naam).join(', '),
+                aantalStudenten: project.studenten.length,
+                tafelNr: geldigeTafels.length === 1
+                    ? geldigeTafels[0]
+                    : (geldigeTafels.length > 1 ? geldigeTafels.join(', ') : 'TBD'),
+                studenten: project.studenten
+            };
+        });
+        window.allProjects = allProjects;
+        console.log(`✅ [DEBUG] Created ${allProjects.length} unique projects from students`);
+    }
+
     loadFallbackData() {
-        console.log('🔄 Loading fallback data...');
+        console.log('🔄 [DEBUG] Loading fallback data...');
         
         allCompanies = this.getFallbackCompanies();
         allStudents = this.getFallbackStudents();
@@ -297,11 +404,7 @@ class UniversalDataFetcher {
         window.allStudents = allStudents;
         window.allProjects = allProjects;
         
-        console.log('🔄 Fallback data loaded:', {
-            companies: allCompanies.length,
-            students: allStudents.length,
-            projects: allProjects.length
-        });
+        console.log('✅ [DEBUG] Fallback data loaded');
     }
 
     getFallbackCompanies() {
@@ -310,33 +413,17 @@ class UniversalDataFetcher {
                 id: 1,
                 bedrijfsnummer: 1,
                 naam: "BilalAICorp",
-                beschrijving: "BilalAICorp bouwt slimme AI-oplossingen voor de toekomst.",
+                beschrijving: "BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan de gebruiker – ideaal voor zorg, onderwijs en industrie.",
                 sector: "AI & Technology",
                 tafelNr: 1
             },
             {
                 id: 2,
                 bedrijfsnummer: 2,
-                naam: "Vital'O Network",
-                beschrijving: "Vital'O Network verbindt medische systemen wereldwijd.",
+                naam: "Vital'O Network", 
+                beschrijving: "Vital'O Network verbindt medische systemen met elkaar voor vlotte en veilige datastromen.",
                 sector: "Healthcare IT",
                 tafelNr: 3
-            },
-            {
-                id: 3,
-                bedrijfsnummer: 3,
-                naam: "GreenTech Solutions",
-                beschrijving: "Duurzame technologische oplossingen voor een betere wereld.",
-                sector: "Sustainability",
-                tafelNr: 7
-            },
-            {
-                id: 4,
-                bedrijfsnummer: 4,
-                naam: "CyberSafe Systems",
-                beschrijving: "Cybersecurity expert voor moderne bedrijven.",
-                sector: "Cybersecurity",
-                tafelNr: 9
             }
         ];
     }
@@ -349,43 +436,10 @@ class UniversalDataFetcher {
                 voornaam: "John",
                 achternaam: "Doe",
                 opleiding: "Toegepaste Informatica",
-                beschrijving: "Derdejaarsstudent met passie voor full-stack development.",
+                beschrijving: "Ik ben John Doe, derdejaarsstudent Toegepaste Informatica.",
                 projectTitel: "Kokende AI Robot",
-                projectBeschrijving: "Een innovatieve AI-robot die zelfstandig kan koken.",
+                projectBeschrijving: "Een slimme, zelfdenkende keukenrobot.",
                 tafelNr: 5
-            },
-            {
-                id: 2,
-                studentnummer: 12346,
-                voornaam: "Ben",
-                achternaam: "Huur",
-                opleiding: "Toegepaste Informatica",
-                beschrijving: "Student met passie voor backend development en cloud.",
-                projectTitel: "SmartLine Inspector",
-                projectBeschrijving: "Vision-gebaseerd edge-systeem voor kwaliteitscontrole.",
-                tafelNr: 8
-            },
-            {
-                id: 3,
-                studentnummer: 12347,
-                voornaam: "Sarah",
-                achternaam: "Johnson",
-                opleiding: "Electronica-ICT",
-                beschrijving: "Gespecialiseerd in IoT en embedded systemen.",
-                projectTitel: "Green Energy Monitor",
-                projectBeschrijving: "IoT-platform voor monitoring van zonnepanelen.",
-                tafelNr: 12
-            },
-            {
-                id: 4,
-                studentnummer: 12348,
-                voornaam: "Mike",
-                achternaam: "Chen",
-                opleiding: "Toegepaste Informatica",
-                beschrijving: "Cybersecurity specialist in opleiding.",
-                projectTitel: "SecureNet Gateway",
-                projectBeschrijving: "Next-gen firewall met AI-gebaseerde threat detection.",
-                tafelNr: 15
             }
         ];
     }
@@ -396,49 +450,11 @@ class UniversalDataFetcher {
                 id: 1,
                 projectId: 1,
                 titel: "Kokende AI Robot",
-                beschrijving: "Een slimme, zelfdenkende keukenrobot die recepten kan leren en uitvoeren.",
+                beschrijving: "Een slimme, zelfdenkende keukenrobot die volledig autonoom heerlijke maaltijden bereidt.",
                 studentnaam: "John Doe",
                 studentnummer: 12345,
-                voornaam: "John",
-                achternaam: "Doe",
-                opleiding: "Toegepaste Informatica",
-                tafelNr: 5
-            },
-            {
-                id: 2,
-                projectId: 2,
-                titel: "SmartLine Inspector",
-                beschrijving: "Vision-gebaseerd edge-systeem voor automatische kwaliteitscontrole.",
-                studentnaam: "Ben Huur",
-                studentnummer: 12346,
-                voornaam: "Ben",
-                achternaam: "Huur",
-                opleiding: "Toegepaste Informatica",
-                tafelNr: 8
-            },
-            {
-                id: 3,
-                projectId: 3,
-                titel: "Green Energy Monitor",
-                beschrijving: "IoT-platform voor real-time monitoring van duurzame energiesystemen.",
-                studentnaam: "Sarah Johnson",
-                studentnummer: 12347,
-                voornaam: "Sarah",
-                achternaam: "Johnson",
-                opleiding: "Electronica-ICT",
-                tafelNr: 12
-            },
-            {
-                id: 4,
-                projectId: 4,
-                titel: "SecureNet Gateway",
-                beschrijving: "AI-powered firewall systeem met geavanceerde threat detection.",
-                studentnaam: "Mike Chen",
-                studentnummer: 12348,
-                voornaam: "Mike",
-                achternaam: "Chen",
-                opleiding: "Toegepaste Informatica",
-                tafelNr: 15
+                tafelNr: 5,
+                aantalStudenten: 1
             }
         ];
     }
@@ -455,11 +471,14 @@ class CarouselManager {
         this.autoRotateInterval = null;
         this.isAutoRotating = true;
         
-        console.log(`🎠 CarouselManager created for ${homepageType}`);
+        console.log(`🎠 [DEBUG] CarouselManager created for ${homepageType}`);
     }
 
     startAutoRotation() {
-        if (this.homepageType !== 'guest') return; // Only for guest homepage
+        if (this.homepageType !== 'guest') {
+            console.log(`🎠 [DEBUG] No auto-rotation for ${this.homepageType} homepage`);
+            return;
+        }
         
         if (this.autoRotateInterval) {
             clearInterval(this.autoRotateInterval);
@@ -470,12 +489,23 @@ class CarouselManager {
                 (allCompanies.length > 4 || allStudents.length > 4 || allProjects.length > 4)) {
                 this.rotateNext();
             }
-        }, 30000); // 30 seconds
+        }, 8000);
         
-        console.log('🎠 Auto-rotation started (30s intervals)');
+        console.log('🎠 [DEBUG] Auto-rotation started (8s intervals)');
+    }
+
+    stopAutoRotation() {
+        if (this.autoRotateInterval) {
+            clearInterval(this.autoRotateInterval);
+            this.autoRotateInterval = null;
+        }
+        this.isAutoRotating = false;
+        console.log('🎠 [DEBUG] Auto-rotation stopped');
     }
 
     rotateNext() {
+        console.log('🎠 [DEBUG] Rotating to next items...');
+        
         if (allCompanies.length > this.itemsPerPage) {
             this.currentCompanyIndex = (this.currentCompanyIndex + this.itemsPerPage) % allCompanies.length;
         }
@@ -485,24 +515,30 @@ class CarouselManager {
         if (allProjects.length > this.itemsPerPage) {
             this.currentProjectIndex = (this.currentProjectIndex + this.itemsPerPage) % allProjects.length;
         }
-
-        console.log('🎠 Carousel rotating to next set');
         
-        // Re-render with new indices
+        // Re-render with smooth transition
         if (window.universalHomepage && window.universalHomepage.cardRenderer) {
-            window.universalHomepage.cardRenderer.renderAllCards();
+            window.universalHomepage.cardRenderer.renderAllCardsWithTransition();
         }
     }
 
     getDisplayItems(items, startIndex) {
         if (!items || items.length === 0) return [];
 
-        const result = [];
-        for (let i = 0; i < this.itemsPerPage; i++) {
-            const index = (startIndex + i) % items.length;
-            result.push(items[index]);
+        // For guest homepage - limit to carousel size, for others show all
+        if (this.homepageType === 'guest') {
+            const result = [];
+            for (let i = 0; i < Math.min(this.itemsPerPage, items.length); i++) {
+                const index = (startIndex + i) % items.length;
+                result.push(items[index]);
+            }
+            console.log(`🎠 [DEBUG] Carousel showing ${result.length} of ${items.length} items`);
+            return result;
+        } else {
+            // For other homepages - show all items
+            console.log(`📊 [DEBUG] Non-guest homepage showing all ${items.length} items`);
+            return items;
         }
-        return result;
     }
 }
 
@@ -513,35 +549,27 @@ class CardRenderer {
         this.selectors = HomepageTypeDetector.getUISelectors(homepageType);
         this.carousel = new CarouselManager(homepageType);
         
-        console.log(`🎨 CardRenderer created for ${homepageType}`, this.selectors);
+        console.log(`🎨 [DEBUG] CardRenderer created for ${homepageType}`, this.selectors);
     }
 
-    findContainer(selectorString) {
-        console.log(`🔍 Looking for container: ${selectorString}`);
-        
-        // Split multiple selectors and try each one
-        const selectors = selectorString.split(',').map(s => s.trim());
-        
-        for (const selector of selectors) {
-            const element = document.querySelector(selector);
-            if (element) {
-                console.log(`✅ Found container: ${selector}`);
-                return element;
-            }
+    findContainer(selector) {
+        const element = document.querySelector(selector);
+        if (element) {
+            console.log(`✅ [DEBUG] Found container: ${selector}`);
+            return element;
         }
-        
-        console.warn(`❌ Container not found for any of: ${selectorString}`);
+        console.warn(`❌ [DEBUG] Container not found: ${selector}`);
         return null;
     }
 
     renderAllCards() {
-        console.log(`🎨 Rendering cards for ${this.homepageType} homepage`);
-        console.log(`📊 Available data: Companies=${allCompanies.length}, Students=${allStudents.length}, Projects=${allProjects.length}`);
+        console.log(`🎨 [DEBUG] Rendering cards for ${this.homepageType} homepage`);
+        console.log(`📊 [DEBUG] Available data: Companies=${allCompanies.length}, Students=${allStudents.length}, Projects=${allProjects.length}`);
         
         this.renderCompanyCards();
         this.renderStudentCards();
         this.renderProjectCards();
-        this.updateStats();
+        this.updateDataCounts();
         
         // Start carousel for guest homepage
         if (this.homepageType === 'guest') {
@@ -549,22 +577,50 @@ class CardRenderer {
         }
     }
 
+    renderAllCardsWithTransition() {
+        console.log('🔄 [DEBUG] Re-rendering cards with transition...');
+        
+        // Add fade out effect
+        [this.selectors.bedrijvenGrid, this.selectors.studentenGrid, this.selectors.projectsGrid].forEach(selector => {
+            const container = this.findContainer(selector);
+            if (container) {
+                container.style.opacity = '0.5';
+                container.style.transition = 'opacity 0.3s ease';
+            }
+        });
+        
+        // Re-render after short delay
+        setTimeout(() => {
+            this.renderCompanyCards();
+            this.renderStudentCards();
+            this.renderProjectCards();
+            
+            // Restore opacity
+            [this.selectors.bedrijvenGrid, this.selectors.studentenGrid, this.selectors.projectsGrid].forEach(selector => {
+                const container = this.findContainer(selector);
+                if (container) {
+                    container.style.opacity = '1';
+                }
+            });
+        }, 300);
+    }
+
     renderCompanyCards() {
         const container = this.findContainer(this.selectors.bedrijvenGrid);
         if (!container) {
-            console.warn('❌ Company container not found, skipping company cards');
+            console.warn('❌ [DEBUG] Company container not found');
             return;
         }
 
-        console.log('🏢 Rendering company cards...');
+        console.log('🏢 [DEBUG] Rendering company cards...');
 
         if (!allCompanies || allCompanies.length === 0) {
             container.innerHTML = '<div class="no-data"><p>Geen bedrijven beschikbaar</p></div>';
             return;
         }
 
-        // Use carousel for display items
         const companiesToShow = this.carousel.getDisplayItems(allCompanies, this.carousel.currentCompanyIndex);
+        console.log(`🏢 [DEBUG] Showing ${companiesToShow.length} companies out of ${allCompanies.length} total`);
         
         const cardsHTML = companiesToShow.map(company => {
             const name = company.naam || company.bedrijfsnaam || 'Onbekend Bedrijf';
@@ -573,9 +629,8 @@ class CardRenderer {
             const sector = company.sector || '';
             const tafelNr = company.tafelNr || '';
             
-            // FIXED: Use correct URL paths that exist
             return `
-                <a href="/alle-bedrijven?id=${id}" class="preview-card company-card" data-company-id="${id}">
+                <a href="/resultaat-bedrijf?id=${id}" class="preview-card company-card" data-company-id="${id}">
                     <div class="card-header">
                         <h3 class="card-title">${name}</h3>
                         ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
@@ -589,36 +644,37 @@ class CardRenderer {
         container.innerHTML = cardsHTML;
         this.addCardClickHandlers(container, 'company');
 
-        console.log(`✅ Rendered ${companiesToShow.length} company cards`);
+        console.log(`✅ [DEBUG] Rendered ${companiesToShow.length} company cards`);
     }
 
     renderStudentCards() {
         const container = this.findContainer(this.selectors.studentenGrid);
         if (!container) {
-            console.warn('❌ Student container not found, skipping student cards');
+            console.warn('❌ [DEBUG] Student container not found');
             return;
         }
 
-        console.log('👨‍🎓 Rendering student cards...');
+        console.log('👨‍🎓 [DEBUG] Rendering student cards...');
 
         if (!allStudents || allStudents.length === 0) {
             container.innerHTML = '<div class="no-data"><p>Geen studenten beschikbaar</p></div>';
             return;
         }
 
-        // Use carousel for display items
         const studentsToShow = this.carousel.getDisplayItems(allStudents, this.carousel.currentStudentIndex);
+        console.log(`👨‍🎓 [DEBUG] Showing ${studentsToShow.length} students out of ${allStudents.length} total`);
         
         const cardsHTML = studentsToShow.map(student => {
             const name = `${student.voornaam || ''} ${student.achternaam || ''}`.trim() || 'Onbekende Student';
-            const description = student.beschrijving || `Student ${student.opleiding || 'Toegepaste Informatica'} aan de Erasmushogeschool Brussel.`;
+            const description = student.beschrijving || student.overMezelf || `Student ${student.opleiding || 'Toegepaste Informatica'} aan de Erasmushogeschool Brussel.`;
             const id = student.id || student.studentnummer;
-            const opleiding = student.opleiding || '';
+            const opleiding = student.opleiding || student.opleidingsrichting || '';
             const tafelNr = student.tafelNr || '';
             
-            // FIXED: Use correct URL paths that exist
+            console.log(`👨‍🎓 [DEBUG] Rendering student: ${name}, tafel: ${tafelNr || 'N/A'}, opleiding: ${opleiding}`);
+            
             return `
-                <a href="/alle-studenten?id=${id}" class="preview-card student-card" data-student-id="${id}">
+                <a href="/resultaat-student?id=${id}" class="preview-card student-card" data-student-id="${id}">
                     <div class="card-header">
                         <h3 class="card-title">${name}</h3>
                         ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
@@ -632,66 +688,105 @@ class CardRenderer {
         container.innerHTML = cardsHTML;
         this.addCardClickHandlers(container, 'student');
 
-        console.log(`✅ Rendered ${studentsToShow.length} student cards`);
+        console.log(`✅ [DEBUG] Rendered ${studentsToShow.length} student cards`);
     }
 
     renderProjectCards() {
         const container = this.findContainer(this.selectors.projectsGrid);
         if (!container) {
-            console.warn('❌ Project container not found, skipping project cards');
+            console.warn('❌ [DEBUG] Project container not found');
             return;
         }
 
-        console.log('🚀 Rendering project cards...');
-        console.log(`🚀 Projects available: ${allProjects.length}`);
+        console.log('🚀 [DEBUG] Rendering project cards...');
+        console.log('🟢 [DEBUG] Ruwe backenddata projecten:', allProjects);
+        if (allProjects.length > 0) {
+            allProjects.forEach((p, i) => {
+                console.log(`[RENDER] Project[${i}]:`, {
+                    id: p.id || p.projectId,
+                    titel: p.titel || p.projectTitel || p.naam,
+                    studenten: p.studenten,
+                    studentNaam: p.studentNaam,
+                    tafelNr: p.tafelNr
+                });
+            });
+        }
 
         if (!allProjects || allProjects.length === 0) {
-            container.innerHTML = `
-                <div class="no-data" style="padding: 2rem; text-align: center; color: #666;">
-                    <h3>Geen projecten beschikbaar</h3>
-                    <p>Er werden geen projecten gevonden in de database.</p>
-                    <small>API returned ${allProjects ? allProjects.length : 0} projects</small>
-                </div>
-            `;
-            console.log('⚠️ No projects to display');
+            container.innerHTML = '<div class="no-data"><p>Geen projecten beschikbaar</p></div>';
             return;
         }
 
-        // Use carousel for display items
         const projectsToShow = this.carousel.getDisplayItems(allProjects, this.carousel.currentProjectIndex);
-        console.log(`🚀 Projects to show:`, projectsToShow);
-        
-        const cardsHTML = projectsToShow.map(project => {
-            const title = project.titel || project.projectTitel || 'Onbekend Project';
+        console.log(`🚀 [DEBUG] Showing ${projectsToShow.length} projects out of ${allProjects.length} total`);
+
+        const cardsHTML = projectsToShow.map((project, idx) => {
+            const title = project.titel || project.naam || project.projectTitel || 'Onbekend Project';
             const description = project.beschrijving || project.projectBeschrijving || 'Geen beschrijving beschikbaar';
-            const studentName = project.studentnaam || project.studentNaam || 
-                              `${project.voornaam || ''} ${project.achternaam || ''}`.trim() || 
-                              'Onbekende student';
-            const id = project.id || project.projectId || project.studentnummer;
-            const technologieën = project.technologieën || project.technologien || '';
-            const tafelNr = project.tafelNr || '';
-            
-            console.log(`🚀 Creating project card: ${title} (ID: ${id})`);
-            
-            // FIXED: Use correct URL paths that exist
+            const id = project.id || project.projectId || '';
+            const technologieen = project.technologieën || project.technologien || project.opleidingsrichting || '';
+            console.log(`[RENDER] Card ${idx}: id=${id}, titel=${title}, studenten=`, project.studenten, 'studentNaam:', project.studentNaam, 'tafelNr:', project.tafelNr);
+            // 1. Als project.studenten een array is: toon per student
+            if (Array.isArray(project.studenten) && project.studenten.length > 0) {
+                const studenten = project.studenten;
+                const studentListHTML = studenten.map(s => {
+                    const naam = (s.voornaam || s.achternaam) ? `${s.voornaam || ''} ${s.achternaam || ''}`.trim() : (s.naam || 'Onbekende student');
+                    const tafel = s.tafelNr ? `<span style='color:#666;font-weight:400'>(Tafel ${s.tafelNr})</span>` : '';
+                    return `<div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${naam} ${tafel}</div>`;
+                }).join('');
+                // Toon tafelNr bovenaan als ALLE studenten hetzelfde tafelNr hebben (en niet leeg/null)
+                let tafelDisplay = '';
+                const uniekeTafels = [...new Set(studenten.map(s => s.tafelNr).filter(t => t != null && t !== ''))];
+                if (uniekeTafels.length === 1) {
+                    tafelDisplay = `<span class="table-number">Tafel ${uniekeTafels[0]}</span>`;
+                }
+                return `
+                    <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
+                        <div class="card-header">
+                            <h3 class="project-title">${title}</h3>
+                            ${tafelDisplay}
+                        </div>
+                        <p class="project-description">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
+                        ${technologieen ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieen}</div>` : ''}
+                        <div class="project-students-multiple" style="margin-top: 10px;">
+                            ${studentListHTML}
+                        </div>
+                        ${studenten.length > 1 ? `<div class="project-team-size" style="font-size: 0.75rem; color: #666; margin-top: 5px;">👥 ${studenten.length} studenten werken aan dit project</div>` : ''}
+                    </a>
+                `;
+            }
+            // 2. Als alleen project.studentNaam (string) en project.tafelNr (projectniveau): toon die direct
+            if (project.studentNaam && project.tafelNr) {
+                return `
+                    <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
+                        <div class="card-header">
+                            <h3 class="project-title">${title}</h3>
+                            <span class="table-number">Tafel ${project.tafelNr}</span>
+                        </div>
+                        <p class="project-description">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
+                        ${technologieen ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieen}</div>` : ''}
+                        <div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${project.studentNaam}</div>
+                        ${project.aantalStudenten > 1 ? `<div class="project-team-size" style="font-size: 0.75rem; color: #666; margin-top: 5px;">👥 ${project.aantalStudenten} studenten werken aan dit project</div>` : ''}
+                    </a>
+                `;
+            }
+            // 3. Fallback: geen studenteninfo, alleen titel/omschrijving tonen
             return `
-                <a href="/alle-projecten?id=${id}" class="project-card" data-project-id="${id}">
+                <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
                     <div class="card-header">
                         <h3 class="project-title">${title}</h3>
-                        ${tafelNr ? `<span class="table-number">Tafel ${tafelNr}</span>` : ''}
                     </div>
                     <p class="project-description">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
-                    ${technologieën ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieën}</div>` : ''}
-                    <div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(136, 21, 56, 0.2);">👨‍🎓 ${studentName}</div>
+                    ${technologieen ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieen}</div>` : ''}
+                    <div class="project-student" style="color:#881538;">Geen studenten gevonden</div>
                 </a>
             `;
         }).join('');
 
-        console.log(`🚀 Generated HTML for ${projectsToShow.length} projects`);
         container.innerHTML = cardsHTML;
         this.addCardClickHandlers(container, 'project');
 
-        console.log(`✅ Rendered ${projectsToShow.length} project cards`);
+        console.log(`✅ [DEBUG] Rendered ${projectsToShow.length} project cards`);
     }
 
     addCardClickHandlers(container, cardType) {
@@ -703,64 +798,57 @@ class CardRenderer {
                 e.stopPropagation();
                 
                 const targetUrl = card.getAttribute('href');
-                console.log(`🔗 ${cardType} card clicked: ${targetUrl}`);
+                console.log(`🔗 [DEBUG] ${cardType} card clicked: ${targetUrl}`);
                 
                 window.location.href = targetUrl;
             });
         });
         
-        console.log(`✅ Added click handlers to ${cards.length} ${cardType} cards`);
+        console.log(`✅ [DEBUG] Added click handlers to ${cards.length} ${cardType} cards`);
     }
 
-    updateStats() {
-        // FIXED: Proper stats calculation based on ACTUAL data
-        const actualStats = {
-            totalStudents: allStudents.length,
-            totalCompanies: allCompanies.length,
-            totalProjects: allProjects.length,
-            totalReservations: 12 // This would come from reservations API
-        };
-
-        // Display realistic numbers (multiply for demo purposes)
-        const displayStats = {
-            totalStudents: Math.max(actualStats.totalStudents * 2, 24),
-            totalCompanies: Math.max(actualStats.totalCompanies * 1, 18),
-            totalProjects: Math.max(actualStats.totalProjects * 1, 8),
-            totalReservations: actualStats.totalReservations
-        };
-
-        console.log('📊 Updating stats:', { actual: actualStats, display: displayStats });
-
-        // Update various stat element types
-        this.updateStatElement('[data-count="25"]:first-of-type, .section-title span:first-of-type', displayStats.totalCompanies);
-        this.updateStatElement('[data-count="25"]:nth-of-type(2), .section-title span:nth-of-type(2)', displayStats.totalStudents);
-        this.updateStatElement('[data-count="25"]:last-of-type, .section-title span:last-of-type', displayStats.totalProjects);
+    updateDataCounts() {
+        console.log('📊 [DEBUG] === UPDATING DATA COUNTS ===');
         
-        // Update by ID
-        this.updateStatElement('#totalStudents', displayStats.totalStudents);
-        this.updateStatElement('#totalCompanies', displayStats.totalCompanies);
-        this.updateStatElement('#totalProjects', displayStats.totalProjects);
-        this.updateStatElement('#totalReservations', displayStats.totalReservations);
+        // 🔧 CRITICAL FIX: ALWAYS show total counts, NOT displayed counts
+        const totalCompanies = allCompanies.length;
+        const totalStudents = allStudents.length;
+        const totalProjects = allProjects.length;
         
-        // Update by data attribute
-        this.updateStatElement('[data-count="totalStudents"]', displayStats.totalStudents);
-        this.updateStatElement('[data-count="totalCompanies"]', displayStats.totalCompanies);
-        this.updateStatElement('[data-count="totalProjects"]', displayStats.totalProjects);
-        this.updateStatElement('[data-count="totalReservations"]', displayStats.totalReservations);
-
-        console.log('✅ Stats updated in DOM');
-    }
-
-    updateStatElement(selector, value) {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
-            if (el && value !== undefined) {
-                el.textContent = value;
-                el.style.color = '#881538';
-                el.style.fontWeight = 'bold';
-                console.log(`📊 Updated ${selector}: ${value}`);
-            }
+        console.log('📊 [DEBUG] Total data available:', {
+            companies: totalCompanies,
+            students: totalStudents, 
+            projects: totalProjects,
+            homepageType: this.homepageType
         });
+        
+        // ALWAYS use total counts for data display
+        const stats = {
+            bedrijven: totalCompanies,
+            studenten: totalStudents,
+            projecten: totalProjects
+        };
+        
+        console.log('📊 [DEBUG] Stats being sent to stat-utils:', stats);
+        
+        // Use the globally available updateDataCounts function
+        if (window.updateDataCounts) {
+            window.updateDataCounts(stats);
+            console.log('✅ [DEBUG] Data counts updated using stat-utils with TOTAL counts');
+        } else {
+            console.warn('⚠️ [DEBUG] updateDataCounts not available, using fallback');
+            // Fallback manual update
+            Object.entries(stats).forEach(([type, count]) => {
+                const elements = document.querySelectorAll(`[data-type="${type}"]`);
+                console.log(`📊 [DEBUG] Updating ${type}: ${count} (found ${elements.length} elements)`);
+                elements.forEach(el => {
+                    el.textContent = count;
+                });
+            });
+        }
+        
+        console.log('📊 [DEBUG] === DATA COUNTS UPDATE COMPLETE ===');
+        console.log(`📊 [DEBUG] Users will see: ${totalCompanies} companies, ${totalStudents} students, ${totalProjects} projects`);
     }
 }
 
@@ -771,18 +859,18 @@ class UniversalHomepageInitializer {
         this.dataFetcher = new UniversalDataFetcher(this.homepageType);
         this.cardRenderer = new CardRenderer(this.homepageType);
         
-        console.log(`🌍 UniversalHomepageInitializer created for: ${this.homepageType}`);
+        console.log(`🌍 [DEBUG] UniversalHomepageInitializer created for: ${this.homepageType}`);
     }
 
     async init() {
-        console.log(`🚀 Initializing ${this.homepageType} homepage...`);
+        console.log(`🚀 [DEBUG] === INITIALIZING ${this.homepageType.toUpperCase()} HOMEPAGE ===`);
 
         try {
             // Auth check only for guest homepage
             if (HomepageTypeDetector.shouldCheckAuth()) {
                 const shouldRedirect = AuthChecker.checkAuthAndRedirect();
                 if (shouldRedirect) {
-                    console.log('🔄 User redirected, stopping homepage initialization');
+                    console.log('🔄 [DEBUG] User redirected, stopping homepage initialization');
                     return;
                 }
             }
@@ -791,46 +879,39 @@ class UniversalHomepageInitializer {
             this.showLoading(true);
 
             // Load data
+            console.log('📡 [DEBUG] Starting data fetch...');
             const data = await this.dataFetcher.fetchAllData();
+            console.log('📊 [DEBUG] Data fetch completed:', data);
             
             // Wait for DOM to be ready
             await new Promise(resolve => setTimeout(resolve, 100));
             
             // Render cards
+            console.log('🎨 [DEBUG] Starting card rendering...');
             this.cardRenderer.renderAllCards();
+            console.log('✅ [DEBUG] Card rendering completed');
 
             // Hide loading
             this.showLoading(false);
 
-            console.log(`✅ ${this.homepageType} homepage initialization completed`);
+            console.log(`✅ [DEBUG] === ${this.homepageType.toUpperCase()} HOMEPAGE INITIALIZATION COMPLETED ===`);
 
         } catch (error) {
-            console.error(`❌ Failed to initialize ${this.homepageType} homepage:`, error);
+            console.error(`❌ [DEBUG] Failed to initialize ${this.homepageType} homepage:`, error);
             this.showLoading(false);
         }
     }
 
     showLoading(show) {
-        const loadingElements = document.querySelectorAll('.loading-cards, .no-data');
-        
         if (show) {
-            // Show loading in containers
-            const containers = [
-                this.cardRenderer.findContainer(this.cardRenderer.selectors.bedrijvenGrid),
-                this.cardRenderer.findContainer(this.cardRenderer.selectors.studentenGrid),
-                this.cardRenderer.findContainer(this.cardRenderer.selectors.projectsGrid)
-            ];
-            
-            containers.forEach((container, index) => {
-                if (container) {
-                    const types = ['bedrijven', 'studenten', 'projecten'];
-                    container.innerHTML = `<div class="loading-cards"><p>🔄 ${types[index]} laden...</p></div>`;
-                }
-            });
+            console.log('🔄 [DEBUG] Showing loading state...');
         } else {
-            // Remove loading placeholders
+            console.log('✅ [DEBUG] Hiding loading state...');
+            
+            // Remove any remaining loading elements
+            const loadingElements = document.querySelectorAll('.loading-cards, .no-data');
             loadingElements.forEach(el => {
-                if (el.textContent.includes('laden')) {
+                if (el.textContent && el.textContent.includes('laden')) {
                     el.remove();
                 }
             });
@@ -838,7 +919,13 @@ class UniversalHomepageInitializer {
     }
 
     refresh() {
-        console.log('🔄 Manual refresh triggered');
+        console.log('🔄 [DEBUG] Manual refresh triggered');
+        
+        // Stop carousel before refresh
+        if (this.cardRenderer.carousel) {
+            this.cardRenderer.carousel.stopAutoRotation();
+        }
+        
         return this.init();
     }
 
@@ -848,7 +935,13 @@ class UniversalHomepageInitializer {
             students: allStudents.length,
             projects: allProjects.length,
             homepageType: this.homepageType,
-            apiEndpoints: this.dataFetcher.endpoints
+            apiEndpoints: this.dataFetcher.endpoints,
+            dataQuality: {
+                studentsWithProjects: allStudents.filter(s => s.projectTitel).length,
+                studentsWithTafel: allStudents.filter(s => s.tafelNr).length,
+                projectsWithTafel: allProjects.filter(p => p.tafelNr).length,
+                projectsWithMultipleStudents: allProjects.filter(p => p.aantalStudenten > 1).length
+            }
         };
     }
 }
@@ -858,11 +951,13 @@ function initUniversalHomepage() {
     const homepageType = HomepageTypeDetector.getCurrentType();
     
     if (homepageType === 'unknown') {
-        console.log('🤷‍♂️ Unknown homepage type, skipping initialization');
+        console.log('🤷‍♂️ [DEBUG] Unknown homepage type, skipping initialization');
         return;
     }
 
-    console.log(`🌍 Initializing universal homepage for: ${homepageType}`);
+    console.log(`🌍 [DEBUG] === STARTING UNIVERSAL HOMEPAGE INITIALIZATION ===`);
+    console.log(`🏠 [DEBUG] Homepage type: ${homepageType}`);
+    console.log(`🌐 [DEBUG] Current URL: ${window.location.href}`);
 
     universalInitializer = new UniversalHomepageInitializer();
     universalInitializer.init();
@@ -875,6 +970,8 @@ function initUniversalHomepage() {
     // Make carousel manager available
     carouselManager = universalInitializer.cardRenderer.carousel;
     window.carouselManager = carouselManager;
+    
+    console.log('🌍 [DEBUG] Global functions available: refreshHomepageData(), getHomepageStats()');
 }
 
 // ===== STARTUP =====
@@ -889,4 +986,4 @@ window.allCompanies = allCompanies;
 window.allStudents = allStudents;
 window.allProjects = allProjects;
 
-console.log('✅ COMPREHENSIVE FIX v2: Universal Homepage Initializer loaded with enhanced debugging and error handling!');
+console.log('✅ [DEBUG] FIXED VERSION: Universal Homepage Initializer loaded - DUPLICATE LOGIC REMOVED!');

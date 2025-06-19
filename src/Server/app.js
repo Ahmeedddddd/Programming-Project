@@ -323,41 +323,37 @@ app.get("/programma", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
 });
 
-app.get("/alle-bedrijven", (req, res) => {
+app.get("/alleBedrijven", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
   );
 });
 
-app.get("/alle-projecten", (req, res) => {
+app.get("/alleProjecten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html")
   );
 });
 
-app.get("/alle-studenten", (req, res) => {
+app.get("/alleStudenten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html")
   );
 });
 
 app.get("/zoekbalk-projecten", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-projecten.html"));
-});
-
-app.get("/zoekbalk-studenten", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-studenten.html"));
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"));
 });
 
 app.get("/resultaat-bedrijf", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/resultaat-bedrijf.html")
+    path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html")
   );
 });
 
 app.get("/resultaat-student", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "../../src/HTML/RESULTS/resultaat-student.html")
+    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html")
   );
 });
 
@@ -392,6 +388,22 @@ app.get("/info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
 });
 
+app.get("/infoCareerLaunch", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-career-launch.html"));
+});
+
+app.get("/infoBedrijf", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-bedrijven.html"));
+});
+
+app.get("/infoStudent", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-studenten.html"));
+});
+
+app.get("/tarieven-info", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/tarieven-info.html"));
+});
+
 // Test page
 app.get("/test", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/test.html"));
@@ -412,7 +424,7 @@ app.get("/account-student", requireAuth, (req, res) => {
   );
 });
 
-app.get("/gegevens-student", requireAuth, (req, res) => {
+app.get("/gegevensStudent", requireAuth, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html")
   );
@@ -431,7 +443,7 @@ app.get("/account-bedrijf", requireAuth, (req, res) => {
   );
 });
 
-app.get("/gegevens-bedrijf", requireAuth, (req, res) => {
+app.get("/gegevensBedrijf", requireAuth, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html")
   );
@@ -448,7 +460,7 @@ app.get("/account-organisator", requireRole(["organisator"]), (req, res) => {
   );
 });
 
-app.get("/gegevens-organisator", requireRole(["organisator"]), (req, res) => {
+app.get("/gegevensOrganisator", requireRole(["organisator"]), (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html")
   );

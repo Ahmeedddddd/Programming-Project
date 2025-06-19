@@ -14,6 +14,11 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="/src/JS/UTILS/notification-system.js"></script>
+<script type="module">
+  import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
+  window.updateDataCounts = updateDataCounts;
+  console.log('[stat-utils] updateDataCounts globally available');
+</script>
 <script type="module" src="/src/JS/UTILS/startPage.js"></script>
 <script src="/src/JS/api.js"></script>
 <script src="/src/JS/RESULTS/BEDRIJVEN/alle-bedrijven.js"></script>
@@ -151,21 +156,6 @@
                 <!-- Dynamic navigation items will be inserted here -->
             </div>
         </div>
-  
-  <!-- Menu content -->
-  <div class="sideMenu-content">
-    <a href="/login">
-      <i class="fas fa-sign-in-alt"></i>
-      Login
-    </a>
-    <a href="/contacteer">
-      <i class="fas fa-envelope"></i>
-      Contact us
-    </a>
-    
-    <hr class="sideMenu-divider">
-  </div>
-</div>
 
         <!-- Page Header -->
         <div class="page-header">
@@ -215,6 +205,11 @@
 
     <!-- Scripts -->
     <script src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module">
+      import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
+      window.updateDataCounts = updateDataCounts;
+      console.log('[stat-utils] updateDataCounts globally available');
+    </script>
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script src="/src/JS/RESULTS/BEDRIJVEN/alle-bedrijven.js"></script>
 
@@ -252,5 +247,10 @@
             background: #eff6ff;
         }
     </style>
+    <script type="module">
+  import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
+  window.updateDataCounts = updateDataCounts;
+  console.log('[stat-utils] updateDataCounts globally available');
+</script>
 </body>
 </html>

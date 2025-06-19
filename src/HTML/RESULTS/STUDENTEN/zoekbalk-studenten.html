@@ -159,117 +159,96 @@
     </style>
 </head>
 <body>
-    <!-- Navigatie -->
-<div class="container">
-  <div class="nav">
-  <div class="logo">
-    <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-  </div>
-  <div class="navBar">
-    
-  </div>
-  <div class="pfpContainer">
-    <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-    </div>
-  </div>
-
-<!-- Verborgen sidebar -->
-<div class="sideMenu" id="sideMenu">
-  <!-- Geanimeerde achtergrond laag -->
-  <div class="menu-bg-animation"></div>
-<div class="menu-bg-animation"></div>
-<div class="sparkles"></div>
-  
-  <!-- Header met titel -->
-  <div class="sideMenu-header">
-    <div>
-      <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-      <p class="sideMenu-subtitle">Menu</p>
-    </div>
-    <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-  
-  <!-- Menu content -->
-  <div class="sideMenu-content">
-    <a href="/login">
-      <i class="fas fa-sign-in-alt"></i>
-      Login
-    </a>
-    <a href="/contacteer">
-      <i class="fas fa-envelope"></i>
-      Contact us
-    </a>
-    
-    <hr class="sideMenu-divider">
-  </div>
-</div>
-
-<!-- Site Header -->
-    <header class="site-header">
-        <h1 class="site-title">
-            <div class="skeleton skeleton-title" style="width: 300px; margin: 0 auto; background: rgba(255,255,255,0.3);"></div>
-        </h1>
-    </header>
-
-    <!-- Layout Container -->
-    <div class="layout">
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Project Sectie -->
-            <section class="section-project" id="project">
-                <h2>Mijn Project</h2>
-                <div class="loading-content">
-                    <div class="skeleton skeleton-title" style="width: 250px;"></div>
-                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
-                </div>
-            </section>
-
-            <!-- Over Mezelf Sectie -->
-            <section class="section-over" id="over-mezelf">
-                <h2>Over mezelf</h2>
-                <div class="loading-content">
-                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text" style="width: 90%;"></div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <!-- Info Links -->
-            <nav class="info-links" aria-labelledby="info-heading">
-                <h2 id="info-heading">Contactinfo</h2>
-                <ul>
-                    <!-- Contact info wordt dynamisch toegevoegd -->
-                    <li><span>📍 Tafel wordt geladen...</span></li>
-                </ul>
-            </nav>
-
-            <!-- Profile Links -->
-            <div class="profile-links">
-                <!-- Profile links worden dynamisch toegevoegd -->
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text"></div>
+    <div class="container">
+        <div class="nav">
+            <div class="logo">
+                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
             </div>
-
-            <!-- Reservatie Container -->
-            <div class="reserve-container">
-                <button type="button" class="btn-reserve">Reservatie maken</button>
+            <div class="navBar"><!-- Navigation items worden dynamisch toegevoegd --></div>
+            <div class="pfpContainer">
+                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
             </div>
-        </aside>
-    </div>
+        </div>
+        <!-- SideMenu -->
+        <div class="sideMenu" id="sideMenu">
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Menu</p>
+                </div>
+                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sideMenu-content"><!-- Dynamisch gevuld --></div>
+        </div>
+        <!-- Site Header -->
+        <header class="site-header">
+            <h1 class="site-title">
+                <div class="skeleton skeleton-title" style="width: 300px; margin: 0 auto; background: rgba(255,255,255,0.3);"></div>
+            </h1>
+        </header>
 
-    <!-- Footer -->
-    <footer class="site-footer">
-        <p>&copy; 2025 CareerLaunch EHB. Alle rechten voorbehouden.</p>
-    </footer>
-</div>
+        <!-- Layout Container -->
+        <div class="layout">
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Project Sectie -->
+                <section class="section-project" id="project">
+                    <h2>Mijn Project</h2>
+                    <div class="loading-content">
+                        <div class="skeleton skeleton-title" style="width: 250px;"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                    </div>
+                </section>
+
+                <!-- Over Mezelf Sectie -->
+                <section class="section-over" id="over-mezelf">
+                    <h2>Over mezelf</h2>
+                    <div class="loading-content">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text" style="width: 90%;"></div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Info Links -->
+                <nav class="info-links" aria-labelledby="info-heading">
+                    <h2 id="info-heading">Contactinfo</h2>
+                    <ul>
+                        <!-- Contact info wordt dynamisch toegevoegd -->
+                        <li><span>📍 Tafel wordt geladen...</span></li>
+                    </ul>
+                </nav>
+
+                <!-- Profile Links -->
+                <div class="profile-links">
+                    <!-- Profile links worden dynamisch toegevoegd -->
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text"></div>
+                </div>
+
+                <!-- Reservatie Container -->
+                <div class="reserve-container">
+                    <button type="button" class="btn-reserve">Reservatie maken</button>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <p>&copy; 2025 CareerLaunch EHB. Alle rechten voorbehouden.</p>
+        </footer>
+    </div>
 
     <!-- Error State Template (hidden by default) -->
     <div id="errorState" class="error-state" style="display: none;">
@@ -287,16 +266,11 @@
     </div>
 
     <!-- Notification Container -->
-    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;">
-        <!-- Notifications will be added here by JavaScript -->
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay">
-        <div class="loader"></div>
-    </div>
-
+    <div id="notification-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 10000;"></div>
+    <div id="loadingOverlay"><div class="loader"></div></div>
     <!-- Scripts -->
+    <script src="/js/navigation-manager.js"></script>
+    <script src="/js/role-manager.js"></script>
     <script src="/src/JS/UTILS/notification-system.js"></script>
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script src="/src/JS/RESULTS/STUDENTEN/zoekbalk-studenten.js"></script>
