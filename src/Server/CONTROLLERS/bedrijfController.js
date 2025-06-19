@@ -64,6 +64,17 @@ const bedrijfController = {
     }
   },
 
+  // GET /api/bedrijven/:bedrijfsnummer/slots
+  async getAvailableTimeSlots(req, res) {
+    try {
+      const { bedrijfsnummer } = req.params;
+      const slots = await Bedrijf.getAvailableTimeSlots(bedrijfsnummer);
+      res.json({ success: true, data: slots });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Kon tijdsloten niet ophalen.' });
+    }
+  },
+
   // ===== AUTHENTICATED ENDPOINTS =====
 
   // GET /api/bedrijf/profile - Eigen bedrijfsgegevens bekijken

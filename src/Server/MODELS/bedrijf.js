@@ -288,20 +288,22 @@ class Bedrijf {
                 return [];
             }
             
-            const timeSlots = rows[0].beschikbareTijdslots;
+            let timeSlots = rows[0].beschikbareTijdslots;
             if (!timeSlots) {
                 return [];
             }
-            
-            try {
-                const parsed = JSON.parse(timeSlots);
-                console.log('✅ Retrieved time slots:', parsed);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (parseError) {
-                console.error('❌ Error parsing time slots:', parseError);
-                return [];
+            // Fix: parse alleen als het een string is
+            if (typeof timeSlots === 'string') {
+                try {
+                    timeSlots = JSON.parse(timeSlots);
+                } catch (parseError) {
+                    console.error('❌ Error parsing time slots:', parseError);
+                    return [];
+                }
             }
             
+            console.log('✅ Retrieved time slots:', timeSlots);
+            return Array.isArray(timeSlots) ? timeSlots : [];
         } catch (error) {
             console.error('❌ Error in Bedrijf.getAvailableTimeSlots:', error);
             throw error;
