@@ -113,7 +113,8 @@ class Reservatie {
                     a.redenWeigering,
                     CONCAT(s.voornaam, ' ', s.achternaam) as studentNaam,
                     s.email as studentEmail,
-                    s.projectTitel as studentProject
+                    s.projectTitel as studentProject,
+                    s.tafelNr as studentTafelNr
                 FROM AFSPRAAK a
                 LEFT JOIN STUDENT s ON a.studentnummer = s.studentnummer
                 WHERE a.bedrijfsnummer = ?

@@ -7,73 +7,84 @@ const Notificatie = require('../MODELS/notificatie');
 
 const EVENT_DATE_STRING = "2025-06-25"; // De vaste datum van het evenement
 
-// Student vraagt een reservatie aan
+// Student of bedrijf vraagt een reservatie aan
 router.post(
   "/request",
   authenticateToken,
-  requireRole(["student"]),
+  requireRole(["student", "bedrijf"]),
   async (req, res) => {
-    const { bedrijfsnummer, tijdslot } = req.body;
-    const studentnummer = req.user.studentnummer || req.user.userId || req.user.gebruikersId;
+    const { bedrijfsnummer, studentnummer, tijdslot } = req.body;
+    const user = req.user;
+    let reserverendeStudent = null;
+    let reserverendBedrijf = null;
 
-    // DEBUG: log alle mogelijke waarden
-    console.log('DEBUG reservering:', {
-      studentnummer,
-      userId: req.user.userId,
-      gebruikersId: req.user.gebruikersId,
-      bedrijfsnummer,
-      tijdslot,
-      body: req.body,
-      user: req.user
-    });
+    if (user.rol === 'student') {
+      reserverendeStudent = user.studentnummer || user.userId || user.gebruikersId;
+      reserverendBedrijf = bedrijfsnummer;
+    } else if (user.rol === 'bedrijf') {
+      reserverendeStudent = studentnummer;
+      reserverendBedrijf = user.bedrijfsnummer || user.userId || user.gebruikersId;
+    }
 
     // Split tijdslot in startTijd en eindTijd
     let startTijd = null, eindTijd = null;
     if (tijdslot && tijdslot.includes('-')) {
       [startTijd, eindTijd] = tijdslot.split('-').map(t => t.trim());
     }
-    console.log('DEBUG tijdslot split:', { startTijd, eindTijd });
 
-    if (!studentnummer || !bedrijfsnummer || !startTijd || !eindTijd) {
+    if (!reserverendeStudent || !reserverendBedrijf || !startTijd || !eindTijd) {
       return res.status(400).json({
         success: false,
-        message: `Ontbrekende gegevens voor reservatie. Ontvangen: studentnummer=${studentnummer}, bedrijfsnummer=${bedrijfsnummer}, startTijd=${startTijd}, eindTijd=${eindTijd}`
+        message: `Ontbrekende gegevens voor reservatie. Ontvangen: studentnummer=${reserverendeStudent}, bedrijfsnummer=${reserverendBedrijf}, startTijd=${startTijd}, eindTijd=${eindTijd}`
       });
     }
 
     try {
-      // Geef startTijd en eindTijd door aan het model
+      // Controleer op tijdsconflicten (bevestigde afspraken)
+      const conflicts = await Reservatie.checkTimeConflicts(reserverendeStudent, reserverendBedrijf, startTijd, eindTijd);
+      if (conflicts && conflicts.some(r => r.status === 'bevestigd')) {
+        return res.status(409).json({
+          success: false,
+          message: 'Dit tijdslot is al bezet door een bevestigde afspraak.'
+        });
+      }
+
       const reservatieId = await Reservatie.create({
-        studentnummer,
-        bedrijfsnummer,
+        studentnummer: reserverendeStudent,
+        bedrijfsnummer: reserverendBedrijf,
         startTijd,
         eindTijd,
         status: 'aangevraagd'
       });
 
       if (reservatieId) {
-        // Notificatie voor bedrijf: nieuwe aanvraag
-        await Notificatie.create({
-          bedrijfsnummer,
-          type: 'reservering_aanvraag',
-          boodschap: `Nieuwe reserveringsaanvraag van student ${studentnummer} voor tijdslot ${startTijd}-${eindTijd}.`
-        });
+        // Notificatie voor de andere partij
+        if (user.rol === 'student') {
+          await Notificatie.create({
+            bedrijfsnummer: reserverendBedrijf,
+            type: 'reservering_aanvraag',
+            boodschap: `Nieuwe reserveringsaanvraag van student ${reserverendeStudent} voor tijdslot ${startTijd}-${eindTijd}.`
+          });
+        } else if (user.rol === 'bedrijf') {
+          await Notificatie.create({
+            studentnummer: reserverendeStudent,
+            type: 'reservering_aanvraag',
+            boodschap: `Nieuwe reserveringsaanvraag van bedrijf ${reserverendBedrijf} voor tijdslot ${startTijd}-${eindTijd}.`
+          });
+        }
         res.status(201).json({
           success: true,
-          message:
-            "Reservatie succesvol aangevraagd. Wacht op bevestiging van het bedrijf.",
+          message: 'Reservatie succesvol aangevraagd. Wacht op bevestiging.',
           reservatieId,
         });
       } else {
-        res
-          .status(500)
-          .json({ success: false, message: "Kon reservatie niet aanmaken." });
+        res.status(500).json({ success: false, message: 'Kon reservatie niet aanmaken.' });
       }
     } catch (error) {
-      console.error("Error creating reservation request:", error);
+      console.error('Error creating reservation request:', error);
       res.status(500).json({
         success: false,
-        message: "Interne serverfout bij het aanvragen van de afspraak.",
+        message: 'Interne serverfout bij het aanvragen van de afspraak.',
       });
     }
   }
@@ -298,9 +309,9 @@ router.put(
   }
 );
 
-// LET OP: Tijdslot mag alleen als bezet worden beschouwd als er een bevestigde afspraak is
-// Dit moet je ook in de frontend meenemen bij het tonen van slots (optioneel: backend kan een endpoint bieden)
-// In de backend: check alleen op status 'bevestigd' bij het bepalen van bezette slots
-// (Dit kan in de functie checkTimeConflicts of in de logica voor het ophalen van beschikbare slots)
-
+/* LET OP: Tijdslot mag alleen als bezet worden beschouwd als er een bevestigde afspraak is
+Dit moet je ook in de frontend meenemen bij het tonen van slots (optioneel: backend kan een endpoint bieden)
+In de backend: check alleen op status 'bevestigd' bij het bepalen van bezette slots
+(Dit kan in de functie checkTimeConflicts of in de logica voor het ophalen van beschikbare slots)
+*/
 module.exports = router;

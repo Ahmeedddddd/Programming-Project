@@ -5,6 +5,25 @@ console.log("✅ gesprekkenBedrijf.js geladen (studentenstructuur)");
 
 const EVENT_DATE_STRING_GESPREKKEN = '2025-06-25'; // De vaste datum van het evenement
 
+let rejectModal, redenWeigeringInput, confirmRejectBtn, cancelRejectBtn;
+let pendingRejectReservationId = null;
+
+function openRejectModal(reservatieId) {
+  pendingRejectReservationId = reservatieId;
+  if (!rejectModal) rejectModal = document.getElementById('rejectModal');
+  if (!redenWeigeringInput) redenWeigeringInput = document.getElementById('redenWeigering');
+  if (!confirmRejectBtn) confirmRejectBtn = document.getElementById('confirmRejectBtn');
+  if (!cancelRejectBtn) cancelRejectBtn = document.getElementById('cancelRejectBtn');
+  if (redenWeigeringInput) redenWeigeringInput.value = '';
+  if (rejectModal) rejectModal.style.display = 'flex';
+}
+
+function closeRejectModal() {
+  if (rejectModal) rejectModal.style.display = 'none';
+  pendingRejectReservationId = null;
+  if (redenWeigeringInput) redenWeigeringInput.value = '';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const gesprekkenTable = document.getElementById('bedrijfGesprekkenTable');
     const loadingMessage = document.getElementById('loadingBedrijfGesprekken');
@@ -56,8 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     row.innerHTML = `
                         <div>${meeting.studentNaam || 'Onbekende Student'}</div>
                         <div>${timeSlotDisplay} op ${startDate.toLocaleDateString('nl-BE')}</div>
-                        <div class="locatieCel">${meeting.locatie || '-'}</div>
-                        ${statusHtml}
+                        <div class="locatieCel">${meeting.studentTafelNr ? 'Tafel ' + meeting.studentTafelNr : '-'}</div>
+                        <div class="statusCel status-${meeting.status}">${displayStatus}</div>
                         <div class="gesprekkenActions">
                             ${meeting.status === 'aangevraagd' ?
                                 `<button class="actieBtn bevestigBtn accept-reservation" data-id="${meeting.id}">
@@ -89,17 +108,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 gesprekkenTable.querySelectorAll('.reject-reservation').forEach(button => {
-                    button.addEventListener('click', async (e) => {
+                    button.addEventListener('click', (e) => {
                         const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
-                        const reden = prompt('Optioneel: Geef een reden op voor het weigeren van deze afspraak:');
-                        if (confirm('Weet je zeker dat je deze afspraak wilt weigeren?')) {
-                            showLoading(true);
-                            const success = await ReservatieService.rejectReservation(reservatieId, reden);
-                            if (success) {
-                                await loadCompanyGesprekken(); // Herlaad data na succesvolle actie
-                            }
-                            showLoading(false);
-                        }
+                        openRejectModal(reservatieId);
                     });
                 });
 
@@ -128,4 +139,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const overlay = document.getElementById('loadingOverlay');
         if (overlay) overlay.style.display = show ? 'flex' : 'none'; 
     };
+
+    // Modal-elementen ophalen
+    rejectModal = document.getElementById('rejectModal');
+    redenWeigeringInput = document.getElementById('redenWeigering');
+    confirmRejectBtn = document.getElementById('confirmRejectBtn');
+    cancelRejectBtn = document.getElementById('cancelRejectBtn');
+
+    if (cancelRejectBtn) {
+        cancelRejectBtn.addEventListener('click', closeRejectModal);
+    }
+    if (confirmRejectBtn) {
+        confirmRejectBtn.addEventListener('click', async () => {
+            if (!pendingRejectReservationId) return closeRejectModal();
+            showLoading(true);
+            const reden = redenWeigeringInput ? redenWeigeringInput.value : '';
+            const success = await ReservatieService.rejectReservation(pendingRejectReservationId, reden);
+            if (success) {
+                await loadCompanyGesprekken();
+                showNotification('Reservatie geweigerd.', 'success');
+            }
+            showLoading(false);
+            closeRejectModal();
+        });
+    }
 });
