@@ -3,7 +3,15 @@
 
 // Wacht tot DOM geladen is
 document.addEventListener('DOMContentLoaded', async () => {
-    await initializeStudentPage();
+    showLoadingState();
+    await loadAllStudents();
+    setupFilters();
+    setupSpecializationPills();
+    setupSearch();
+    renderStudents(filteredStudents);
+    updateStats();
+    hideLoadingState();
+    console.log('✅ Student pagina geïnitialiseerd met', allStudents.length, 'studenten');
 });
 
 // Globale variabelen
@@ -50,54 +58,51 @@ async function initializeStudentPage() {
 
 // ===== API CALLS =====
 async function loadAllStudents() {
-    const container = document.getElementById('studentTegels');
-    if (!container) return;
+    const container = document.querySelector('.studentTegels');
+    if (!container) {
+        console.error('❌ [DEBUG] .studentTegels container niet gevonden');
+        return;
+    }
     container.innerHTML = `<div class="no-data" id="studentenLoading"><i class="fas fa-spinner fa-spin"></i> Studenten laden...</div>`;
     try {
         const response = await fetch('/api/studenten');
         const data = await response.json();
+        console.log('📦 [DEBUG] Studenten API data:', data);
         if (data.success && data.data && data.data.length > 0) {
-            container.innerHTML = '';
-            data.data.forEach((student, index) => {
-                container.appendChild(createStudentCard(student, index));
-            });
+            allStudents = data.data;
+            filteredStudents = [...allStudents];
+            renderStudents(filteredStudents);
+            updateStats();
         } else {
             container.innerHTML = `<div class="no-data">Geen studenten gevonden.</div>`;
+            updateStats(0);
         }
     } catch (error) {
         container.innerHTML = `<div class="no-data" style="color: #dc3545;">Fout bij laden van studenten.</div>`;
+        console.error('❌ [DEBUG] Fout bij laden van studenten:', error);
+        updateStats(0);
     }
 }
 
 // ===== RENDERING =====
 function renderStudents(students) {
     const container = document.querySelector('.studentTegels');
-    
     if (!container) {
-        console.error('❌ .studentTegels container niet gevonden');
+        console.error('❌ [DEBUG] .studentTegels container niet gevonden');
         return;
     }
-    
+    console.log('🎨 [DEBUG] renderStudents met', students ? students.length : 0, 'studenten');
     if (!students || students.length === 0) {
-        container.innerHTML = `
-            <div class="no-results">
-                <h3>Geen studenten gevonden</h3>
-                <p>Probeer je zoekopdracht aan te passen of de filters te wijzigen.</p>
-            </div>
-        `;
+        container.innerHTML = `<div class="no-results"><h3>Geen studenten gevonden</h3><p>Probeer je zoekopdracht aan te passen of de filters te wijzigen.</p></div>`;
+        updateStats(0);
         return;
     }
-    
-    // Clear bestaande content
     container.innerHTML = '';
-    
-    // Render elke student
     students.forEach((student, index) => {
         const studentElement = createStudentCard(student, index);
         container.appendChild(studentElement);
     });
-    
-    // Add animations
+    updateStats(students.length);
     animateCards();
 }
 
@@ -106,48 +111,26 @@ function createStudentCard(student, index) {
     card.className = 'studentTegel';
     card.href = `/resultaat-student?id=${student.studentnummer}`;
     card.style.animationDelay = `${index * 0.1}s`;
-    
-    // Bepaal beschrijving (gebruik overMezelf of projectBeschrijving)
-    let beschrijving = student.overMezelf || student.projectBeschrijving || 'Geen beschrijving beschikbaar.';
-    
-    // Limiteer beschrijving lengte
-    if (beschrijving.length > 300) {
-        beschrijving = beschrijving.substring(0, 300) + '...';
-    }
-    
-    // Bepaal specialization/opleiding
-    const specialization = student.opleidingsrichting || student.opleiding || 'Onbekend';
-    
-    // Bepaal jaar op basis van studentnummer (simpele logica)
-    const jaar = getStudentYear(student.studentnummer);
-    
+    card.addEventListener("click", () => {
+        navigateToStudent(student.studentnummer);
+    });
+    // Extra info
+    const email = student.email ? `<span class='student-email'><i class='fas fa-envelope'></i> ${student.email}</span>` : '';
+    const telefoon = student.gsm_nummer ? `<span class='student-telefoon'><i class='fas fa-phone'></i> ${student.gsm_nummer}</span>` : '';
+    const opleiding = student.opleiding ? `<span class='student-opleiding'><i class='fas fa-graduation-cap'></i> ${student.opleiding}</span>` : '';
+    const specialisatie = student.specialisatie ? `<span class='student-specialisatie'><i class='fas fa-flask'></i> ${student.specialisatie}</span>` : '';
     card.innerHTML = `
-        <button class="connect-btn" onclick="navigateToStudent(${student.studentnummer})">💬 Connect</button>
         <h2 class="studentNaam">${student.voornaam} ${student.achternaam}</h2>
-        <div class="student-meta">
-            <span class="specialization-tag">${specialization}</span>
-            <span class="year-tag">${jaar}e jaar</span>
+        <p class="studentBeschrijving" style="text-align:left;">${student.overMezelf || student.projectBeschrijving || "Meer informatie beschikbaar op de detailpagina."}</p>
+        <div class="student-info">
+            ${opleiding}
+            ${specialisatie}
         </div>
-        <p class="studentBeschrijving">${beschrijving}</p>
-        ${student.projectTitel ? `
-            <div class="project-preview">
-                <strong>📚 Project:</strong> ${student.projectTitel}
-            </div>
-        ` : ''}
-        <div class="student-tags">
-            ${student.gemeente ? `<span class="location-tag">📍 ${student.gemeente}</span>` : ''}
-            ${student.email ? `<span class="email-tag">📧 Contact mogelijk</span>` : ''}
+        <div class="student-contact" style="margin-top:0.5rem; font-size:0.9em; color:#881538; display:flex; gap:1.5rem; flex-wrap:wrap;">
+            ${email}
+            ${telefoon}
         </div>
     `;
-    
-    // Add click handler voor hele card
-    card.addEventListener('click', (e) => {
-        // Alleen navigeren als niet op de connect button geklikt
-        if (!e.target.classList.contains('connect-btn')) {
-            navigateToStudent(student.studentnummer);
-        }
-    });
-    
     return card;
 }
 
@@ -238,7 +221,7 @@ function applyFilters() {
     });
     
     renderStudents(filteredStudents);
-    updateStats();
+    updateStats(filteredStudents.length);
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -250,11 +233,12 @@ function getStudentYear(studentnummer) {
     return 3;
 }
 
-function updateStats() {
-    const statsText = document.querySelector('.stats-text');
-    if (statsText) {
-        const count = filteredStudents.length;
-        statsText.textContent = `🎓 ${count} studenten beschikbaar voor netwerkgesprekken`;
+function updateStats(count) {
+    // Update .data-count utility
+    if (window.updateDataCounts) {
+        window.updateDataCounts({ 
+            studenten: typeof count === 'number' ? count : filteredStudents.length 
+        });
     }
 }
 
@@ -364,3 +348,35 @@ function showNotification(message, type = 'info') {
 
 // ===== GLOBAL FUNCTION (voor HTML onclick) =====
 window.navigateToStudent = navigateToStudent;
+
+function initializeElements() {
+    console.log('🔍 Finding DOM elements...');
+    // Gebruik altijd .studentTegels als hoofdcontainer
+    studentsGrid = document.querySelector('.studentTegels');
+    searchInput = document.querySelector('.search-input, #searchInput, input[type="text"]');
+    filterDropdown = document.querySelector('.filter-dropdown, #filterDropdown');
+    loadingOverlay = document.querySelector('.loading-overlay, #loadingOverlay');
+    noResultsMessage = document.querySelector('.no-results, #noResults');
+    paginationControls = document.querySelector('.pagination, #pagination');
+    console.log('📋 Elements found:', {
+        studentsGrid: !!studentsGrid,
+        searchInput: !!searchInput,
+        filterDropdown: !!filterDropdown,
+        loadingOverlay: !!loadingOverlay
+    });
+    // Fallback: als main container niet gevonden, gebruik body
+    if (!studentsGrid) {
+        studentsGrid = document.body;
+        console.log('⚠️ Using fallback container for students grid');
+    }
+}
+
+function updateStudentCount() {
+    // Update .stats-text altijd
+    const statsText = document.querySelector('.stats-text');
+    if (statsText) {
+        statsText.textContent = `🎓 ${filteredStudents.length} studenten beschikbaar voor netwerkgesprekken`;
+    }
+    // Update page title
+    document.title = `Alle Studenten (${filteredStudents.length}) - CareerLaunch EHB`;
+}// DEBUG: Force reload for cache issues

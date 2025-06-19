@@ -9,243 +9,91 @@
     <link rel="preload" href="/src/CSS/RESULTS/BEDRIJVEN/resultaat-bedrijf.css" as="style">
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/BEDRIJVEN/resultaat-bedrijf.css">
-     <script src="/js/navigation-manager.js"></script>
-    <script src="/js/role-manager.js"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="/src/CSS/RESERVATIE/reservatie-planning.css">
-
 </head>
 <body>
-        <a href="/alle-bedrijven" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-        Terug naar alle bedrijven
-    </a>
-
-    <!-- Navigatie -->
-<div class="container">
-  <!-- Dynamic Navigation -->
+    <a href="/alle-bedrijven" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Terug naar alle bedrijven
+    </a>
+    <div class="container">
         <div class="nav">
             <div class="logo">
                 <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
             </div>
-            <div class="navBar">
-                <!-- Navigation items will be dynamically populated -->
-            </div>
+            <div class="navBar"><!-- Navigation items worden dynamisch toegevoegd --></div>
             <div class="pfpContainer">
                 <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
             </div>
         </div>
-
-        <!-- Dynamic Sidebar -->
-        <div class="sideMenu" id="sideMenu">
-            <!-- Geanimeerde achtergrond laag -->
-            <div class="menu-bg-animation"></div>
-            <div class="menu-bg-animation"></div>
-            <div class="sparkles"></div>
-            
-            <!-- Header met titel -->
-            <div class="sideMenu-header">
-                <div>
-                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-                    <p class="sideMenu-subtitle">Organisator Menu</p>
-                </div>
-                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <!-- Menu content - dynamically populated -->
-            <div class="sideMenu-content">
-                <!-- Dynamic navigation items will be inserted here -->
-            </div>
-        </div>
-
-        <!-- Main Content -->
         <main class="bedrijf-detail">
-            <!-- Left Column - Company Info -->
+            <!-- Linkerkolom: Bedrijfsinfo -->
             <div class="bedrijf-info">
                 <div class="bedrijf-header">
                     <div class="logo-container">
-                        <!-- Logo/initials will be inserted by JavaScript -->
                         <div class="skeleton skeleton-text" style="width: 60px; height: 60px; border-radius: 50%;"></div>
                     </div>
                     <div class="bedrijf-titel">
-                        <h1 class="bedrijf-naam">
-                            <div class="skeleton skeleton-title" style="width: 300px;"></div>
-                        </h1>
-                        <p class="bedrijf-type">
-                        </p>
+                        <h1 class="bedrijf-naam" id="companyNameDisplay"></h1>
+                        <p class="bedrijf-type" id="companySectorDisplay"></p>
                     </div>
                 </div>
-
                 <div class="bedrijf-beschrijving">
-                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                    <div id="companyDescriptionDisplay"></div>
                 </div>
-
                 <div class="tafel-highlight">
-                    <div class="skeleton skeleton-text" style="background: rgba(255,255,255,0.3);"></div>
+                    <span id="companyTableLocationDisplay"></span>
                 </div>
             </div>
-            <div class="navBarStudenten">
-                <a href="/student-homepage" class="navItem">Home</a>
-                <a href="/programma-studenten" class="navItem">Programma</a>
-                <a href="/gesprekken-overzicht-studenten" class="navItem">Mijn Gesprekken</a>
-                <a href="/alle-bedrijven" class="navItem active">Bedrijven</a>
-                <a href="/mijn-project" class="navItem">Mijn Project</a>
+            <!-- Rechterkolom: Sidebar -->
+            <div class="bedrijf-sidebar">
+                <div class="contact-card">
+                    <h3 class="card-title">Locatie & Contact</h3>
+                    <div class="adres-info">
+                        <p><i class="fas fa-map-marker-alt"></i> <span id="companyLocationDisplay"><div class="skeleton-text skeleton" style="width: 120px;"></div></span></p>
+                        <p><i class="fas fa-envelope"></i> <span id="companyEmailDisplay"><div class="skeleton-text skeleton" style="width: 180px;"></div></span></p>
+                        <p><i class="fas fa-phone"></i> <span id="companyPhoneDisplay"><div class="skeleton-text skeleton" style="width: 100px;"></div></span></p>
+                    </div>
+                </div>
+                <div class="action-card">
+                    <h3 class="card-title">Acties</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn contact-btn">
+                            <i class="fas fa-envelope"></i>
+                            Contacteer bedrijf
+                        </button>
+                        <button class="action-btn primary-button" id="favoriteBtn">
+                            <i class="fas fa-star"></i>
+                            Favoriet (reserveren)
+                        </button>
+                    </div>
+                </div>
+                <div class="user-card" style="display: none;">
+                    <img src="/images/mystery man avatar.webp" alt="Profile" class="user-avatar">
+                    <div class="user-name">Bezoeker</div>
+                </div>
             </div>
-            <div class="pfpContainer">
-                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-            </div>
-        </div>
-
-        <div class="sideMenu" id="sideMenu">
-          <div class="menu-bg-animation"></div>
+        </main>
+    </div>
+    <div class="sideMenu" id="sideMenu">
+        <div class="menu-bg-animation"></div>
         <div class="menu-bg-animation"></div>
         <div class="sparkles"></div>
-          
-          <div class="sideMenu-header">
-            <div>
-              <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-              <p class="sideMenu-subtitle">Menu</p>
-            </div>
-            <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          
-          <div class="sideMenu-content">
-            <a href="/login">
-              <i class="fas fa-sign-in-alt"></i>
-              Login
-            </a>
-            <a href="/contacteer">
-              <i class="fas fa-envelope"></i>
-              Contact us
-            </a>
-            
-            <hr class="sideMenu-divider">
-          </div>
+        <div class="sideMenu-header">
+            <div>
+                <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                <p class="sideMenu-subtitle">Menu</p>
+            </div>
+            <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-
-                <main class="bedrijf-detail">
-                        <div class="bedrijf-info">
-                    <div class="bedrijf-header">
-                        <div class="logo-container">
-                                                <div class="skeleton-logo skeleton"></div>
-                        </div>
-                        <div class="bedrijf-titel">
-                            <h1 class="bedrijf-naam" id="companyNameDisplay">
-                                <div class="skeleton-text skeleton-title" style="width: 250px;"></div>
-                            </h1>
-                            <p class="bedrijf-type" id="companySectorDisplay">
-                                <div class="skeleton-text" style="width: 150px;"></div>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="bedrijf-beschrijving">
-                        <p id="companyDescriptionDisplay">
-                            <div class="skeleton-text skeleton"></div>
-                            <div class="skeleton-text skeleton"></div>
-                            <div class="skeleton-text skeleton" style="width: 90%;"></div>
-                        </p>
-                    </div>
-
-                    <div class="tafel-highlight">
-                        <i class="fas fa-chair"></i> Tafel Locatie: <span id="companyTableLocationDisplay">
-                            <div class="skeleton-text skeleton" style="width: 80px; display: inline-block;"></div>
-          </span>
-             </div>
-           </div>
-
-           <div class="bedrijf-sidebar">
-                     <div class="contact-card">
-            <h3 class="card-title">Locatie & Contact</h3>
-                  <div class="adres-info">
-          <p><i class="fas fa-map-marker-alt"></i> <span id="companyLocationDisplay">
-                                <div class="skeleton-text skeleton" style="width: 120px;"></div>
-         </span></p>
-                            <p><i class="fas fa-envelope"></i> <span id="companyEmailDisplay">
-              <div class="skeleton-text skeleton" style="width: 180px;"></div>
-                            </span></p>
-                            <p><i class="fas fa-phone"></i> <span id="companyPhoneDisplay">
-               <div class="skeleton-text skeleton" style="width: 100px;"></div>
-                            </span></p>
-          </div>
-          </div>
-
-        <div class="action-card">
-                        <h3 class="card-title">Acties</h3>
-                        <div class="action-buttons">
-                            <button class="action-btn contact-btn">
-                                <i class="fas fa-envelope"></i>
-                                Contacteer bedrijf
-                            </button>
-                                                <button class="action-btn primary-button" id="favoriteBtn">
-                                <i class="fas fa-star"></i>
-                                Favoriet (reserveren)
-                            </button>
-                        </div>
-                    </div>
-
-                                <div class="user-card" style="display: none;">
-                        <img src="/images/mystery man avatar.webp" alt="Profile" class="user-avatar">
-                        <div class="user-name">Bezoeker</div>
-                    </div>
-                </div>
-            </main>
-
-                <section class="reservation-container" id="reservationPlanningSection" style="display: none;">
-                <h2 class="company-name">Plan je gesprek met <span id="planningCompanyNameDisplay"></span></h2>
-
-                <div class="date-selector" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                    <button class="date-button nav-arrow" id="prevDayBtn" style="display: none;"><i class="fas fa-arrow-left"></i></button>
-                    <input type="date" id="planningDateInput" class="current-date" value="2025-06-25" readonly style="pointer-events: none; background-color: #f0f0f0;">
-                    <button class="date-button nav-arrow" id="nextDayBtn" style="display: none;"><i class="fas fa-arrow-right"></i></button>
-                </div>
-
-                <div class="time-range" id="currentPlanningDateDisplay"></div>
-
-                <div class="time-slots" id="timeSlotsContainer">
-                    <p class="loading" id="planningLoadingMessage">Tijdslots laden...</p>
-                    <p class="error" id="planningErrorMessage" style="display: none;"></p>
-                    <p class="loading" id="planningNoSlotsMessage" style="display: none;">Geen beschikbare tijdslots op deze datum.</p>
-                </div>
-
-                <div class="selected-info" id="selectedSlotInfo">
-                    <h3>Geselecteerd tijdslot: <span id="selectedTimeSlotDisplay"></span> op <span id="selectedDateDisplay"></span></h3>
-                    <button class="reserve-button" id="confirmReservationBtn">Reserveren</button>
-                </div>
-            </section>
+        <div class="sideMenu-content"><!-- Dynamisch gevuld --></div>
     </div>
-
-    <div id="errorState" class="error-state" style="display: none;">
-        <h2><i class="fas fa-exclamation-triangle"></i> Bedrijf niet gevonden</h2>
-        <p>Het gevraagde bedrijf kon niet worden geladen. Dit kan komen door een verkeerde link of tijdelijke technische problemen.</p>
-        <button class="retry-btn" onclick="window.location.reload()">
-            <i class="fas fa-redo"></i>
-            Probeer opnieuw
-        </button>
-        <br><br>
-        <a href="/alle-bedrijven" class="back-button" style="position: relative; top: 0; left: 0;">
-            <i class="fas fa-arrow-left"></i>
-            Terug naar alle bedrijven
-        </a>
-    </div>
-
-    <div id="notification-container"></div>
-
-    <div id="loadingOverlay">
-        <div class="loader"></div>
-    </div>
-
-    <script src="/src/JS/UTILS/notification-system.js"></script>
-    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
-    <script src="/src/JS/api.js"></script>
-    <script src="/src/JS/reservatieService.js"></script>
+    <!-- Scripts -->
+    <script src="/js/navigation-manager.js"></script>
+    <script src="/js/role-manager.js"></script>
     <script src="/src/JS/RESULTS/BEDRIJVEN/resultaat-bedrijf.js"></script>
-    </body>
+</body>
 </html>

@@ -185,29 +185,15 @@
 
       <!-- Stats Bar -->
       <div class="stats-bar">
-        <p class="stats-text">🚀 Projecten worden geladen...</p>
-        <button
-          class="refresh-btn"
-          style="
-            margin-left: 1rem;
-            padding: 0.5rem 1rem;
-            background: #881538;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-          "
-          onclick="window.location.reload()"
-        >
-          <i class="fas fa-sync-alt"></i> Vernieuwen
-        </button>
+        <p class="stats-text">🚀 Projecten worden geladen... <span class="data-count" data-type="projecten"></span></p>
       </div>
 
-      <!-- Main Content - Nu dynamisch geladen door JavaScript -->
-      <main class="projectTegels" id="projectenGrid">
-        <div class="no-data" id="projectenLoading">
-          <i class="fas fa-spinner fa-spin"></i> Projecten laden...
+      <!-- Main Content -->
+      <main class="projectTegels">
+        <!-- Content wordt dynamisch geladen door JavaScript -->
+        <div class="loading-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+          <div class="loader" style="margin: 0 auto;"></div>
+          <p style="margin-top: 1rem; color: #666;">Projecten worden geladen...</p>
         </div>
       </main>
     </div>
@@ -226,8 +212,19 @@
     </div>
 
     <!-- Scripts -->
+    <script type="module" src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module">
+      import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
+      window.updateDataCounts = updateDataCounts;
+      console.log('[stat-utils] updateDataCounts globally available');
+    </script>
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script src="/src/JS/RESULTS/PROJECTEN/alle-projecten.js"></script>
     <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
+    <script type="module">
+  import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
+  window.updateDataCounts = updateDataCounts;
+  console.log('[stat-utils] updateDataCounts globally available');
+</script>
   </body>
 </html>

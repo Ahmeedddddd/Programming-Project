@@ -92,7 +92,7 @@
     color: #881538;
     font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     position: relative;
 }
 
@@ -114,9 +114,9 @@
 .bedrijfBeschrijving {
     color: #333;
     font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    text-align: justify;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    text-align: left;
 }
 
 /* Call to Action Button */
@@ -293,7 +293,7 @@
     color: #A91B47;
     font-weight: 600;
     font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -302,8 +302,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
     border-top: 1px solid #f0f0f0;
     font-size: 0.85rem;
     color: #666;
@@ -368,4 +368,22 @@
 
 .bedrijfTegel {
     animation: slideInUp 0.6s ease-out;
+}
+
+.bedrijfTegel, .bedrijfTegel * {
+    text-decoration: none !important;
+}
+
+.bedrijf-contact {
+    margin-top: 0.25rem;
+    font-size: 0.92em;
+    color: #881538;
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.bedrijf-contact i {
+    margin-right: 0.3em;
 }

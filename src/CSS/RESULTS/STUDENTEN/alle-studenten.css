@@ -57,76 +57,61 @@
 }
 
 .studentTegel {
-    background: white;
+    background: #fff;
     border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 24px rgba(136, 21, 56, 0.10);
+    padding: 2rem 2rem 1.5rem 2rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+    text-align: left;
+    border: none;
+    text-decoration: none;
+    display: block;
     position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-}
-
-.studentTegel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #881538, #A91B47);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.studentTegel:hover::before {
-    transform: scaleX(1);
 }
 
 .studentTegel:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(136, 21, 56, 0.25);
-    border-color: #881538;
+    box-shadow: 0 8px 32px rgba(136, 21, 56, 0.18);
+    transform: translateY(-6px) scale(1.02);
+    text-decoration: none;
 }
 
 .studentNaam {
-    color: #881538;
     font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.studentNaam::before {
-    content: "🎓";
-    font-size: 1.3rem;
-}
-
-.studentNaam::after {
-    content: '';
-    position: absolute;
-    bottom: -0.5rem;
-    left: 0;
-    width: 50px;
-    height: 2px;
-    background: #A91B47;
-    transition: width 0.3s ease;
-}
-
-.studentTegel:hover .studentNaam::after {
-    width: 100px;
+    color: #881538;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    border: none;
+    text-decoration: none;
 }
 
 .studentBeschrijving {
     color: #333;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    text-align: left;
+    text-decoration: none;
+}
+
+.student-info, .student-contact {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
     font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    text-align: justify;
+    color: #881538;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.student-contact i {
+    color: #881538;
+}
+
+.studentTegel a, .studentTegel a:visited, .studentTegel a:active {
+    color: inherit;
+    text-decoration: none;
+    border: none;
 }
 
 /* Student Action Button */

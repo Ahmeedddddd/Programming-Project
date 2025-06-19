@@ -345,10 +345,6 @@ app.get("/zoekbalk-projecten", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"));
 });
 
-app.get("/zoekbalk-studenten", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../src/HTML/zoekbalk-studenten.html"));
-});
-
 app.get("/resultaat-bedrijf", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html")
@@ -390,6 +386,22 @@ app.get("/programmaNamidag", (req, res) => {
 // INFO pages
 app.get("/info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
+});
+
+app.get("/infoCareerLaunch", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-career-launch.html"));
+});
+
+app.get("/infoBedrijf", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-bedrijven.html"));
+});
+
+app.get("/infoStudent", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-studenten.html"));
+});
+
+app.get("/tarieven-info", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/tarieven-info.html"));
 });
 
 // Test page

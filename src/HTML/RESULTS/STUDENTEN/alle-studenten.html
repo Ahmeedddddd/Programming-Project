@@ -9,7 +9,6 @@
     <link rel="preload" href="/src/CSS/RESULTS/STUDENTEN/alle-studenten.css" as="style">
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/RESULTS/STUDENTEN/alle-studenten.css">
-     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
     <script src="/js/navigation-manager.js"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -219,17 +218,14 @@
 
         <!-- Stats Bar -->
         <div class="stats-bar">
-            <p class="stats-text">🎓 Studenten worden geladen...</p>
-            <button class="refresh-btn" style="margin-left: 1rem; padding: 0.5rem 1rem; background: #881538; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" onclick="window.location.reload()">
-                <i class="fas fa-sync-alt"></i> Vernieuwen
-            </button>
+            <p class="stats-text">🎓 Studenten worden geladen... <span class="data-count" data-type="studenten"></span></p>
         </div>
 
         <!-- Main Content -->
         <main class="studentTegels">
             <!-- Content wordt dynamisch geladen door JavaScript -->
-            <div class="loading-state">
-                <div class="loader"></div>
+            <div class="loading-placeholder" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <div class="loader" style="margin: 0 auto;"></div>
                 <p style="margin-top: 1rem; color: #666;">Studenten worden geladen...</p>
             </div>
         </main>
@@ -247,6 +243,11 @@
 
     <!-- Scripts -->
     <script src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module">
+      import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
+      window.updateDataCounts = updateDataCounts;
+      console.log('[stat-utils] updateDataCounts globally available');
+    </script>
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script src="/src/JS/RESULTS/STUDENTEN/alle-studenten.js"></script>
 </body>

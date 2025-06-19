@@ -39,7 +39,7 @@ body {
 .bedrijf-info {
     background: white;
     border-radius: 16px;
-    padding: 3rem;
+    padding: 2rem;
     box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
     position: relative;
     overflow: hidden;
@@ -58,9 +58,9 @@ body {
 .bedrijf-header {
     display: flex;
     align-items: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
     border-bottom: 2px solid #f8f9fa;
 }
 
@@ -98,25 +98,25 @@ body {
 
 .bedrijf-beschrijving {
     font-size: 1rem;
-    line-height: 1.7;
+    line-height: 1.5;
     color: #333;
     text-align: justify;
     background: #f8f9fa;
-    padding: 2rem;
+    padding: 1.2rem;
     border-radius: 12px;
     border-left: 4px solid #881538;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .tafel-highlight {
     background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
     color: white;
-    padding: 1.5rem 2rem;
+    padding: 1rem 1.2rem;
     border-radius: 12px;
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     position: relative;
     overflow: hidden;
 }
@@ -159,7 +159,7 @@ body {
 .action-card {
     background: white;
     border-radius: 16px;
-    padding: 2rem;
+    padding: 1.2rem;
     box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
     position: relative;
 }
@@ -179,7 +179,7 @@ body {
     color: #881538;
     font-size: 1.3rem;
     font-weight: 700;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -534,4 +534,18 @@ body {
 /* Hide skeleton elements when content is loaded */
 .content-loaded .skeleton {
     display: none;
+}
+
+.bedrijf-info, .bedrijf-info *,
+.bedrijf-beschrijving, .bedrijf-beschrijving *,
+.bedrijf-naam, .bedrijf-naam *,
+.bedrijf-type, .bedrijf-type *,
+.bedrijfSector, .bedrijfSector *,
+.bedrijf-locatie, .bedrijf-locatie *,
+.bedrijf-tafel, .bedrijf-tafel *,
+.bedrijf-sidebar, .bedrijf-sidebar *,
+.contact-card, .contact-card *,
+.action-card, .action-card *,
+.user-card, .user-card * {
+    text-decoration: none !important;
 }

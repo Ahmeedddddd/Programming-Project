@@ -99,22 +99,9 @@ async function loadStudentDetails(studentId) {
     console.log('📡 Loading student details for ID:', studentId);
     
     try {
-        const url = `${API_BASE}/api/studenten/${studentId}`;
-        
-        console.log('📡 Fetching from URL:', url);
-        
-        const response = await fetch(url);
-        
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response ok:', response.ok);
-        
-        if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error(`Student ${studentId} niet gevonden in database`);
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
+        // Gebruik fetch zonder Authorization header zodat gasten deze pagina kunnen zien
+        const response = await fetch(`/api/studenten/${studentId}`);
+        if (!response.ok) throw new Error('Student niet gevonden');
         const data = await response.json();
         console.log('📊 Raw API response:', data);
         
@@ -305,42 +292,71 @@ function renderAboutSection() {
 function renderContactInfo() {
     console.log('📞 Rendering contact info');
     
+    // 🔧 FIX: Proper tafel number logic
+    const rawTafelNr = currentStudent.tafelNr;
+    const displayTafelNr = (rawTafelNr !== null && rawTafelNr !== undefined && rawTafelNr !== '') 
+        ? rawTafelNr 
+        : 'TBD';
+    
+    console.log('📍 [DEBUG] Tafel info:', {
+        raw: rawTafelNr,
+        display: displayTafelNr,
+        studentData: currentStudent
+    });
+    
+    // Handle standalone tafel element if it exists
+    const tafelElement = document.querySelector('.tafel-nummer');
+    if (tafelElement) {
+        tafelElement.textContent = displayTafelNr !== 'TBD' 
+            ? `Tafel ${displayTafelNr}` 
+            : 'Tafel TBD';
+        console.log('📍 Updated standalone tafel element:', tafelElement.textContent);
+    }
+   
     const infoLinks = document.querySelector('.info-links ul');
     if (!infoLinks) {
         console.warn('⚠️ Info links container not found');
         return;
     }
-    
+   
     // Clear all existing content including skeletons
     infoLinks.innerHTML = '';
-    
+   
     // Add phone if available
     if (currentStudent.gsm_nummer) {
         const phoneLi = document.createElement('li');
         phoneLi.innerHTML = `<a href="tel:${currentStudent.gsm_nummer}">📞 ${currentStudent.gsm_nummer}</a>`;
         infoLinks.appendChild(phoneLi);
+        console.log('📞 Added phone:', currentStudent.gsm_nummer);
     }
-    
+   
     // Add email link
     if (currentStudent.email) {
         const emailLi = document.createElement('li');
         emailLi.innerHTML = `<a href="mailto:${currentStudent.email}">📧 ${currentStudent.email}</a>`;
         infoLinks.appendChild(emailLi);
+        console.log('📧 Added email:', currentStudent.email);
     }
-    
+   
     // Add location info
     if (currentStudent.gemeente) {
         const locationLi = document.createElement('li');
         locationLi.innerHTML = `<span>🏠 ${currentStudent.gemeente}</span>`;
         infoLinks.appendChild(locationLi);
+        console.log('🏠 Added location:', currentStudent.gemeente);
     }
-    
-    // Add table number
-    const tableNumber = currentStudent.tafelNr || 'TBD';
+   
+    // 🔧 FIX: Single tafel handling with proper logic
     const tableLi = document.createElement('li');
-    tableLi.innerHTML = `<span>📍 Tafel ${tableNumber}</span>`;
+    if (displayTafelNr !== 'TBD') {
+        tableLi.innerHTML = `<span>📍 Tafel ${displayTafelNr}</span>`;
+        console.log('📍 Added tafel number:', displayTafelNr);
+    } else {
+        tableLi.innerHTML = `<span style="color: #999;">📍 Tafel TBD</span>`;
+        console.log('📍 Added TBD tafel (no tafel assigned)');
+    }
     infoLinks.appendChild(tableLi);
-    
+   
     console.log('✅ Contact info rendered');
 }
 
