@@ -233,7 +233,7 @@
                         <i class="fas fa-edit"></i>
                         Project Bewerken
                     </button>
-                    <button class="ehbBtn secundair">
+                    <button class="ehbBtn secundair" onclick="openPasswordModal()">
                         <i class="fas fa-key"></i>
                         Wachtwoord Wijzigen
                     </button>
@@ -299,6 +299,111 @@
         right: 2rem;
         z-index: 10000;
     "></div>
+
+    <div id="passwordModal" class="password-modal">
+        <div class="password-modal-content">
+            <div class="password-modal-header">
+                <h2 class="password-modal-title">
+                    <i class="fas fa-key"></i>
+                    Wachtwoord Wijzigen
+                </h2>
+                <button class="password-modal-close" onclick="closePasswordModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="password-modal-body">
+                <div id="modalMessage"></div>
+
+                <div class="help-text">
+                    <i class="fas fa-info-circle"></i>
+                    Kies een sterk wachtwoord dat voldoet aan alle beveiligingseisen.
+                </div>
+
+                <form id="passwordChangeForm">
+                    <div class="password-form-group">
+                        <label for="currentPassword">Huidig Wachtwoord *</label>
+                        <div class="password-input-container">
+                            <input type="password" id="currentPassword" name="currentPassword" required
+                                placeholder="Voer je huidige wachtwoord in">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePasswordVisibility('currentPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="password-form-group">
+                        <label for="newPassword">Nieuw Wachtwoord *</label>
+                        <div class="password-input-container">
+                            <input type="password" id="newPassword" name="newPassword" required
+                                placeholder="Voer je nieuwe wachtwoord in">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePasswordVisibility('newPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <div id="passwordStrengthMeter" class="password-strength-meter" style="display: none;">
+                            <div class="strength-text" id="strengthText">Wachtwoord sterkte: Zwak</div>
+                            <div class="strength-bar">
+                                <div id="strengthBar" class="strength-fill" style="width: 0%;"></div>
+                            </div>
+                            <ul id="strengthRequirements" class="strength-requirements">
+                                <li id="req-length" class="invalid">
+                                    <span class="requirement-icon invalid">✗</span>
+                                    Minimaal 8 karakters
+                                </li>
+                                <li id="req-uppercase" class="invalid">
+                                    <span class="requirement-icon invalid">✗</span>
+                                    Minimaal 1 hoofdletter (A-Z)
+                                </li>
+                                <li id="req-lowercase" class="invalid">
+                                    <span class="requirement-icon invalid">✗</span>
+                                    Minimaal 1 kleine letter (a-z)
+                                </li>
+                                <li id="req-number" class="invalid">
+                                    <span class="requirement-icon invalid">✗</span>
+                                    Minimaal 1 cijfer (0-9)
+                                </li>
+                                <li id="req-special" class="invalid">
+                                    <span class="requirement-icon invalid">✗</span>
+                                    Minimaal 1 speciaal teken (!@#$%^&*)
+                                </li>
+                                <li id="req-patterns" class="invalid">
+                                    <span class="requirement-icon invalid">✗</span>
+                                    Geen veelgebruikte patronen
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="password-form-group">
+                        <label for="confirmPassword">Bevestig Nieuw Wachtwoord *</label>
+                        <div class="password-input-container">
+                            <input type="password" id="confirmPassword" name="confirmPassword" required
+                                placeholder="Bevestig je nieuwe wachtwoord">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePasswordVisibility('confirmPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="password-modal-actions">
+                    <button type="button" class="modal-btn modal-btn-secondary" onclick="closePasswordModal()">
+                        <i class="fas fa-times"></i>
+                        Annuleren
+                    </button>
+                    <button type="button" id="savePasswordBtn" class="modal-btn modal-btn-primary" disabled>
+                        <i class="fas fa-save"></i>
+                        Wachtwoord Opslaan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script type="module" src="/src/JS/ACCOUNT/gegevens-qol.js"></script>
