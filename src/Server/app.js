@@ -481,6 +481,12 @@ app.get("/overzicht-organisator", requireRole(["organisator"]), (req, res) => {
   );
 });
 
+// RESERVATIES VOOR IEDEREEN
+app.get("/reservatie", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html"));
+});
+
+
 // ===== GENERAL ACCOUNT ROUTES (from ACCOUNT folder) =====
 // Check if these exist in your ACCOUNT folder and add them if needed
 // app.get("/account-bedrijf-general", requireAuth, (req, res) => {
