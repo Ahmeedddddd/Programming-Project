@@ -357,9 +357,9 @@ app.get("/resultaat-student", (req, res) => {
   );
 });
 
-app.get("/conversations", (req, res) => {
+app.get("/gesprekkenOverzichtStudenten", (req, res) => {
   res.sendFile(
-    path.join(__dirname, "../../src/HTML/GESPREKKEN/conversations.html")
+    path.join(__dirname, "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html")
   );
 });
 
@@ -550,6 +550,12 @@ app.get(
   requireRole(["student"]),
   redirectWithParams("/mijnProject", "/mijn-project")
 );
+
+app.get(
+  "/tarieven",
+  requireAuth,
+  redirectWithParams("/bedrijfgegevens", "/gegevensBedrijf")
+)
 // Add remaining legacy routes for bedrijf, student, project, programma, etc.
 
 // ===== ERROR HANDLING =====
