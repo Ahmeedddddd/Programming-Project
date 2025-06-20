@@ -63,9 +63,15 @@
             <!-- 🆕 Organisator controls worden dynamisch toegevoegd door JavaScript -->
             
             <aside class="sideBar">
-                <h2 class="sidebarTitle">Overzicht Tafels</h2>
+                <div class="sidebar-header">
+                    <h2 class="sidebarTitle">Overzicht Tafels</h2>                    <!-- Tafel configuratie knop -->
+                    <button id="configTafelsBtn" class="config-btn" title="Configureer aantal tafels">
+                        <span id="tafelCountText">Aantal tafels: 15</span>
+                    </button>
+                </div>
                   <!-- 🆕 Interactieve zoekbalk -->
-                <div class="search-container">                    <input type="text" 
+                <div class="search-container">
+                    <input type="text" 
                            class="sidebarZoekbalk" 
                            id="tafelSearch"
                            placeholder="Zoek tafel, project of student...">
@@ -93,11 +99,17 @@
                             <div class="skeleton-line small"></div>
                         </div>
                     </li>                </ul>
-            </aside>
-            
-            <div class="plattegrond">                <h3>
-                    Plattegrond
-                </h3><!-- 🆕 Plattegrond met interactiviteit -->
+                
+                <!-- 🆕 Refresh button -->
+                <button id="refreshTafels" class="refresh-btn" title="Gegevens verversen">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Ververs data</span>
+                </button>
+            </aside>            <div class="plattegrond">
+                <div class="plattegrond-header">
+                    <h3>Plattegrond</h3>
+                </div>
+                <!-- 🆕 Plattegrond met interactiviteit -->
                 <div class="plattegrond-wrapper">
                     <img src="/images/plattegrondProgramma.jpeg" id="plattegrondImg" alt="Plattegrond Voormiddag">
                     
@@ -149,47 +161,9 @@
         .skeleton-line.small {
             width: 70%;
             height: 12px;
-        }
-
-        @keyframes skeleton-loading {
+        }        @keyframes skeleton-loading {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
-        }
-
-        /* Status indicator */
-        .status-indicator {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: linear-gradient(135deg, #881538, #A91B47);
-            color: white;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4ade80;
-            animation: pulse 2s infinite;
-        }
-
-        .status-time {
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
 
         /* Plattegrond wrapper */
@@ -482,25 +456,94 @@
             transform: translateY(-2px);
         }
 
-        @media (max-width: 768px) {
-            .legenda-items {
-                gap: 1rem;
-            }
-            
-            .legenda-item {
-                font-size: 0.9rem;
-            }
-            
-            .status-indicator {
-                padding: 0.75rem;
-            }
+        /* Plattegrond header styling */
+        .plattegrond-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            margin-top: 1.15rem;
+            border-bottom: 2px solid #881538;
+        }        .plattegrond-header h3 {
+            color: #881538;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            padding: 0;
+            border: none !important;
+            border-bottom: none !important;
+            letter-spacing: -0.02em;
+        }/* Beautiful refresh button in sidebar */
+        .refresh-btn {
+            display: none; /* Hidden by default, shown for organisators via JS */
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
 
-            .page-title {
-                font-size: 2rem;
+        .refresh-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(136, 21, 56, 0.3);
+            background: linear-gradient(135deg, #A91B47 0%, #C2185B 100%);
+        }
+
+        .refresh-btn:hover::before {
+            left: 100%;
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
+        }
+
+        .refresh-btn i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-btn:hover i {
+            transform: rotate(180deg);
+        }
+
+        .refresh-btn span {
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .plattegrond-header h3 {
+                font-size: 1.2rem;
             }
             
-            .page-subtitle {
-                font-size: 1rem;
-            }        }
+            .refresh-btn {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
