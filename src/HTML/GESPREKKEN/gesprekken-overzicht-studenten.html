@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/src/CSS/style.css" />
     <link
       rel="stylesheet"
-      href="/src/CSS/GESPREKKEN/gesprekken-overzicht-studenten.css"
+      href="/src/CSS/GESPREKKEN/gesprekken.css"
     />
     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
     <script src="/js/navigation-manager.js"></script>
@@ -31,50 +31,63 @@
             </div>
         </div>
 
+        <!-- Dynamic Sidebar -->
+        <div class="sideMenu" id="sideMenu">
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Menu</p>
+                </div>
+                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sideMenu-content">
+                <!-- Dynamisch menu wordt hier gevuld -->
+            </div>
+        </div>
+        <!-- Overlay voor menu -->
+        <div class="menu-overlay"></div>
+
       <section class="gesprekkenKaart">
         <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
-        <div class="gesprekkenTable" id="studentGesprekkenTable">
-          <div class="gesprekkenTableHeader">
-            <div>Naam bedrijf</div>
-            <div>Tijdslot</div>
-            <div>Status</div>
-            <div>Actie</div>
-          </div>
-          <p id="loadingStudentGesprekken" style="text-align: center; padding: 20px;">Laden van je gesprekken...</p>
-          <p id="noStudentGesprekken" style="display: none; text-align: center; padding: 20px;">Je hebt nog geen gesprekken gepland.</p>
-          <p id="errorStudentGesprekken" style="display: none; color: red; text-align: center; padding: 20px;">Fout bij het laden van gesprekken.</p>
-</div>
-          <div class="gesprekkenTableRow">
-            <div>BilalAICorp</div>
-            <div>16:00-16:30</div>
-            <div class="locatieCel">Tafel 1</div>
-            <div class="gesprekkenActions">
-              <button class="actieBtn bevestigBtn">
-                <span class="actieIcon">&#9745;</span> Bevestig
-              </button>
-              <button class="actieBtn verwijderBtn">
-                <span class="actieIcon">&#128465;</span> Verwijder
-              </button>
+        <div class="gesprekkenSubSection">
+          <h3 class="gesprekkenSubTitel">Aangevraagd door jou</h3>
+          <div class="gesprekkenTable" id="studentGesprekkenAangevraagd">
+            <div class="gesprekkenTableHeader">
+              <div>Naam bedrijf</div>
+              <div>Tafel</div>
+              <div>Tijdslot</div>
+              <div>Status</div>
+              <div>Actie</div>
             </div>
-          </div>
-          <div class="gesprekkenTableRow">
-            <div>Vital'O Network</div>
-            <div>14:00-14:30</div>
-            <div class="locatieCel">Tafel 2</div>
-            <div class="gesprekkenActions">
-              <button class="actieBtn bevestigBtn">
-                <span class="actieIcon">&#9745;</span> Bevestig
-              </button>
-              <button class="actieBtn verwijderBtn">
-                <span class="actieIcon">&#128465;</span> Verwijder
-              </button>
-            </div>
+            <!-- Dynamisch geladen aangevraagde gesprekken komen hieronder -->
           </div>
         </div>
+        <div class="gesprekkenSubSection">
+          <h3 class="gesprekkenSubTitel">Ontvangen</h3>
+          <div class="gesprekkenTable" id="studentGesprekkenOntvangen">
+            <div class="gesprekkenTableHeader">
+              <div>Naam bedrijf</div>
+              <div>Tafel</div>
+              <div>Tijdslot</div>
+              <div>Status</div>
+              <div>Actie</div>
+            </div>
+            <!-- Dynamisch geladen ontvangen gesprekken komen hieronder -->
+          </div>
+        </div>
+        <p id="loadingStudentGesprekken" style="text-align: center; padding: 20px;">Laden van je gesprekken...</p>
+        <p id="noStudentGesprekken" style="display: none; text-align: center; padding: 20px;">Je hebt nog geen gesprekken gepland.</p>
+        <p id="errorStudentGesprekken" style="display: none; color: red; text-align: center; padding: 20px;">Fout bij het laden van gesprekken.</p>
       </section>
     </div>
   </body>
-  <script src="/src/JS/api.js"></script>
+<script type="module" src="/src/JS/UTILS/startPage.js"></script>
+<script src="/src/JS/api.js"></script>
 <script src="/src/JS/reservatieService.js"></script>
 <script src="/src/JS/GESPREKKEN/gesprekkenStudent.js"></script>
 </html>

@@ -30,7 +30,8 @@ let registratieRoutes,
     studentRoutes,
     organisatorRoutes,
     projectRoutes,
-    tafelRoutes;
+    tafelRoutes,
+    notificatieRoutes;
 
 try {
   registratieRoutes    = require("./ROUTES/registratie");
@@ -41,6 +42,7 @@ try {
   organisatorRoutes    = require("./ROUTES/organisator");
   projectRoutes        = require("./ROUTES/project");
   tafelRoutes          = require("./ROUTES/tafel");
+  notificatieRoutes    = require("./ROUTES/notificatie");
   console.log("✅ All route modules loaded successfully");
 } catch (error) {
   console.error("❌ Error loading route modules:", error.message);
@@ -208,6 +210,8 @@ try {
   console.log("✅ Project routes mounted");
   app.use("/api/tafels", tafelRoutes);
   console.log("✅ Tafel routes mounted");
+  app.use("/api/notificaties", notificatieRoutes);
+  console.log("✅ Notificatie routes mounted");
 } catch (error) {
   console.error("❌ Failed to mount one or more API routes:", error);
 }
@@ -363,6 +367,12 @@ app.get("/gesprekkenOverzichtStudenten", (req, res) => {
   );
 });
 
+app.get("/gesprekkenOverzichtBedrijven", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html")
+  );
+});
+
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/login.html"));
 });
@@ -486,6 +496,18 @@ app.get("/reservatie", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html"));
 });
 
+// Serve reservatie.html directly for deep links
+app.get("/src/HTML/RESULTS/RESERVATIES/reservatie.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html"));
+});
+
+// RESTful reserveringspagina's
+app.get('/reserveren/student/:studentId', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/reservatie.html'));
+});
+app.get('/reserveren/bedrijf/:bedrijfId', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/reservatie.html'));
+});
 
 // ===== GENERAL ACCOUNT ROUTES (from ACCOUNT folder) =====
 // Check if these exist in your ACCOUNT folder and add them if needed
@@ -556,6 +578,10 @@ app.get(
   requireAuth,
   redirectWithParams("/bedrijfgegevens", "/gegevensBedrijf")
 )
+
+const passwordChangeRoutes = require('./ROUTES/auth/change-password');
+app.use('/api/auth', passwordChangeRoutes);
+
 // Add remaining legacy routes for bedrijf, student, project, programma, etc.
 
 // ===== ERROR HANDLING =====

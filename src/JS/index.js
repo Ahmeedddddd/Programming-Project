@@ -19,6 +19,9 @@ let allCompanies = [];
 let allStudents = [];
 let allProjects = [];
 
+// ===== NOTIFICATIE POLLING =====
+let notificationPollingInterval = null;
+
 // ===== CONFIGURATION =====
 const API_CONFIG = {
     baseURL: 'http://localhost:8383',
@@ -428,7 +431,8 @@ class CarouselManager {
     }
 
     startAutoRotation() {
-        if (this.homepageType !== 'guest') {
+        // Carousel effect nu ook voor student en bedrijf homepage
+        if (!['guest', 'student', 'bedrijf'].includes(this.homepageType)) {
             console.log(`🎠 [DEBUG] No auto-rotation for ${this.homepageType} homepage`);
             return;
         }
@@ -478,18 +482,18 @@ class CarouselManager {
     getDisplayItems(items, startIndex) {
         if (!items || items.length === 0) return [];
 
-        // For guest homepage - limit to carousel size, for others show all
-        if (this.homepageType === 'guest') {
+        // Voor guest en student homepage: max 4 items (carousel-stijl)
+        if (this.homepageType === 'guest' || this.homepageType === 'student') {
             const result = [];
             for (let i = 0; i < Math.min(this.itemsPerPage, items.length); i++) {
                 const index = (startIndex + i) % items.length;
                 result.push(items[index]);
             }
-            console.log(`🎠 [DEBUG] Carousel showing ${result.length} of ${items.length} items`);
+            console.log(`🎠 [DEBUG] Carousel showing ${result.length} of ${items.length} items (type: ${this.homepageType})`);
             return result;
         } else {
-            // For other homepages - show all items
-            console.log(`📊 [DEBUG] Non-guest homepage showing all ${items.length} items`);
+            // Voor andere homepages: alles tonen
+            console.log(`📊 [DEBUG] Non-guest/student homepage showing all ${items.length} items`);
             return items;
         }
     }
@@ -524,8 +528,8 @@ class CardRenderer {
         this.renderProjectCards();
         this.updateDataCounts();
         
-        // Start carousel for guest homepage
-        if (this.homepageType === 'guest') {
+        // Start carousel voor guest, student en bedrijf homepage
+        if (['guest', 'student', 'bedrijf'].includes(this.homepageType)) {
             this.carousel.startAutoRotation();
         }
     }
@@ -941,3 +945,157 @@ window.allStudents = allStudents;
 window.allProjects = allProjects;
 
 console.log('✅ [DEBUG] FIXED VERSION: Universal Homepage Initializer loaded - DUPLICATE LOGIC REMOVED!');
+
+// ===== NOTIFICATIE POLLING =====
+async function fetchAndShowNotifications() {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    try {
+        const res = await fetch('/api/notificaties/unread', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+            for (const notif of data.data) {
+                window.showNotification(notif.boodschap, notif.type === 'reservering_geweigerd' ? 'warning' : (notif.type === 'reservering_geaccepteerd' ? 'success' : 'info'));
+                // Markeer als gelezen
+                await fetch(`/api/notificaties/${notif.notificatieId}/read`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+            }
+        }
+    } catch (e) {
+        // Silent fail
+    }
+}
+
+function startNotificationPolling() {
+    if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+    fetchAndShowNotifications(); // direct bij start
+    notificationPollingInterval = setInterval(fetchAndShowNotifications, 30000);
+}
+
+function stopNotificationPolling() {
+    if (notificationPollingInterval) {
+        clearInterval(notificationPollingInterval);
+        notificationPollingInterval = null;
+    }
+}
+
+// Start polling na login, stop bij logout
+window.addEventListener('DOMContentLoaded', () => {
+    const userType = localStorage.getItem('userType');
+    const token = localStorage.getItem('authToken');
+    if (token && (userType === 'student' || userType === 'bedrijf')) {
+        startNotificationPolling();
+    }
+});
+window.addEventListener('logout', stopNotificationPolling);
+
+// === STUDENT-HOMEPAGE CAROUSEL EN DATA-COUNT FIX ===
+if (window.location.pathname === '/student-homepage') {
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Carousel voor interessante bedrijven
+    const companiesContainer = document.getElementById('recommendedCompanies');
+    if (companiesContainer) {
+      try {
+        const response = await window.fetchWithAuth('/api/bedrijven?limit=20');
+        const data = await response.json();
+        if (data.data && data.data.length > 0) {
+          let currentIndex = 0;
+          const itemsPerPage = 4;
+          function renderCompanies() {
+            const toShow = data.data.slice(currentIndex, currentIndex + itemsPerPage);
+            companiesContainer.innerHTML = toShow.map(company => `
+              <a href="/resultaat-bedrijf?id=${company.bedrijfsnummer}" class="preview-card">
+                <h3 class="card-title">${company.naam}</h3>
+                <p class="card-description">${company.sector} - ${company.gemeente}  ${company.bechrijving ? company.bechrijving.substring(0, 80) + '...' : 'Ontdek meer over dit bedrijf'}</p>
+              </a>
+            `).join('');
+          }
+          renderCompanies();
+          setInterval(() => {
+            currentIndex = (currentIndex + itemsPerPage) % data.data.length;
+            renderCompanies();
+          }, 8000);
+          // Update data-count
+          const countSpan = companiesContainer.closest('.section-container').querySelector('span[data-count]');
+          if (countSpan) countSpan.textContent = data.data.length;
+        }
+      } catch (e) { /* fallback: geen carousel */ }
+    }
+
+    // Carousel voor aankomende gesprekken
+    const meetingsContainer = document.getElementById('upcomingMeetingsList');
+    if (meetingsContainer && window.ReservatieService) {
+      try {
+        const meetings = await window.ReservatieService.getMyReservations();
+        const upcoming = meetings.filter(m => m.status === 'aangevraagd' || m.status === 'bevestigd');
+        let currentIndex = 0;
+        const itemsPerPage = 4;
+        function renderMeetings() {
+          const toShow = upcoming.slice(currentIndex, currentIndex + itemsPerPage);
+          meetingsContainer.innerHTML = toShow.length > 0 ? toShow.map(meeting => {
+            const startDate = new Date(meeting.startTijd);
+            const endDate = new Date(meeting.eindTijd);
+            const formattedDate = startDate.toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+            const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+            return `<div class="preview-card">
+              <h3 class="card-title">${meeting.bedrijfNaam}</h3>
+              <p class="card-description">
+                <strong>📅 ${formattedDate}</strong><br>
+                <strong>🕒 ${formattedStartTime} - ${formattedEndTime}</strong><br>
+                Status: <span class="status-${meeting.status}">${meeting.status}</span>
+              </p>
+            </div>`;
+          }).join('') : `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Geen gesprekken gepland</h3><p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p></div>`;
+        }
+        renderMeetings();
+        if (upcoming.length > 4) {
+          setInterval(() => {
+            currentIndex = (currentIndex + itemsPerPage) % upcoming.length;
+            renderMeetings();
+          }, 8000);
+        }
+        // Update data-count
+        const countSpan = meetingsContainer.closest('.section-container').querySelector('span[data-count], #upcomingCount');
+        if (countSpan) countSpan.textContent = upcoming.length;
+        const appointmentCount = document.getElementById('appointmentCount');
+        if (appointmentCount) appointmentCount.textContent = meetings.length;
+      } catch (e) { /* fallback: geen carousel */ }
+    }
+
+    // Carousel voor projecten
+    const projectsContainer = document.querySelector('.projects-grid');
+    if (projectsContainer) {
+      try {
+        const response = await window.fetchWithAuth('/api/projecten?limit=20');
+        const data = await response.json();
+        if (data.data && data.data.length > 0) {
+          let currentIndex = 0;
+          const itemsPerPage = 4;
+          function renderProjects() {
+            const toShow = data.data.slice(currentIndex, currentIndex + itemsPerPage);
+            projectsContainer.innerHTML = toShow.map(project => `
+              <a href="/zoekbalk-projecten?id=${project.projectId || project.id}" class="project-card">
+                <h3 class="project-title">${project.projectTitel || project.titel || project.naam}</h3>
+                <p class="project-description">${project.projectBeschrijving ? project.projectBeschrijving.substring(0, 120) + '...' : 'Geen beschrijving beschikbaar'}</p>
+              </a>
+            `).join('');
+          }
+          renderProjects();
+          setInterval(() => {
+            currentIndex = (currentIndex + itemsPerPage) % data.data.length;
+            renderProjects();
+          }, 8000);
+          // Update data-count
+          const countSpan = projectsContainer.closest('.projects-section, .section-container').querySelector('span[data-count]');
+          if (countSpan) countSpan.textContent = data.data.length;
+        }
+      } catch (e) { /* fallback: geen carousel */ }
+    }
+  });
+}

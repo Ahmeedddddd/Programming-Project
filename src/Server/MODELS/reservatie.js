@@ -14,7 +14,8 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
+                    a.datum,  
                     a.startTijd,
                     a.eindTijd,
                     a.status,
@@ -44,7 +45,7 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
                     a.startTijd,
                     a.eindTijd,
                     a.status,
@@ -70,13 +71,12 @@ class Reservatie {
 
   static async getByStudent(studentnummer) {
     try {
-      const [rows] = await pool.query(
-        `
+      const query = `
                 SELECT
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
                     a.startTijd,
                     a.eindTijd,
                     a.status,
@@ -88,9 +88,14 @@ class Reservatie {
                 LEFT JOIN BEDRIJF b ON a.bedrijfsnummer = b.bedrijfsnummer
                 WHERE a.studentnummer = ?
                 ORDER BY a.startTijd DESC
-            `,
+            `;
+      console.log('[DEBUG][getByStudent] Query:', query);
+      console.log('[DEBUG][getByStudent] Params:', [studentnummer]);
+      const [rows] = await pool.query(
+        query,
         [studentnummer]
       );
+      console.log('[DEBUG][getByStudent] Result:', rows);
       return rows;
     } catch (error) {
       console.error("Error fetching reservations by student:", error);
@@ -106,14 +111,15 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
                     a.startTijd,
                     a.eindTijd,
                     a.status,
                     a.redenWeigering,
                     CONCAT(s.voornaam, ' ', s.achternaam) as studentNaam,
                     s.email as studentEmail,
-                    s.projectTitel as studentProject
+                    s.projectTitel as studentProject,
+                    s.tafelNr as studentTafelNr
                 FROM AFSPRAAK a
                 LEFT JOIN STUDENT s ON a.studentnummer = s.studentnummer
                 WHERE a.bedrijfsnummer = ?
@@ -163,14 +169,15 @@ class Reservatie {
         startTijd, // String HH:MM:SS
         eindTijd, // String HH:MM:SS
         status = "aangevraagd",
+        aangevraagdDoor = "student"
       } = reservatieData;
 
       const [result] = await pool.query(
         `
-                INSERT INTO AFSPRAAK (studentnummer, bedrijfsnummer, startTijd, eindTijd, status)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO AFSPRAAK (studentnummer, bedrijfsnummer, startTijd, eindTijd, status, aangevraagdDoor)
+                VALUES (?, ?, ?, ?, ?, ?)
             `,
-        [studentnummer, bedrijfsnummer, startTijd, eindTijd, status]
+        [studentnummer, bedrijfsnummer, startTijd, eindTijd, status, aangevraagdDoor]
       );
 
       return result.insertId;
@@ -188,7 +195,6 @@ class Reservatie {
       let setClause = "status = ?";
       const params = [status];
       if (updateData.hasOwnProperty("redenWeigering")) {
-        // Controleer of redenWeigering aanwezig is
         setClause += ", redenWeigering = ?";
         params.push(updateData.redenWeigering);
       }
@@ -197,6 +203,24 @@ class Reservatie {
         `UPDATE AFSPRAAK SET ${setClause} WHERE afspraakId = ?`,
         [...params, id]
       );
+
+      // Extra logica: als status 'bevestigd', weiger alle andere aanvragen voor hetzelfde bedrijf en tijdslot
+      if (status === 'bevestigd') {
+        // Haal de details van deze afspraak op
+        const [rows] = await pool.query(
+          `SELECT bedrijfsnummer, startTijd, eindTijd FROM AFSPRAAK WHERE afspraakId = ?`,
+          [id]
+        );
+        if (rows.length > 0) {
+          const { bedrijfsnummer, startTijd, eindTijd } = rows[0];
+          // Zet alle andere aanvragen voor dit bedrijf en tijdslot op 'geweigerd'
+          await pool.query(
+            `UPDATE AFSPRAAK SET status = 'geweigerd', redenWeigering = 'Tijdslot reeds bevestigd voor andere student.'
+             WHERE bedrijfsnummer = ? AND startTijd = ? AND eindTijd = ? AND status = 'aangevraagd' AND afspraakId != ?`,
+            [bedrijfsnummer, startTijd, eindTijd, id]
+          );
+        }
+      }
 
       return result.affectedRows;
     } catch (error) {
@@ -254,18 +278,23 @@ class Reservatie {
     eindTijd
   ) {
     try {
-      const [rows] = await pool.query(
-        `
+      console.log('[DEBUG][checkTimeConflicts] Params:', {studentnummer, bedrijfsnummer, startTijd, eindTijd});
+      const query = `
                 SELECT afspraakId, studentnummer, bedrijfsnummer, startTijd, eindTijd, status
                 FROM AFSPRAAK
                 WHERE (studentnummer = ? OR bedrijfsnummer = ?)
-                AND status IN ('aangevraagd', 'bevestigd')
+                AND status = 'bevestigd'
                 AND (
                     (startTijd < ? AND eindTijd > ?)
                 )
-            `,
+            `;
+      console.log('[DEBUG][checkTimeConflicts] Query:', query);
+      console.log('[DEBUG][checkTimeConflicts] Query params:', [studentnummer, bedrijfsnummer, eindTijd, startTijd]);
+      const [rows] = await pool.query(
+        query,
         [studentnummer, bedrijfsnummer, eindTijd, startTijd]
       );
+      console.log('[DEBUG][checkTimeConflicts] Found conflicts:', rows);
       return rows;
     } catch (error) {
       console.error("Error checking time conflicts:", error);

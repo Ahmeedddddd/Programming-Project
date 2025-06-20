@@ -452,11 +452,9 @@ function handleReservation() {
         showNotification('❌ Geen student informatie beschikbaar', 'error');
         return;
     }
-    
-    const reservationURL = `/reservatie?student=${currentStudent.studentnummer}&name=${encodeURIComponent(currentStudent.voornaam + ' ' + currentStudent.achternaam)}`;
-    
+    // Gebruik een mooie RESTful URL
+    const reservationURL = `/reserveren/student/${currentStudent.studentnummer}`;
     showNotification('📅 Reservatie wordt voorbereid...', 'info');
-    
     setTimeout(() => {
         window.location.href = reservationURL;
     }, 1000);

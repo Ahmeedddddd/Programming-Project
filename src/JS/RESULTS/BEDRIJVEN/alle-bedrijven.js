@@ -262,39 +262,30 @@ class AlleBedrijvenManager {
   } // Fallback data in case API fails
 
   displayFallbackBedrijven() {
-    console.log("📦 Using fallback bedrijven data");
-    const fallbackBedrijven = [
+    // Dummy data tonen als fallback
+    this.bedrijven = [
       {
-        bedrijfsnummer: 84,
+        id: 1,
+        bedrijfsnummer: 1,
         naam: "BilalAICorp",
-        sector: "AI",
-        gemeente: "Gent",
-        tafelNr: 1,
-        bechrijving:
-          "BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan de gebruiker - ideaal voor zorg, onderwijs en industrie.",
+        beschrijving: "BilalAICorp bouwt slimme AI-oplossingen die zich aanpassen aan de gebruiker – ideaal voor zorg, onderwijs en industrie.",
+        sector: "AI & Technology",
+        gemeente: "Brussel",
+        tafelNr: 1
       },
       {
-        bedrijfsnummer: 85,
+        id: 2,
+        bedrijfsnummer: 2,
         naam: "Vital'O Network",
-        sector: "Health informatics",
-        gemeente: "Brussel",
-        tafelNr: 2,
-        bechrijving:
-          "Vital'O Network verbindt medische systemen met elkaar voor vlotte en veilige datastromen.",
-      },
-      {
-        bedrijfsnummer: 99,
-        naam: "Microsoft",
-        sector: "Software",
-        gemeente: "Brussel",
-        tafelNr: 16,
-        bechrijving:
-          "Microsoft leidt wereldwijd in cloud computing, productiviteitstools en AI-innovatie.",
-      },
+        beschrijving: "Vital'O Network verbindt medische systemen met elkaar voor vlotte en veilige datastromen.",
+        sector: "Healthcare IT",
+        gemeente: "Antwerpen",
+        tafelNr: 3
+      }
     ];
-    this.bedrijven = fallbackBedrijven;
     this.filteredBedrijven = [...this.bedrijven];
     this.displayBedrijven();
+    this.showInfo('Let op: dit is fallback data, de echte bedrijven konden niet geladen worden.');
   }
 }
 

@@ -1,6 +1,8 @@
 // src/JS/api.js
 // Utility for authenticated fetch requests
 
+console.log("✅ api.js geladen");
+
 /**
  * Performs a fetch request with an authentication token.
  * Automatically retrieves the token from localStorage.

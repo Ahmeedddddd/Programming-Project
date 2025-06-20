@@ -1,3 +1,10 @@
+console.log("✅ reservatieService.js geladen");
+
+// Fallback voor showNotification als deze niet bestaat
+if (typeof window.showNotification !== 'function') {
+    window.showNotification = function(msg, type) { alert(msg); };
+}
+
 class ReservatieService {
     /**
      * Sends a reservation request to the backend.
@@ -148,6 +155,30 @@ class ReservatieService {
         } catch (error) {
             console.error('Error in ReservatieService.rejectReservation:', error);
             showNotification(`Netwerkfout bij weigeren: ${error.message}`, 'error');
+            return false;
+        }
+    }
+
+    /**
+     * Verwijdert een reservatie definitief (alleen toegestaan voor geweigerde afspraken).
+     * @param {string} reservatieId - Het ID van de reservatie om te verwijderen.
+     * @returns {Promise<boolean>} - True als verwijderen gelukt is, anders false.
+     */
+    static async deleteReservation(reservatieId) {
+        try {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                showNotification(result.message || 'Fout bij het verwijderen van de reservatie.', 'error');
+                return false;
+            }
+            showNotification(result.message || 'Reservatie succesvol verwijderd.', 'success');
+            return true;
+        } catch (error) {
+            console.error('Error in ReservatieService.deleteReservation:', error);
+            showNotification(`Netwerkfout bij verwijderen: ${error.message}`, 'error');
             return false;
         }
     }

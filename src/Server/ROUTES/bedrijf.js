@@ -63,7 +63,7 @@ router.delete('/:bedrijfsnummer',
 );
 
 // Voeg deze route toe vóór de parameter route :bedrijfsnummer
-router.get('/:bedrijfsnummer/slots', bedrijfController.getAvailableTimeSlots);
+router.get('/:bedrijfsnummer/slots', authenticateToken, bedrijfController.getAvailableTimeSlots);
 
 // ===== PARAMETER ROUTES LAST - Deze moeten als LAATSTE komen =====
 
@@ -73,5 +73,8 @@ router.get('/', bedrijfController.getAllBedrijven);
 // GET /api/bedrijven/:bedrijfsnummer - Specifiek bedrijf ophalen
 // DIT MOET ALS LAATSTE omdat :bedrijfsnummer alles kan matchen
 router.get('/:bedrijfsnummer', bedrijfController.getBedrijf);
+
+// Voeg deze route toe vóór de parameter route :bedrijfsnummer
+router.get('/:bedrijfsnummer/slots', bedrijfController.getAvailableTimeSlots);
 
 module.exports = router;

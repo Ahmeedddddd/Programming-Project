@@ -25,7 +25,7 @@ const NAVIGATION_CONFIG = {
     navbar: [
       { href: "/student-homepage", text: "Home" },
       { href: "/programma", text: "Programma" },
-      { href: "/gesprekken-overzicht", text: "Mijn Gesprekken" },
+      { href: "/gesprekkenOverzichtStudenten", text: "Mijn Gesprekken" },
       { href: "/alleBedrijven", text: "Bedrijven" },
       { href: "/alleProjecten", text: "Projecten" },
       { href: "/account-student", text: "Account", highlight: true }
@@ -34,7 +34,7 @@ const NAVIGATION_CONFIG = {
       { href: "/account-student", text: "Mijn Account", icon: "fas fa-user" },
       { href: "/gegevens-student", text: "Mijn Gegevens", icon: "fas fa-id-card" },
       { href: "/mijn-project", text: "Mijn Project", icon: "fas fa-project-diagram" },
-      { href: "/gesprekken-overzicht", text: "Mijn Gesprekken", icon: "fas fa-calendar-alt" },
+      { href: "/gesprekkenOverzichtStudenten", text: "Mijn Gesprekken", icon: "fas fa-calendar-alt" },
       { divider: true },
       { href: "/alleBedrijven", text: "Bedrijven Zoeken", icon: "fas fa-building" },
       { href: "/alleProjecten", text: "Andere Projecten", icon: "fas fa-rocket" },
@@ -46,8 +46,8 @@ const NAVIGATION_CONFIG = {
   bedrijf: {
     navbar: [
       { href: "/bedrijf-homepage", text: "Home" },
-      { href: "/programma-bedrijven", text: "Programma" },
-      { href: "/gesprekken-overzicht-bedrijven", text: "Gesprekken" },
+      { href: "/programma", text: "Programma" },
+      { href: "/gesprekkenOverzichtBedrijven", text: "Gesprekken" },
       { href: "/alleStudenten", text: "Studenten" },
       { href: "/account-bedrijf", text: "Account", highlight: true }
     ],

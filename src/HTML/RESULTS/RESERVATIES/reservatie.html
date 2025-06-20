@@ -41,7 +41,10 @@
                     Tijdslots laden...
                 </div>
                 <div class="time-slots" id="timeSlots"></div>
-                <button class="reserve-button" id="reserveBtn" disabled onclick="makeReservation()">
+                <div class="role-distinction" id="roleDistinction">
+                    <!-- Wordt door JS gevuld: aanvrager/ontvanger -->
+                </div>
+                <button class="reserve-button" id="reserveBtn" disabled>
                     Reserveren
                 </button>
             </div>
@@ -65,6 +68,8 @@
     <!-- Scripts -->
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
+    <script src="/src/JS/api.js"></script>
+    <script src="/src/JS/reservatieService.js"></script>
     <script src="/src/JS/RESULTS/RESERVATIES/reservatie.js"></script>
 </body>
 </html>
