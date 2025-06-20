@@ -496,6 +496,10 @@ app.get("/reservatie", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html"));
 });
 
+// Serve reservatie.html directly for deep links
+app.get("/src/HTML/RESULTS/RESERVATIES/reservatie.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html"));
+});
 
 // ===== GENERAL ACCOUNT ROUTES (from ACCOUNT folder) =====
 // Check if these exist in your ACCOUNT folder and add them if needed

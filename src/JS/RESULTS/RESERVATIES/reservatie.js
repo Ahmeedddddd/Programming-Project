@@ -69,6 +69,7 @@ async function loadTimeSlots(date) {
   try {
     let resp, result;
     if (targetType === 'bedrijf') {
+      // Student reserveert bij bedrijf: haal slots van bedrijf op
       resp = await fetch(`/api/bedrijven/${targetId}/slots`);
       if (!resp.ok) throw new Error();
       result = await resp.json();
@@ -79,11 +80,8 @@ async function loadTimeSlots(date) {
         id: slot.id || `${slot.start}-${slot.end}`
       }));
     } else if (targetType === 'student') {
-      // Voor student: haal alle reservaties van deze student op en blokkeer bezette slots
-      resp = await fetchWithAuth(`/api/reservaties/my?studentnummer=${targetId}`);
-      result = await resp.json();
-      // Stel: je hebt een vaste lijst van tijdslots (of haal ze op via een endpoint)
-      // Hier: dummy tijdslots + blokkeren van bezette
+      // Bedrijf reserveert bij student: haal slots op basis van eigen (bedrijf) bezetting
+      // Haal ALLE slots op (dummy of via endpoint), en blokkeer bezette via /api/reservaties/company
       let allSlots = [
         {id:1, start_time:'13:00', end_time:'13:30'},
         {id:2, start_time:'13:30', end_time:'14:00'},
@@ -98,6 +96,16 @@ async function loadTimeSlots(date) {
         {id:11,start_time:'18:00', end_time:'18:30'},
         {id:12,start_time:'18:30', end_time:'19:00'}
       ];
+      resp = await fetchWithAuth(`/api/reservaties/company`);
+      if (!resp.ok) {
+        if (resp.status === 401 || resp.status === 403) {
+          errorEl.style.display = 'block';
+          errorEl.textContent = 'Je bent niet gemachtigd om deze reserveringen te zien.';
+          return;
+        }
+        throw new Error();
+      }
+      result = await resp.json();
       const bezet = (result.data || []).filter(r => r.status === 'bevestigd' || r.status === 'aangevraagd')
         .map(r => `${r.startTijd.split('T')[1].slice(0,5)}-${r.eindTijd.split('T')[1].slice(0,5)}`);
       availableSlots = allSlots.map(slot => ({
@@ -111,7 +119,8 @@ async function loadTimeSlots(date) {
       document.getElementById('timeRange').textContent = `${first} – ${last}`;
     }
     displayTimeSlots();
-  } catch {
+  } catch (e) {
+    console.error('[RESERVATIE] Fout bij laden van tijdslots:', e);
     generateMockSlots();
   } finally {
     loadingEl.style.display = 'none';
@@ -240,9 +249,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     let bedrijfParam = params.get('bedrijf') || params.get('bedrijfId');
     let studentParam = params.get('student') || params.get('studentId');
+    console.log('[RESERVATIE] userType:', userInfo.userType, '| bedrijfParam:', bedrijfParam, '| studentParam:', studentParam);
     if (userInfo.userType === 'student') {
       targetId = bedrijfParam;
       targetType = 'bedrijf';
+      console.log('[RESERVATIE] Student reserveert bij bedrijf:', targetId);
       if (!targetId) {
         window.showNotification('Geen bedrijf geselecteerd. Je wordt teruggestuurd naar het bedrijvenoverzicht.', 'error');
         setTimeout(() => window.location.href = '/alle-bedrijven.html', 2000);
@@ -251,6 +262,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (userInfo.userType === 'bedrijf') {
       targetId = studentParam;
       targetType = 'student';
+      console.log('[RESERVATIE] Bedrijf reserveert bij student:', targetId);
       if (!targetId) {
         window.showNotification('Geen student geselecteerd. Je wordt teruggestuurd naar het studentenoverzicht.', 'error');
         setTimeout(() => window.location.href = '/alle-studenten.html', 2000);
@@ -258,13 +270,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } else {
       window.showNotification('Onbekende gebruikersrol.', 'error');
-      window.location.href = '/';
       return;
     }
     document.getElementById('currentDate').textContent = formatDate(currentDate);
     await loadTargetInfo();
     await loadTimeSlots(currentDate);
   } catch (e) {
+    console.error('[RESERVATIE] Fout bij ophalen gebruikersinfo:', e);
     window.showNotification('Kon gebruikersinfo niet ophalen. Probeer opnieuw.', 'error');
     return;
   }
