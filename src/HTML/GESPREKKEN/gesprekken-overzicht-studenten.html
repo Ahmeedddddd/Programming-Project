@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/src/CSS/style.css" />
     <link
       rel="stylesheet"
-      href="/src/CSS/GESPREKKEN/gesprekken-overzicht-studenten.css"
+      href="/src/CSS/GESPREKKEN/gesprekken.css"
     />
     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
     <script src="/js/navigation-manager.js"></script>
@@ -31,6 +31,27 @@
             </div>
         </div>
 
+        <!-- Dynamic Sidebar -->
+        <div class="sideMenu" id="sideMenu">
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Menu</p>
+                </div>
+                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sideMenu-content">
+                <!-- Dynamisch menu wordt hier gevuld -->
+            </div>
+        </div>
+        <!-- Overlay voor menu -->
+        <div class="menu-overlay"></div>
+
       <section class="gesprekkenKaart">
         <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
         <div class="gesprekkenSubSection">
@@ -38,6 +59,7 @@
           <div class="gesprekkenTable" id="studentGesprekkenAangevraagd">
             <div class="gesprekkenTableHeader">
               <div>Naam bedrijf</div>
+              <div>Tafel</div>
               <div>Tijdslot</div>
               <div>Status</div>
               <div>Actie</div>
@@ -50,6 +72,7 @@
           <div class="gesprekkenTable" id="studentGesprekkenOntvangen">
             <div class="gesprekkenTableHeader">
               <div>Naam bedrijf</div>
+              <div>Tafel</div>
               <div>Tijdslot</div>
               <div>Status</div>
               <div>Actie</div>

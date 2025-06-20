@@ -24,7 +24,27 @@
             </div>
         </div>
 
-      
+        <!-- Dynamic Sidebar -->
+        <div class="sideMenu" id="sideMenu">
+            <div class="menu-bg-animation"></div>
+            <div class="menu-bg-animation"></div>
+            <div class="sparkles"></div>
+            <div class="sideMenu-header">
+                <div>
+                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                    <p class="sideMenu-subtitle">Menu</p>
+                </div>
+                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="sideMenu-content">
+                <!-- Dynamisch menu wordt hier gevuld -->
+            </div>
+        </div>
+        <!-- Overlay voor menu -->
+        <div class="menu-overlay"></div>
+
     <section class="gesprekkenKaart">
       <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
       <div class="gesprekkenSubSection">
@@ -75,5 +95,6 @@
   <script src="/src/JS/api.js"></script>
   <script src="/src/JS/reservatieService.js"></script>
   <script src="/src/JS/GESPREKKEN/gesprekkenBedrijf.js"></script>
+  <script type="module" src="/src/JS/UTILS/startPage.js"></script>
 </body>
 </html>
