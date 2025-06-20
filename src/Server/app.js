@@ -501,6 +501,14 @@ app.get("/src/HTML/RESULTS/RESERVATIES/reservatie.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/RESERVATIES/reservatie.html"));
 });
 
+// RESTful reserveringspagina's
+app.get('/reserveren/student/:studentId', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/reservatie.html'));
+});
+app.get('/reserveren/bedrijf/:bedrijfId', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../src/HTML/RESULTS/RESERVATIES/reservatie.html'));
+});
+
 // ===== GENERAL ACCOUNT ROUTES (from ACCOUNT folder) =====
 // Check if these exist in your ACCOUNT folder and add them if needed
 // app.get("/account-bedrijf-general", requireAuth, (req, res) => {

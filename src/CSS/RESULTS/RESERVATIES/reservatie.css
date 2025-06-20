@@ -387,6 +387,65 @@
     font-weight: 500;
 }
 
+.role-distinction {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem;
+    margin: 2.5rem 0 1.5rem 0;
+    padding: 1.2rem 1.5rem;
+    background: linear-gradient(90deg, #f8f8fa 60%, #f3e6ee 100%);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(128, 0, 32, 0.06);
+    font-size: 1.1rem;
+    font-weight: 500;
+    border: 1.5px solid #e0c6d6;
+}
+
+.role-distinction .role-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(128, 0, 32, 0.04);
+    border: 1px solid #f3e6ee;
+}
+
+.role-distinction .role-block.aanvrager {
+    border: 2px solid #800020;
+    background: #fff6f8;
+    color: #800020;
+}
+
+.role-distinction .role-block.ontvanger {
+    border: 2px solid #1a7f37;
+    background: #f6fff8;
+    color: #1a7f37;
+}
+
+.role-distinction .role-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.role-distinction .role-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.role-distinction .role-icon {
+    font-size: 1.7rem;
+    margin-bottom: 0.2rem;
+}
+
 @media (max-width: 768px) {
     .reservation-container {
         margin: 1rem;
@@ -432,4 +491,69 @@
         font-size: 1rem;
         padding: 1rem 2rem;
     }
+}
+
+@media (max-width: 600px) {
+    .role-distinction {
+        flex-direction: column;
+        gap: 1.2rem;
+        padding: 1rem 0.5rem;
+    }
+}
+
+.gesprek-aangevraagd {
+    background: #fff6f8;
+    border-left: 5px solid #800020;
+}
+
+.gesprek-ontvangen {
+    background: #f6fff8;
+    border-left: 5px solid #1a7f37;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.2em 0.7em;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-left: 0.5em;
+    vertical-align: middle;
+}
+
+.badge-aangevraagd {
+    background: #800020;
+    color: #fff;
+}
+
+.badge-ontvangen {
+    background: #1a7f37;
+    color: #fff;
+}
+
+.gesprekkenTableRow {
+    margin-bottom: 0.7rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(128, 0, 32, 0.06);
+    padding: 1.1rem 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr 1.5fr;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow 0.2s;
+}
+
+.gesprekkenTableRow:hover {
+    box-shadow: 0 4px 16px rgba(128, 0, 32, 0.13);
+}
+
+.gesprekkenActions {
+    display: flex;
+    gap: 0.7rem;
+    justify-content: flex-end;
+}
+
+.actieBtn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

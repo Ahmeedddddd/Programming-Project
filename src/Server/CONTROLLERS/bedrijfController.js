@@ -73,6 +73,16 @@ const bedrijfController = {
       // Haal ook de bevestigde afspraken van de student of bedrijf op (indien ingelogd)
       let studentConflicts = [];
       let bedrijfConflicts = [];
+      // Nieuw: check of er een studentId in de query of path zit (voor bedrijf reserveert bij student)
+      let targetStudentnummer = req.query.student || req.query.studentId;
+      if (!targetStudentnummer && req.body && req.body.studentnummer) {
+        targetStudentnummer = req.body.studentnummer;
+      }
+      // Probeer ook uit de URL (bij RESTful route)
+      if (!targetStudentnummer && req.originalUrl) {
+        const match = req.originalUrl.match(/student(?:=|\/)(\d+)/);
+        if (match) targetStudentnummer = match[1];
+      }
       if (req.user && req.user.userType === 'student') {
         const studentnummer = req.user.studentnummer || req.user.userId;
         studentConflicts = await Reservatie.getByStudent(studentnummer);
@@ -83,6 +93,12 @@ const bedrijfController = {
         bedrijfConflicts = await Reservatie.getByBedrijf(bedrijfsnummerUser);
         bedrijfConflicts = bedrijfConflicts.filter(r => r.status === 'bevestigd');
       }
+      // Extra: als targetStudentnummer bekend, voeg die afspraken toe
+      let extraStudentConflicts = [];
+      if (targetStudentnummer) {
+        extraStudentConflicts = await Reservatie.getByStudent(targetStudentnummer);
+        extraStudentConflicts = extraStudentConflicts.filter(r => r.status === 'bevestigd');
+      }
       // Maak een lijst van bezette tijdsblokken (bedrijf)
       const bezet = reservaties.filter(r => r.status === 'bevestigd')
         .map(r => `${r.startTijd}-${r.eindTijd}`);
@@ -90,16 +106,18 @@ const bedrijfController = {
       const studentBezet = studentConflicts.map(r => `${r.startTijd}-${r.eindTijd}`);
       // Voeg bedrijf-conflicten toe
       const bedrijfBezet = bedrijfConflicts.map(r => `${r.startTijd}-${r.eindTijd}`);
+      // Voeg extra student-conflicten toe
+      const extraStudentBezet = extraStudentConflicts.map(r => `${r.startTijd}-${r.eindTijd}`);
       // Voeg beschikbaarheid toe aan elk slot
       const enrichedSlots = slots.map(slot => {
         function toTimeString(t) {
           return t.length === 5 ? t + ':00' : t;
         }
         const key = `${toTimeString(slot.start)}-${toTimeString(slot.end)}`;
-        // Slot is niet beschikbaar als bezet door bedrijf, student, of deze company zelf
+        // Slot is niet beschikbaar als bezet door bedrijf, student, deze company zelf, of target-student
         return {
           ...slot,
-          available: !bezet.includes(key) && !studentBezet.includes(key) && !bedrijfBezet.includes(key)
+          available: !bezet.includes(key) && !studentBezet.includes(key) && !bedrijfBezet.includes(key) && !extraStudentBezet.includes(key)
         };
       });
       res.json({ success: true, data: enrichedSlots });

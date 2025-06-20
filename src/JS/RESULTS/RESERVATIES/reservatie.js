@@ -35,6 +35,8 @@ async function loadTargetInfo() {
       if (company.logo_url) {
         document.getElementById('companyLogo').src = company.logo_url;
       }
+      const roleTargetName = document.getElementById('roleTargetName');
+      if (roleTargetName) roleTargetName.textContent = company.naam;
     } catch {
       console.warn('Kon bedrijfsgegevens niet laden');
     }
@@ -50,6 +52,8 @@ async function loadTargetInfo() {
       if (student.avatar_url) {
         document.getElementById('companyLogo').src = student.avatar_url;
       }
+      const roleTargetName = document.getElementById('roleTargetName');
+      if (roleTargetName) roleTargetName.textContent = student.naam || (student.voornaam + ' ' + student.achternaam);
     } catch {
       console.warn('Kon studentgegevens niet laden');
     }
@@ -249,6 +253,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     let bedrijfParam = params.get('bedrijf') || params.get('bedrijfId');
     let studentParam = params.get('student') || params.get('studentId');
+
+    // Nieuw: haal id uit RESTful path als query ontbreekt
+    const path = window.location.pathname;
+    if (!bedrijfParam && /\/reserveren\/bedrijf\/(\d+)/.test(path)) {
+      bedrijfParam = path.match(/\/reserveren\/bedrijf\/(\d+)/)[1];
+      console.log('[RESERVATIE] BedrijfId uit path:', bedrijfParam);
+    }
+    if (!studentParam && /\/reserveren\/student\/(\d+)/.test(path)) {
+      studentParam = path.match(/\/reserveren\/student\/(\d+)/)[1];
+      console.log('[RESERVATIE] StudentId uit path:', studentParam);
+    }
     console.log('[RESERVATIE] userType:', userInfo.userType, '| bedrijfParam:', bedrijfParam, '| studentParam:', studentParam);
     if (userInfo.userType === 'student') {
       targetId = bedrijfParam;
@@ -275,6 +290,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('currentDate').textContent = formatDate(currentDate);
     await loadTargetInfo();
     await loadTimeSlots(currentDate);
+
+    // === Vul role-distinction sectie ===
+    const roleDiv = document.getElementById('roleDistinction');
+    if (roleDiv) {
+      let aanvragerHtml = '', ontvangerHtml = '';
+      if (userInfo.userType === 'student') {
+        aanvragerHtml = `
+          <div class="role-block aanvrager">
+            <span class="role-label">Aanvrager</span>
+            <span class="role-icon"><i class="fas fa-user"></i></span>
+            <span class="role-name">Jij</span>
+            <span class="role-type"><i class="fas fa-user-graduate"></i> Student</span>
+          </div>
+        `;
+        ontvangerHtml = `
+          <div class="role-block ontvanger">
+            <span class="role-label">Ontvanger</span>
+            <span class="role-icon"><i class="fas fa-user-tie"></i></span>
+            <span class="role-name" id="roleTargetName">Bedrijf</span>
+            <span class="role-type"><i class="fas fa-building"></i> Bedrijf</span>
+          </div>
+        `;
+      } else if (userInfo.userType === 'bedrijf') {
+        aanvragerHtml = `
+          <div class="role-block aanvrager">
+            <span class="role-label">Aanvrager</span>
+            <span class="role-icon"><i class="fas fa-user"></i></span>
+            <span class="role-name">Jij</span>
+            <span class="role-type"><i class="fas fa-building"></i> Bedrijf</span>
+          </div>
+        `;
+        ontvangerHtml = `
+          <div class="role-block ontvanger">
+            <span class="role-label">Ontvanger</span>
+            <span class="role-icon"><i class="fas fa-user-graduate"></i></span>
+            <span class="role-name" id="roleTargetName">Student</span>
+            <span class="role-type"><i class="fas fa-user-graduate"></i> Student</span>
+          </div>
+        `;
+      }
+      roleDiv.innerHTML = aanvragerHtml + ontvangerHtml;
+    }
   } catch (e) {
     console.error('[RESERVATIE] Fout bij ophalen gebruikersinfo:', e);
     window.showNotification('Kon gebruikersinfo niet ophalen. Probeer opnieuw.', 'error');

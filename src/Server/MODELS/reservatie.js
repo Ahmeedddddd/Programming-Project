@@ -14,6 +14,7 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
+                    a.aangevraagdDoor,
                     a.datum,  
                     a.startTijd,
                     a.eindTijd,
@@ -44,7 +45,7 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
                     a.startTijd,
                     a.eindTijd,
                     a.status,
@@ -75,7 +76,7 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
                     a.startTijd,
                     a.eindTijd,
                     a.status,
@@ -110,7 +111,7 @@ class Reservatie {
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
-                    -- a.datum,  <-- DEZE IS VERWIJDERD
+                    a.aangevraagdDoor,
                     a.startTijd,
                     a.eindTijd,
                     a.status,
@@ -168,14 +169,15 @@ class Reservatie {
         startTijd, // String HH:MM:SS
         eindTijd, // String HH:MM:SS
         status = "aangevraagd",
+        aangevraagdDoor = "student"
       } = reservatieData;
 
       const [result] = await pool.query(
         `
-                INSERT INTO AFSPRAAK (studentnummer, bedrijfsnummer, startTijd, eindTijd, status)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO AFSPRAAK (studentnummer, bedrijfsnummer, startTijd, eindTijd, status, aangevraagdDoor)
+                VALUES (?, ?, ?, ?, ?, ?)
             `,
-        [studentnummer, bedrijfsnummer, startTijd, eindTijd, status]
+        [studentnummer, bedrijfsnummer, startTijd, eindTijd, status, aangevraagdDoor]
       );
 
       return result.insertId;

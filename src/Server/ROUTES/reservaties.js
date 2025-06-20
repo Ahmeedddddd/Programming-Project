@@ -58,7 +58,8 @@ router.post(
         bedrijfsnummer: reserverendBedrijf,
         startTijd,
         eindTijd,
-        status: 'aangevraagd'
+        status: 'aangevraagd',
+        aangevraagdDoor: user.userType
       });
 
       if (reservatieId) {
