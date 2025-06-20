@@ -61,16 +61,18 @@
         <!-- Main Content -->
         <div class="overzichtContainer">
             <!-- 🆕 Organisator controls worden dynamisch toegevoegd door JavaScript -->
-            
-            <aside class="sideBar">
-                <h2 class="sidebarTitle">Overzicht Tafels</h2>
+              <aside class="sideBar">
+                <div class="sidebar-header">
+                    <h2 class="sidebarTitle">Overzicht Tafels</h2>                    <!-- Tafel configuratie knop -->
+                    <button id="configTafelsBtn" class="config-btn" title="Configureer aantal tafels">
+                        <span id="tafelCountText">Aantal tafels: 15</span>
+                    </button>
+                </div>
                   <!-- 🆕 Interactieve zoekbalk -->
-                <div class="search-container">
-                    <input type="text" 
+                <div class="search-container">                    <input type="text" 
                            class="sidebarZoekbalk" 
                            id="tafelSearch"
-                           placeholder="Zoek tafel, project of bedrijf..." 
-                           title="Zoek in de lijst met tafels">
+                           placeholder="Zoek tafel, project of bedrijf...">
                     <i class="fas fa-search search-icon"></i>
                 </div>
                 
@@ -95,6 +97,12 @@
                             <div class="skeleton-line small"></div>
                         </div>
                     </li>                </ul>
+                
+                <!-- 🆕 Refresh button -->
+                <button id="refreshTafels" class="refresh-btn" title="Gegevens verversen">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Ververs data</span>
+                </button>
             </aside>
             
             <div class="plattegrond">                <h3>
