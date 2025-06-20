@@ -1,816 +1,467 @@
-// Plattegrond Voormiddag Manager
-console.log('Plattegrond Voormiddag script loading...');
+// plattegrond-voormiddag.js - Plattegrond management voor voormiddag sessie (studenten)
 
 class PlattegrondVoormiddagManager {
     constructor() {
-        this.tafelData = {};
         this.currentUser = null;
-        this.isOrganisator = false;
-        this.selectedTafel = null;
-        this.availableProjects = [];
-        this.init();
+        this.tafelData = [];
+        this.alleStudenten = [];
+        this.isLoggedIn = false;
+        this.userType = null;
+        this.draggedElement = null;
+        this.isInitialized = false;
+        
+        // Tafel configuratie met database sync
+        this.tafelConfig = {
+            maxTafels: 15,
+            maxLimit: 50,
+            loaded: false
+        };
+
+        console.log('🎓 PlattegrondVoormiddagManager initialized');
     }
 
     async init() {
         try {
-            console.log('Initializing PlattegrondVoormiddagManager...');
+            console.log('🚀 Initializing PlattegrondVoormiddagManager...');
+            
+            // Laad configuratie van database in plaats van localStorage
+            await this.loadTafelConfig();
             
             // Laad user info
             await this.loadUserInfo();
             
-            // Laad tafel data
-            await this.loadTafelData();
-            
-            // Pre-load projecten data voor organisatoren
-            if (this.isOrganisator) {
-                this.loadAvailableProjects(); // Async load in background
-            }
+            // Laad alle data
+            await Promise.all([
+                this.loadTafelData(),
+                this.loadAlleStudenten()
+            ]);
             
             // Setup UI
-            this.setupUI();
-            
-            // Setup event listeners
             this.setupEventListeners();
+            this.updateSidebar();
+            this.updatePlattegrond();
+            this.updateTafelCountDisplay();
             
+            this.isInitialized = true;
             console.log('✅ PlattegrondVoormiddagManager initialized successfully');
+            
         } catch (error) {
             console.error('❌ Error initializing PlattegrondVoormiddagManager:', error);
             this.showError('Er ging iets mis bij het laden van de plattegrond');
         }
-    }    async loadUserInfo() {
+    }
+
+    async loadTafelConfig() {
         try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.log('👤 No user logged in');
-                this.isOrganisator = false;
-                return;
-            }
-
-            const response = await fetch('/api/user-info', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
+            console.log('📊 Loading tafel configuration from database...');
+            
+            const response = await fetch('/api/config/tafels');
+            
             if (response.ok) {
-                this.currentUser = await response.json();
-                this.isOrganisator = this.currentUser?.userType === 'organisator';
-                console.log('👤 User loaded:', this.currentUser?.email, '-', this.currentUser?.userType || 'unknown');
-                console.log('🔑 Is organisator:', this.isOrganisator);
+                const result = await response.json();
+                if (result.success) {
+                    this.tafelConfig = {
+                        maxTafels: result.data.voormiddag_aantal_tafels || 15,
+                        maxLimit: result.data.max_tafels_limit || 50,
+                        loaded: true
+                    };
+                    console.log('✅ Tafel config loaded from database:', this.tafelConfig);
+                } else {
+                    throw new Error(result.message || 'Failed to load config');
+                }
             } else {
-                console.warn('⚠️ Failed to load user info, assuming visitor role');
-                this.isOrganisator = false;
+                throw new Error(`HTTP ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Error loading user info:', error);
-            this.isOrganisator = false;
+            console.warn('⚠️ Failed to load config from database, using fallback:', error.message);
+            
+            // Fallback naar localStorage als database niet beschikbaar is
+            this.tafelConfig = {
+                maxTafels: parseInt(localStorage.getItem('voormiddag_aantal_tafels')) || 15,
+                maxLimit: 50,
+                loaded: false
+            };
         }
-        
-        // TEMPORARY: Force organisator role for jan.devos@ehb.be
-        if (this.currentUser?.email === 'jan.devos@ehb.be') {
-            console.log('🔧 TEMP: Forcing organisator role for jan.devos@ehb.be');
-            this.isOrganisator = true;
+    }
+
+    async loadUserInfo() {
+        try {
+            const response = await fetch('/api/user-info');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.authenticated) {
+                    this.currentUser = result.user;
+                    this.isLoggedIn = true;
+                    this.userType = result.user.userType;
+                    console.log('👤 User info loaded:', this.userType);
+                } else {
+                    this.isLoggedIn = false;
+                    console.log('👤 No authenticated user');
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Failed to load user info:', error);
+            this.isLoggedIn = false;
         }
     }
 
     async loadTafelData() {
         try {
-            console.log('📡 Loading voormiddag tafel data...');
-            const response = await fetch('http://localhost:8383/api/tafels/voormiddag');
-            const result = await response.json();
-
-            if (result.success) {
-                // Convert array to object with tafelNr as key
-                this.tafelData = {};
-                result.data.forEach(tafel => {
-                    this.tafelData[tafel.tafelNr] = tafel;
-                });
-
-                console.log('✅ Tafel data loaded:', this.tafelData);
-                this.renderTafelLijst();
+            console.log('📊 Loading voormiddag tafel assignments...');
+            
+            const response = await fetch('/api/tafels/voormiddag');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.tafelData = result.data.assignments || [];
+                    console.log(`✅ Loaded ${this.tafelData.length} tafel assignments`);
+                } else {
+                    throw new Error(result.message || 'Failed to load tafel data');
+                }
             } else {
-                throw new Error(result.message || 'Failed to load tafel data');
+                throw new Error(`HTTP ${response.status}`);
             }
         } catch (error) {
             console.error('❌ Error loading tafel data:', error);
-            this.showError('Er ging iets mis bij het laden van de tafel gegevens');
+            this.tafelData = [];
+            this.showNotification('⚠️ Kon tafel gegevens niet laden', 'warning');
         }
-    }    setupUI() {
-        console.log('🎨 Setting up UI for role:', this.isOrganisator ? 'organisator' : 'visitor');
-        
-        if (this.isOrganisator) {
-            console.log('👔 Setting up organisator UI...');
-            this.setupOrganisatorUI();
-        } else {
-            console.log('👤 Setting up visitor UI...');
-            this.setupVisitorUI();
-        }
-        
-        // Render tafel lijst
-        this.renderTafelLijst();
-    }    setupOrganisatorUI() {
-        // Refresh knop is al in HTML aanwezig, alleen zichtbaar maken voor organisatoren
-        const refreshBtn = document.getElementById('refreshTafels');
-        if (refreshBtn) {
-            refreshBtn.style.display = 'inline-flex';
-        }
+    }
 
-        // Config knop zichtbaar maken voor organisatoren
-        const configBtn = document.getElementById('configTafelsBtn');
-        if (configBtn) {
-            configBtn.style.display = 'flex';
-        }
-
-        // Update tafel count display
-        this.updateTafelCountDisplay();
-
-        // Update sidebar titel
-        const sidebarTitle = document.querySelector('.sidebarTitle');
-        if (sidebarTitle) {
-            sidebarTitle.innerHTML = '⚙️ Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
-        }
-    }setupVisitorUI() {
-        // Verberg refresh knop voor bezoekers
-        const refreshBtn = document.getElementById('refreshTafels');
-        if (refreshBtn) {
-            refreshBtn.style.display = 'none';
-        }
-        
-        console.log('Setting up read-only view for visitors');
-    }    renderTafelLijst() {
-        const sidebarList = document.querySelector('.sidebarTafels');
-        if (!sidebarList) {
-            console.error('❌ Sidebar list not found');
-            return;
-        }
-
-        // Clear existing content
-        sidebarList.innerHTML = '';
-
-        // Haal het geconfigureerde aantal tafels op
-        const maxTafels = parseInt(localStorage.getItem('voormiddag_aantal_tafels')) || 15;
-        console.log(`📊 Showing max ${maxTafels} tafels in sidebar`);
-
-        // Sorteer tafels op nummer en limiteer tot maxTafels
-        const sortedTafels = Object.values(this.tafelData)
-            .sort((a, b) => a.tafelNr - b.tafelNr)
-            .filter(tafel => tafel.tafelNr <= maxTafels);
-
-        console.log(`📋 Displaying ${sortedTafels.length} tafels (max: ${maxTafels})`);
-
-        sortedTafels.forEach(tafel => {
-            const listItem = document.createElement('li');
-            listItem.className = 'tafel-item';
-            listItem.setAttribute('data-tafel', tafel.tafelNr);
-
-            if (tafel.items && tafel.items.length > 0) {
-                // Get the project title from the first item (all items should have same title)
-                const firstProject = tafel.items[0];
-                const titel = firstProject.titel || 'Geen project titel';
-                
-                // Get all student names from the project
-                const studenten = firstProject.studenten || [];
-                const studentNames = studenten.map(s => s.naam).join(', ');
-                const studentCount = studenten.length;
-                
-                listItem.innerHTML = `
-                    <div class="tafel-content">
-                        <strong>Tafel ${tafel.tafelNr}: ${titel}</strong>
-                        <small class="student-name">Studenten (${studentCount}): ${studentNames}</small>
-                    </div>
-                `;
-
-                // Add click handler gebaseerd op user type
-                if (this.isOrganisator) {
-                    listItem.addEventListener('click', () => this.handleOrganisatorTafelClick(tafel));
-                    listItem.style.cursor = 'pointer';
-                    listItem.title = 'Klik om tafel toe te wijzen';
+    async loadAlleStudenten() {
+        try {
+            console.log('🎓 Loading all students...');
+            
+            const response = await fetch('/api/studenten');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.alleStudenten = result.data || [];
+                    console.log(`✅ Loaded ${this.alleStudenten.length} students`);
                 } else {
-                    listItem.addEventListener('click', () => this.handleVisitorTafelClick(firstProject));
-                    listItem.style.cursor = 'pointer';
-                    listItem.title = 'Klik voor project details';
+                    throw new Error(result.message || 'Failed to load students');
                 }
             } else {
-                // Lege tafel
-                listItem.innerHTML = `
-                    <div class="tafel-content">
-                        <strong>Tafel ${tafel.tafelNr}</strong>
-                        <small class="empty-tafel">📭 Geen toewijzing</small>
-                    </div>
-                `;
-
-                if (this.isOrganisator) {
-                    listItem.addEventListener('click', () => this.handleOrganisatorTafelClick(tafel));
-                    listItem.style.cursor = 'pointer';
-                    listItem.title = 'Klik om project toe te wijzen';
-                }
-            }
-
-            sidebarList.appendChild(listItem);
-        });
-
-        // Add empty tafels voor organisatoren
-        if (this.isOrganisator) {
-            this.addEmptyTafels(sidebarList);
-        }
-    }    addEmptyTafels(sidebarList) {
-        // Haal het geconfigureerde aantal tafels op
-        const maxTafels = parseInt(localStorage.getItem('voormiddag_aantal_tafels')) || 15;
-        console.log(`📊 Adding empty tables up to ${maxTafels}`);
-        
-        const bezetteTafels = Object.keys(this.tafelData).map(nr => parseInt(nr));
-
-        for (let i = 1; i <= maxTafels; i++) {
-            if (!bezetteTafels.includes(i)) {
-                const listItem = document.createElement('li');
-                listItem.className = 'tafel-item empty-tafel-item';
-                listItem.setAttribute('data-tafel', i);
-                listItem.innerHTML = `
-                    <div class="tafel-content">
-                        <strong>Tafel ${i}</strong>
-                        <small class="empty-tafel">📭 Beschikbaar</small>
-                    </div>
-                `;
-
-                listItem.addEventListener('click', () => this.handleOrganisatorTafelClick({ tafelNr: i, items: [] }));
-                listItem.style.cursor = 'pointer';
-                listItem.title = 'Klik om project toe te wijzen';
-
-                sidebarList.appendChild(listItem);
-            }
-        }
-        
-        console.log(`✅ Empty tables added up to tafel ${maxTafels}`);
-    }
-
-    handleOrganisatorTafelClick(tafel) {
-        console.log('👔 Organisator clicked tafel:', tafel.tafelNr);
-        this.selectedTafel = tafel;
-        this.showTafelAssignmentModal(tafel);
-    }
-
-    handleVisitorTafelClick(project) {
-        console.log('👤 Visitor clicked project:', project);
-        
-        if (project && project.id) {
-            // Navigeer naar project detail pagina met project ID
-            window.location.href = `/zoekbalk-projecten?project=${encodeURIComponent(project.id)}`;
-        } else {
-            this.showInfo('Geen project gegevens beschikbaar');
-        }
-    }    async showTafelAssignmentModal(tafel) {
-        // Laad beschikbare projecten
-        if (!this.availableProjects || this.availableProjects.length === 0) {
-            await this.loadAvailableProjects();
-        }
-
-        const modal = this.createAssignmentModal(tafel);
-        document.body.appendChild(modal);
-
-        // Add click outside to close functionality
-        const overlay = modal.querySelector('.modal-overlay');
-        const modalContent = modal.querySelector('.modal-content');
-        
-        if (overlay) {
-            overlay.addEventListener('click', (e) => {
-                // Only close if clicked on overlay background, not on modal content
-                if (e.target === overlay) {
-                    this.closeModal(modal);
-                }
-            });
-        }
-
-        // Update modal met projecten data als deze nog niet geladen zijn
-        if (this.availableProjects && this.availableProjects.length > 0) {
-            this.updateModalWithProjects(modal, tafel);
-        }
-
-        // Focus op modal
-        setTimeout(() => {
-            const firstButton = modal.querySelector('button, select');
-            if (firstButton) firstButton.focus();
-        }, 100);
-    }
-
-    async loadAvailableProjects() {
-        if (this.availableProjects && this.availableProjects.length > 0) {
-            console.log('📦 Using cached projects data');
-            return;
-        }
-
-        try {
-            const response = await fetch('http://localhost:8383/api/studenten?hasProject=true');
-            const result = await response.json();
-
-            if (result.success) {
-                // Groepeer studenten per project
-                const projectGroups = {};
-                result.data.forEach(student => {
-                    if (student.projectTitel && student.projectTitel.trim() !== '') {
-                        if (!projectGroups[student.projectTitel]) {
-                            projectGroups[student.projectTitel] = {
-                                projectTitel: student.projectTitel,
-                                projectBeschrijving: student.projectBeschrijving || '',
-                                studenten: [],
-                                tafelNr: student.tafelNr // Als één student een tafel heeft, heeft het hele project die tafel
-                            };
-                        }
-                        projectGroups[student.projectTitel].studenten.push({
-                            studentnummer: student.studentnummer,
-                            naam: `${student.voornaam} ${student.achternaam}`,
-                            voornaam: student.voornaam,
-                            achternaam: student.achternaam,
-                            email: student.email,
-                            opleiding: student.opleiding
-                        });
-                        
-                        // Update tafelNr als deze student een tafel heeft
-                        if (student.tafelNr) {
-                            projectGroups[student.projectTitel].tafelNr = student.tafelNr;
-                        }
-                    }
-                });
-
-                this.availableProjects = Object.values(projectGroups);
-                console.log('📋 Available projects loaded:', this.availableProjects.length);
+                throw new Error(`HTTP ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Error loading available projects:', error);
-            this.availableProjects = [];
-        }
-    }
-
-    createAssignmentModal(tafel) {
-        const modal = document.createElement('div');
-        modal.className = 'tafel-assignment-modal';
-        modal.innerHTML = `
-            <div class="modal-overlay">
-                <div class="modal-content">
-                    <h3>⚙️ Tafel ${tafel.tafelNr} Beheren</h3>
-                      ${tafel.items && tafel.items.length > 0 ? `
-                        <div class="current-assignment">
-                            <h4>Huidige toewijzing:</h4>
-                            <div class="current-project">
-                                <strong>${tafel.items[0].titel}</strong><br>
-                                <small>� ${(() => {
-                                    const studenten = tafel.items[0].studenten || [];
-                                    if (studenten.length > 0) {
-                                        return studenten.map(s => s.naam).join(', ');
-                                    } else {
-                                        return `${tafel.items[0].aantalStudenten || tafel.items.length} student(en)`;
-                                    }
-                                })()}</small>
-                            </div>
-                            <button class="remove-btn" onclick="window.plattegrondManager.removeProjectFromTafel('${tafel.items[0].id}')">
-                                🗑️ Project verwijderen
-                            </button>
-                        </div>
-                        <hr>
-                    ` : `
-                        <p>📭 Deze tafel heeft geen toewijzing</p>
-                    `}
-
-                    <div class="assign-new">
-                        <h4>Project toewijzen:</h4>
-                        <select id="projectSelect" class="project-select">
-                            <option value="">Selecteer een project...</option>
-                            ${this.buildProjectenOptgroups()}
-                        </select>
-                        <button class="assign-btn" onclick="window.plattegrondManager.assignProjectToTafel(${tafel.tafelNr})">
-                            ✅ Toewijzen
-                        </button>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button class="cancel-btn" onclick="window.plattegrondManager.closeModal()">
-                            ❌ Annuleren
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        return modal;
-    }
-
-    async assignProjectToTafel(tafelNr) {
-        const projectSelect = document.getElementById('projectSelect');
-        const projectTitel = projectSelect.value;
-
-        if (!projectTitel) {
-            this.showError('Selecteer eerst een project');
-            return;
-        }
-
-        try {
-            // Vind het project object
-            const project = this.availableProjects.find(p => p.projectTitel === projectTitel);
-            if (!project) {
-                this.showError('Project niet gevonden');
-                return;
-            }
-
-            const token = localStorage.getItem('authToken');
-            
-            // Wijs alle studenten van dit project toe aan de tafel
-            for (const student of project.studenten) {
-                const response = await fetch(`http://localhost:8383/api/tafels/student/${student.studentnummer}/tafel/${tafelNr}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const result = await response.json();
-                if (!result.success) {
-                    throw new Error(`Fout bij toewijzen van ${student.naam}: ${result.message}`);
-                }
-            }            this.showSuccess(`Project "${projectTitel}" met ${project.studenten.length} student(en) toegewezen aan tafel ${tafelNr}!`);
-            this.closeModal();
-            await this.loadTafelData(); // Herlaad data
-            
-            // Cache invalideren zodat projecten lijst wordt ververst
-            this.availableProjects = [];
-        } catch (error) {
-            console.error('❌ Error assigning project:', error);
-            this.showError('Toewijzing mislukt: ' + error.message);
-        }
-    }
-
-    async removeProjectFromTafel(projectTitel) {
-        try {
-            console.log('🗑️ Removing project:', projectTitel);
-            
-            // Vind alle studenten van dit project in de huidige tafel
-            const currentTafel = this.selectedTafel;
-            if (!currentTafel || !currentTafel.items || currentTafel.items.length === 0) {
-                this.showError('Geen project gevonden om te verwijderen');
-                return;
-            }
-
-            // Zoek het project in beschikbare projecten voor student info
-            let projectStudenten = [];
-            const project = this.availableProjects.find(p => p.projectTitel === projectTitel);
-            if (project) {
-                projectStudenten = project.studenten;
-            } else {
-                // Als project niet in cache, haal student nummers uit huidige tafel data
-                if (currentTafel.items[0] && currentTafel.items[0].studenten) {
-                    projectStudenten = currentTafel.items[0].studenten;
-                }
-            }
-
-            if (projectStudenten.length === 0) {
-                this.showError('Geen studenten gevonden voor dit project');
-                return;
-            }
-
-            const token = localStorage.getItem('authToken');
-            
-            // Verwijder alle studenten van dit project van de tafel
-            for (const student of projectStudenten) {
-                const response = await fetch(`http://localhost:8383/api/tafels/student/${student.studentnummer}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const result = await response.json();
-                if (!result.success) {
-                    console.warn(`Waarschuwing bij verwijderen van ${student.naam}: ${result.message}`);
-                }
-            }            this.showSuccess(`Project "${projectTitel}" met ${projectStudenten.length} student(en) verwijderd van tafel!`);
-            // NIET de modal sluiten bij verwijdering, maar verversen voor directe nieuwe toewijzing
-            await this.loadTafelData(); // Herlaad data
-            
-            // Cache invalideren zodat projecten lijst wordt ververst
-            this.availableProjects = [];
-            await this.loadAvailableProjects(); // Herlaad beschikbare projecten
-            
-            // Update de modal met nieuwe gegevens (tafel is nu leeg)
-            const currentModal = document.querySelector('.tafel-assignment-modal');
-            if (currentModal) {
-                const tafelNr = this.selectedTafel.tafelNr;
-                const updatedTafel = { tafelNr: tafelNr, items: [] }; // Tafel is nu leeg
-                this.selectedTafel = updatedTafel;
-                
-                // Vervang modal content
-                const newModal = this.createAssignmentModal(updatedTafel);
-                currentModal.innerHTML = newModal.innerHTML;
-                
-                // Update dropdown met nieuwe projecten
-                this.updateModalWithProjects(currentModal, updatedTafel);
-            }
-        } catch (error) {
-            console.error('❌ Error removing project:', error);
-            this.showError('Verwijdering mislukt: ' + error.message);
-        }
-    }    closeModal(modalElement = null) {
-        const modal = modalElement || document.querySelector('.tafel-assignment-modal');
-        if (modal) {
-            modal.remove();
+            console.error('❌ Error loading students:', error);
+            this.alleStudenten = [];
+            this.showNotification('⚠️ Kon studenten niet laden', 'warning');
         }
     }
 
     setupEventListeners() {
-        // Refresh button
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'refreshTafels') {
-                this.refresh();
-            }
-        });
+        console.log('🎧 Setting up event listeners...');
 
         // Config button
         const configBtn = document.getElementById('configTafelsBtn');
         if (configBtn) {
-            configBtn.addEventListener('click', () => {
-                if (this.isOrganisator) {
-                    this.showTafelConfigModal();
-                }
-            });
+            configBtn.addEventListener('click', () => this.showTafelConfigModal());
+        }
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.refreshData());
         }
 
         // Search functionality
-        const searchInput = document.querySelector('.sidebarZoekbalk');
+        const searchInput = document.getElementById('studentSearch');
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterTafels(e.target.value);
-            });
-            
-            // Clear search when escape is pressed
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    e.target.value = '';
-                    this.filterTafels('');
-                }
-            });
+            searchInput.addEventListener('input', (e) => this.filterStudenten(e.target.value));
         }
-    }
 
-    filterTafels(searchTerm) {
-        const tafelItems = document.querySelectorAll('.tafel-item');
-        const term = searchTerm.toLowerCase();
-
-        tafelItems.forEach(item => {
-            // Get project title and student names for searching, exclude student count
-            const projectTitle = item.querySelector('strong')?.textContent.toLowerCase() || '';
-            const studentInfo = item.querySelector('.student-name')?.textContent.toLowerCase() || '';
-            
-            // Remove the student count part (like "Studenten (3):") from search
-            const studentNamesOnly = studentInfo.replace(/studenten\s*\(\d+\):\s*/i, '');
-            
-            const searchableContent = projectTitle + ' ' + studentNamesOnly;
-            
-            if (searchableContent.includes(term)) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    }
-
-    async refresh() {
-        console.log('🔄 Refreshing tafel data...');
-        this.showLoading(true);
-        
-        try {
-            await this.loadTafelData();
-            // Clear cached projects to force reload
-            this.availableProjects = [];
-            
-            this.showSuccess('Gegevens ververst!');
-        } catch (error) {
-            this.showError('Fout bij verversen: ' + error.message);
-        } finally {
-            this.showLoading(false);
+        // Auto-assign button
+        const autoAssignBtn = document.getElementById('autoAssignBtn');
+        if (autoAssignBtn && this.userType === 'organisator') {
+            autoAssignBtn.addEventListener('click', () => this.autoAssignStudenten());
         }
-    }
 
-    showLoading(show) {
-        // Implementation for loading indicator
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) {
-            loadingEl.style.display = show ? 'block' : 'none';
+        // Clear all button
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        if (clearAllBtn && this.userType === 'organisator') {
+            clearAllBtn.addEventListener('click', () => this.clearAllAssignments());
         }
+
+        console.log('✅ Event listeners set up');
     }
 
-    showError(message) {
-        this.showNotification(message, 'error');
-    }
-
-    showSuccess(message) {
-        this.showNotification(message, 'success');
-    }
-
-    showInfo(message) {
-        this.showNotification(message, 'info');
-    }    showNotification(message, type = 'info') {
-        // Controleer of er een globale showNotification functie bestaat
-        if (window.showNotification) {
-            window.showNotification(message, type);
+    updateSidebar() {
+        const sidebarList = document.querySelector('.sidebarTafels');
+        if (!sidebarList) {
+            console.warn('⚠️ Sidebar list not found');
             return;
         }
-        
-        // Fallback: Maak onze eigen notification
-        this.createCustomNotification(message, type);
-    }
 
-    createCustomNotification(message, type) {
-        // Zoek of maak notification container
-        let container = document.querySelector('.notification-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'notification-container';
-            container.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10001;
-                max-width: 400px;
+        sidebarList.innerHTML = '';
+
+        // Gebruik de geladen configuratie in plaats van localStorage
+        const maxTafels = this.tafelConfig.maxTafels;
+        console.log(`📊 Showing max ${maxTafels} tafels in sidebar`);
+
+        // Toon toegewezen studenten
+        const toegewezenStudenten = this.tafelData.filter(item => item.tafelNr && item.tafelNr > 0);
+        
+        toegewezenStudenten.forEach(student => {
+            const li = document.createElement('li');
+            li.className = 'tafel-item assigned';
+            li.innerHTML = `
+                <div class="tafel-header">
+                    <span class="tafel-nummer">Tafel ${student.tafelNr}</span>
+                    ${this.userType === 'organisator' ? '<button class="remove-btn" onclick="plattegrondManager.removeStudentFromTafel(\'' + student.studentnummer + '\')">✕</button>' : ''}
+                </div>
+                <div class="student-info">
+                    <strong>${student.voornaam} ${student.achternaam}</strong>
+                    <div class="student-details">
+                        <span class="studentnummer">#${student.studentnummer}</span>
+                        <span class="klasgroep">${student.klasgroep || 'Geen klasgroep'}</span>
+                        <span class="studiegebied">${student.studiegebied || 'Geen studiegebied'}</span>
+                    </div>
+                </div>
             `;
-            document.body.appendChild(container);
-        }
-        
-        // Maak notification element
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.style.cssText = `
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            border-left: 4px solid ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#881538'};
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            color: #333;
-            font-weight: 500;
-        `;
-        notification.textContent = message;
-        
-        // Voeg toe en animeer
-        container.appendChild(notification);
-        
-        // Trigger animation
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        
-        // Auto-remove na 4 seconden
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 4000);
-    }    updateModalWithProjects(modal, tafel) {
-        const projectSelect = modal.querySelector('#projectSelect');
-        if (projectSelect && this.availableProjects) {
-            // Clear loading state
-            projectSelect.innerHTML = '<option value="">Selecteer project...</option>';
             
-            // Bepaal welke projecten al toegewezen zijn aan tafels
-            const toegewezenProjectTitels = new Set();
-            Object.values(this.tafelData).forEach(t => {
-                if (t.items && t.items.length > 0) {
-                    t.items.forEach(item => {
-                        if (item.titel) {
-                            toegewezenProjectTitels.add(item.titel);
-                        }
-                    });
-                }
-            });
-            
-            console.log('🔍 Toegewezen project titels:', Array.from(toegewezenProjectTitels));
-            
-            // Filter projecten gebaseerd op huidige tafel assignments
-            const beschikbareProjecten = this.availableProjects.filter(p => 
-                !toegewezenProjectTitels.has(p.projectTitel)
-            ).sort((a, b) => a.projectTitel.localeCompare(b.projectTitel));
-            
-            const toegewezenProjecten = this.availableProjects.filter(p => 
-                toegewezenProjectTitels.has(p.projectTitel)
-            ).sort((a, b) => a.projectTitel.localeCompare(b.projectTitel));
-            
-            console.log('📋 Beschikbare projecten:', beschikbareProjecten.length);
-            console.log('✅ Toegewezen projecten:', toegewezenProjecten.length);
-              // Add beschikbare projecten met header
-            if (beschikbareProjecten.length > 0) {
-                const optgroupBeschikbaar = document.createElement('optgroup');
-                optgroupBeschikbaar.label = '📋 Nog aan te duiden projecten';
-                beschikbareProjecten.forEach(project => {
-                    const option = document.createElement('option');
-                    option.value = project.projectTitel;
-                    const studentText = project.studenten.length === 1 ? 'student' : 'studenten';
-                    option.textContent = `🎓 ${project.projectTitel} (${project.studenten.length} ${studentText})`;
-                    optgroupBeschikbaar.appendChild(option);
-                });
-                projectSelect.appendChild(optgroupBeschikbaar);
+            if (this.userType === 'organisator') {
+                li.draggable = true;
+                li.dataset.studentnummer = student.studentnummer;
+                li.dataset.tafelNr = student.tafelNr;
+                
+                li.addEventListener('dragstart', (e) => this.handleDragStart(e));
+                li.addEventListener('dragend', (e) => this.handleDragEnd(e));
             }
             
-            // Add toegewezen projecten met header
-            if (toegewezenProjecten.length > 0) {
-                const optgroupAssigned = document.createElement('optgroup');
-                optgroupAssigned.label = '✅ Al aangeduide projecten';
-                toegewezenProjecten.forEach(project => {
-                    // Zoek de tafel waar dit project aan is toegewezen
-                    let tafelNr = 'onbekend';
-                    for (const [tnr, tdata] of Object.entries(this.tafelData)) {
-                        if (tdata.items && tdata.items.some(item => item.titel === project.projectTitel)) {
-                            tafelNr = tnr;
-                            break;
-                        }
-                    }
-                    
-                    const option = document.createElement('option');
-                    option.value = project.projectTitel;
-                    const studentText = project.studenten.length === 1 ? 'student' : 'studenten';
-                    option.textContent = `🔒 ${project.projectTitel} (${project.studenten.length} ${studentText}) → Tafel ${tafelNr}`;
-                    option.disabled = true;
-                    optgroupAssigned.appendChild(option);
-                });
-                projectSelect.appendChild(optgroupAssigned);
-            }
-            
-            console.log('🔄 Modal updated with projects data');
-        }
-    }    buildProjectenOptgroups() {
-        if (!this.availableProjects || this.availableProjects.length === 0) {
-            return '<option value="">Projecten laden...</option>';
-        }
-
-        // Bepaal welke projecten al toegewezen zijn aan tafels
-        const toegewezenProjectTitels = new Set();
-        Object.values(this.tafelData).forEach(t => {
-            if (t.items && t.items.length > 0) {
-                t.items.forEach(item => {
-                    if (item.titel) {
-                        toegewezenProjectTitels.add(item.titel);
-                    }
-                });
-            }
+            sidebarList.appendChild(li);
         });
 
-        const beschikbareProjecten = this.availableProjects.filter(p => 
-            !toegewezenProjectTitels.has(p.projectTitel)
-        ).sort((a, b) => a.projectTitel.localeCompare(b.projectTitel));
+        // Voeg lege tafels toe
+        this.addEmptyTafels();
+
+        console.log(`✅ Sidebar updated with ${toegewezenStudenten.length} assigned students`);
+    }
+
+    addEmptyTafels() {
+        const sidebarList = document.querySelector('.sidebarTafels');
+        if (!sidebarList) return;
         
-        const toegewezenProjecten = this.availableProjects.filter(p => 
-            toegewezenProjectTitels.has(p.projectTitel)
-        ).sort((a, b) => a.projectTitel.localeCompare(b.projectTitel));
+        // Gebruik de geladen configuratie
+        const maxTafels = this.tafelConfig.maxTafels;
+        console.log(`📊 Adding empty tables up to ${maxTafels}`);
         
-        let html = '';
-          // Beschikbare projecten
-        if (beschikbareProjecten.length > 0) {
-            html += '<optgroup label="📋 Nog aan te duiden projecten">';
-            beschikbareProjecten.forEach(project => {
-                const studentText = project.studenten.length === 1 ? 'student' : 'studenten';
-                html += `<option value="${project.projectTitel}">
-                    🎓 ${project.projectTitel} (${project.studenten.length} ${studentText})
-                </option>`;
-            });
-            html += '</optgroup>';
-        }
-        
-        // Toegewezen projecten
-        if (toegewezenProjecten.length > 0) {
-            html += '<optgroup label="✅ Al aangeduide projecten">';
-            toegewezenProjecten.forEach(project => {
-                // Zoek de tafel waar dit project aan is toegewezen
-                let tafelNr = 'onbekend';
-                for (const [tnr, tdata] of Object.entries(this.tafelData)) {
-                    if (tdata.items && tdata.items.some(item => item.titel === project.projectTitel)) {
-                        tafelNr = tnr;
-                        break;
-                    }
+        const bezetteTafels = this.tafelData
+            .filter(item => item.tafelNr && item.tafelNr > 0)
+            .map(item => parseInt(item.tafelNr));
+
+        for (let i = 1; i <= maxTafels; i++) {
+            if (!bezetteTafels.includes(i)) {
+                const li = document.createElement('li');
+                li.className = 'tafel-item empty';
+                li.innerHTML = `
+                    <div class="tafel-header">
+                        <span class="tafel-nummer">Tafel ${i}</span>
+                    </div>
+                    <div class="empty-indicator">Beschikbaar</div>
+                `;
+                
+                if (this.userType === 'organisator') {
+                    li.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    li.addEventListener('drop', (e) => this.handleDrop(e, i));
                 }
                 
-                const studentText = project.studenten.length === 1 ? 'student' : 'studenten';
-                html += `<option value="${project.projectTitel}" disabled>
-                    🔒 ${project.projectTitel} (${project.studenten.length} ${studentText}) → Tafel ${tafelNr}
-                </option>`;
-            });
-            html += '</optgroup>';
+                sidebarList.appendChild(li);
+            }
         }
+    }
+
+    updatePlattegrond() {
+        const plattegrondContainer = document.querySelector('.plattegrond-container');
+        if (!plattegrondContainer) {
+            console.warn('⚠️ Plattegrond container not found');
+            return;
+        }
+
+        // Toon niet-toegewezen studenten
+        const nietToegew = this.alleStudenten.filter(student => 
+            !this.tafelData.some(assigned => assigned.studentnummer === student.studentnummer)
+        );
+
+        const beschikbareStudentenContainer = document.getElementById('beschikbareStudenten');
+        if (beschikbareStudentenContainer) {
+            beschikbareStudentenContainer.innerHTML = '';
+            
+            nietToegew.forEach(student => {
+                const studentElement = document.createElement('div');
+                studentElement.className = 'student-item';
+                studentElement.innerHTML = `
+                    <div class="student-header">
+                        <strong>${student.voornaam} ${student.achternaam}</strong>
+                        <span class="student-nummer">#${student.studentnummer}</span>
+                    </div>
+                    <div class="student-details">
+                        <span class="klasgroep">${student.klasgroep || 'Geen klasgroep'}</span>
+                        <span class="studiegebied">${student.studiegebied || 'Geen studiegebied'}</span>
+                    </div>
+                    <div class="student-contact">
+                        ${student.email ? `<span class="email">${student.email}</span>` : ''}
+                        ${student.telefoonnummer ? `<span class="telefoon">${student.telefoonnummer}</span>` : ''}
+                    </div>
+                `;
+                
+                if (this.userType === 'organisator') {
+                    studentElement.draggable = true;
+                    studentElement.dataset.studentnummer = student.studentnummer;
+                    
+                    studentElement.addEventListener('dragstart', (e) => this.handleDragStart(e));
+                    studentElement.addEventListener('dragend', (e) => this.handleDragEnd(e));
+                }
+                
+                beschikbareStudentenContainer.appendChild(studentElement);
+            });
+        }
+
+        console.log(`✅ Plattegrond updated with ${nietToegew.length} unassigned students`);
+    }
+
+    // Drag and Drop handlers
+    handleDragStart(e) {
+        if (this.userType !== 'organisator') return;
         
-        return html;
-    }    showTafelConfigModal() {
-        // Huidige waarde ophalen uit localStorage of default 15
-        const currentAantal = localStorage.getItem('voormiddag_aantal_tafels') || '15';
+        this.draggedElement = e.target;
+        e.target.classList.add('dragging');
+        
+        const studentnummer = e.target.dataset.studentnummer;
+        e.dataTransfer.setData('text/plain', studentnummer);
+        
+        console.log('🎯 Drag started for student:', studentnummer);
+    }
+
+    handleDragEnd(e) {
+        e.target.classList.remove('dragging');
+        this.draggedElement = null;
+    }
+
+    handleDragOver(e) {
+        if (this.userType !== 'organisator') return;
+        e.preventDefault();
+        e.target.closest('.tafel-item')?.classList.add('drag-over');
+    }
+
+    async handleDrop(e, tafelNr) {
+        if (this.userType !== 'organisator') return;
+        
+        e.preventDefault();
+        e.target.closest('.tafel-item')?.classList.remove('drag-over');
+        
+        const studentnummer = e.dataTransfer.getData('text/plain');
+        if (!studentnummer) return;
+        
+        console.log(`🎯 Dropping student ${studentnummer} on table ${tafelNr}`);
+        
+        try {
+            await this.assignStudentToTafel(studentnummer, tafelNr);
+        } catch (error) {
+            console.error('❌ Error in drop handler:', error);
+            this.showNotification('❌ Fout bij toewijzen van student aan tafel', 'error');
+        }
+    }
+
+    async assignStudentToTafel(studentnummer, tafelNr) {
+        if (this.userType !== 'organisator') {
+            this.showNotification('❌ Alleen organisatoren kunnen studenten toewijzen', 'error');
+            return;
+        }
+
+        try {
+            console.log(`📝 Assigning student ${studentnummer} to table ${tafelNr}`);
+            
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/tafels/student/${studentnummer}/tafel/${tafelNr}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                console.log('✅ Student assigned successfully:', result);
+                this.showNotification(`✅ ${result.message}`, 'success');
+                
+                // Refresh data
+                await this.loadTafelData();
+                this.updateSidebar();
+                this.updatePlattegrond();
+            } else {
+                throw new Error(result.message || 'Assignment failed');
+            }
+        } catch (error) {
+            console.error('❌ Error assigning student to table:', error);
+            this.showNotification(`❌ Fout bij toewijzen: ${error.message}`, 'error');
+        }
+    }
+
+    async removeStudentFromTafel(studentnummer) {
+        if (this.userType !== 'organisator') {
+            this.showNotification('❌ Alleen organisatoren kunnen studenten verwijderen', 'error');
+            return;
+        }
+
+        try {
+            console.log(`🗑️ Removing student ${studentnummer} from table`);
+            
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/tafels/student/${studentnummer}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                console.log('✅ Student removed successfully:', result);
+                this.showNotification(`✅ ${result.message}`, 'success');
+                
+                // Refresh data
+                await this.loadTafelData();
+                this.updateSidebar();
+                this.updatePlattegrond();
+            } else {
+                throw new Error(result.message || 'Removal failed');
+            }
+        } catch (error) {
+            console.error('❌ Error removing student from table:', error);
+            this.showNotification(`❌ Fout bij verwijderen: ${error.message}`, 'error');
+        }
+    }
+
+    showTafelConfigModal() {
+        if (this.userType !== 'organisator') {
+            this.showNotification('❌ Alleen organisatoren kunnen tafel configuratie wijzigen', 'error');
+            return;
+        }
+
+        // Gebruik de geladen configuratie
+        const currentAantal = this.tafelConfig.maxTafels.toString();
+        const maxLimit = this.tafelConfig.maxLimit;
         
         const modal = document.createElement('div');
         modal.className = 'config-modal';
         modal.innerHTML = `
             <div class="config-modal-content">
-                <h3>Tafel Configuratie</h3>
+                <h3>Tafel Configuratie - Voormiddag</h3>
                 <div class="config-form">
                     <div class="config-input-group">
                         <label for="aantalTafels">Aantal tafels:</label>
                         <input type="number" id="aantalTafels" class="config-input" 
-                               value="${currentAantal}" min="1" max="500" placeholder="Bijv. 15">
+                               value="${currentAantal}" min="1" max="${maxLimit}" 
+                               placeholder="Bijv. 15">
+                        <small>Maximum: ${maxLimit} tafels</small>
+                        <small class="status-indicator ${this.tafelConfig.loaded ? 'db-connected' : 'local-storage'}">
+                            ${this.tafelConfig.loaded ? '💾 Database verbonden' : '💻 Lokaal opgeslagen'}
+                        </small>
                     </div>
                     <div class="config-buttons">
                         <button class="config-btn-cancel">Annuleren</button>
@@ -829,14 +480,13 @@ class PlattegrondVoormiddagManager {
             document.body.removeChild(modal);
         });
 
-        saveBtn.addEventListener('click', () => {
+        saveBtn.addEventListener('click', async () => {
             const aantalTafels = parseInt(input.value);
-            if (aantalTafels >= 1 && aantalTafels <= 500) {
-                this.updateAantalTafels(aantalTafels);
+            if (aantalTafels >= 1 && aantalTafels <= maxLimit) {
+                await this.updateAantalTafels(aantalTafels);
                 document.body.removeChild(modal);
-                this.showNotification('✅ Aantal tafels aangepast naar ' + aantalTafels);
             } else {
-                this.showNotification('❌ Aantal tafels moet tussen 1 en 500 zijn', 'error');
+                this.showNotification(`❌ Aantal tafels moet tussen 1 en ${maxLimit} zijn`, 'error');
             }
         });
 
@@ -849,68 +499,276 @@ class PlattegrondVoormiddagManager {
 
         document.body.appendChild(modal);
         input.focus();
-    }    async updateAantalTafels(aantalTafels) {
+    }
+
+    async updateAantalTafels(aantalTafels) {
         try {
-            console.log(`🔧 Attempting to update aantal tafels to: ${aantalTafels}`);
-            // Probeer de API endpoint
-            let apiSuccess = false;
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`http://localhost:8383/api/tafels/voormiddag/config`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ aantalTafels })
-                });
+            console.log(`🔧 Updating aantal tafels to: ${aantalTafels}`);
+            
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/config/tafels', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ voormiddag_aantal_tafels: aantalTafels })
+            });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log(`✅ API success:`, result);
-                    apiSuccess = true;
-                } else {
-                    console.log(`⚠️ API not available yet (${response.status}), using localStorage fallback`);
-                }
-            } catch (apiError) {
-                console.log(`⚠️ API endpoint not ready, using localStorage fallback:`, apiError.message);
-            }
-
-            // Als API faalt, gebruik localStorage fallback
-            if (!apiSuccess) {
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                console.log(`✅ Database update successful:`, result);
+                
+                // Update lokale configuratie
+                this.tafelConfig.maxTafels = aantalTafels;
+                this.tafelConfig.loaded = true;
+                
+                // Update ook localStorage als fallback
                 localStorage.setItem('voormiddag_aantal_tafels', aantalTafels);
-                console.log(`✅ Aantal tafels opgeslagen in localStorage: ${aantalTafels}`);
+                
+                // Herlaad de tafel data
+                await this.loadTafelData();
+                
+                // Update de display
+                this.updateSidebar();
+                this.updateTafelCountDisplay();
+                
+                this.showNotification('✅ Aantal tafels succesvol aangepast naar ' + aantalTafels);
+            } else {
+                throw new Error(result.message || 'Update failed');
             }
-
-            // Herlaad de tafel data
-            await this.loadTafelData();
-            
-            // Update de display tekst
-            this.updateTafelCountDisplay();
-            
         } catch (error) {
             console.error('❌ Error updating aantal tafels:', error);
-            this.showNotification('❌ Fout bij het aanpassen van aantal tafels', 'error');
+            
+            // Fallback naar localStorage als database update faalt
+            console.log('⚠️ Falling back to localStorage');
+            localStorage.setItem('voormiddag_aantal_tafels', aantalTafels);
+            this.tafelConfig.maxTafels = aantalTafels;
+            this.tafelConfig.loaded = false;
+            
+            this.updateSidebar();
+            this.updateTafelCountDisplay();
+            
+            this.showNotification('⚠️ Aantal tafels lokaal opgeslagen (database niet beschikbaar)', 'warning');
         }
     }
 
     updateTafelCountDisplay() {
         const countDisplay = document.getElementById('tafelCountText');
         if (countDisplay) {
-            const currentAantal = localStorage.getItem('voormiddag_aantal_tafels') || '15';
-            countDisplay.textContent = `Aantal tafels: ${currentAantal}`;
-            console.log(`📊 Updated display: Aantal tafels: ${currentAantal}`);
+            const statusIcon = this.tafelConfig.loaded ? '💾' : '💻';
+            countDisplay.textContent = `${statusIcon} Aantal tafels: ${this.tafelConfig.maxTafels}`;
+            countDisplay.title = this.tafelConfig.loaded ? 
+                'Opgeslagen in database' : 
+                'Lokaal opgeslagen (database niet beschikbaar)';
         }
+    }
+
+    filterStudenten(searchTerm) {
+        const studentElements = document.querySelectorAll('.student-item');
+        const term = searchTerm.toLowerCase();
+        
+        studentElements.forEach(element => {
+            const naam = element.querySelector('strong')?.textContent?.toLowerCase() || '';
+            const studentnummer = element.querySelector('.student-nummer')?.textContent?.toLowerCase() || '';
+            const klasgroep = element.querySelector('.klasgroep')?.textContent?.toLowerCase() || '';
+            const studiegebied = element.querySelector('.studiegebied')?.textContent?.toLowerCase() || '';
+            
+            const matches = naam.includes(term) || studentnummer.includes(term) || 
+                           klasgroep.includes(term) || studiegebied.includes(term);
+            element.style.display = matches ? 'block' : 'none';
+        });
+    }
+
+    async autoAssignStudenten() {
+        if (this.userType !== 'organisator') {
+            this.showNotification('❌ Alleen organisatoren kunnen auto-assign gebruiken', 'error');
+            return;
+        }
+
+        try {
+            console.log('🤖 Starting auto-assignment of students...');
+            
+            const nietToegew = this.alleStudenten.filter(student => 
+                !this.tafelData.some(assigned => assigned.studentnummer === student.studentnummer)
+            );
+
+            if (nietToegew.length === 0) {
+                this.showNotification('ℹ️ Alle studenten zijn al toegewezen', 'info');
+                return;
+            }
+
+            const bezetteTafels = this.tafelData
+                .filter(item => item.tafelNr && item.tafelNr > 0)
+                .map(item => parseInt(item.tafelNr));
+
+            const beschikbareTafels = [];
+            for (let i = 1; i <= this.tafelConfig.maxTafels; i++) {
+                if (!bezetteTafels.includes(i)) {
+                    beschikbareTafels.push(i);
+                }
+            }
+
+            if (beschikbareTafels.length === 0) {
+                this.showNotification('⚠️ Geen beschikbare tafels voor auto-assignment', 'warning');
+                return;
+            }
+
+            // Assign students to available tables
+            const assignments = [];
+            const maxAssignments = Math.min(nietToegew.length, beschikbareTafels.length);
+            
+            for (let i = 0; i < maxAssignments; i++) {
+                assignments.push({
+                    type: 'student',
+                    id: nietToegew[i].studentnummer,
+                    tafelNr: beschikbareTafels[i]
+                });
+            }
+
+            // Execute bulk assignment
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/tafels/bulk-assign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ assignments })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                console.log('✅ Auto-assignment completed:', result);
+                this.showNotification(`✅ ${result.data.successful.length} studenten automatisch toegewezen`, 'success');
+                
+                // Refresh data
+                await this.loadTafelData();
+                this.updateSidebar();
+                this.updatePlattegrond();
+            } else {
+                throw new Error(result.message || 'Auto-assignment failed');
+            }
+        } catch (error) {
+            console.error('❌ Error in auto-assignment:', error);
+            this.showNotification(`❌ Fout bij automatisch toewijzen: ${error.message}`, 'error');
+        }
+    }
+
+    async clearAllAssignments() {
+        if (this.userType !== 'organisator') {
+            this.showNotification('❌ Alleen organisatoren kunnen alle toewijzingen wissen', 'error');
+            return;
+        }
+
+        if (!confirm('⚠️ Weet je zeker dat je alle tafel toewijzingen wilt wissen? Dit kan niet ongedaan gemaakt worden.')) {
+            return;
+        }
+
+        try {
+            console.log('🗑️ Clearing all table assignments...');
+            
+            const toegewezenStudenten = this.tafelData.filter(item => item.tafelNr && item.tafelNr > 0);
+            
+            if (toegewezenStudenten.length === 0) {
+                this.showNotification('ℹ️ Geen toewijzingen om te wissen', 'info');
+                return;
+            }
+
+            // Remove all assignments
+            const token = localStorage.getItem('authToken');
+            const promises = toegewezenStudenten.map(student => 
+                fetch(`/api/tafels/student/${student.studentnummer}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            );
+
+            const responses = await Promise.allSettled(promises);
+            const successful = responses.filter(r => r.status === 'fulfilled' && r.value.ok).length;
+            
+            console.log(`✅ Cleared ${successful}/${toegewezenStudenten.length} assignments`);
+            this.showNotification(`✅ ${successful} toewijzingen gewist`, 'success');
+            
+            // Refresh data
+            await this.loadTafelData();
+            this.updateSidebar();
+            this.updatePlattegrond();
+            
+        } catch (error) {
+            console.error('❌ Error clearing assignments:', error);
+            this.showNotification(`❌ Fout bij wissen van toewijzingen: ${error.message}`, 'error');
+        }
+    }
+
+    async refreshData() {
+        try {
+            console.log('🔄 Refreshing all data...');
+            this.showNotification('🔄 Gegevens verversen...', 'info');
+            
+            await Promise.all([
+                this.loadTafelConfig(),
+                this.loadTafelData(),
+                this.loadAlleStudenten()
+            ]);
+            
+            this.updateSidebar();
+            this.updatePlattegrond();
+            this.updateTafelCountDisplay();
+            
+            this.showNotification('✅ Gegevens ververst', 'success');
+        } catch (error) {
+            console.error('❌ Error refreshing data:', error);
+            this.showNotification('❌ Fout bij verversen van gegevens', 'error');
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        console.log(`🔔 Notification (${type}):`, message);
+        
+        // Remove existing notifications
+        const existing = document.querySelectorAll('.notification');
+        existing.forEach(n => n.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    showError(message) {
+        this.showNotification(message, 'error');
     }
 }
 
-// Maak instance beschikbaar op window voor onclick handlers
-window.plattegrondManager = null;
+// Global initialization
+let plattegrondManager;
 
-// DOM ready handler
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM loaded, initializing PlattegrondVoormiddagManager...');
-    window.plattegrondManager = new PlattegrondVoormiddagManager();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('📄 DOM loaded, initializing PlattegrondVoormiddagManager...');
+    
+    plattegrondManager = new PlattegrondVoormiddagManager();
+    await plattegrondManager.init();
+    
+    // Make globally available
+    window.plattegrondManager = plattegrondManager;
 });
 
-console.log('✅ Plattegrond Voormiddag script loaded successfully');
+// Global functions for HTML onclick handlers
+window.removeStudentFromTafel = (studentnummer) => {
+    if (window.plattegrondManager) {
+        window.plattegrondManager.removeStudentFromTafel(studentnummer);
+    }
+};
+
+console.log('🎓 PlattegrondVoormiddag module loaded');
