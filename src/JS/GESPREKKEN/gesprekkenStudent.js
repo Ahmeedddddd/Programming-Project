@@ -40,20 +40,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const timeSlotDisplay = `${formattedStartTime}-${formattedEndTime}`;
                     const displayStatus = meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1);
-                    let statusHtml = `<div class=\"status-${meeting.status}\">${displayStatus}</div>`;
+                    let statusHtml = `<div class=\"statusCel status-${meeting.status}\">${displayStatus}</div>`;
                     if (meeting.status === 'geweigerd') {
-                        statusHtml = `<div class=\"status-geweigerd\" style=\"color: #dc3545; font-weight: bold;\">Geweigerd${meeting.redenWeigering ? ': ' + meeting.redenWeigering : ''}</div>`;
+                        statusHtml = `<div class=\"statusCel status-geweigerd\" style=\"color: #dc3545; font-weight: bold;\">Geweigerd${meeting.redenWeigering ? ': ' + meeting.redenWeigering : ''}</div>`;
                     }
+                    // Gebruik het juiste veld voor tafelnummer (bedrijfTafelNr)
+                    const tafelNr = meeting.bedrijfTafelNr ? `Tafel ${meeting.bedrijfTafelNr}` : '-';
+                    // Actieknoppen
+                    let actionsHtml = '';
+                    if (!isAangevraagdDoorJou && meeting.status === 'aangevraagd') {
+                        actionsHtml = `<button class=\"actieBtn verwijderBtn cancel-reservation\" data-id=\"${meeting.id}\">\n<span class=\"actieIcon\">&#128465;</span> Annuleer\n</button>`;
+                    } else if (meeting.status === 'geweigerd') {
+                        actionsHtml = `<button class=\"actieBtn verwijderBtn delete-rejected\" data-id=\"${meeting.id}\">\n<span class=\"actieIcon\">&#128465;</span> Verwijder\n</button>`;
+                    } else {
+                        actionsHtml = `<button class=\"actieBtn disabled\" disabled>Geen actie</button>`;
+                    }
+                    // Opbouw: Naam bedrijf | Tafel | Tijdslot | Status | Actie
                     row.innerHTML = `
-                        <div>${meeting.bedrijfNaam}</div>
-                        <div>${timeSlotDisplay} op ${startDate.toLocaleDateString('nl-BE')}</div>
+                        <div class=\"naamCel\">${meeting.bedrijfNaam}</div>
+                        <div class=\"locatieCel\">${tafelNr}</div>
+                        <div class=\"tijdslotCel\">${timeSlotDisplay}</div>
                         ${statusHtml}
-                        <div class=\"gesprekkenActions\">
-                            ${!isAangevraagdDoorJou && meeting.status === 'aangevraagd' ?
-                                `<button class=\"actieBtn verwijderBtn cancel-reservation\" data-id=\"${meeting.id}\">\n<span class=\"actieIcon\">&#128465;</span> Annuleer\n</button>` :
-                                `<button class=\"actieBtn disabled\" disabled>Geen actie</button>`
-                            }
-                        </div>
+                        <div class=\"gesprekkenActions\">${actionsHtml}</div>
                     `;
                     if (isAangevraagdDoorJou) {
                       gesprekkenAangevraagd.appendChild(row);
@@ -79,11 +87,102 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gesprekkenOntvangen.querySelectorAll('.cancel-reservation').forEach(button => {
                     button.addEventListener('click', async (e) => {
                         const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
-                        if (confirm('Weet je zeker dat je deze afspraak wilt annuleren?')) {
+                        if (window.showCustomDialog) {
+                            window.showCustomDialog({
+                                title: 'Afspraak annuleren',
+                                message: 'Weet je zeker dat je deze afspraak wilt annuleren?',
+                                confirmText: 'Annuleer',
+                                cancelText: 'Annuleren',
+                                type: 'warning'
+                            }).then(async (confirmed) => {
+                                if (confirmed) {
+                                    showLoading(true);
+                                    const success = await ReservatieService.cancelReservation(reservatieId);
+                                    if (success) {
+                                        await loadStudentGesprekken();
+                                        showNotification('Afspraak geannuleerd.', 'success');
+                                    }
+                                    showLoading(false);
+                                }
+                            });
+                        } else {
+                            // Fallback: warning toast + direct actie
+                            showNotification('Afspraak wordt geannuleerd...', 'warning');
                             showLoading(true);
                             const success = await ReservatieService.cancelReservation(reservatieId);
                             if (success) {
                                 await loadStudentGesprekken();
+                                showNotification('Afspraak geannuleerd.', 'success');
+                            }
+                            showLoading(false);
+                        }
+                    });
+                });
+                // Voeg event listener toe voor verwijderknop geweigerde afspraken
+                gesprekkenOntvangen.querySelectorAll('.delete-rejected').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
+                        if (window.showCustomDialog) {
+                            window.showCustomDialog({
+                                title: 'Geweigerde afspraak verwijderen',
+                                message: 'Weet je zeker dat je deze geweigerde afspraak wilt verwijderen?',
+                                confirmText: 'Verwijder',
+                                cancelText: 'Annuleren',
+                                type: 'warning'
+                            }).then(async (confirmed) => {
+                                if (confirmed) {
+                                    showLoading(true);
+                                    const success = await ReservatieService.deleteReservation(reservatieId);
+                                    if (success) {
+                                        await loadStudentGesprekken();
+                                        showNotification('Geweigerde afspraak verwijderd.', 'success');
+                                    }
+                                    showLoading(false);
+                                }
+                            });
+                        } else {
+                            // Fallback: warning toast + direct actie
+                            showNotification('Geweigerde afspraak wordt verwijderd...', 'warning');
+                            showLoading(true);
+                            const success = await ReservatieService.deleteReservation(reservatieId);
+                            if (success) {
+                                await loadStudentGesprekken();
+                                showNotification('Geweigerde afspraak verwijderd.', 'success');
+                            }
+                            showLoading(false);
+                        }
+                    });
+                });
+                // Ook voor aangevraagde gesprekken
+                gesprekkenAangevraagd.querySelectorAll('.delete-rejected').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
+                        if (window.showCustomDialog) {
+                            window.showCustomDialog({
+                                title: 'Geweigerde afspraak verwijderen',
+                                message: 'Weet je zeker dat je deze geweigerde afspraak wilt verwijderen?',
+                                confirmText: 'Verwijder',
+                                cancelText: 'Annuleren',
+                                type: 'warning'
+                            }).then(async (confirmed) => {
+                                if (confirmed) {
+                                    showLoading(true);
+                                    const success = await ReservatieService.deleteReservation(reservatieId);
+                                    if (success) {
+                                        await loadStudentGesprekken();
+                                        showNotification('Geweigerde afspraak verwijderd.', 'success');
+                                    }
+                                    showLoading(false);
+                                }
+                            });
+                        } else {
+                            // Fallback: warning toast + direct actie
+                            showNotification('Geweigerde afspraak wordt verwijderd...', 'warning');
+                            showLoading(true);
+                            const success = await ReservatieService.deleteReservation(reservatieId);
+                            if (success) {
+                                await loadStudentGesprekken();
+                                showNotification('Geweigerde afspraak verwijderd.', 'success');
                             }
                             showLoading(false);
                         }
@@ -103,4 +202,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (loadingMessage) loadingMessage.style.display = 'none';
         }
     };
+
+    await loadStudentGesprekken();
 });

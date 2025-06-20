@@ -1,5 +1,4 @@
-/* Modern Gesprekken CSS - Finale Versie */
-/* Copy deze CSS naar je gesprekken-unified.css bestand */
+/* Volledig Nieuwe Gesprekken CSS - Professionele Mobile Layout */
 
 :root {
     --primary-color: #A91B47;
@@ -38,7 +37,7 @@
     --radius-2xl: 32px;
 }
 
-/* Main Container */
+/* DESKTOP LAYOUT */
 .gesprekkenKaart {
     width: min(96%, 1400px);
     background: var(--white);
@@ -50,10 +49,8 @@
     box-shadow: var(--shadow-2xl), 0 0 0 1px color-mix(in srgb, var(--white) 80%, transparent);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(20px);
 }
 
-/* Title Section */
 .gesprekkenTitel {
     background: linear-gradient(135deg,
             var(--primary-color) 0%,
@@ -68,11 +65,8 @@
     font-weight: 800;
     letter-spacing: -0.02em;
     text-shadow: 0 4px 8px color-mix(in srgb, black 20%, transparent);
-    position: relative;
-    background-attachment: fixed;
 }
 
-/* Subsection Styling */
 .gesprekkenSubSection {
     margin: 2.5rem auto;
     max-width: 1200px;
@@ -84,16 +78,14 @@
     font-weight: 700;
     color: var(--gray-800);
     margin-bottom: 1.5rem;
-    padding-left: 1rem;
+    padding: 0.75rem 0 0.75rem 1.5rem;
     border-left: 4px solid var(--primary-color);
     background: linear-gradient(90deg,
             color-mix(in srgb, var(--primary-color) 5%, transparent) 0%,
             transparent 100%);
-    padding: 0.75rem 0 0.75rem 1.5rem;
     border-radius: 0 var(--radius) var(--radius) 0;
 }
 
-/* Table Container */
 .gesprekkenTable {
     border-radius: var(--radius-xl);
     overflow: hidden;
@@ -103,24 +95,22 @@
     margin-bottom: 2rem;
 }
 
-/* Grid Layout - OPTIMALE VERHOUDINGEN */
+/* DESKTOP GRID - AANGEPASTE KOLOM BREEDTES */
 .gesprekkenTableHeader,
 .gesprekkenTableRow {
     display: grid;
     align-items: center;
-    gap: 0.8rem;
+    gap: 1rem;
     padding: 1.5rem 2rem;
-    grid-template-columns: 1fr 2fr 0.8fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     min-width: 0;
 }
 
-/* For tables with location column (bedrijf view) */
 .gesprekkenTable:has(.locatieCel) .gesprekkenTableHeader,
 .gesprekkenTable:has(.locatieCel) .gesprekkenTableRow {
-    grid-template-columns: 1fr 1.8fr 0.6fr 0.8fr 1fr;
+    grid-template-columns: 1fr 0.8fr 0.6fr 1fr 1fr;
 }
 
-/* Prevent text overflow */
 .gesprekkenTableRow>div,
 .gesprekkenTableHeader>div {
     min-width: 0;
@@ -129,13 +119,11 @@
     white-space: nowrap;
 }
 
-/* Allow status and actions to wrap */
 .gesprekkenTableRow>div:nth-last-child(2),
 .gesprekkenTableRow>div:last-child {
     white-space: normal;
 }
 
-/* Header Styling */
 .gesprekkenTableHeader {
     background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-700) 100%);
     color: var(--white);
@@ -144,35 +132,15 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
     border-bottom: 3px solid var(--primary-color);
-    position: relative;
-    overflow: hidden;
 }
 
-/* Enhanced header shine effect */
-.gesprekkenTableHeader::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            color-mix(in srgb, var(--white) 15%, transparent),
-            transparent);
-    animation: headerShine 4s ease-in-out infinite;
-}
-
-/* Row Styling */
 .gesprekkenTableRow {
     font-size: 1rem;
     color: var(--gray-800);
     font-weight: 500;
     border-bottom: 1px solid color-mix(in srgb, var(--primary-color) 8%, transparent);
     background: var(--white);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .gesprekkenTableRow:last-child {
@@ -181,43 +149,47 @@
 
 .gesprekkenTableRow:hover {
     background: var(--gray-50);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
-/* Enhanced hover effect */
-.gesprekkenTableRow::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 5px;
-    height: 100%;
-    background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    transform: scaleY(0);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-origin: bottom;
-}
-
-.gesprekkenTableRow:hover::before {
-    transform: scaleY(1);
-}
-
-/* Cell Content Styling */
 .gesprekkenTableRow>div:first-child {
     font-weight: 600;
     color: var(--gray-900);
 }
 
-/* Time slot styling */
-.gesprekkenTableRow>div:nth-child(2) {
+/* TAFEL/LOCATIE STYLING (2de kolom) */
+.gesprekkenTableRow>div:nth-child(2):not(.locatieCel) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: 2px solid transparent;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.gesprekkenTableRow>div:nth-child(2):not(.locatieCel)::before {
+    content: '📍';
+    margin-right: 0.5rem;
+}
+
+/* TIJDSLOT STYLING - ALLEEN TIJD (3de kolom) */
+.gesprekkenTableRow>div:nth-child(3) {
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
     color: var(--gray-700);
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1rem;
     border-radius: var(--radius-lg);
     font-size: 0.9rem;
     font-weight: 700;
@@ -227,106 +199,147 @@
     text-align: center;
     width: 100%;
     box-sizing: border-box;
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-.gesprekkenTableRow>div:nth-child(2):hover {
-    background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-300) 100%);
-    transform: scale(1.02);
-}
-
-.gesprekkenTableRow>div:nth-child(2)::before {
+.gesprekkenTableRow>div:nth-child(3)::before {
     content: '🕐';
-    margin-right: 0.6rem;
-    font-size: 1.1em;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
 
-/* Location styling */
+/* Als tijdslot data-time attribuut heeft, gebruik dat */
+.gesprekkenTableRow>div:nth-child(3)[data-time]::after {
+    content: attr(data-time);
+}
+
+.gesprekkenTableRow>div:nth-child(3)[data-time] {
+    font-size: 0;
+}
+
+.gesprekkenTableRow>div:nth-child(3)[data-time]::before {
+    font-size: 0.9rem;
+}
+
+.gesprekkenTableRow>div:nth-child(3)[data-time]::after {
+    font-size: 0.9rem;
+}
+
+/* LOCATIE STYLING */
 .locatieCel {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
     color: var(--white) !important;
-    padding: 0.7rem 1.4rem !important;
+    padding: 0.6rem 1rem !important;
     border-radius: var(--radius-lg) !important;
     font-weight: 700 !important;
     font-size: 0.9rem !important;
     box-shadow: var(--shadow-md) !important;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: all 0.3s ease !important;
     text-decoration: none !important;
     border: 2px solid transparent !important;
-    position: relative !important;
-    overflow: hidden !important;
     width: 100% !important;
     box-sizing: border-box !important;
 }
 
 .locatieCel::before {
     content: '📍';
-    margin-right: 0.6rem;
-    font-size: 1.1em;
-}
-
-.locatieCel::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg, transparent, color-mix(in srgb, var(--white) 20%, transparent), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    margin-right: 0.5rem;
 }
 
 .locatieCel:hover {
-    transform: translateY(-3px) scale(1.05) !important;
-    box-shadow: var(--shadow-xl) !important;
-    border-color: color-mix(in srgb, var(--white) 30%, transparent) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: var(--shadow-lg) !important;
 }
 
-.locatieCel:hover::after {
-    opacity: 1;
-}
-
-/* Status Styling */
+/* STATUS STYLING - VERBETERD */
 .status-bevestigd {
     color: var(--success-dark);
-    font-weight: 700;
-    background: color-mix(in srgb, var(--success-color) 10%, var(--white));
-    border: 1px solid color-mix(in srgb, var(--success-color) 20%, transparent);
+    font-weight: 600;
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--success-color) 12%, var(--white)) 0%,
+            color-mix(in srgb, var(--success-color) 8%, var(--white)) 100%);
+    border: 1px solid color-mix(in srgb, var(--success-color) 25%, transparent);
     border-radius: var(--radius);
-    padding: 0.4rem 1.2rem;
-    display: inline-block;
-    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    min-width: 90px;
+    text-align: center;
+}
+
+.status-bevestigd::before {
+    content: '✓';
+    margin-right: 0.4rem;
+    font-weight: 700;
+    color: var(--success-color);
 }
 
 .status-geweigerd {
     color: var(--danger-dark);
-    font-weight: 700;
-    background: color-mix(in srgb, var(--danger-color) 10%, var(--white));
-    border: 1px solid color-mix(in srgb, var(--danger-color) 20%, transparent);
+    font-weight: 600;
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--danger-color) 12%, var(--white)) 0%,
+            color-mix(in srgb, var(--danger-color) 8%, var(--white)) 100%);
+    border: 1px solid color-mix(in srgb, var(--danger-color) 25%, transparent);
     border-radius: var(--radius);
-    padding: 0.4rem 1.2rem;
-    display: inline-block;
-    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    min-width: 90px;
+    text-align: center;
+}
+
+.status-geweigerd::before {
+    content: '✗';
+    margin-right: 0.4rem;
+    font-weight: 700;
+    color: var(--danger-color);
 }
 
 .status-aangevraagd {
     color: var(--warning-dark);
-    font-weight: 700;
-    background: color-mix(in srgb, var(--warning-color) 10%, var(--white));
-    border: 1px solid color-mix(in srgb, var(--warning-color) 20%, transparent);
+    font-weight: 600;
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--warning-color) 12%, var(--white)) 0%,
+            color-mix(in srgb, var(--warning-color) 8%, var(--white)) 100%);
+    border: 1px solid color-mix(in srgb, var(--warning-color) 25%, transparent);
     border-radius: var(--radius);
-    padding: 0.4rem 1.2rem;
-    display: inline-block;
-    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    min-width: 90px;
+    text-align: center;
 }
 
-/* Actions Section */
+.status-aangevraagd::before {
+    content: '⏳';
+    margin-right: 0.4rem;
+}
+
+/* ACTIONS STYLING */
 .gesprekkenActions {
     display: flex;
     gap: 0.75rem;
@@ -338,128 +351,99 @@
 .actieBtn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
+    gap: 0.4rem;
+    font-size: 0.8rem;
     font-weight: 600;
     border: none;
     border-radius: var(--radius);
-    padding: 0.7rem 1.4rem;
+    padding: 0.7rem 1.2rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s ease;
     box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     width: 120px;
     justify-content: center;
-    flex-shrink: 0;
-}
-
-/* Enhanced button hover effect */
-.actieBtn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            color-mix(in srgb, var(--white) 30%, transparent),
-            transparent);
-    transition: left 0.6s ease;
-}
-
-.actieBtn:hover::before {
-    left: 100%;
+    white-space: nowrap;
 }
 
 .bevestigBtn {
     background: linear-gradient(135deg, var(--success-color) 0%, var(--success-dark) 100%);
     color: var(--white);
-    border: 2px solid transparent;
-}
-
-.bevestigBtn:hover {
-    background: linear-gradient(135deg, var(--success-dark) 0%, color-mix(in srgb, var(--success-dark) 90%, black) 100%);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: color-mix(in srgb, var(--white) 20%, transparent);
 }
 
 .verwijderBtn {
     background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-dark) 100%);
     color: var(--white);
-    border: 2px solid transparent;
 }
 
-.verwijderBtn:hover {
-    background: linear-gradient(135deg, var(--danger-dark) 0%, color-mix(in srgb, var(--danger-dark) 90%, black) 100%);
+.actieBtn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
-    border-color: color-mix(in srgb, var(--white) 20%, transparent);
 }
 
-.actieBtn:active {
-    transform: translateY(0);
-}
-
-/* Disabled state */
-.actieBtn:disabled,
-.actieBtn.disabled {
+.actieBtn:disabled {
     background: var(--gray-300) !important;
     color: var(--gray-500) !important;
-    border: 1px solid var(--gray-400) !important;
     cursor: not-allowed !important;
-    opacity: 0.7;
     transform: none !important;
-    box-shadow: var(--shadow-sm) !important;
 }
 
-.actieIcon {
-    font-size: 1rem;
-    display: inline-block;
-    transition: transform 0.3s ease;
+/* LEGE STATE STYLING */
+.geen-gesprekken {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-500);
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
+    border-radius: var(--radius-xl);
+    border: 2px dashed color-mix(in srgb, var(--gray-300) 60%, transparent);
+    margin: 2rem 0;
 }
 
-.actieBtn:hover .actieIcon {
-    transform: scale(1.2);
+.geen-gesprekken::before {
+    content: '📅';
+    display: block;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
 }
 
-/* Loading and Empty States */
-.loading {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.geen-gesprekken-tekst {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
 }
 
-/* Animations */
-@keyframes headerShine {
-    0% {
-        left: -100%;
-    }
-
-    50% {
-        left: 50%;
-    }
-
-    100% {
-        left: 100%;
-    }
+.geen-gesprekken-subtekst {
+    font-size: 0.9rem;
+    color: var(--gray-500);
+    line-height: 1.5;
+    max-width: 300px;
+    margin: 0 auto;
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
+/* Alternatieve eenvoudige styling */
+.gesprekkenTableRow.lege-rij {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-500);
+    font-style: italic;
+    background: var(--gray-50);
+    border: none;
+    display: table-cell;
+    grid-column: 1 / -1;
 }
 
-/* Responsive Design */
+.gesprekkenTableRow.lege-rij:hover {
+    background: var(--gray-50);
+    transform: none;
+    box-shadow: none;
+}
+
+/* RESPONSIVE DESIGN */
+
+/* Tablet */
 @media (max-width: 1024px) {
     .gesprekkenKaart {
         width: 98%;
@@ -469,274 +453,303 @@
     .gesprekkenTableHeader,
     .gesprekkenTableRow {
         padding: 1.2rem 1.5rem;
-        font-size: 0.95rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .gesprekkenKaart {
-        border-radius: var(--radius-xl);
-        margin: 1.5rem auto;
-        width: 95%;
-    }
-
-    .gesprekkenTitel {
-        padding: 2rem 1rem;
-        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        font-size: 1.8rem;
-    }
-
-    .gesprekkenTable {
-        border-radius: var(--radius-md);
-    }
-
-    .gesprekkenTableHeader,
-    .gesprekkenTableRow {
-        padding: 1rem;
         font-size: 0.9rem;
-        gap: 0.6rem;
+        gap: 0.8rem;
     }
 
-    /* Aangepaste verhoudingen voor tablet */
-    .gesprekkenTableHeader,
-    .gesprekkenTableRow {
-        grid-template-columns: 0.9fr 1.8fr 0.8fr 1fr;
-    }
-
-    .gesprekkenTable:has(.locatieCel) .gesprekkenTableHeader,
-    .gesprekkenTable:has(.locatieCel) .gesprekkenTableRow {
-        grid-template-columns: 0.8fr 1.6fr 0.5fr 0.7fr 0.9fr;
-    }
-
-    /* Kleinere buttons op tablet */
     .actieBtn {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         padding: 0.6rem 1rem;
         width: 100px;
     }
-
-    .gesprekkenActions {
-        gap: 0.5rem;
-    }
-
-    /* Locatie en tijd iets kleiner */
-    .locatieCel {
-        padding: 0.6rem 1.2rem !important;
-        font-size: 0.8rem !important;
-        width: 100% !important;
-    }
-
-    .gesprekkenTableRow>div:nth-child(2) {
-        padding: 0.5rem 1rem;
-        font-size: 0.8rem;
-        width: 100%;
-    }
 }
 
-/* MOBILE LAYOUT */
-@media (max-width: 720px) {
+/* Mobile - SIMPELE, MODERNE LAYOUT */
+@media (max-width: 768px) {
     .gesprekkenKaart {
-        border-radius: var(--radius-md);
-        width: 98%;
-        margin: 1rem auto;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
     }
 
     .gesprekkenTitel {
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
         font-size: 1.5rem;
-        padding: 1.5rem 1rem;
+        padding: 1rem;
+        border-radius: 0;
     }
 
     .gesprekkenSubSection {
+        margin: 0;
+        padding: 1rem;
         width: 100%;
-        margin: 1.5rem auto;
-        padding: 0 1rem;
     }
 
     .gesprekkenSubTitel {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         margin-bottom: 1rem;
-        padding: 0.5rem 0 0.5rem 1rem;
+        padding: 0.5rem 0;
+        border-left: none;
+        background: none;
     }
 
+    .gesprekkenTable {
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+        background: none;
+    }
+
+    /* Hide desktop header */
     .gesprekkenTableHeader {
         display: none;
     }
 
-    .gesprekkenTable {
-        border-radius: var(--radius);
-    }
-
+    /* Simple mobile cards */
     .gesprekkenTableRow {
-        display: block !important;
-        padding: 1.2rem;
-        margin-bottom: 1rem;
-        border-radius: var(--radius);
-        border: 1px solid color-mix(in srgb, var(--primary-color) 10%, transparent);
-        background: var(--gray-50);
-        box-shadow: var(--shadow-sm);
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        padding: 1rem !important;
+        margin-bottom: 0.5rem !important;
+        border-radius: var(--radius) !important;
+        background: var(--white) !important;
+        border: 1px solid var(--gray-200) !important;
+        box-shadow: var(--shadow-sm) !important;
         grid-template-columns: none !important;
-        max-width: 100%;
     }
 
     .gesprekkenTableRow:hover {
-        transform: translateY(-1px);
+        transform: none !important;
+        box-shadow: var(--shadow-sm) !important;
     }
 
+    /* Reset all mobile div styling */
     .gesprekkenTableRow>div {
-        display: block !important;
-        text-align: left !important;
-        margin-bottom: 0.8rem;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
         width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
         overflow: visible !important;
         white-space: normal !important;
         text-overflow: unset !important;
+        background: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        text-align: left !important;
+        font-size: 0.9rem !important;
     }
 
-    .gesprekkenTableRow>div:last-child {
-        margin-bottom: 0;
-    }
-
-    /* Compacte mobile labels */
+    /* Remove all ::before labels */
     .gesprekkenTableRow>div::before {
-        display: block;
-        font-weight: 700;
-        color: var(--primary-color);
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.3rem;
-        opacity: 0.9;
+        display: none !important;
+    }
+
+    /* Mobile naam - just text */
+    .gesprekkenTableRow>div:first-child {
+        font-weight: 600 !important;
+        color: var(--gray-900) !important;
+        font-size: 1rem !important;
     }
 
     .gesprekkenTableRow>div:first-child::before {
-        content: 'Naam';
+        content: '👤';
+        margin-right: 0.5rem;
+        font-size: 1rem;
+        display: inline !important;
     }
 
-    .gesprekkenTableRow>div:nth-child(2)::before {
-        content: 'Tijdslot';
+    /* Mobile tafel/locatie - 2de kolom */
+    .gesprekkenTableRow>div:nth-child(2):not(.locatieCel) {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+        color: var(--white) !important;
+        padding: 0.4rem 0.8rem !important;
+        border-radius: var(--radius) !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        width: auto !important;
+        max-width: 100px !important;
+        text-align: center !important;
+        box-shadow: var(--shadow-sm) !important;
+    }
+
+    .gesprekkenTableRow>div:nth-child(2):not(.locatieCel)::before {
+        content: '📍';
+        margin-right: 0.3rem !important;
+        font-size: 0.9em !important;
+        display: inline !important;
+    }
+
+    /* Mobile tijdslot - clean (3de kolom) */
+    .gesprekkenTableRow>div:nth-child(3) {
+        color: var(--gray-600) !important;
+        font-weight: 500 !important;
+        justify-content: flex-start !important;
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        position: relative !important;
     }
 
     .gesprekkenTableRow>div:nth-child(3)::before {
-        content: 'Tafel';
+        content: '🕐';
+        margin-right: 0.5rem;
+        font-size: 1rem;
+        display: inline !important;
+        position: static !important;
+        transform: none !important;
+        z-index: auto !important;
     }
 
-    .gesprekkenTableRow>div:nth-child(4)::before {
-        content: 'Status';
+    /* Mobile versie van title attribuut */
+    .gesprekkenTableRow>div:nth-child(3)[title] {
+        color: transparent !important;
     }
 
-    .gesprekkenTableRow>div:last-child::before {
-        content: 'Acties';
+    .gesprekkenTableRow>div:nth-child(3)[title]::after {
+        position: static !important;
+        transform: none !important;
+        color: var(--gray-600) !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        padding-left: 0 !important;
     }
 
-    /* Voor student view (zonder locatie kolom) */
-    .gesprekkenTableRow:not(:has(.locatieCel))>div:nth-child(3)::before {
-        content: 'Status';
+    .gesprekkenTableRow>div:nth-child(3)[title]::before {
+        position: static !important;
+        transform: none !important;
+        z-index: auto !important;
+        color: var(--gray-600) !important;
     }
 
-    .gesprekkenTableRow:not(:has(.locatieCel))>div:nth-child(4)::before {
-        content: 'Acties';
-    }
-
-    /* Compacte time slots styling voor mobile */
-    .gesprekkenTableRow>div:nth-child(2) {
-        margin: 0 !important;
-        width: 100% !important;
-        display: flex !important;
-        justify-content: flex-start !important;
-        max-width: 250px !important;
-        font-size: 0.85rem !important;
-        padding: 0.5rem 1rem !important;
-    }
-
-    /* Compacte location styling voor mobile */
+    /* Mobile locatie - keep style but smaller */
     .locatieCel {
-        margin: 0 !important;
-        width: fit-content !important;
-        display: inline-flex !important;
-        max-width: 120px !important;
-        padding: 0.5rem 1rem !important;
-        font-size: 0.85rem !important;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        border-radius: var(--radius) !important;
+        width: auto !important;
+        max-width: 80px !important;
+        min-height: auto !important;
     }
 
-    /* Compacte status badges */
+    .locatieCel::before {
+        margin-right: 0.3rem !important;
+        font-size: 0.9em !important;
+    }
+
+    /* Mobile status - verbeterd */
     .status-bevestigd,
     .status-geweigerd,
     .status-aangevraagd {
-        padding: 0.3rem 0.8rem !important;
-        font-size: 0.7rem !important;
-        display: inline-block !important;
+        font-size: 0.75rem !important;
+        padding: 0.4rem 0.8rem !important;
+        border-radius: var(--radius) !important;
+        min-width: 80px !important;
+        text-align: center !important;
+        box-shadow: var(--shadow-sm) !important;
     }
 
-    /* Compacte actions styling voor mobile */
+    .status-bevestigd::before,
+    .status-geweigerd::before,
+    .status-aangevraagd::before {
+        margin-right: 0.3rem !important;
+        font-size: 0.8em !important;
+    }
+
+    /* Mobile actions - horizontal */
     .gesprekkenActions {
-        justify-content: space-between !important;
-        width: 100%;
-        flex-direction: row;
-        gap: 0.6rem;
-        margin-top: 0.2rem;
+        display: flex !important;
+        gap: 0.5rem !important;
+        margin: 0 !important;
+        justify-content: flex-start !important;
     }
 
     .actieBtn {
-        flex: 1;
-        min-width: 110px !important;
-        max-width: 140px !important;
-        padding: 0.6rem 1rem;
-        font-size: 0.75rem;
-        white-space: nowrap;
-        margin-right: 0.5rem;
+        flex: 1 !important;
+        font-size: 0.8rem !important;
+        padding: 0.6rem 1rem !important;
         width: auto !important;
+        min-width: auto !important;
+        min-height: auto !important;
+        border-radius: var(--radius) !important;
+        box-shadow: var(--shadow-sm) !important;
     }
 
-    .actieBtn:last-child {
-        margin-right: 0;
+    .actieBtn:hover {
+        transform: none !important;
+    }
+
+    /* Mobile lege state */
+    .geen-gesprekken {
+        padding: 2rem 1rem;
+        margin: 1rem 0;
+    }
+
+    .geen-gesprekken::before {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .geen-gesprekken-tekst {
+        font-size: 1rem;
+    }
+
+    .geen-gesprekken-subtekst {
+        font-size: 0.85rem;
+    }
+
+    .gesprekkenTableRow.lege-rij {
+        padding: 2rem 1rem;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
     }
 }
 
-/* Extra kleine schermen */
+/* Zeer kleine schermen - stack buttons */
 @media (max-width: 480px) {
     .gesprekkenKaart {
-        width: 98%;
-        margin: 0.5rem auto;
+        width: 100%;
+        margin: 0;
     }
 
     .gesprekkenTitel {
-        padding: 1.2rem 0.8rem;
         font-size: 1.3rem;
-    }
-
-    .gesprekkenSubTitel {
-        font-size: 1rem;
-        padding: 0.4rem 0 0.4rem 0.8rem;
+        padding: 1rem;
     }
 
     .gesprekkenTableRow {
-        padding: 1.2rem;
+        padding: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+        gap: 0.5rem !important;
     }
 
-    .actieBtn {
-        font-size: 0.75rem;
-        padding: 0.7rem 0.8rem;
-        width: 100% !important;
-        max-width: none !important;
+    .gesprekkenTableRow>div {
+        font-size: 0.85rem !important;
     }
 
-    /* Stack buttons verticaal op zeer kleine schermen */
+    .gesprekkenTableRow>div:first-child {
+        font-size: 0.95rem !important;
+    }
+
     .gesprekkenActions {
-        flex-direction: column;
-        gap: 0.5rem;
+        flex-direction: column !important;
+        gap: 0.4rem !important;
     }
 
     .actieBtn {
-        width: 100%;
-        flex: none;
-        margin-right: 0;
+        width: 100% !important;
+        flex: none !important;
+        font-size: 0.75rem !important;
+        padding: 0.7rem !important;
     }
 }
 
-/* Accessibility improvements */
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -755,7 +768,6 @@
 
     .gesprekkenTableHeader {
         background: var(--gray-900);
-        color: var(--white);
     }
 
     .gesprekkenTableRow {
@@ -776,7 +788,6 @@
 @media (hover: none) and (pointer: coarse) {
     .actieBtn {
         min-height: 44px;
-        min-width: 44px;
     }
 }
 
@@ -835,6 +846,7 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 10%, transparent);
 }
 
+/* Modal Actions */
 .modal-actions {
     display: flex;
     gap: 1rem;

@@ -314,6 +314,38 @@ router.put(
   }
 );
 
+// DELETE /api/reservaties/:id - Verwijder een geweigerde reservatie (alleen student, alleen als geweigerd)
+router.delete(
+  '/:id',
+  authenticateToken,
+  requireRole(['student']),
+  async (req, res) => {
+    const { id } = req.params;
+    const studentnummer = req.user.studentnummer || req.user.userId || req.user.gebruikersId;
+    try {
+      const reservatie = await Reservatie.getById(id);
+      if (!reservatie) {
+        return res.status(404).json({ success: false, message: 'Reservatie niet gevonden.' });
+      }
+      if (reservatie.studentnummer != studentnummer) {
+        return res.status(403).json({ success: false, message: 'Je mag alleen je eigen afspraken verwijderen.' });
+      }
+      if (reservatie.status !== 'geweigerd') {
+        return res.status(400).json({ success: false, message: 'Alleen geweigerde afspraken kunnen verwijderd worden.' });
+      }
+      const deleted = await Reservatie.delete(id);
+      if (deleted) {
+        return res.status(200).json({ success: true, message: 'Reservatie succesvol verwijderd.' });
+      } else {
+        return res.status(500).json({ success: false, message: 'Verwijderen mislukt.' });
+      }
+    } catch (error) {
+      console.error('Error deleting reservation:', error);
+      return res.status(500).json({ success: false, message: 'Interne serverfout bij verwijderen.' });
+    }
+  }
+);
+
 /* LET OP: Tijdslot mag alleen als bezet worden beschouwd als er een bevestigde afspraak is
 Dit moet je ook in de frontend meenemen bij het tonen van slots (optioneel: backend kan een endpoint bieden)
 In de backend: check alleen op status 'bevestigd' bij het bepalen van bezette slots
