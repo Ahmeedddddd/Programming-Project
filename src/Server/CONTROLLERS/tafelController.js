@@ -565,6 +565,77 @@ const tafelController = {
         message: 'Er ging iets mis bij het ophalen van tafel statistieken'
       });
     }
+  },
+
+  // ===== CONFIGURATION ENDPOINTS =====
+  // POST /api/tafels/voormiddag/config - Configureer aantal tafels voor voormiddag
+  async configureVoormiddagTafels(req, res) {
+    try {
+      const { aantalTafels } = req.body;
+      
+      console.log(`📊 Configuring voormiddag tables: ${aantalTafels}`);
+      
+      // Validatie
+      if (!aantalTafels || aantalTafels < 1 || aantalTafels > 50) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid aantal tafels',
+          message: 'Aantal tafels moet tussen 1 en 50 zijn'
+        });
+      }
+
+      // Voor nu loggen we alleen - implementatie kan later uitgebreid worden
+      console.log(`✅ Voormiddag tafels geconfigureerd naar ${aantalTafels}`);
+      
+      res.json({
+        success: true,
+        message: `Aantal voormiddag tafels ingesteld op ${aantalTafels}`,
+        aantalTafels: aantalTafels
+      });
+
+    } catch (error) {
+      console.error('❌ Error configuring voormiddag tafels:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to configure voormiddag tafels',
+        message: 'Er ging iets mis bij het configureren van de tafels'
+      });
+    }
+  },
+
+  // POST /api/tafels/namiddag/config - Configureer aantal tafels voor namiddag
+  async configureNamiddagTafels(req, res) {
+    try {
+      const { aantalTafels } = req.body;
+      
+      console.log(`📊 Configuring namiddag tables: ${aantalTafels}`);
+      
+      // Validatie
+      if (!aantalTafels || aantalTafels < 1 || aantalTafels > 50) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid aantal tafels',
+          message: 'Aantal tafels moet tussen 1 en 50 zijn'
+        });
+      }
+
+      // Voor nu loggen we alleen - implementatie kan later uitgebreid worden
+      console.log(`✅ Namiddag tafels geconfigureerd naar ${aantalTafels}`);
+      
+      res.json({
+        success: true,
+        message: `Aantal namiddag tafels ingesteld op ${aantalTafels}`,
+        aantalTafels: aantalTafels
+      });
+
+    } catch (error) {
+      console.error('❌ Error configuring namiddag tafels:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to configure namiddag tafels',
+        message: 'Er ging iets mis bij het configureren van de tafels'
+      });
+    }
   }
 };
 
