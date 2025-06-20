@@ -106,24 +106,34 @@ class PlattegrondVoormiddagManager {
         
         // Render tafel lijst
         this.renderTafelLijst();
-    }setupOrganisatorUI() {
-        // Add any organisator-specific UI elements here
-        const sidebar = document.querySelector('.sideBar');
-        if (sidebar) {
-            // Add refresh button if not exists
-            let refreshBtn = document.getElementById('refreshTafels');
-            if (!refreshBtn) {
-                refreshBtn = document.createElement('button');
-                refreshBtn.id = 'refreshTafels';
-                refreshBtn.textContent = '🔄 Ververs';
-                refreshBtn.className = 'refresh-btn';
-                sidebar.insertBefore(refreshBtn, sidebar.firstChild);
-            }
+    }    setupOrganisatorUI() {
+        // Refresh knop is al in HTML aanwezig, alleen zichtbaar maken voor organisatoren
+        const refreshBtn = document.getElementById('refreshTafels');
+        if (refreshBtn) {
+            refreshBtn.style.display = 'inline-flex';
         }
-    }
 
-    setupVisitorUI() {
-        // Visitor-specific UI setup
+        // Config knop zichtbaar maken voor organisatoren
+        const configBtn = document.getElementById('configTafelsBtn');
+        if (configBtn) {
+            configBtn.style.display = 'flex';
+        }
+
+        // Update tafel count display
+        this.updateTafelCountDisplay();
+
+        // Update sidebar titel
+        const sidebarTitle = document.querySelector('.sidebarTitle');
+        if (sidebarTitle) {
+            sidebarTitle.innerHTML = '⚙️ Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
+        }
+    }setupVisitorUI() {
+        // Verberg refresh knop voor bezoekers
+        const refreshBtn = document.getElementById('refreshTafels');
+        if (refreshBtn) {
+            refreshBtn.style.display = 'none';
+        }
+        
         console.log('Setting up read-only view for visitors');
     }    renderTafelLijst() {
         const sidebarList = document.querySelector('.sidebarTafels');
@@ -135,8 +145,16 @@ class PlattegrondVoormiddagManager {
         // Clear existing content
         sidebarList.innerHTML = '';
 
-        // Sorteer tafels op nummer
-        const sortedTafels = Object.values(this.tafelData).sort((a, b) => a.tafelNr - b.tafelNr);
+        // Haal het geconfigureerde aantal tafels op
+        const maxTafels = parseInt(localStorage.getItem('voormiddag_aantal_tafels')) || 15;
+        console.log(`📊 Showing max ${maxTafels} tafels in sidebar`);
+
+        // Sorteer tafels op nummer en limiteer tot maxTafels
+        const sortedTafels = Object.values(this.tafelData)
+            .sort((a, b) => a.tafelNr - b.tafelNr)
+            .filter(tafel => tafel.tafelNr <= maxTafels);
+
+        console.log(`📋 Displaying ${sortedTafels.length} tafels (max: ${maxTafels})`);
 
         sortedTafels.forEach(tafel => {
             const listItem = document.createElement('li');
@@ -193,10 +211,11 @@ class PlattegrondVoormiddagManager {
         if (this.isOrganisator) {
             this.addEmptyTafels(sidebarList);
         }
-    }
-
-    addEmptyTafels(sidebarList) {
-        const maxTafels = 20; // Adjust as needed
+    }    addEmptyTafels(sidebarList) {
+        // Haal het geconfigureerde aantal tafels op
+        const maxTafels = parseInt(localStorage.getItem('voormiddag_aantal_tafels')) || 15;
+        console.log(`📊 Adding empty tables up to ${maxTafels}`);
+        
         const bezetteTafels = Object.keys(this.tafelData).map(nr => parseInt(nr));
 
         for (let i = 1; i <= maxTafels; i++) {
@@ -218,6 +237,8 @@ class PlattegrondVoormiddagManager {
                 sidebarList.appendChild(listItem);
             }
         }
+        
+        console.log(`✅ Empty tables added up to tafel ${maxTafels}`);
     }
 
     handleOrganisatorTafelClick(tafel) {
@@ -235,9 +256,7 @@ class PlattegrondVoormiddagManager {
         } else {
             this.showInfo('Geen project gegevens beschikbaar');
         }
-    }
-
-    async showTafelAssignmentModal(tafel) {
+    }    async showTafelAssignmentModal(tafel) {
         // Laad beschikbare projecten
         if (!this.availableProjects || this.availableProjects.length === 0) {
             await this.loadAvailableProjects();
@@ -245,6 +264,19 @@ class PlattegrondVoormiddagManager {
 
         const modal = this.createAssignmentModal(tafel);
         document.body.appendChild(modal);
+
+        // Add click outside to close functionality
+        const overlay = modal.querySelector('.modal-overlay');
+        const modalContent = modal.querySelector('.modal-content');
+        
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                // Only close if clicked on overlay background, not on modal content
+                if (e.target === overlay) {
+                    this.closeModal(modal);
+                }
+            });
+        }
 
         // Update modal met projecten data als deze nog niet geladen zijn
         if (this.availableProjects && this.availableProjects.length > 0) {
@@ -474,10 +506,8 @@ class PlattegrondVoormiddagManager {
             console.error('❌ Error removing project:', error);
             this.showError('Verwijdering mislukt: ' + error.message);
         }
-    }
-
-    closeModal() {
-        const modal = document.querySelector('.tafel-assignment-modal');
+    }    closeModal(modalElement = null) {
+        const modal = modalElement || document.querySelector('.tafel-assignment-modal');
         if (modal) {
             modal.remove();
         }
@@ -490,6 +520,16 @@ class PlattegrondVoormiddagManager {
                 this.refresh();
             }
         });
+
+        // Config button
+        const configBtn = document.getElementById('configTafelsBtn');
+        if (configBtn) {
+            configBtn.addEventListener('click', () => {
+                if (this.isOrganisator) {
+                    this.showTafelConfigModal();
+                }
+            });
+        }
 
         // Search functionality
         const searchInput = document.querySelector('.sidebarZoekbalk');
@@ -757,6 +797,110 @@ class PlattegrondVoormiddagManager {
         }
         
         return html;
+    }    showTafelConfigModal() {
+        // Huidige waarde ophalen uit localStorage of default 15
+        const currentAantal = localStorage.getItem('voormiddag_aantal_tafels') || '15';
+        
+        const modal = document.createElement('div');
+        modal.className = 'config-modal';
+        modal.innerHTML = `
+            <div class="config-modal-content">
+                <h3>Tafel Configuratie</h3>
+                <div class="config-form">
+                    <div class="config-input-group">
+                        <label for="aantalTafels">Aantal tafels:</label>
+                        <input type="number" id="aantalTafels" class="config-input" 
+                               value="${currentAantal}" min="1" max="500" placeholder="Bijv. 15">
+                    </div>
+                    <div class="config-buttons">
+                        <button class="config-btn-cancel">Annuleren</button>
+                        <button class="config-btn-save">Opslaan</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Event listeners
+        const cancelBtn = modal.querySelector('.config-btn-cancel');
+        const saveBtn = modal.querySelector('.config-btn-save');
+        const input = modal.querySelector('#aantalTafels');
+
+        cancelBtn.addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        saveBtn.addEventListener('click', () => {
+            const aantalTafels = parseInt(input.value);
+            if (aantalTafels >= 1 && aantalTafels <= 500) {
+                this.updateAantalTafels(aantalTafels);
+                document.body.removeChild(modal);
+                this.showNotification('✅ Aantal tafels aangepast naar ' + aantalTafels);
+            } else {
+                this.showNotification('❌ Aantal tafels moet tussen 1 en 500 zijn', 'error');
+            }
+        });
+
+        // Click outside to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+
+        document.body.appendChild(modal);
+        input.focus();
+    }    async updateAantalTafels(aantalTafels) {
+        try {
+            console.log(`🔧 Attempting to update aantal tafels to: ${aantalTafels}`);
+            // Probeer de API endpoint
+            let apiSuccess = false;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://localhost:8383/api/tafels/voormiddag/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ aantalTafels })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log(`✅ API success:`, result);
+                    apiSuccess = true;
+                } else {
+                    console.log(`⚠️ API not available yet (${response.status}), using localStorage fallback`);
+                }
+            } catch (apiError) {
+                console.log(`⚠️ API endpoint not ready, using localStorage fallback:`, apiError.message);
+            }
+
+            // Als API faalt, gebruik localStorage fallback
+            if (!apiSuccess) {
+                localStorage.setItem('voormiddag_aantal_tafels', aantalTafels);
+                console.log(`✅ Aantal tafels opgeslagen in localStorage: ${aantalTafels}`);
+            }
+
+            // Herlaad de tafel data
+            await this.loadTafelData();
+            
+            // Update de display tekst
+            this.updateTafelCountDisplay();
+            
+        } catch (error) {
+            console.error('❌ Error updating aantal tafels:', error);
+            this.showNotification('❌ Fout bij het aanpassen van aantal tafels', 'error');
+        }
+    }
+
+    updateTafelCountDisplay() {
+        const countDisplay = document.getElementById('tafelCountText');
+        if (countDisplay) {
+            const currentAantal = localStorage.getItem('voormiddag_aantal_tafels') || '15';
+            countDisplay.textContent = `Aantal tafels: ${currentAantal}`;
+            console.log(`📊 Updated display: Aantal tafels: ${currentAantal}`);
+        }
     }
 }
 
