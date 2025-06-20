@@ -98,7 +98,7 @@ async function loadTimeSlots(date) {
         {id:11,start_time:'18:00', end_time:'18:30'},
         {id:12,start_time:'18:30', end_time:'19:00'}
       ];
-      const bezet = (result.data || []).filter(r => r.status === 'bevestigd')
+      const bezet = (result.data || []).filter(r => r.status === 'bevestigd' || r.status === 'aangevraagd')
         .map(r => `${r.startTijd.split('T')[1].slice(0,5)}-${r.eindTijd.split('T')[1].slice(0,5)}`);
       availableSlots = allSlots.map(slot => ({
         ...slot,
@@ -195,12 +195,12 @@ async function makeReservation() {
     let payload = {};
     if (userInfo.userType === 'student') {
       payload = {
-        bedrijfsnummer: targetId,
+        bedrijfsnummer: parseInt(targetId, 10),
         tijdslot: `${selectedSlot.start_time}-${selectedSlot.end_time}`
       };
     } else if (userInfo.userType === 'bedrijf') {
       payload = {
-        studentnummer: targetId,
+        studentnummer: parseInt(targetId, 10),
         tijdslot: `${selectedSlot.start_time}-${selectedSlot.end_time}`
       };
     }
@@ -214,7 +214,6 @@ async function makeReservation() {
       return;
     }
     window.showNotification(result.message || 'Reservatie aangevraagd!', 'success');
-    selectedSlot.is_available = false;
     displayTimeSlots();
     selectedSlot = null;
     document.getElementById('selectedInfo').classList.remove('show');
@@ -235,11 +234,13 @@ function goBack() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const userRes = await fetchWithAuth('/user-info');
+    const userRes = await fetchWithAuth('/api/user-info');
     userInfo = await userRes.json();
     const params = new URLSearchParams(window.location.search);
+    let bedrijfParam = params.get('bedrijf') || params.get('bedrijfId');
+    let studentParam = params.get('student') || params.get('studentId');
     if (userInfo.userType === 'student') {
-      targetId = params.get('bedrijf');
+      targetId = bedrijfParam;
       targetType = 'bedrijf';
       if (!targetId) {
         window.showNotification('Geen bedrijf geselecteerd. Je wordt teruggestuurd naar het bedrijvenoverzicht.', 'error');
@@ -247,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
     } else if (userInfo.userType === 'bedrijf') {
-      targetId = params.get('student');
+      targetId = studentParam;
       targetType = 'student';
       if (!targetId) {
         window.showNotification('Geen student geselecteerd. Je wordt teruggestuurd naar het studentenoverzicht.', 'error');

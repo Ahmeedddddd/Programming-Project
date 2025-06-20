@@ -18,13 +18,17 @@ router.post(
     let reserverendeStudent = null;
     let reserverendBedrijf = null;
 
-    if (user.rol === 'student') {
+    // Gebruik userType voor consistentie
+    if (user.userType === 'student') {
       reserverendeStudent = user.studentnummer || user.userId || user.gebruikersId;
       reserverendBedrijf = bedrijfsnummer;
-    } else if (user.rol === 'bedrijf') {
+    } else if (user.userType === 'bedrijf') {
       reserverendeStudent = studentnummer;
       reserverendBedrijf = user.bedrijfsnummer || user.userId || user.gebruikersId;
     }
+
+    // Debug logging
+    console.log('[RESERVERING] userType:', user.userType, '| studentnummer:', reserverendeStudent, '| bedrijfsnummer:', reserverendBedrijf, '| tijdslot:', tijdslot);
 
     // Split tijdslot in startTijd en eindTijd
     let startTijd = null, eindTijd = null;
@@ -59,13 +63,13 @@ router.post(
 
       if (reservatieId) {
         // Notificatie voor de andere partij
-        if (user.rol === 'student') {
+        if (user.userType === 'student') {
           await Notificatie.create({
             bedrijfsnummer: reserverendBedrijf,
             type: 'reservering_aanvraag',
             boodschap: `Nieuwe reserveringsaanvraag van student ${reserverendeStudent} voor tijdslot ${startTijd}-${eindTijd}.`
           });
-        } else if (user.rol === 'bedrijf') {
+        } else if (user.userType === 'bedrijf') {
           await Notificatie.create({
             studentnummer: reserverendeStudent,
             type: 'reservering_aanvraag',

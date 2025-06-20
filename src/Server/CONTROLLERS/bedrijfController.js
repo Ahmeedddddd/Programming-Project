@@ -48,6 +48,8 @@ const bedrijfController = {
         // Bedrijf niet gevonden
         return res.status(404).json({ success: false, error: 'Company not found' });
       }
+      // Voeg logo_url toe (default of op basis van bedrijfsnummer)
+      bedrijf.logo_url = `/images/mystery man avatar.webp`;
       res.json({ success: true, data: bedrijf });
     } catch (error) {
       // Fout bij ophalen bedrijf
