@@ -65,9 +65,40 @@ const bedrijfController = {
   async getAvailableTimeSlots(req, res) {
     try {
       const { bedrijfsnummer } = req.params;
+      const Reservatie = require('../MODELS/reservatie');
       // Haal tijdsloten op via het model
       const slots = await Bedrijf.getAvailableTimeSlots(bedrijfsnummer);
-      res.json({ success: true, data: slots });
+      // Haal bestaande reserveringen op voor dit bedrijf
+      const reservaties = await Reservatie.getByBedrijf(bedrijfsnummer);
+      // Haal ook de bevestigde afspraken van de student op (indien ingelogd als student)
+      let studentConflicts = [];
+      if (req.user && req.user.userType === 'student') {
+        console.log('[DEBUG][getAvailableTimeSlots] studentnummer in req.user:', req.user.studentnummer, 'userId:', req.user.userId);
+        const studentnummer = req.user.studentnummer || req.user.userId;
+        console.log('[DEBUG][getAvailableTimeSlots] About to call Reservatie.getByStudent with:', studentnummer);
+        studentConflicts = await Reservatie.getByStudent(studentnummer);
+        console.log('[DEBUG][getAvailableTimeSlots] Result from Reservatie.getByStudent:', studentConflicts);
+        studentConflicts = studentConflicts.filter(r => r.status === 'bevestigd');
+      }
+      // Maak een lijst van bezette tijdsblokken (bedrijf)
+      const bezet = reservaties.filter(r => r.status === 'bevestigd')
+        .map(r => `${r.startTijd}-${r.eindTijd}`);
+      // Voeg student-conflicten toe
+      const studentBezet = studentConflicts.map(r => `${r.startTijd}-${r.eindTijd}`);
+      console.log('[DEBUG][getAvailableTimeSlots] studentBezet:', studentBezet);
+      // Voeg beschikbaarheid toe aan elk slot
+      const enrichedSlots = slots.map(slot => {
+        function toTimeString(t) {
+          return t.length === 5 ? t + ':00' : t;
+        }
+        const key = `${toTimeString(slot.start)}-${toTimeString(slot.end)}`;
+        return {
+          ...slot,
+          available: !bezet.includes(key) && !studentBezet.includes(key)
+        };
+      });
+      console.log('[DEBUG][getAvailableTimeSlots] enrichedSlots:', enrichedSlots);
+      res.json({ success: true, data: enrichedSlots });
     } catch (error) {
       // Fout bij ophalen tijdsloten
       res.status(500).json({ success: false, message: 'Kon tijdsloten niet ophalen.' });

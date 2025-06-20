@@ -70,8 +70,7 @@ class Reservatie {
 
   static async getByStudent(studentnummer) {
     try {
-      const [rows] = await pool.query(
-        `
+      const query = `
                 SELECT
                     a.afspraakId as id,
                     a.studentnummer,
@@ -88,9 +87,14 @@ class Reservatie {
                 LEFT JOIN BEDRIJF b ON a.bedrijfsnummer = b.bedrijfsnummer
                 WHERE a.studentnummer = ?
                 ORDER BY a.startTijd DESC
-            `,
+            `;
+      console.log('[DEBUG][getByStudent] Query:', query);
+      console.log('[DEBUG][getByStudent] Params:', [studentnummer]);
+      const [rows] = await pool.query(
+        query,
         [studentnummer]
       );
+      console.log('[DEBUG][getByStudent] Result:', rows);
       return rows;
     } catch (error) {
       console.error("Error fetching reservations by student:", error);
@@ -272,18 +276,23 @@ class Reservatie {
     eindTijd
   ) {
     try {
-      const [rows] = await pool.query(
-        `
+      console.log('[DEBUG][checkTimeConflicts] Params:', {studentnummer, bedrijfsnummer, startTijd, eindTijd});
+      const query = `
                 SELECT afspraakId, studentnummer, bedrijfsnummer, startTijd, eindTijd, status
                 FROM AFSPRAAK
                 WHERE (studentnummer = ? OR bedrijfsnummer = ?)
-                AND status IN ('aangevraagd', 'bevestigd')
+                AND status = 'bevestigd'
                 AND (
                     (startTijd < ? AND eindTijd > ?)
                 )
-            `,
+            `;
+      console.log('[DEBUG][checkTimeConflicts] Query:', query);
+      console.log('[DEBUG][checkTimeConflicts] Query params:', [studentnummer, bedrijfsnummer, eindTijd, startTijd]);
+      const [rows] = await pool.query(
+        query,
         [studentnummer, bedrijfsnummer, eindTijd, startTijd]
       );
+      console.log('[DEBUG][checkTimeConflicts] Found conflicts:', rows);
       return rows;
     } catch (error) {
       console.error("Error checking time conflicts:", error);

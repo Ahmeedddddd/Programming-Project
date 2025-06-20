@@ -75,7 +75,7 @@ async function loadTimeSlots(date) {
       availableSlots = (result.data || []).map(slot => ({
         start_time: slot.start,
         end_time: slot.end,
-        is_available: slot.available !== false,
+        is_available: slot.available,
         id: slot.id || `${slot.start}-${slot.end}`
       }));
     } else if (targetType === 'student') {
@@ -152,6 +152,7 @@ function displayTimeSlots() {
 
   availableSlots.forEach(slot => {
     const el = document.createElement('div');
+    console.log(`[SLOT] ${slot.start_time} – ${slot.end_time} | is_available:`, slot.is_available);
     el.className      = `time-slot ${slot.is_available?'available':'occupied'}`;
     el.innerHTML      = `<div class="time-label">${slot.start_time} – ${slot.end_time}</div>`;
     el.dataset.slotId = slot.id;

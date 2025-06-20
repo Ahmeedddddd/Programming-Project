@@ -63,7 +63,7 @@ router.delete('/:bedrijfsnummer',
 );
 
 // Voeg deze route toe vóór de parameter route :bedrijfsnummer
-router.get('/:bedrijfsnummer/slots', bedrijfController.getAvailableTimeSlots);
+router.get('/:bedrijfsnummer/slots', authenticateToken, bedrijfController.getAvailableTimeSlots);
 
 // ===== PARAMETER ROUTES LAST - Deze moeten als LAATSTE komen =====
 
