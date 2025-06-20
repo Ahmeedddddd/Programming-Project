@@ -787,11 +787,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/ Global variables
+// Global variables
 let currentUser = null;
 
 // === MODAL FUNCTIONS ===
 function openPasswordModal() {
+    // Render sluit-kruis en oogje-knoppen als ze ontbreken
+    const modalHeader = document.querySelector('#passwordModal .password-modal-header');
+    if (modalHeader && !modalHeader.querySelector('.password-modal-close')) {
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'password-modal-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.title = 'Sluiten';
+        closeBtn.onclick = closePasswordModal;
+        modalHeader.appendChild(closeBtn);
+    }
+
     document.getElementById('passwordModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
 
@@ -801,6 +812,18 @@ function openPasswordModal() {
     // Focus on first input
     setTimeout(() => {
         document.getElementById('currentPassword').focus();
+        // Voeg oogje-knoppen toe aan password inputs als ze ontbreken
+        ['currentPassword','newPassword','confirmPassword'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input && !input.nextElementSibling?.classList?.contains('password-toggle')) {
+                const toggleBtn = document.createElement('button');
+                toggleBtn.type = 'button';
+                toggleBtn.className = 'password-toggle';
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                toggleBtn.onclick = () => togglePasswordVisibility(id);
+                input.parentNode.insertBefore(toggleBtn, input.nextSibling);
+            }
+        });
     }, 100);
 }
 
@@ -981,11 +1004,15 @@ async function changePassword() {
     saveBtn.innerHTML = '<div class="loading-spinner"></div> Bezig met opslaan...';
     saveBtn.disabled = true;
 
+    // Haal token op (zoals in de StudentGegevens class)
+    let token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
     try {
         const response = await fetch('/api/auth/change-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             },
             credentials: 'include',
             body: JSON.stringify({
@@ -999,8 +1026,6 @@ async function changePassword() {
 
         if (result.success) {
             showMessage('Wachtwoord succesvol gewijzigd! 🎉', 'success');
-
-            // Close modal after 2 seconds
             setTimeout(() => {
                 closePasswordModal();
             }, 2000);
