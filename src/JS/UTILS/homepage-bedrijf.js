@@ -89,16 +89,23 @@ async function loadStudents() {
     if (!container || !countElement) return;
 
     try {
-        const response = await fetch('/api/studenten?limit=4');
+        const response = await fetch('/api/studenten?limit=4&all=true');
         const data = await response.json();
         
-        countElement.textContent = data.count || 0;
+        countElement.setAttribute('data-count', data.total || 0);
+        countElement.textContent = data.total || 0;
 
         if (data.data && data.data.length > 0) {
             container.innerHTML = data.data.map(student => `
                 <a href="/resultaat-student?id=${student.studentnummer}" class="preview-card">
-                    <h3 class="card-title">${student.voornaam} ${student.achternaam}</h3>
-                    <p class="card-description">${student.opleidingsrichting || 'Onbekende richting'} • ${getStudentYear(student.studentnummer)}</p>
+                    <div class="card-header">
+                        <h3 class="card-title">${student.voornaam} ${student.achternaam}</h3>
+                        ${student.tafelNr ? `<div class="table-number">Tafel ${student.tafelNr}</div>` : ''}
+                    </div>
+                    <p class="card-description">${student.projectBeschrijving ? student.projectBeschrijving.substring(0, 80) + '...' : 'Geen projectbeschrijving'}</p>
+                    <div class="student-opleiding">
+                        <span>${student.opleidingsrichting || 'Onbekende richting'}</span>
+                    </div>
                 </a>
             `).join('');
         } else {
@@ -119,13 +126,20 @@ async function loadProjects() {
         const response = await fetch('/api/projecten?limit=4');
         const data = await response.json();
         
+        countElement.setAttribute('data-count', data.total || 0);
         countElement.textContent = data.total || 0;
 
         if (data.data && data.data.length > 0) {
             container.innerHTML = data.data.map(project => `
                 <a href="/zoekbalk-projecten?id=${project.projectId}" class="project-card">
-                    <h3 class="project-title">${project.titel}</h3>
+                     <div class="card-header">
+                        <h3 class="project-title">${project.titel}</h3>
+                        ${project.tafelNr ? `<div class="table-number">Tafel ${project.tafelNr}</div>` : ''}
+                    </div>
                     <p class="project-description">${project.beschrijving ? project.beschrijving.substring(0, 80) + '...' : 'Geen beschrijving'}</p>
+                    <div class="project-student-single">
+                        <small>door ${project.studentnaam}</small>
+                    </div>
                 </a>
             `).join('');
         } else {
