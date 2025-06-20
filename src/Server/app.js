@@ -31,7 +31,8 @@ let registratieRoutes,
     organisatorRoutes,
     projectRoutes,
     tafelRoutes,
-    notificatieRoutes;
+    notificatieRoutes,
+    configRoutes;
 
 try {
   registratieRoutes    = require("./ROUTES/registratie");
@@ -43,6 +44,7 @@ try {
   projectRoutes        = require("./ROUTES/project");
   tafelRoutes          = require("./ROUTES/tafel");
   notificatieRoutes    = require("./ROUTES/notificatie");
+  configRoutes         = require("./ROUTES/config");
   console.log("✅ All route modules loaded successfully");
 } catch (error) {
   console.error("❌ Error loading route modules:", error.message);
@@ -179,6 +181,7 @@ app.get("/api/health", async (req, res) => {
         apiRoutesFixed: "Enabled",
         parameterPreservingRedirects: "Enabled",
         contactpersonenAPI: "Added",
+        configurationAPI: "Added",
       },
     });
   } catch (error) {
@@ -212,6 +215,8 @@ try {
   console.log("✅ Tafel routes mounted");
   app.use("/api/notificaties", notificatieRoutes);
   console.log("✅ Notificatie routes mounted");
+  app.use("/api/config", configRoutes);
+  console.log("✅ Config routes mounted");
 } catch (error) {
   console.error("❌ Failed to mount one or more API routes:", error);
 }
