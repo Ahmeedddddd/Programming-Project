@@ -35,6 +35,8 @@ async function loadTargetInfo() {
       if (company.logo_url) {
         document.getElementById('companyLogo').src = company.logo_url;
       }
+      const roleTargetName = document.getElementById('roleTargetName');
+      if (roleTargetName) roleTargetName.textContent = company.naam;
     } catch {
       console.warn('Kon bedrijfsgegevens niet laden');
     }
@@ -50,6 +52,8 @@ async function loadTargetInfo() {
       if (student.avatar_url) {
         document.getElementById('companyLogo').src = student.avatar_url;
       }
+      const roleTargetName = document.getElementById('roleTargetName');
+      if (roleTargetName) roleTargetName.textContent = student.naam || (student.voornaam + ' ' + student.achternaam);
     } catch {
       console.warn('Kon studentgegevens niet laden');
     }
@@ -69,21 +73,19 @@ async function loadTimeSlots(date) {
   try {
     let resp, result;
     if (targetType === 'bedrijf') {
+      // Student reserveert bij bedrijf: haal slots van bedrijf op
       resp = await fetch(`/api/bedrijven/${targetId}/slots`);
       if (!resp.ok) throw new Error();
       result = await resp.json();
       availableSlots = (result.data || []).map(slot => ({
         start_time: slot.start,
         end_time: slot.end,
-        is_available: slot.available !== false,
+        is_available: slot.available,
         id: slot.id || `${slot.start}-${slot.end}`
       }));
     } else if (targetType === 'student') {
-      // Voor student: haal alle reservaties van deze student op en blokkeer bezette slots
-      resp = await fetchWithAuth(`/api/reservaties/my?studentnummer=${targetId}`);
-      result = await resp.json();
-      // Stel: je hebt een vaste lijst van tijdslots (of haal ze op via een endpoint)
-      // Hier: dummy tijdslots + blokkeren van bezette
+      // Bedrijf reserveert bij student: haal slots op basis van eigen (bedrijf) bezetting
+      // Haal ALLE slots op (dummy of via endpoint), en blokkeer bezette via /api/reservaties/company
       let allSlots = [
         {id:1, start_time:'13:00', end_time:'13:30'},
         {id:2, start_time:'13:30', end_time:'14:00'},
@@ -98,7 +100,17 @@ async function loadTimeSlots(date) {
         {id:11,start_time:'18:00', end_time:'18:30'},
         {id:12,start_time:'18:30', end_time:'19:00'}
       ];
-      const bezet = (result.data || []).filter(r => r.status === 'bevestigd')
+      resp = await fetchWithAuth(`/api/reservaties/company`);
+      if (!resp.ok) {
+        if (resp.status === 401 || resp.status === 403) {
+          errorEl.style.display = 'block';
+          errorEl.textContent = 'Je bent niet gemachtigd om deze reserveringen te zien.';
+          return;
+        }
+        throw new Error();
+      }
+      result = await resp.json();
+      const bezet = (result.data || []).filter(r => r.status === 'bevestigd' || r.status === 'aangevraagd')
         .map(r => `${r.startTijd.split('T')[1].slice(0,5)}-${r.eindTijd.split('T')[1].slice(0,5)}`);
       availableSlots = allSlots.map(slot => ({
         ...slot,
@@ -111,7 +123,8 @@ async function loadTimeSlots(date) {
       document.getElementById('timeRange').textContent = `${first} – ${last}`;
     }
     displayTimeSlots();
-  } catch {
+  } catch (e) {
+    console.error('[RESERVATIE] Fout bij laden van tijdslots:', e);
     generateMockSlots();
   } finally {
     loadingEl.style.display = 'none';
@@ -152,6 +165,7 @@ function displayTimeSlots() {
 
   availableSlots.forEach(slot => {
     const el = document.createElement('div');
+    console.log(`[SLOT] ${slot.start_time} – ${slot.end_time} | is_available:`, slot.is_available);
     el.className      = `time-slot ${slot.is_available?'available':'occupied'}`;
     el.innerHTML      = `<div class="time-label">${slot.start_time} – ${slot.end_time}</div>`;
     el.dataset.slotId = slot.id;
@@ -195,12 +209,12 @@ async function makeReservation() {
     let payload = {};
     if (userInfo.userType === 'student') {
       payload = {
-        bedrijfsnummer: targetId,
+        bedrijfsnummer: parseInt(targetId, 10),
         tijdslot: `${selectedSlot.start_time}-${selectedSlot.end_time}`
       };
     } else if (userInfo.userType === 'bedrijf') {
       payload = {
-        studentnummer: targetId,
+        studentnummer: parseInt(targetId, 10),
         tijdslot: `${selectedSlot.start_time}-${selectedSlot.end_time}`
       };
     }
@@ -214,7 +228,6 @@ async function makeReservation() {
       return;
     }
     window.showNotification(result.message || 'Reservatie aangevraagd!', 'success');
-    selectedSlot.is_available = false;
     displayTimeSlots();
     selectedSlot = null;
     document.getElementById('selectedInfo').classList.remove('show');
@@ -235,20 +248,36 @@ function goBack() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const userRes = await fetchWithAuth('/user-info');
+    const userRes = await fetchWithAuth('/api/user-info');
     userInfo = await userRes.json();
     const params = new URLSearchParams(window.location.search);
+    let bedrijfParam = params.get('bedrijf') || params.get('bedrijfId');
+    let studentParam = params.get('student') || params.get('studentId');
+
+    // Nieuw: haal id uit RESTful path als query ontbreekt
+    const path = window.location.pathname;
+    if (!bedrijfParam && /\/reserveren\/bedrijf\/(\d+)/.test(path)) {
+      bedrijfParam = path.match(/\/reserveren\/bedrijf\/(\d+)/)[1];
+      console.log('[RESERVATIE] BedrijfId uit path:', bedrijfParam);
+    }
+    if (!studentParam && /\/reserveren\/student\/(\d+)/.test(path)) {
+      studentParam = path.match(/\/reserveren\/student\/(\d+)/)[1];
+      console.log('[RESERVATIE] StudentId uit path:', studentParam);
+    }
+    console.log('[RESERVATIE] userType:', userInfo.userType, '| bedrijfParam:', bedrijfParam, '| studentParam:', studentParam);
     if (userInfo.userType === 'student') {
-      targetId = params.get('bedrijf');
+      targetId = bedrijfParam;
       targetType = 'bedrijf';
+      console.log('[RESERVATIE] Student reserveert bij bedrijf:', targetId);
       if (!targetId) {
         window.showNotification('Geen bedrijf geselecteerd. Je wordt teruggestuurd naar het bedrijvenoverzicht.', 'error');
         setTimeout(() => window.location.href = '/alle-bedrijven.html', 2000);
         return;
       }
     } else if (userInfo.userType === 'bedrijf') {
-      targetId = params.get('student');
+      targetId = studentParam;
       targetType = 'student';
+      console.log('[RESERVATIE] Bedrijf reserveert bij student:', targetId);
       if (!targetId) {
         window.showNotification('Geen student geselecteerd. Je wordt teruggestuurd naar het studentenoverzicht.', 'error');
         setTimeout(() => window.location.href = '/alle-studenten.html', 2000);
@@ -256,13 +285,55 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } else {
       window.showNotification('Onbekende gebruikersrol.', 'error');
-      window.location.href = '/';
       return;
     }
     document.getElementById('currentDate').textContent = formatDate(currentDate);
     await loadTargetInfo();
     await loadTimeSlots(currentDate);
+
+    // === Vul role-distinction sectie ===
+    const roleDiv = document.getElementById('roleDistinction');
+    if (roleDiv) {
+      let aanvragerHtml = '', ontvangerHtml = '';
+      if (userInfo.userType === 'student') {
+        aanvragerHtml = `
+          <div class="role-block aanvrager">
+            <span class="role-label">Aanvrager</span>
+            <span class="role-icon"><i class="fas fa-user"></i></span>
+            <span class="role-name">Jij</span>
+            <span class="role-type"><i class="fas fa-user-graduate"></i> Student</span>
+          </div>
+        `;
+        ontvangerHtml = `
+          <div class="role-block ontvanger">
+            <span class="role-label">Ontvanger</span>
+            <span class="role-icon"><i class="fas fa-user-tie"></i></span>
+            <span class="role-name" id="roleTargetName">Bedrijf</span>
+            <span class="role-type"><i class="fas fa-building"></i> Bedrijf</span>
+          </div>
+        `;
+      } else if (userInfo.userType === 'bedrijf') {
+        aanvragerHtml = `
+          <div class="role-block aanvrager">
+            <span class="role-label">Aanvrager</span>
+            <span class="role-icon"><i class="fas fa-user"></i></span>
+            <span class="role-name">Jij</span>
+            <span class="role-type"><i class="fas fa-building"></i> Bedrijf</span>
+          </div>
+        `;
+        ontvangerHtml = `
+          <div class="role-block ontvanger">
+            <span class="role-label">Ontvanger</span>
+            <span class="role-icon"><i class="fas fa-user-graduate"></i></span>
+            <span class="role-name" id="roleTargetName">Student</span>
+            <span class="role-type"><i class="fas fa-user-graduate"></i> Student</span>
+          </div>
+        `;
+      }
+      roleDiv.innerHTML = aanvragerHtml + ontvangerHtml;
+    }
   } catch (e) {
+    console.error('[RESERVATIE] Fout bij ophalen gebruikersinfo:', e);
     window.showNotification('Kon gebruikersinfo niet ophalen. Probeer opnieuw.', 'error');
     return;
   }

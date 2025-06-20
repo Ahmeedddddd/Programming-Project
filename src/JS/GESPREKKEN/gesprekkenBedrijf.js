@@ -25,7 +25,8 @@ function closeRejectModal() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const gesprekkenTable = document.getElementById('bedrijfGesprekkenTable');
+    const gesprekkenAangevraagd = document.getElementById('bedrijfGesprekkenAangevraagd');
+    const gesprekkenOntvangen = document.getElementById('bedrijfGesprekkenOntvangen');
     const loadingMessage = document.getElementById('loadingBedrijfGesprekken');
     const noGesprekkenMessage = document.getElementById('noBedrijfGesprekken');
     const errorMessage = document.getElementById('errorBedrijfGesprekken');
@@ -35,50 +36,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (noGesprekkenMessage) noGesprekkenMessage.style.display = 'none';
         if (errorMessage) errorMessage.style.display = 'none';
 
-        // Clear existing rows except header and messages
-        Array.from(gesprekkenTable.children).forEach(child => {
-            if (!child.classList.contains('gesprekkenTableHeader') && 
-                !child.id.startsWith('loading') && 
-                !child.id.startsWith('no') && 
-                !child.id.startsWith('error')) {
-                child.remove();
-            }
+        // Clear bestaande rijen behalve header
+        [gesprekkenAangevraagd, gesprekkenOntvangen].forEach(table => {
+          Array.from(table.children).forEach(child => {
+            if (!child.classList.contains('gesprekkenTableHeader')) child.remove();
+          });
         });
 
         try {
-            // Gebruik de ReservatieService om de bedrijfsgesprekken op te halen
             const meetings = await ReservatieService.getCompanyReservations();
-
             if (meetings && meetings.length > 0) {
                 // Sorteer meetings op startTijd
                 meetings.sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
-
+                let countAangevraagd = 0, countOntvangen = 0;
                 meetings.forEach(meeting => {
+                    const isAangevraagdDoorJou = meeting.aangevraagdDoor === 'bedrijf';
                     const row = document.createElement('div');
-                    row.className = 'gesprekkenTableRow';
+                    row.className = 'gesprekkenTableRow ' + (isAangevraagdDoorJou ? 'gesprek-aangevraagd' : 'gesprek-ontvangen');
                     row.dataset.reservatieId = meeting.id;
-
-                    // Backend stuurt nu ISO strings, dus direct parsen.
                     const startDate = new Date(meeting.startTijd);
                     const endDate = new Date(meeting.eindTijd);
-                    // Formatteer de tijden
                     const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
                     const timeSlotDisplay = `${formattedStartTime}-${formattedEndTime}`;
                     const displayStatus = meeting.status.charAt(0).toUpperCase() + meeting.status.slice(1);
-
                     let statusHtml = `<div class="status-${meeting.status}">${displayStatus}</div>`;
                     if (meeting.status === 'geweigerd') {
                         statusHtml = `<div class="status-geweigerd" style="color: #dc3545; font-weight: bold;">Geweigerd${meeting.redenWeigering ? ': ' + meeting.redenWeigering : ''}</div>`;
                     }
-
+                    const badge = isAangevraagdDoorJou
+                        ? '<span class="badge badge-aangevraagd">Aangevraagd door jou</span>'
+                        : '<span class="badge badge-ontvangen">Ontvangen</span>';
                     row.innerHTML = `
                         <div>${meeting.studentNaam || 'Onbekende Student'}</div>
                         <div>${timeSlotDisplay} op ${startDate.toLocaleDateString('nl-BE')}</div>
                         <div class="locatieCel">${meeting.studentTafelNr ? 'Tafel ' + meeting.studentTafelNr : '-'}</div>
                         <div class="statusCel status-${meeting.status}">${displayStatus}</div>
                         <div class="gesprekkenActions">
-                            ${meeting.status === 'aangevraagd' ?
+                            ${!isAangevraagdDoorJou && meeting.status === 'aangevraagd' ?
                                 `<button class="actieBtn bevestigBtn accept-reservation" data-id="${meeting.id}">
                                     <span class="actieIcon">&#9745;</span> Accepteer
                                 </button>
@@ -89,35 +84,49 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         </div>
                     `;
-                    gesprekkenTable.appendChild(row);
+                    if (isAangevraagdDoorJou) {
+                      gesprekkenAangevraagd.appendChild(row);
+                      countAangevraagd++;
+                    } else {
+                      gesprekkenOntvangen.appendChild(row);
+                      countOntvangen++;
+                    }
                 });
-
-                // Add event listeners for action buttons
-                gesprekkenTable.querySelectorAll('.accept-reservation').forEach(button => {
+                if (countAangevraagd === 0) {
+                  const leeg = document.createElement('div');
+                  leeg.className = 'leegMelding';
+                  leeg.textContent = 'Geen aangevraagde gesprekken.';
+                  gesprekkenAangevraagd.appendChild(leeg);
+                }
+                if (countOntvangen === 0) {
+                  const leeg = document.createElement('div');
+                  leeg.className = 'leegMelding';
+                  leeg.textContent = 'Geen ontvangen gesprekken.';
+                  gesprekkenOntvangen.appendChild(leeg);
+                }
+                // Event listeners voor actieknoppen alleen op ontvangen
+                gesprekkenOntvangen.querySelectorAll('.accept-reservation').forEach(button => {
                     button.addEventListener('click', async (e) => {
                         const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
                         if (confirm('Weet je zeker dat je deze afspraak wilt accepteren?')) {
                             showLoading(true);
                             const success = await ReservatieService.acceptReservation(reservatieId);
                             if (success) {
-                                await loadCompanyGesprekken(); // Herlaad data na succesvolle actie
+                                await loadCompanyGesprekken();
                             }
                             showLoading(false);
                         }
                     });
                 });
-
-                gesprekkenTable.querySelectorAll('.reject-reservation').forEach(button => {
+                gesprekkenOntvangen.querySelectorAll('.reject-reservation').forEach(button => {
                     button.addEventListener('click', (e) => {
                         const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
                         openRejectModal(reservatieId);
                     });
                 });
-
             } else {
                 if (noGesprekkenMessage) noGesprekkenMessage.style.display = 'block';
             }
-
         } catch (error) {
             console.error('Error loading company conversations:', error);
             if (errorMessage) {

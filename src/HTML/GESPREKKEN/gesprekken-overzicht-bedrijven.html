@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gesprekken overzicht bedrijven</title>
   <link rel="stylesheet" href="/src/CSS/style.css">
-  <link rel="stylesheet" href="/src/CSS/GESPREKKEN/gesprekken-overzicht-bedrijven.css">
+  <link rel="stylesheet" href="/src/CSS/GESPREKKEN/gesprekken.css">
   <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
 </head>
@@ -27,15 +27,31 @@
       
     <section class="gesprekkenKaart">
       <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
-      <div class="gesprekkenTable" id="bedrijfGesprekkenTable">
-        <div class="gesprekkenTableHeader">
-          <div>Naam student</div>
-          <div>Tijdslot</div>
-          <div>Locatie</div>
-          <div>Status</div>
-          <div>Actie</div>
+      <div class="gesprekkenSubSection">
+        <h3 class="gesprekkenSubTitel">Aangevraagd door jou</h3>
+        <div class="gesprekkenTable" id="bedrijfGesprekkenAangevraagd">
+          <div class="gesprekkenTableHeader">
+            <div>Naam student</div>
+            <div>Tijdslot</div>
+            <div>Locatie</div>
+            <div>Status</div>
+            <div>Actie</div>
+          </div>
+          <!-- Dynamisch geladen aangevraagde gesprekken komen hieronder -->
         </div>
-        <!-- Dynamisch geladen gesprekken komen hieronder -->
+      </div>
+      <div class="gesprekkenSubSection">
+        <h3 class="gesprekkenSubTitel">Ontvangen</h3>
+        <div class="gesprekkenTable" id="bedrijfGesprekkenOntvangen">
+          <div class="gesprekkenTableHeader">
+            <div>Naam student</div>
+            <div>Tijdslot</div>
+            <div>Locatie</div>
+            <div>Status</div>
+            <div>Actie</div>
+          </div>
+          <!-- Dynamisch geladen ontvangen gesprekken komen hieronder -->
+        </div>
       </div>
       <div id="loadingBedrijfGesprekken" style="display:none; text-align:center; padding:1rem;">Laden...</div>
       <div id="noBedrijfGesprekken" style="display:none; text-align:center; padding:1rem;">Geen gesprekken gevonden.</div>

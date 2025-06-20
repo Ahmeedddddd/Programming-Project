@@ -33,22 +33,38 @@
 
       <section class="gesprekkenKaart">
         <h2 class="gesprekkenTitel">Mijn gesprekken</h2>
-        <div class="gesprekkenTable" id="studentGesprekkenTable">
-          <div class="gesprekkenTableHeader">
-            <div>Naam bedrijf</div>
-            <div>Tijdslot</div>
-            <div>Status</div>
-            <div>Actie</div>
+        <div class="gesprekkenSubSection">
+          <h3 class="gesprekkenSubTitel">Aangevraagd door jou</h3>
+          <div class="gesprekkenTable" id="studentGesprekkenAangevraagd">
+            <div class="gesprekkenTableHeader">
+              <div>Naam bedrijf</div>
+              <div>Tijdslot</div>
+              <div>Status</div>
+              <div>Actie</div>
+            </div>
+            <!-- Dynamisch geladen aangevraagde gesprekken komen hieronder -->
           </div>
-          <p id="loadingStudentGesprekken" style="text-align: center; padding: 20px;">Laden van je gesprekken...</p>
-          <p id="noStudentGesprekken" style="display: none; text-align: center; padding: 20px;">Je hebt nog geen gesprekken gepland.</p>
-          <p id="errorStudentGesprekken" style="display: none; color: red; text-align: center; padding: 20px;">Fout bij het laden van gesprekken.</p>
         </div>
+        <div class="gesprekkenSubSection">
+          <h3 class="gesprekkenSubTitel">Ontvangen</h3>
+          <div class="gesprekkenTable" id="studentGesprekkenOntvangen">
+            <div class="gesprekkenTableHeader">
+              <div>Naam bedrijf</div>
+              <div>Tijdslot</div>
+              <div>Status</div>
+              <div>Actie</div>
+            </div>
+            <!-- Dynamisch geladen ontvangen gesprekken komen hieronder -->
+          </div>
+        </div>
+        <p id="loadingStudentGesprekken" style="text-align: center; padding: 20px;">Laden van je gesprekken...</p>
+        <p id="noStudentGesprekken" style="display: none; text-align: center; padding: 20px;">Je hebt nog geen gesprekken gepland.</p>
+        <p id="errorStudentGesprekken" style="display: none; color: red; text-align: center; padding: 20px;">Fout bij het laden van gesprekken.</p>
       </section>
     </div>
   </body>
-  <script src="/src/JS/api.js"></script>
+<script type="module" src="/src/JS/UTILS/startPage.js"></script>
+<script src="/src/JS/api.js"></script>
 <script src="/src/JS/reservatieService.js"></script>
 <script src="/src/JS/GESPREKKEN/gesprekkenStudent.js"></script>
-<script type="module" src="/src/JS/UTILS/startPage.js"></script>
 </html>
