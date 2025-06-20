@@ -14,12 +14,15 @@ router.get('/', async (req, res) => {
         // FIXED: Direct database call instead of controller wrapper
         const Student = require('../MODELS/student');
         
+        // Get limit parameter from query
+        const limit = req.query.limit ? parseInt(req.query.limit) : null;
+        
         // Get all students first
         const allStudents = await Student.getAll();
         console.log(`📊 Found ${allStudents.length} total students`);
         
         // Filter students that have projects and transform to project format
-        const projects = allStudents
+        let projects = allStudents
             .filter(student => {
                 const hasProject = student.projectTitel && 
                                  student.projectTitel.trim() !== '' && 
@@ -60,6 +63,14 @@ router.get('/', async (req, res) => {
                 };
             });
         
+        const totalProjects = projects.length;
+
+        // Apply limit if specified
+        if (limit && limit > 0) {
+            projects = projects.slice(0, limit);
+            console.log(`📊 Limited to ${limit} projects`);
+        }
+        
         console.log(`📊 Found ${projects.length} projects from ${allStudents.length} students`);
         
         // Always return successful response, even if no projects
@@ -67,7 +78,9 @@ router.get('/', async (req, res) => {
             success: true,
             data: projects,
             count: projects.length,
+            total: totalProjects,
             total_students: allStudents.length,
+            limit: limit,
             message: projects.length > 0 ? 'Projects loaded successfully' : 'No projects found'
         });
         

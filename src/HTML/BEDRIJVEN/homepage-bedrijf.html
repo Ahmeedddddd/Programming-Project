@@ -130,91 +130,56 @@
             </div>
         </section>
 
-        <!-- Interested Students Section -->
-        <section class="companies-section">
-            <div class="section-header">
-                <div class="section-icon">👥</div>
-                <h2 class="section-title">Studenten <span id="total-students">21</span></h2>
+        <!-- Aankomende Gesprekken Section -->
+        <div class="section-container fade-in">
+          <div class="section-header">
+            <h2 class="section-title">
+              <div class="section-icon">📅</div>
+              Aankomende Gesprekken <span data-count="0" id="upcoming-meetings-count">0</span>
+            </h2>
+          </div>
+          <div class="card-grid" id="upcoming-meetings-grid">
+              <!-- Dynamically loaded -->
+          </div>
+          <div class="btn-center">
+            <a href="/gesprekken-overzicht-bedrijven" class="btn">Alle gesprekken beheren →</a>
+          </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Interested Students Section -->
+            <div class="section-container fade-in">
+              <div class="section-header">
+                <h2 class="section-title">
+                  <div class="section-icon">👥</div>
+                  Interessante Studenten <span data-count="0" id="total-students-count">0</span>
+                </h2>
+              </div>
+              
+              <div class="card-grid" id="students-grid">
+                <!-- Dynamically loaded -->
+              </div>
+
+              <div class="btn-center">
+                <a href="/alleStudenten" class="btn">Bekijk alle studenten →</a>
+              </div>
             </div>
-            <div class="items-grid" id="students-grid">
-                <div class="item-card">
-                    <div class="item-header">John Doe</div>
-                    <div class="item-description">AI & Robotics • Kokende AI Robot • 3e jaar TI</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Jeretom Carnomina</div>
-                    <div class="item-description">Software Engineering • NeuroTrack EEG-headset • 3e jaar</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Ben Huur</div>
-                    <div class="item-description">Networks & Security • Cisco DNA Center • 3e jaar TI</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Elina Verstegen</div>
-                    <div class="item-description">Cybersecurity • SecureCloudGuard platform • 2e jaar</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Eva Bekaert</div>
-                    <div class="item-description">IoT & Data • Smart Garden Assistant • 3e jaar TI</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Lucas Vancouver</div>
-                    <div class="item-description">AR/VR Development • AR Tour Guide App • 3e jaar</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Student 7</div>
-                    <div class="item-description">Extra student 7 info</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Student 8</div>
-                    <div class="item-description">Extra student 8 info</div>
-                </div>
-            </div>
-            <div class="total-students-label">Totale studenten: <span id="total-students-label">21</span></div>
-            <a href="/alleStudenten" class="view-all-btn">👥 Bekijk alle studenten</a>
-        </section>
+        </div>
 
         <!-- Top Student Projects Section -->
-        <section class="companies-section">
+        <section class="projects-section fade-in">
             <div class="section-header">
-                <div class="section-icon">🚀</div>
-                <h2 class="section-title">Trending Projecten</h2>
+                <h2 class="section-title">
+                    <div class="section-icon">🚀</div>
+                    Trending Projecten <span data-count="0" id="total-projects-count">0</span>
+                </h2>
             </div>
-            <div class="items-grid" id="projects-grid">
-                <div class="item-card">
-                    <div class="item-header">Kokende AI Robot</div>
-                    <div class="item-description">Autonome huishoudrobot met AI en spraakherkenning</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">NeuroTrack EEG-headset</div>
-                    <div class="item-description">Realtime hersensensor voor sport monitoring</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">SecureCloudGuard</div>
-                    <div class="item-description">Cloud beveiligingsplatform met Azure en Terraform</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Smart Garden Assistant</div>
-                    <div class="item-description">IoT plantverzorging met ML-analyse</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">AR Tour Guide</div>
-                    <div class="item-description">Augmented reality voor toerisme</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Debug Dashboard</div>
-                    <div class="item-description">Realtime monitoring met WebSockets</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Project 7</div>
-                    <div class="item-description">Extra project 7 info</div>
-                </div>
-                <div class="item-card">
-                    <div class="item-header">Project 8</div>
-                    <div class="item-description">Extra project 8 info</div>
-                </div>
+            <div class="projects-grid" id="projects-grid">
+                <!-- Dynamically loaded -->
             </div>
-            <a href="/alleProjecten" class="view-all-btn">🔍 Ontdek alle projecten</a>
+            <div class="center-btn">
+                <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
+            </div>
         </section>
 
 
@@ -301,24 +266,3 @@
 <script type="module" src="/src/JS/index.js"></script>
 <script type="module" src="/src/JS/UTILS/startPage.js"></script>
 <script type="module" src="/src/JS/UTILS/homepage-bedrijf.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        await loadPendingAppointmentsCount();
-    });
-
-    async function loadPendingAppointmentsCount() {
-        try {
-            const countElement = document.getElementById('pending-appointments-count');
-            const meetings = await ReservatieService.getCompanyReservations();
-            const pendingCount = meetings.filter(m => m.status === 'aangevraagd').length;
-            if (countElement) {
-                countElement.textContent = pendingCount;
-            }
-        } catch (error) {
-            console.error('Error loading pending appointments count for company:', error);
-            if (document.getElementById('pending-appointments-count')) {
-                document.getElementById('pending-appointments-count').textContent = 'Error';
-            }
-        }
-    }
-</script>

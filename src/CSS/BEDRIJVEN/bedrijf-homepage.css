@@ -197,6 +197,43 @@
             color: white;
         }
 
+        /* Status Styling voor Aankomende Gesprekken */
+        .status-aangevraagd {
+            color: #ffc107;
+            font-weight: 600;
+            background: rgba(255, 193, 7, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .status-bevestigd {
+            color: #28a745;
+            font-weight: 600;
+            background: rgba(40, 167, 69, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .status-geweigerd {
+            color: #dc3545;
+            font-weight: 600;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .status-geannuleerd {
+            color: #6c757d;
+            font-weight: 600;
+            background: rgba(108, 117, 125, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
         /* Stats Section */
         .stats-section {
             background: white;
