@@ -17,6 +17,9 @@ router.get('/namiddag', tafelController.getNamiddagTafels);
 // GET /api/tafels/overzicht - Volledig overzicht van alle tafel toewijzingen
 router.get('/overzicht', tafelController.getTafelOverzicht);
 
+// GET /api/tafels/config - Haal tafel configuratie op (NIEUWE ENDPOINT)
+router.get('/config', tafelController.getTafelConfig);
+
 // ===== ORGANISATOR ONLY ROUTES =====
 
 // PUT /api/tafels/student/:studentnummer/tafel/:tafelNr - Wijs student toe aan tafel
