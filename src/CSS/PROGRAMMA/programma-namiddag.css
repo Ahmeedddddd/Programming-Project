@@ -25,6 +25,7 @@
     border-radius: 16px;
     padding: 2rem;
     padding-top: 0.5rem;
+    padding-bottom: 1rem;
     box-shadow: 0 8px 32px rgba(136, 21, 56, 0.15);
     width: 500px;
     min-width: 500px;
@@ -34,22 +35,152 @@
     flex-direction: column;
 }
 
-.sidebarTitle {
-    color: #881538;
-    font-size: 1.4rem;
-    font-weight: 700;
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.5rem;
-    text-align: center;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #881538;
 }
 
-/* 🔍 Search container styling */
-.search-container {
-    position: relative;
-    margin-bottom: 1.5rem;
+.sidebarTitle {
+    color: #881538;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    padding-top: 1rem;
+    text-align: left;
 }
 
+.config-btn {
+    display: none; /* Hidden by default, shown for organisators via JS */
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    height: auto;
+    min-height: 36px;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 600;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
+}
+
+.config-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(136, 21, 56, 0.3);
+    background: linear-gradient(135deg, #A91B47 0%, #C2185B 100%);
+}
+
+/* Tafel configuratie modal */
+.config-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.config-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.config-modal h3 {
+    color: #881538;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.config-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.config-input-group label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.config-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.config-input:focus {
+    outline: none;
+    border-color: #881538;
+}
+
+.config-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.config-btn-save,
+.config-btn-cancel {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.config-btn-save {
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
+    color: white;
+}
+
+.config-btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(136, 21, 56, 0.3);
+}
+
+.config-btn-cancel {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+}
+
+.config-btn-cancel:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* Sidebar inhoud styling */
 .sidebarZoekbalk {
     width: 100%;
     background: #f8f9fa;
@@ -73,18 +204,22 @@
     border-color: #881538;
     background: white;
     box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1);
-    transform: translateY(-1px);
 }
 
 .sidebarZoekbalk:hover:not(:focus) {
-    border-color: #adb5bd;
+    border-color: #881538;
     background: white;
-    transform: translateY(-0.5px);
+}
+
+/* Search container styling */
+.search-container {
+    position: relative;
+    margin-bottom: 1.5rem;
 }
 
 .search-icon {
     position: absolute;
-    left: 0.75rem;
+    left: 1rem;
     top: 50%;
     transform: translateY(-50%);
     color: #868e96;
@@ -93,7 +228,8 @@
     pointer-events: none;
 }
 
-.search-container:focus-within .search-icon {
+.search-container:hover .search-icon,
+.sidebarZoekbalk:focus ~ .search-icon {
     color: #881538;
 }
 
@@ -155,6 +291,49 @@
 .sidebarTafels li.selected::before {
     background: white;
     transform: scaleY(1);
+}
+
+/* Styling voor beschikbare (lege) tafels */
+.sidebarTafels li.beschikbaar,
+.sidebarTafels .tafel-item.beschikbaar {
+    background: #f8f9fa !important;
+    border: 2px dashed #ced4da !important;
+    color: #6c757d !important;
+    opacity: 0.8 !important;
+}
+
+.sidebarTafels li.beschikbaar:hover,
+.sidebarTafels .tafel-item.beschikbaar:hover {
+    background: #e9ecef !important;
+    border: 2px dashed #881538 !important;
+    color: #495057 !important;
+    opacity: 1 !important;
+    transform: translateX(3px) !important; /* Minder slide dan normale tafels */
+    box-shadow: 0 2px 10px rgba(136, 21, 56, 0.15) !important;
+}
+
+.sidebarTafels li.beschikbaar::before,
+.sidebarTafels .tafel-item.beschikbaar::before {
+    background: #ced4da !important;
+}
+
+.sidebarTafels li.beschikbaar:hover::before,
+.sidebarTafels .tafel-item.beschikbaar:hover::before {
+    background: #881538 !important;
+}
+
+/* Styling voor lege tafels - lagere hoogte */
+.sidebarTafels li.empty-tafel-item {
+    opacity: 0.7;
+    border-style: dashed !important;
+    min-height: 3.5rem !important; /* Lagere hoogte voor lege tafels */
+    padding: 0.75rem 1rem !important; /* Minder padding voor compacte look */
+}
+
+/* Specifieke styling voor lege tafel content */
+.sidebarTafels li.empty-tafel-item .tafel-content {
+    min-height: 1.5rem !important; /* Override voor lege tafels */
+    height: auto !important;
 }
 
 /* Plattegrond Sectie */
@@ -426,6 +605,68 @@
     transform: translateY(-2px);
 }
 
+/* Beautiful refresh button in sidebar */
+.sideBar .refresh-btn {
+    display: none; /* Hidden by default, shown for organisators via JS */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #881538 0%, #A91B47 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.sideBar .refresh-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.sideBar .refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(136, 21, 56, 0.3);
+    background: linear-gradient(135deg, #A91B47 0%, #C2185B 100%) !important;
+}
+
+.sideBar .refresh-btn:hover::before {
+    left: 100%;
+}
+
+.sideBar .refresh-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
+}
+
+.sideBar .refresh-btn i {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.sideBar .refresh-btn:hover i {
+    transform: rotate(180deg);
+}
+
+.sideBar .refresh-btn span {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .overzichtContainer {
@@ -484,10 +725,14 @@
     .search-container {
         margin-bottom: 1rem;
     }
-    
-    .sidebarZoekbalk {
+      .sidebarZoekbalk {
         font-size: 0.9rem;
-        padding: 0.7rem;
+        padding: 0.7rem 0.7rem 0.7rem 2.2rem; /* Behoud ruimte voor icon */
+    }
+    
+    .search-icon {
+        left: 0.8rem; /* Iets dichter bij rand op medium schermen */
+        font-size: 0.85rem;
     }
 }
 
@@ -527,10 +772,14 @@
     .search-container {
         margin-bottom: 0.8rem;
     }
-    
-    .sidebarZoekbalk {
+      .sidebarZoekbalk {
         font-size: 0.85rem;
-        padding: 0.6rem;
+        padding: 0.6rem 0.6rem 0.6rem 2rem; /* Behoud ruimte voor icon */
+    }
+    
+    .search-icon {
+        left: 0.7rem; /* Nog dichter bij rand op kleine schermen */
+        font-size: 0.8rem;
     }
     
     #plattegrondImg {

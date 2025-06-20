@@ -54,6 +54,20 @@ router.post('/bulk-assign',
   tafelController.bulkTafelToewijzing
 );
 
+// POST /api/tafels/voormiddag/config - Configureer aantal tafels voor voormiddag
+router.post('/voormiddag/config',
+  authenticateToken,
+  requireRole(['organisator']),
+  tafelController.configureVoormiddagTafels
+);
+
+// POST /api/tafels/namiddag/config - Configureer aantal tafels voor namiddag
+router.post('/namiddag/config',
+  authenticateToken,
+  requireRole(['organisator']),
+  tafelController.configureNamiddagTafels
+);
+
 // GET /api/tafels/beschikbaar - Krijg lijst van beschikbare tafels
 router.get('/beschikbaar', tafelController.getBeschikbareTafels);
 
