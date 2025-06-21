@@ -13,56 +13,139 @@
  * Het is een SHARED UTILITY - herbruikbaar overal!
  */
 
-// Utility om alle .data-count elementen bij te werken
+console.log("📊 [stat-utils] Loading stat-utils.js...");
+
+/**
+ * Updates data counts on the page by finding elements with data-count attributes
+ * and updating their content with the provided statistics.
+ * 
+ * @param {Object} stats - Object containing count data (e.g., {bedrijven: 10, studenten: 20})
+ */
 export function updateDataCounts(stats = {}) {
-    // stats: { studenten: 24, bedrijven: 18, projecten: 8, ... }
-    console.log('📊 [stat-utils] Updating data counts:', stats);
+    console.log("📊 [stat-utils] === UPDATING DATA COUNTS ===");
+    console.log("📊 [stat-utils] Received stats:", stats);
     
-    const dataCountElements = document.querySelectorAll('.data-count[data-type]');
-    console.log(`📊 [stat-utils] Found ${dataCountElements.length} data-count elements`);
-    
-    dataCountElements.forEach(el => {
-        const type = el.getAttribute('data-type');
-        if (type && stats[type] !== undefined) {
-            const oldValue = el.textContent;
-            el.textContent = stats[type];
-            console.log(`📊 [stat-utils] Updated ${type}: ${oldValue} → ${stats[type]}`);
-            
-            // Add visual feedback
-            el.style.transition = 'all 0.3s ease';
-            el.style.transform = 'scale(1.1)';
-            el.style.color = '#881538';
-            
-            setTimeout(() => {
-                el.style.transform = 'scale(1)';
-            }, 300);
+    if (!stats || Object.keys(stats).length === 0) {
+        console.warn("📊 [stat-utils] No stats provided, skipping update");
+        return;
+    }
+
+    // Find all elements with data-count attributes
+    const dataCountElements = document.querySelectorAll('[data-count]');
+    console.log(`📊 [stat-utils] Found ${dataCountElements.length} data-count elements:`, 
+        Array.from(dataCountElements).map(el => ({
+            id: el.id,
+            className: el.className,
+            currentText: el.textContent,
+            dataCount: el.getAttribute('data-count')
+        }))
+    );
+
+    // Also look for specific ID patterns that might contain counts
+    const specificElements = [
+        'total-companies-count',
+        'total-students-count', 
+        'total-projects-count',
+        'upcoming-meetings-count',
+        'upcoming-appointments-count',
+        'pending-requests-count'
+    ];
+
+    console.log("📊 [stat-utils] Looking for specific count elements...");
+    specificElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            console.log(`📊 [stat-utils] Found specific element #${id}:`, element);
         }
     });
+
+    // Update data-count elements
+    dataCountElements.forEach(element => {
+        const dataType = element.getAttribute('data-count');
+        const count = stats[dataType];
+        
+        if (count !== undefined) {
+            console.log(`📊 [stat-utils] Updating ${dataType}: ${count} in element:`, element);
+            element.textContent = count;
+        } else {
+            console.warn(`📊 [stat-utils] No count found for data-type: ${dataType}`);
+        }
+    });
+
+    // Update specific ID elements
+    const idMappings = {
+        'total-companies-count': stats.bedrijven,
+        'total-students-count': stats.studenten,
+        'total-projects-count': stats.projecten,
+        'upcoming-meetings-count': stats['upcoming-meetings'],
+        'upcoming-appointments-count': stats.gesprekken,
+        'pending-requests-count': stats['pending-requests']
+    };
+
+    console.log("📊 [stat-utils] Updating specific ID elements with mappings:", idMappings);
     
-    console.log('✅ [stat-utils] Data counts updated successfully');
+    Object.entries(idMappings).forEach(([id, count]) => {
+        if (count !== undefined) {
+            const element = document.getElementById(id);
+            if (element) {
+                console.log(`📊 [stat-utils] Updating #${id} with count: ${count}`);
+                element.textContent = count;
+            } else {
+                console.warn(`📊 [stat-utils] Element #${id} not found`);
+            }
+        }
+    });
+
+    // Also update any elements with matching text patterns
+    console.log("📊 [stat-utils] Looking for elements with count patterns...");
+    const allElements = document.querySelectorAll('*');
+    const countPatterns = [
+        { pattern: /bedrijven/i, key: 'bedrijven' },
+        { pattern: /studenten/i, key: 'studenten' },
+        { pattern: /projecten/i, key: 'projecten' },
+        { pattern: /gesprekken/i, key: 'gesprekken' }
+    ];
+
+    countPatterns.forEach(({ pattern, key }) => {
+        const count = stats[key];
+        if (count !== undefined) {
+            allElements.forEach(element => {
+                if (element.textContent && pattern.test(element.textContent) && 
+                    element.textContent.match(/\d+/) && 
+                    !element.hasAttribute('data-count')) {
+                    console.log(`📊 [stat-utils] Potential count element found for ${key}:`, element);
+                }
+            });
+        }
+    });
+
+    console.log("📊 [stat-utils] === DATA COUNTS UPDATE COMPLETE ===");
 }
 
-// Optional: Legacy support voor oude data-count format
+/**
+ * Legacy function for backward compatibility
+ * Updates data counts using the old method
+ */
 export function updateLegacyDataCounts(stats = {}) {
-    console.log('⚠️ [stat-utils] Updating legacy data-count format');
+    console.log("📊 [stat-utils] Updating legacy data counts:", stats);
     
-    // Oude format: <span data-count="25">0</span>
-    const legacyElements = document.querySelectorAll('[data-count]:not([data-type])');
-    
-    legacyElements.forEach(el => {
-        const dataCount = el.getAttribute('data-count');
-        const context = el.closest('.section-title')?.textContent?.toLowerCase() || '';
-        
-        let type = 'unknown';
-        if (context.includes('bedrijf')) type = 'bedrijven';
-        else if (context.includes('student')) type = 'studenten'; 
-        else if (context.includes('project')) type = 'projecten';
-        
-        if (type !== 'unknown' && stats[type] !== undefined) {
-            el.textContent = stats[type];
-            console.log(`📊 [stat-utils] Updated legacy ${type}: ${stats[type]}`);
-        }
+    // Find elements by common patterns
+    const selectors = [
+        '[data-count]',
+        '.count-badge',
+        '.data-count',
+        '#total-companies-count',
+        '#total-students-count', 
+        '#total-projects-count'
+    ];
+
+    selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        console.log(`📊 [stat-utils] Found ${elements.length} elements for selector: ${selector}`);
     });
+
+    // Update using the new method
+    updateDataCounts(stats);
 }
 
 // Export both functions
@@ -71,7 +154,7 @@ export default {
     updateLegacyDataCounts
 };
 
-console.log('✅ [stat-utils] Utility functions loaded and ready for use!');
+console.log("✅ [stat-utils] Utility functions loaded and ready for use!");
 
 /*
  * GEBRUIK VOORBEELDEN:

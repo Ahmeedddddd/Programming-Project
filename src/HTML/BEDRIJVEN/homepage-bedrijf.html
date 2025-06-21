@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/index.css">
     <link rel="stylesheet" href="/src/CSS/BEDRIJVEN/bedrijf-homepage.css">
-     <link rel="stylesheet" href="/src/CSS/navigation-styles.css" />
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
 </head>
@@ -58,7 +57,7 @@
 <section class="aboutSection">
   <h1 class="aboutTitle" id="bedrijfWelcomeTitle">Welkom terug! 🏢</h1>
   <p class="aboutSubtitle">Ontdek talent van morgen. Verbind met getalenteerde studenten en vind je volgende collega's.</p>
-  <a href="/alleStudenten" class="section-btn1">Studenten Ontdekken</a>
+  <a href="/alle-studenten" class="section-btn1">Studenten Ontdekken</a>
 </section>
 
 <!-- Zoekbalk - Identiek -->
@@ -91,7 +90,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon">📅</div>
-                    <h2 class="card-title">Gesprek Aanvragen <span class="count-badge" id="pending-appointments-count">0</span></h2>
+                    <h2 class="card-title">Gesprek Aanvragen <span class="count-badge" id="pending-requests-count">0</span></h2>
                 </div>
                 
                 <p class="card-subtitle">Beheer inkomende gesprek verzoeken:</p>
@@ -147,14 +146,14 @@
                 <div class="section-header">
                     <h2 class="section-title">
                         <div class="section-icon">👥</div>
-                        Interessante Studenten <span data-count="0" id="total-students-count">0</span>
+                        Interessante Studenten <span data-count="studenten" id="total-students-count">0</span>
                     </h2>
                 </div>
                 <div class="card-grid" id="students-grid">
                     <!-- Dynamically loaded -->
                 </div>
                 <div class="btn-center">
-                    <a href="/alleStudenten" class="btn">Bekijk alle studenten →</a>
+                    <a href="/alle-studenten" class="btn">Bekijk alle studenten →</a>
                 </div>
             </div>
 
@@ -163,7 +162,7 @@
                 <div class="section-header">
                     <h2 class="section-title">
                         <div class="section-icon">📅</div>
-                        Aankomende Gesprekken <span data-count="0" id="upcoming-meetings-count">0</span>
+                        Aankomende Gesprekken <span data-count="upcoming-meetings" id="upcoming-meetings-count">0</span>
                     </h2>
                 </div>
                 <div class="card-grid" id="upcoming-meetings-grid">
@@ -180,14 +179,14 @@
             <div class="section-header">
                 <h2 class="section-title">
                     <div class="section-icon">🚀</div>
-                    Trending Projecten <span data-count="0" id="total-projects-count">0</span>
+                    Trending Projecten <span data-count="projecten" id="total-projects-count">0</span>
                 </h2>
             </div>
             <div class="projects-grid" id="projects-grid">
                 <!-- Dynamically loaded -->
             </div>
             <div class="center-btn">
-                <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
+                <a href="/alle-projecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
             </div>
         </section>
 
@@ -266,8 +265,9 @@
 <div class="menu-overlay"></div>
 </div> -->
 
-<script src="/src/JS/api.js"></script>
-<script src="/src/JS/reservatieService.js"></script>
+<script type="module" src="/src/JS/UTILS/notification-system.js"></script>
+<script type="module" src="/src/JS/api.js"></script>
+<script type="module" src="/src/JS/reservatieService.js"></script>
 <script type="module" src="/src/JS/index.js"></script>
 <script type="module" src="/src/JS/UTILS/startPage.js"></script>
 <script type="module" src="/src/JS/UTILS/homepage-bedrijf.js"></script>

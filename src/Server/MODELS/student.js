@@ -1,5 +1,6 @@
 //src/Server/MODELS/student.js
 const { pool } = require('../CONFIG/database');
+const logger = require('../UTILS/logger');
 
 class Student {  static async getAll() {
     const [rows] = await pool.query(`
@@ -64,20 +65,28 @@ class Student {  static async getAll() {
     );
     return result.affectedRows;
   }
+
   static async getWithProjects() {
-    const [rows] = await pool.query(`
-      SELECT
-        studentnummer,
-        CONCAT(voornaam, ' ', achternaam) as studentNaam,
-        voornaam,
-        achternaam,
-        email, projectTitel, projectBeschrijving,
-        opleiding, opleidingsrichting, tafelNr, leerjaar
-      FROM STUDENT
-      WHERE projectTitel IS NOT NULL AND projectTitel != ''
-      ORDER BY projectTitel
-    `);
-    return rows;
+    try {
+      const [rows] = await pool.query(`
+        SELECT
+            s.projectTitel,
+            MAX(s.projectBeschrijving) as projectBeschrijving,
+            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) SEPARATOR ', ') as studenten
+        FROM
+            STUDENT s
+        WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
+        GROUP BY
+            s.projectTitel
+        ORDER BY
+            s.projectTitel;
+      `);
+      logger.info(`📊 Found ${rows.length} projects after grouping.`);
+      return rows;
+    } catch (error) {
+        logger.error('Error fetching projects with students:', error);
+        throw error;
+    }
   }
 
   // ===== STATISTICS METHODS =====

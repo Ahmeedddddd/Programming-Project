@@ -1,44 +1,65 @@
-// Bedrijf Homepage JavaScript - Dynamische data loading
+// src/JS/UTILS/homepage-bedrijf.js
 
-import { fetchWithAuth } from "../api.js";
-import { showNotification } from "./notification-system.js";
-import { updateDataCounts } from "./stat-utils.js";
+import { fetchWithAuth } from '../api.js';
+import { ReservatieService } from '../reservatieService.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // Laad alle bedrijf-specifieke data bij het laden van de pagina
-    await loadUserInfo();
-    await loadUpcomingMeetings();
-    await loadPendingAppointmentsCount();
+document.addEventListener('DOMContentLoaded', () => {
+    // Wacht een kort moment tot de universele initializer (index.js) de basisdata heeft geladen.
+    setTimeout(initializeBedrijfHomepage, 200);
 });
 
-async function loadUserInfo() {
+/**
+ * Initialiseert de bedrijf-specifieke functionaliteiten op de homepage.
+ */
+async function initializeBedrijfHomepage() {
+    console.log(" Initializing bedrijf-specific homepage functions...");
+    await loadBedrijfInfo();
+    await loadUpcomingMeetings();
+    await loadPendingAppointmentsCount();
+    // De algemene kaarten (studenten, projecten) worden al door index.js geladen.
+}
+
+/**
+ * Haalt de bedrijfsinformatie op en toont een welkomstbericht.
+ */
+async function loadBedrijfInfo() {
     try {
-        const user = await fetchWithAuth('/api/auth/me');
-        if (user && user.naam) {
-            const welcomeTitle = document.getElementById('bedrijfWelcomeTitle');
-            if (welcomeTitle) {
-                welcomeTitle.textContent = `Welkom, ${user.naam}! 🏢`;
+        const response = await fetchWithAuth('/api/user-info');
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+                const welcomeTitle = document.getElementById('bedrijfWelcomeTitle');
+                if (welcomeTitle && result.data.naam) {
+                    welcomeTitle.textContent = `Welkom terug, ${result.data.naam}! `;
+                }
             }
         }
-        updateDataCounts();
     } catch (error) {
-        console.error('Fout bij het laden van gebruikersinfo:', error);
-        showNotification('Kon gebruikersinformatie niet laden.', 'error');
+        console.error('Error loading bedrijf info:', error);
     }
 }
 
+/**
+ * Haalt het aantal wachtende afspraakverzoeken op.
+ */
 async function loadPendingAppointmentsCount() {
     try {
-        const appointments = await fetchWithAuth('/api/reservaties');
-        const pendingCount = appointments.filter(a => a.status === 'aangevraagd').length;
-        
-        updateDataCounts({ '#pending-appointments-count': pendingCount });
+        const countElement = document.getElementById('pending-appointments-count');
+        if (!countElement) return;
 
+        const meetings = await ReservatieService.getCompanyReservations();
+        const pendingCount = meetings.filter(m => m.status === 'aangevraagd').length;
+        countElement.textContent = pendingCount;
     } catch (error) {
-        console.error('Fout bij het laden van aantal afspraken:', error);
+        console.error('Error loading pending appointments count:', error);
+        const countElement = document.getElementById('pending-appointments-count');
+        if(countElement) countElement.textContent = 'Error';
     }
 }
 
+/**
+ * Haalt de aankomende gesprekken voor het bedrijf op.
+ */
 async function loadUpcomingMeetings() {
     const container = document.getElementById('upcoming-meetings-grid');
     const countElement = document.getElementById('upcoming-meetings-count');
@@ -46,36 +67,35 @@ async function loadUpcomingMeetings() {
 
     try {
         const meetings = await ReservatieService.getCompanyReservations();
-        const upcoming = meetings.filter(m => m.status === 'aangevraagd' || m.status === 'bevestigd');
+        const upcoming = meetings.filter(m => ['bevestigd', 'aangevraagd'].includes(m.status))
+                                 .sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
         
         countElement.textContent = upcoming.length;
 
         if (upcoming.length > 0) {
-            upcoming.sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
-            const displayMeetings = upcoming.slice(0, 4);
-            
-            container.innerHTML = displayMeetings.map(meeting => {
-                const startDate = new Date(meeting.startTijd);
-                const endDate = new Date(meeting.eindTijd);
-                const formattedDate = startDate.toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit' });
-                const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
-                const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+            container.innerHTML = upcoming.slice(0, 4).map(meeting => {
+                const startTime = new Date(meeting.startTijd).toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+                const endTime = new Date(meeting.eindTijd).toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
+                const date = new Date(meeting.startTijd).toLocaleDateString('nl-BE', { day: 'numeric', month: 'long' });
                 
                 return `
                     <div class="preview-card">
-                        <h3 class="card-title">${meeting.studentNaam || 'Onbekende student'}</h3>
-                        <p class="card-description">
-                            <strong>📅 ${formattedDate}</strong>, <strong>🕐 ${formattedStartTime} - ${formattedEndTime}</strong><br>
-                            Status: <span class="status-${meeting.status}">${meeting.status}</span>
-                        </p>
+                        <div class="card-header">
+                            <h3 class="card-title">${meeting.studentNaam || 'Onbekende student'}</h3>
+                             <span class="status-badge status-${meeting.status.toLowerCase()}">${meeting.status}</span>
+                        </div>
+                        <div class="card-description">
+                            <p><strong>Datum:</strong> ${date}</p>
+                            <p><strong>Tijd:</strong> ${startTime} - ${endTime}</p>
+                        </div>
                     </div>
                 `;
             }).join('');
         } else {
-            container.innerHTML = `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Geen gesprekken gepland</h3><p class="card-description">Er zijn momenteel geen aankomende gesprekken gepland.</p></div>`;
+            container.innerHTML = `<div class="no-data"><p>Er zijn momenteel geen aankomende gesprekken.</p></div>`;
         }
     } catch (error) {
-        console.error('Error loading upcoming meetings:', error);
-        container.innerHTML = `<div class="preview-card" style="text-align: center; color: #dc3545;"><h3 class="card-title">Fout bij laden</h3><p class="card-description">Kan gesprekken niet laden.</p></div>`;
+        console.error('Error loading upcoming meetings for bedrijf:', error);
+        container.innerHTML = `<div class="no-data error"><p>Kan gesprekken niet laden.</p></div>`;
     }
 } 

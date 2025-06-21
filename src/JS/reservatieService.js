@@ -1,3 +1,6 @@
+// src/JS/reservatieService.js
+// Service for handling reservation operations
+
 console.log("✅ reservatieService.js geladen");
 
 // Fallback voor showNotification als deze niet bestaat
@@ -5,7 +8,7 @@ if (typeof window.showNotification !== 'function') {
     window.showNotification = function(msg, type) { alert(msg); };
 }
 
-class ReservatieService {
+export class ReservatieService {
     /**
      * Sends a reservation request to the backend.
      * @param {string} bedrijfsnummer - The ID of the company.
@@ -14,25 +17,23 @@ class ReservatieService {
      */
     static async requestReservation(bedrijfsnummer, tijdslot) {
         try {
-            const response = await fetchWithAuth('/api/reservaties/request', {
+            const response = await fetchWithAuth('/api/reservaties/aanvragen', {
                 method: 'POST',
-                body: JSON.stringify({ bedrijfsnummer, tijdslot }) // 'datum' niet meesturen, want hardcoded in backend
+                body: JSON.stringify({
+                    bedrijfsnummer: bedrijfsnummer,
+                    tijdslot: tijdslot
+                })
             });
 
-            const result = await response.json();
-
             if (!response.ok) {
-                showNotification(result.message || 'Fout bij het aanvragen van de reservatie.', 'error');
-                return false;
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            showNotification(result.message || 'Reservatie aangevraagd!', 'success');
-            return true;
-
+            const data = await response.json();
+            return data;
         } catch (error) {
-            console.error('Error in ReservatieService.requestReservation:', error);
-            showNotification(`Netwerkfout: ${error.message}`, 'error');
-            return false;
+            console.error('Error requesting reservation:', error);
+            throw error;
         }
     }
 
@@ -43,15 +44,13 @@ class ReservatieService {
     static async getMyReservations() {
         try {
             const response = await fetchWithAuth('/api/reservaties/my');
-            const result = await response.json();
-
             if (!response.ok) {
-                throw new Error(result.message || 'Fout bij het ophalen van mijn gesprekken.');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return result.data || [];
+            const data = await response.json();
+            return data.data || [];
         } catch (error) {
-            console.error('Error in ReservatieService.getMyReservations:', error);
-            showNotification(`Kan je gesprekken niet laden: ${error.message}`, 'error');
+            console.error('Error fetching my reservations:', error);
             return [];
         }
     }
@@ -63,23 +62,19 @@ class ReservatieService {
      */
     static async cancelReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/cancel`, {
-                method: 'PUT'
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/annuleren`, {
+                method: 'DELETE'
             });
 
-            const result = await response.json();
-
             if (!response.ok) {
-                showNotification(result.message || 'Fout bij het annuleren van de reservatie.', 'error');
-                return false;
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            showNotification(result.message || 'Reservatie succesvol geannuleerd.', 'success');
-            return true;
+            const data = await response.json();
+            return data;
         } catch (error) {
-            console.error('Error in ReservatieService.cancelReservation:', error);
-            showNotification(`Netwerkfout bij annuleren: ${error.message}`, 'error');
-            return false;
+            console.error('Error canceling reservation:', error);
+            throw error;
         }
     }
 
@@ -90,15 +85,17 @@ class ReservatieService {
     static async getCompanyReservations() {
         try {
             const response = await fetchWithAuth('/api/reservaties/company');
-            const result = await response.json();
-
             if (!response.ok) {
-                throw new Error(result.message || 'Fout bij het ophalen van bedrijfsgesprekken.');
+                const errorBody = await response.text();
+                console.error("Error body from /api/reservaties/company:", errorBody);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return result.data || [];
+            const data = await response.json();
+            return data.data || [];
         } catch (error) {
-            console.error('Error in ReservatieService.getCompanyReservations:', error);
-            showNotification(`Kan bedrijfsgesprekken niet laden: ${error.message}`, 'error');
+            console.error('Error fetching company reservations:', error);
+            // In case of error, show a user-friendly notification.
+            showNotification('Kon bedrijfsgesprekken niet laden. Probeer het later opnieuw.', 'error');
             return [];
         }
     }
@@ -110,23 +107,19 @@ class ReservatieService {
      */
     static async acceptReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/accept`, {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/accepteren`, {
                 method: 'PUT'
             });
 
-            const result = await response.json();
-
             if (!response.ok) {
-                showNotification(result.message || 'Fout bij het accepteren van de reservatie.', 'error');
-                return false;
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            showNotification(result.message || 'Reservatie succesvol geaccepteerd.', 'success');
-            return true;
+            const data = await response.json();
+            return data;
         } catch (error) {
-            console.error('Error in ReservatieService.acceptReservation:', error);
-            showNotification(`Netwerkfout bij accepteren: ${error.message}`, 'error');
-            return false;
+            console.error('Error accepting reservation:', error);
+            throw error;
         }
     }
 
@@ -138,24 +131,20 @@ class ReservatieService {
      */
     static async rejectReservation(reservatieId, reden = '') {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/reject`, {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/weigeren`, {
                 method: 'PUT',
-                body: JSON.stringify({ reden })
+                body: JSON.stringify({ reden: reden })
             });
 
-            const result = await response.json();
-
             if (!response.ok) {
-                showNotification(result.message || 'Fout bij het weigeren van de reservatie.', 'error');
-                return false;
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            showNotification(result.message || 'Reservatie succesvol geweigerd.', 'success');
-            return true;
+            const data = await response.json();
+            return data;
         } catch (error) {
-            console.error('Error in ReservatieService.rejectReservation:', error);
-            showNotification(`Netwerkfout bij weigeren: ${error.message}`, 'error');
-            return false;
+            console.error('Error rejecting reservation:', error);
+            throw error;
         }
     }
 
@@ -169,19 +158,21 @@ class ReservatieService {
             const response = await fetchWithAuth(`/api/reservaties/${reservatieId}`, {
                 method: 'DELETE'
             });
-            const result = await response.json();
+
             if (!response.ok) {
-                showNotification(result.message || 'Fout bij het verwijderen van de reservatie.', 'error');
-                return false;
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            showNotification(result.message || 'Reservatie succesvol verwijderd.', 'success');
-            return true;
+
+            const data = await response.json();
+            return data;
         } catch (error) {
-            console.error('Error in ReservatieService.deleteReservation:', error);
-            showNotification(`Netwerkfout bij verwijderen: ${error.message}`, 'error');
-            return false;
+            console.error('Error deleting reservation:', error);
+            throw error;
         }
     }
 }
 
-window.ReservatieService = ReservatieService;
+// Make it available globally if other scripts need it
+if (typeof window !== 'undefined') {
+    window.ReservatieService = ReservatieService;
+}

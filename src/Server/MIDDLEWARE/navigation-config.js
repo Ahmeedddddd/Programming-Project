@@ -25,19 +25,19 @@ const NAVIGATION_CONFIG = {
     navbar: [
       { href: "/student-homepage", text: "Home" },
       { href: "/programma", text: "Programma" },
-      { href: "/gesprekkenOverzichtStudenten", text: "Mijn Gesprekken" },
-      { href: "/alleBedrijven", text: "Bedrijven" },
-      { href: "/alleProjecten", text: "Projecten" },
+      { href: "/gesprekken-overzicht-studenten", text: "Mijn Gesprekken" },
+      { href: "/alle-bedrijven", text: "Bedrijven" },
+      { href: "/alle-projecten", text: "Projecten" },
       { href: "/account-student", text: "Account", highlight: true }
     ],
     sidebar: [
       { href: "/account-student", text: "Mijn Account", icon: "fas fa-user" },
       { href: "/gegevens-student", text: "Mijn Gegevens", icon: "fas fa-id-card" },
       { href: "/mijn-project", text: "Mijn Project", icon: "fas fa-project-diagram" },
-      { href: "/gesprekkenOverzichtStudenten", text: "Mijn Gesprekken", icon: "fas fa-calendar-alt" },
+      { href: "/gesprekken-overzicht-studenten", text: "Mijn Gesprekken", icon: "fas fa-calendar-alt" },
       { divider: true },
-      { href: "/alleBedrijven", text: "Bedrijven Zoeken", icon: "fas fa-building" },
-      { href: "/alleProjecten", text: "Andere Projecten", icon: "fas fa-rocket" },
+      { href: "/alle-bedrijven", text: "Bedrijven Zoeken", icon: "fas fa-building" },
+      { href: "/alle-projecten", text: "Andere Projecten", icon: "fas fa-rocket" },
       { divider: true },
       { action: "logout", text: "Uitloggen", icon: "fas fa-sign-out-alt", danger: true }
     ]
@@ -47,8 +47,8 @@ const NAVIGATION_CONFIG = {
     navbar: [
       { href: "/bedrijf-homepage", text: "Home" },
       { href: "/programma", text: "Programma" },
-      { href: "/gesprekkenOverzichtBedrijven", text: "Gesprekken" },
-      { href: "/alleStudenten", text: "Studenten" },
+      { href: "/gesprekken-overzicht-bedrijven", text: "Gesprekken" },
+      { href: "/alle-studenten", text: "Studenten" },
       { href: "/account-bedrijf", text: "Account", highlight: true }
     ],
     sidebar: [
@@ -56,8 +56,8 @@ const NAVIGATION_CONFIG = {
       { href: "/gegevens-bedrijf", text: "Bedrijfsgegevens", icon: "fas fa-edit" },
       { href: "/gesprekken-overzicht-bedrijven", text: "Gesprekken", icon: "fas fa-calendar-alt" },
       { divider: true },
-      { href: "/alleStudenten", text: "Studenten Zoeken", icon: "fas fa-users" },
-      { href: "/alleProjecten", text: "Student Projecten", icon: "fas fa-rocket" },
+      { href: "/alle-studenten", text: "Studenten Zoeken", icon: "fas fa-users" },
+      { href: "/alle-projecten", text: "Student Projecten", icon: "fas fa-rocket" },
       { divider: true },
       { action: "logout", text: "Uitloggen", icon: "fas fa-sign-out-alt", danger: true }
     ]

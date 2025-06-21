@@ -3,66 +3,19 @@
 const express = require('express');
 const router = express.Router();
 const studentController = require('../CONTROLLERS/studentController');
+const Student = require('../MODELS/student'); // Import the model at the top
 
 // ===== PROJECT ROUTES - FIXED =====
 
 // GET /api/projecten - Alle projecten ophalen (FIXED)
 router.get('/', async (req, res) => {
     try {
-        console.log('📡 Fetching all projects...');
-        
-        // FIXED: Direct database call instead of controller wrapper
-        const Student = require('../MODELS/student');
+        console.log('📡 Fetching all projects using getWithProjects...');
         
         // Get limit parameter from query
         const limit = req.query.limit ? parseInt(req.query.limit) : null;
         
-        // Get all students first
-        const allStudents = await Student.getAll();
-        console.log(`📊 Found ${allStudents.length} total students`);
-        
-        // Filter students that have projects and transform to project format
-        let projects = allStudents
-            .filter(student => {
-                const hasProject = student.projectTitel && 
-                                 student.projectTitel.trim() !== '' && 
-                                 student.projectTitel.toLowerCase() !== 'geen' &&
-                                 student.projectTitel.toLowerCase() !== 'nvt';
-                
-                if (hasProject) {
-                    console.log(`✅ Student ${student.studentnummer} has project: ${student.projectTitel}`);
-                }
-                return hasProject;
-            })
-            .map(student => {
-                // Transform student data to project-focused format
-                return {
-                    id: student.studentnummer,
-                    projectId: student.studentnummer,
-                    titel: student.projectTitel,
-                    beschrijving: student.projectBeschrijving || 'Geen beschrijving beschikbaar',
-                    technologieën: student.technologieën || null,
-                    studentnummer: student.studentnummer,
-                    studentnaam: `${student.voornaam} ${student.achternaam}`,
-                    studenten: [{
-                        voornaam: student.voornaam,
-                        achternaam: student.achternaam,
-                        email: student.email,
-                        studentnummer: student.studentnummer
-                    }],
-                    voornaam: student.voornaam,
-                    achternaam: student.achternaam,
-                    email: student.email,
-                    opleiding: student.opleiding,
-                    opleidingsrichting: student.opleidingsrichting,
-                    tafelNr: student.tafelNr,
-                    leerjaar: student.leerjaar || 3,
-                    // Include additional fields for compatibility
-                    projectTitel: student.projectTitel,
-                    projectBeschrijving: student.projectBeschrijving
-                };
-            });
-        
+        let projects = await Student.getWithProjects();
         const totalProjects = projects.length;
 
         // Apply limit if specified
@@ -71,7 +24,7 @@ router.get('/', async (req, res) => {
             console.log(`📊 Limited to ${limit} projects`);
         }
         
-        console.log(`📊 Found ${projects.length} projects from ${allStudents.length} students`);
+        console.log(`📊 Found ${projects.length} projects.`);
         
         // Always return successful response, even if no projects
         res.json({
@@ -79,8 +32,6 @@ router.get('/', async (req, res) => {
             data: projects,
             count: projects.length,
             total: totalProjects,
-            total_students: allStudents.length,
-            limit: limit,
             message: projects.length > 0 ? 'Projects loaded successfully' : 'No projects found'
         });
         
@@ -99,7 +50,6 @@ router.get('/', async (req, res) => {
 router.get("/stats", async (req, res) => {
   try {
     console.log("📊 Fetching project stats...");
-    const Student = require("../MODELS/student");
     const stats = await Student.getStats(); // getStats contains project stats
 
     // FIXED: response format
@@ -127,7 +77,6 @@ router.get('/:id', async (req, res) => {
         console.log(`📡 Fetching project with ID: ${projectId}`);
         
         // FIXED: Direct model call
-        const Student = require('../MODELS/student');
         const student = await Student.getById(projectId);
         
         if (!student) {
@@ -212,7 +161,6 @@ router.get('/search/:searchTerm', async (req, res) => {
         console.log(`🔍 Searching projects for: ${searchTerm}`);
         
         // FIXED: Direct model search
-        const Student = require('../MODELS/student');
         const searchResults = await Student.searchByName(searchTerm);
         
         // Filter for students with projects and transform

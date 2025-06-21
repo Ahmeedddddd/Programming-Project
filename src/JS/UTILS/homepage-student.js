@@ -1,78 +1,96 @@
-import { fetchWithAuth } from "../api.js";
-import { showNotification } from "./notification-system.js";
-import { updateDataCounts } from "./stat-utils.js";
+// src/JS/UTILS/homepage-student.js
+
+import { fetchWithAuth } from '../api.js';
+import { ReservatieService } from '../reservatieService.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    initializeStudentHomepage();
+    // Wacht een kort moment tot de universele initializer (index.js) de basisdata heeft geladen.
+    // Dit zorgt ervoor dat services zoals ReservatieService beschikbaar zijn.
+    // Een robuuster systeem zou via custom events werken, maar dit is een eenvoudige oplossing.
+    setTimeout(initializeStudentHomepage, 200); 
 });
 
-function initializeStudentHomepage() {
-    loadUserInfo();
-    loadUpcomingMeetings();
-    // De rest van de kaarten (bedrijven, projecten) wordt door index.js afgehandeld.
+/**
+ * Initialiseert de student-specifieke functionaliteiten op de homepage.
+ */
+async function initializeStudentHomepage() {
+    console.log(" Initializing student-specific homepage functions...");
+    await loadUserInfo();
+    await loadUpcomingMeetings();
+    // De algemene kaarten (bedrijven, projecten) worden al door index.js geladen.
 }
 
+/**
+ * Haalt de gebruikersinformatie op en toont een welkomstbericht.
+ */
 async function loadUserInfo() {
     try {
-        const user = await fetchWithAuth("/api/auth/me");
-        if (user && user.naam) {
-            const welcomeTitle = document.getElementById("studentWelcomeTitle");
-            if (welcomeTitle) {
-                welcomeTitle.textContent = `Welkom terug, ${user.voornaam}! 🎓`;
-            }
+        const response = await fetchWithAuth('/api/user-info');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        updateDataCounts();
+        const result = await response.json();
+        if (result.success && result.data) {
+            const welcomeTitle = document.getElementById('studentWelcomeTitle');
+            if (welcomeTitle && result.data.voornaam) {
+                welcomeTitle.textContent = `Welkom terug, ${result.data.voornaam}! `;
+            }
+        } else {
+            console.warn('User info not found in response:', result.message);
+        }
     } catch (error) {
-        console.error("Fout bij het laden van gebruikersinfo:", error);
-        showNotification("Kon gebruikersinformatie niet laden.", "error");
+        console.error('Error loading user info:', error);
     }
 }
 
+/**
+ * Haalt de aankomende gesprekken voor de student op en toont ze in de daarvoor bestemde grid.
+ */
 async function loadUpcomingMeetings() {
     const container = document.getElementById('upcoming-meetings-grid');
     const countBadge = document.getElementById('upcoming-appointments-count');
     const sectionCount = document.getElementById('upcoming-meetings-count');
 
-    if (!container || !countBadge || !sectionCount) {
-        console.warn('One or more elements for upcoming meetings not found.');
+    if (!container) {
+        console.warn('Container for upcoming meetings (#upcoming-meetings-grid) not found. Skipping meetings load.');
         return;
     }
 
     try {
-        const reservations = await fetchWithAuth("/api/reservaties/my");
+        const meetings = await ReservatieService.getMyReservations();
+        const upcomingMeetings = meetings.filter(m => ['bevestigd', 'aangevraagd'].includes(m.status))
+                                         .sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
+
+        const count = upcomingMeetings.length;
+        if (countBadge) countBadge.textContent = count;
+        if (sectionCount) sectionCount.textContent = count;
         
-        const upcomingReservations = reservations.filter(res => 
-            new Date(res.datum) >= new Date() && 
-            (res.status === 'bevestigd' || res.status === 'aangevraagd')
-        );
-
-        const count = reservations.length;
-        countBadge.textContent = count;
-        sectionCount.textContent = count;
-        sectionCount.dataset.count = count;
-
         if (count === 0) {
-            container.innerHTML = `<div class="no-data">Geen aankomende gesprekken gevonden.</div>`;
+            container.innerHTML = `<div class="no-data"><p>Geen aankomende gesprekken gevonden. Ga op zoek naar een interessant bedrijf!</p></div>`;
             return;
         }
         
-        container.innerHTML = upcomingReservations.slice(0, 4).map(reservation => {
-            const startTime = new Date(reservation.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
-            const endTime = new Date(reservation.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+        container.innerHTML = upcomingMeetings.slice(0, 4).map(meeting => {
+             const startTime = new Date(meeting.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+            const endTime = new Date(meeting.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(meeting.startTijd).toLocaleDateString('nl-BE', { day: 'numeric', month: 'long' });
 
             return `
                 <div class="preview-card">
-                    <h3 class="card-title">${reservation.bedrijfNaam}</h3>
+                    <div class="card-header">
+                        <h3 class="card-title">${meeting.bedrijfNaam}</h3>
+                        <span class="status-badge status-${meeting.status.toLowerCase()}">${meeting.status}</span>
+                    </div>
                     <div class="card-description">
+                        <p><strong>Datum:</strong> ${date}</p>
                         <p><strong>Tijd:</strong> ${startTime} - ${endTime}</p>
-                        <p><strong>Status:</strong> <span class="status-${reservation.status.toLowerCase()}">${reservation.status}</span></p>
                     </div>
                 </div>
             `;
         }).join('');
 
     } catch (error) {
-        console.error("Fout bij het laden van aankomende gesprekken:", error);
-        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Kon gesprekken niet laden.</div>`;
+        console.error('Failed to load upcoming meetings for student:', error);
+        container.innerHTML = `<div class="no-data error"><p>Kon gesprekken niet laden. Probeer het later opnieuw.</p></div>`;
     }
-} 
+}
