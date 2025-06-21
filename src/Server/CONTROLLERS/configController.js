@@ -155,9 +155,7 @@ const configController = {
         message: 'Er ging iets mis bij het ophalen van de tafel configuratie'
       });
     }
-  },
-
-  // PUT /api/config/tafels - Update tafel configuratie
+  },  // PUT /api/config/tafels - Update tafel configuratie
   async updateTafelConfig(req, res) {
     try {
       const { voormiddag_aantal_tafels, namiddag_aantal_tafels } = req.body;

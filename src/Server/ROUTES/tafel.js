@@ -17,9 +17,6 @@ router.get('/namiddag', tafelController.getNamiddagTafels);
 // GET /api/tafels/overzicht - Volledig overzicht van alle tafel toewijzingen
 router.get('/overzicht', tafelController.getTafelOverzicht);
 
-// GET /api/tafels/config - Haal tafel configuratie op (NIEUWE ENDPOINT)
-router.get('/config', tafelController.getTafelConfig);
-
 // ===== ORGANISATOR ONLY ROUTES =====
 
 // PUT /api/tafels/student/:studentnummer/tafel/:tafelNr - Wijs student toe aan tafel
@@ -78,5 +75,35 @@ router.get('/beschikbaar', tafelController.getBeschikbareTafels);
 
 // GET /api/tafels/statistieken - Tafel statistieken
 router.get('/statistieken', tafelController.getTafelStatistieken);
+
+// ===== BULK PROJECT ROUTES =====
+
+// PUT /api/tafels/project/:projectTitel/tafel/:tafelNr - Bulk project toewijzing
+router.put('/project/:projectTitel/tafel/:tafelNr',
+  authenticateToken,
+  requireRole(['organisator']),
+  tafelController.wijsProjectToeAanTafel
+);
+
+// DELETE /api/tafels/project/:projectTitel - Bulk project verwijdering
+router.delete('/project/:projectTitel',
+  authenticateToken,
+  requireRole(['organisator']),
+  tafelController.verwijderProjectVanTafel
+);
+
+// POST /api/tafels/project/bulk-assign - Bulk toewijzing van project aan tafel
+router.post('/project/bulk-assign',
+  authenticateToken,
+  requireRole(['organisator']),
+  tafelController.bulkAssignProjectToTafel
+);
+
+// DELETE /api/tafels/project/bulk-remove - Bulk verwijdering van project van tafel
+router.delete('/project/bulk-remove',
+  authenticateToken,
+  requireRole(['organisator']),
+  tafelController.bulkRemoveProjectFromTafel
+);
 
 module.exports = router;
