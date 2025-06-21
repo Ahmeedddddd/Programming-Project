@@ -21,6 +21,10 @@ router.get('/search/:searchTerm', studentController.searchStudents);
 router.get('/opleiding/:opleiding', studentController.getStudentsByOpleiding);
 router.get('/opleidingsrichting/:richting', studentController.getStudentsByOpleidingsrichting);
 router.get('/gemeente/:gemeente', studentController.getStudentsByGemeente);
+router.get('/studierichtingen', studentController.getStudierichtingen);
+router.get('/opleidingsrichtingen', studentController.getOpleidingsrichtingen);
+router.get('/talen', studentController.getTalen);
+router.get('/technologieen', studentController.getTechnologieen);
 
 // PROTECTED ROUTES (authentication required)
 router.get('/profile',

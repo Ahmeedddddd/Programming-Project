@@ -309,6 +309,29 @@ class Bedrijf {
             throw error;
         }
     }
+
+    static async getUniqueValues(field) {
+        // Whitelist of allowed fields to prevent SQL injection
+        const allowedFields = ['sector', 'gemeente', 'land'];
+        if (!allowedFields.includes(field)) {
+          throw new Error(`Filtering by '${field}' is not allowed.`);
+        }
+    
+        try {
+          const [rows] = await pool.query(
+            `SELECT DISTINCT ?? FROM BEDRIJF WHERE ?? IS NOT NULL AND ?? != '' ORDER BY ?? ASC`,
+            [field, field, field, field]
+          );
+          // The frontend expects an array of objects with { value, text }
+          return rows.map(row => ({
+            value: row[field],
+            text: row[field]
+          }));
+        } catch (error) {
+          console.error(`Error getting unique values for ${field}:`, error);
+          return [];
+        }
+      }
 }
 
 module.exports = Bedrijf;

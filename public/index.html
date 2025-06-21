@@ -71,109 +71,49 @@
     </button>
   </div>
   
-  <!-- Filter Modal -->
-  <div class="filterModal" id="filterModal">
-    <div class="filterModalContent">
-      <div class="filterModalHeader">
-        <h3>Filters</h3>
-        <button class="filterModalClose" id="filterModalClose">&times;</button>
-      </div>
-      
-      <div class="filterOptions">
+  <!-- Filter Dropdown Container -->
+  <div class="filterContainer" id="filterContainer">
+    <div class="filterGrid">
         <!-- Studierichting Filter -->
         <div class="filterGroup">
           <label class="filterLabel">Studierichting</label>
           <select class="filterSelect" id="studierichtingFilter">
-            <option value="">Alle studierichtingen</option>
-            <!-- Opleidingen worden dynamisch geladen -->
+            <option value="">Alle</option>
+            <!-- Dynamisch geladen -->
+          </select>
+        </div>
+
+        <!-- Opleidingsrichting Filter -->
+        <div class="filterGroup">
+          <label class="filterLabel">Opleidingsrichting</label>
+          <select class="filterSelect" id="opleidingsrichtingFilter">
+            <option value="">Alle</option>
+             <!-- Dynamisch geladen -->
           </select>
         </div>
         
-        <!-- Technologieën Filter -->
+        <!-- Talen Filter -->
         <div class="filterGroup">
-          <label class="filterLabel">Technologieën</label>
-          <div class="filterCheckboxes">
-            <label class="filterCheckbox">
-              <input type="checkbox" value="JavaScript" class="techFilter">
-              <span>JavaScript</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Python" class="techFilter">
-              <span>Python</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Java" class="techFilter">
-              <span>Java</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="C#" class="techFilter">
-              <span>C#</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="PHP" class="techFilter">
-              <span>PHP</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="React" class="techFilter">
-              <span>React</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Vue.js" class="techFilter">
-              <span>Vue.js</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Angular" class="techFilter">
-              <span>Angular</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Node.js" class="techFilter">
-              <span>Node.js</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="MySQL" class="techFilter">
-              <span>MySQL</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="MongoDB" class="techFilter">
-              <span>MongoDB</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Docker" class="techFilter">
-              <span>Docker</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="AWS" class="techFilter">
-              <span>AWS</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Azure" class="techFilter">
-              <span>Azure</span>
-            </label>
-            <label class="filterCheckbox">
-              <input type="checkbox" value="Git" class="techFilter">
-              <span>Git</span>
-            </label>
-          </div>
+          <label class="filterLabel">Talen</label>
+          <select class="filterSelect" id="talenFilter">
+            <option value="">Alle</option>
+            <!-- Dynamisch geladen -->
+          </select>
         </div>
-        
+
         <!-- Sector Filter -->
         <div class="filterGroup">
           <label class="filterLabel">Sector</label>
           <select class="filterSelect" id="sectorFilter">
-            <option value="">Alle sectoren</option>
-            <!-- Sectoren worden dynamisch geladen -->
+            <option value="">Alle</option>
+            <!-- Dynamisch geladen -->
           </select>
         </div>
-      </div>
-      
-      <div class="filterActions">
-        <button class="filterClearBtn" id="filterClearBtn">Filters wissen</button>
-        <button class="filterApplyBtn" id="filterApplyBtn">Toepassen</button>
-      </div>
+    </div>
+     <div class="filterActions">
+        <button class="filterBtn-clear" id="filterClearBtn">Wis Filters</button>
     </div>
   </div>
-  
-  <div id="searchResults" class="search-results"></div>
 </section>
 
   <!-- Éénmaal de resultaten‐container -->

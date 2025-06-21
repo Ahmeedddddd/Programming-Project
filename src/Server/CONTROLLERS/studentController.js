@@ -462,6 +462,39 @@ const studentController = {
         message: 'Er ging iets mis bij het verwijderen van de student'
       });
     }
+  },
+
+  // GET /api/studenten/opleidingsrichtingen - Unieke opleidingsrichtingen
+  async getOpleidingsrichtingen(req, res) {
+    try {
+      const opleidingsrichtingen = await Student.getUniqueValues('opleidingsrichting');
+      res.json({ success: true, data: opleidingsrichtingen });
+    } catch (error) {
+      console.error('Error fetching opleidingsrichtingen:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch opleidingsrichtingen' });
+    }
+  },
+
+  // GET /api/studenten/talen - Unieke talen
+  async getTalen(req, res) {
+    try {
+      const talen = await Student.getUniqueValues('talen');
+      res.json({ success: true, data: talen });
+    } catch (error) {
+      console.error('Error fetching talen:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch talen' });
+    }
+  },
+
+  // GET /api/studenten/technologieen - Unieke technologieën
+  async getTechnologieen(req, res) {
+    try {
+      const technologieen = await Student.getUniqueValues('technologieen');
+      res.json({ success: true, data: technologieen });
+    } catch (error) {
+      console.error('Error fetching technologieen:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch technologieen' });
+    }
   }
 };
 
