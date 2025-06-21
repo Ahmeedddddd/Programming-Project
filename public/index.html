@@ -54,25 +54,7 @@
       <a href="/infoCareerLaunch" class="section-btn1">Lees Meer</a>
     </section>
 
-<!-- Zoekbalk -->
-<section class="searchSection">
-  <div class="searchBar">
-    <input 
-      type="text"
-      class="search-input"
-      list="search-suggestions"
-      placeholder="Zoeken in bedrijven, studenten" 
-    />
-    <datalist id="search-suggestions"></datalist>
-  </div>
-  <div id="searchResults" class="search-results"></div>
-</section>
-
-  <!-- Éénmaal de resultaten‐container -->
-  <div id="searchResults" class="search-results"></div>
-
-
-    <!-- Bedrijven en Studenten secties -->
+<!-- Bedrijven en Studenten secties -->
 <section class="content-sections">
   <div class="sections-container">
     <!-- Bedrijven sectie -->
@@ -113,6 +95,34 @@
     </div>
   </div>
 </section>
+
+<!-- Student Filter Section -->
+<section class="student-filter-section">
+    <!-- Specialization Pills -->
+    <div class="specialization-pills">
+        <span class="specialization-pill active">Alle</span>
+        <span class="specialization-pill">Toegepaste Informatica</span>
+        <span class="specialization-pill">Industriële Wetenschappen</span>
+        <span class="specialization-pill">Cybersecurity</span>
+        <span class="specialization-pill">AI & Robotica</span>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <input type="text" class="search-input" placeholder="Zoek studenten op naam of vaardigheden...">
+        <select class="filter-select">
+            <option>Alle jaren</option>
+            <option>1e jaar</option>
+            <option>2e jaar</option>
+            <option>3e jaar</option>
+            <option>Master</option>
+        </select>
+        <button class="filter-btn">Filter</button>
+    </div>
+</section>
+
+  <!-- Éénmaal de resultaten‐container -->
+  <div id="searchResults" class="search-results"></div>
 
     <div class="main-grid">
     <!-- Bedrijven Section -->
