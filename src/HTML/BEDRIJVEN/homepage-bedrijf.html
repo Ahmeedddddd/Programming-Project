@@ -12,177 +12,161 @@
     <script src="/js/role-manager.js"></script>
 </head>
 <body>
-     <!-- Navigatie - Identiek aan standaard maar zal dynamisch worden aangepast -->
 <div class="container">
-   <!-- Navigatie -->
-<div class="container">
-  <!-- Dynamic Navigation -->
-        <div class="nav">
-            <div class="logo">
-                <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
-            </div>
-            <div class="navBar">
-                <!-- Navigation items will be dynamically populated -->
-            </div>
-            <div class="pfpContainer">
-                <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
-            </div>
+    <div class="nav">
+        <div class="logo">
+            <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
         </div>
-
-        <!-- Dynamic Sidebar -->
-        <div class="sideMenu" id="sideMenu">
-            <!-- Geanimeerde achtergrond laag -->
-            <div class="menu-bg-animation"></div>
-            <div class="menu-bg-animation"></div>
-            <div class="sparkles"></div>
-            
-            <!-- Header met titel -->
-            <div class="sideMenu-header">
-                <div>
-                    <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-                    <p class="sideMenu-subtitle">Menu</p>
-                </div>
-                <button class="sideMenu-closeBtn" onclick="toggleMenu()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <!-- Menu content - dynamically populated -->
-            <div class="sideMenu-content">
-                <!-- Dynamic navigation items will be inserted here -->
-            </div>
+        <div class="navBar">
+            <!-- Navigation items will be dynamically populated -->
         </div>
-  
+        <div class="pfpContainer">
+            <img src="/images/mystery man avatar.webp" alt="Profiel" class="profile-pic" id="burgerToggle"/>
+        </div>
+    </div>
 
-<!-- Hero Section - Aangepast voor bedrijven -->
-<section class="aboutSection">
-  <h1 class="aboutTitle" id="bedrijfWelcomeTitle">Welkom terug! 🏢</h1>
-  <p class="aboutSubtitle">Ontdek talent van morgen. Verbind met getalenteerde studenten en vind je volgende collega's.</p>
-  <a href="/alleStudenten" class="section-btn1">Studenten Ontdekken</a>
-</section>
-
-<!-- Zoekbalk - Identiek -->
-<section class="searchSection">
-  <div class="searchBar">
-    <input placeholder="Zoek studenten, projecten..."></input>
-    <button class="searchBtn"><img src="" alt="Zoek" /></button>
-  </div>
-</section>
-
-     <main class="main-content">
-       
-
+    <div class="sideMenu" id="sideMenu">
+        <div class="menu-bg-animation"></div>
+        <div class="menu-bg-animation"></div>
+        <div class="sparkles"></div>
         
-        <!-- Dashboard Cards -->
-        <section class="dashboard">
+        <div class="sideMenu-header">
+            <div>
+                <h2 class="sideMenu-title">CareerLaunch EHB</h2>
+                <p class="sideMenu-subtitle">Menu</p>
+            </div>
+            <button class="sideMenu-closeBtn" onclick="toggleMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="sideMenu-content">
+        </div>
+    </div>
+
+    <!-- Hero Section - Aangepast voor bedrijven -->
+    <section class="aboutSection">
+      <h1 class="aboutTitle" id="bedrijfWelcomeTitle">Welkom terug! 🏢</h1>
+      <p class="aboutSubtitle">Ontdek talent van morgen. Verbind met getalenteerde studenten en vind je volgende collega's.</p>
+      <a href="/alleStudenten" class="section-btn1">Studenten Ontdekken</a>
+    </section>
+
+    <!-- Zoekbalk - Identiek -->
+    <section class="searchSection">
+      <div class="searchBar">
+        <input placeholder="Zoek studenten, projecten..."></input>
+        <button class="searchBtn"><img src="" alt="Zoek" /></button>
+      </div>
+    </section>
+
+    <!-- Dashboard Cards -->
+    <section class="dashboard">
+        <!-- Interview Management Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">📅</div>
+                <h2 class="card-title">Gesprek Aanvragen <span class="count-badge" id="pending-appointments-count">0</span></h2>
+            </div>
             
-
-            <!-- Interview Management Card -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📅</div>
-                    <h2 class="card-title">Gesprek Aanvragen <span class="count-badge" id="pending-appointments-count">0</span></h2>
-                </div>
-                
-                <p class="card-subtitle">Beheer inkomende gesprek verzoeken:</p>
-                <ul class="feature-list">
-                    <li class="feature-item">Accepteren of weigeren</li>
-                    <li class="feature-item">Tijd slots beheren</li>
-                </ul>
-               <div class="card-buttons">
+            <p class="card-subtitle">Beheer inkomende gesprek verzoeken:</p>
+            <ul class="feature-list">
+                <li class="feature-item">Accepteren of weigeren</li>
+                <li class="feature-item">Tijd slots beheren</li>
+            </ul>
+           <div class="card-buttons">
     <a href="/gesprekken-overzicht-bedrijven" class="btn-primary">Gesprekken Beheren</a>
-</div>
-            </div>
+    </div>
+        </div>
 
-            <!-- Bedrijf profiel -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">🏢</div>
-                    <h2 class="card-title">Mijn Bedrijf</h2>
-                </div>
-                <p class="card-subtitle">Uw bedrijfsprofiel voor studenten:</p>
-                <ul class="feature-list">
-                    <li class="feature-item">Beschrijving en sector</li>
-                    <li class="feature-item">Logo en contactinfo</li>
-                    <li class="feature-item">Tafel locatie: <strong id="table-location">#1</strong></li>
-                </ul>
-                <div class="card-buttons">
-                    <a href="/gegevens-bedrijf" class="btn-primary">Profiel Bewerken</a>
-                </div>
+        <!-- Bedrijf profiel -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">🏢</div>
+                <h2 class="card-title">Mijn Bedrijf</h2>
             </div>
-
-            <!-- Planning -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">⏰</div>
-                    <h2 class="card-title">Mijn Planning</h2>
-                </div>
-                <p class="card-subtitle">Uw beschikbaarheid op het evenement:</p>
-                <ul class="feature-list">
-                    <li class="feature-item">Beschikbare tijdslots</li>
-                    <li class="feature-item">Geplande gesprekken</li>
-                    <li class="feature-item">Pauze momenten instellen</li>
-                </ul>
-                <div class="card-buttons">
-                    <a href="" class="btn-primary">Planning Bekijken</a>
-                    <a href="" class="btn-secondary">Tijden Instellen</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Main Grid for Side-by-Side Sections -->
-        <div class="main-grid">
-            <!-- Interested Students Section -->
-            <div class="section-container fade-in">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <div class="section-icon">👥</div>
-                        Interessante Studenten <span data-count="0" id="total-students-count">0</span>
-                    </h2>
-                </div>
-                <div class="card-grid" id="students-grid">
-                    <!-- Dynamically loaded -->
-                </div>
-                <div class="btn-center">
-                    <a href="/alleStudenten" class="btn">Bekijk alle studenten →</a>
-                </div>
-            </div>
-
-            <!-- Aankomende Gesprekken Section -->
-            <div class="section-container fade-in">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <div class="section-icon">📅</div>
-                        Aankomende Gesprekken <span data-count="0" id="upcoming-meetings-count">0</span>
-                    </h2>
-                </div>
-                <div class="card-grid" id="upcoming-meetings-grid">
-                    <!-- Dynamically loaded -->
-                </div>
-                <div class="btn-center">
-                    <a href="/gesprekken-overzicht-bedrijven" class="btn">Alle gesprekken beheren →</a>
-                </div>
+            <p class="card-subtitle">Uw bedrijfsprofiel voor studenten:</p>
+            <ul class="feature-list">
+                <li class="feature-item">Beschrijving en sector</li>
+                <li class="feature-item">Logo en contactinfo</li>
+                <li class="feature-item">Tafel locatie: <strong id="table-location">#1</strong></li>
+            </ul>
+            <div class="card-buttons">
+                <a href="/gegevens-bedrijf" class="btn-primary">Profiel Bewerken</a>
             </div>
         </div>
 
-        <!-- Top Student Projects Section -->
-        <section class="projects-section fade-in">
+        <!-- Planning -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">⏰</div>
+                <h2 class="card-title">Mijn Planning</h2>
+            </div>
+            <p class="card-subtitle">Uw beschikbaarheid op het evenement:</p>
+            <ul class="feature-list">
+                <li class="feature-item">Beschikbare tijdslots</li>
+                <li class="feature-item">Geplande gesprekken</li>
+                <li class="feature-item">Pauze momenten instellen</li>
+            </ul>
+            <div class="card-buttons">
+                <a href="" class="btn-primary">Planning Bekijken</a>
+                <a href="" class="btn-secondary">Tijden Instellen</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Grid for Side-by-Side Sections -->
+    <div class="main-grid">
+        <!-- Interested Students Section -->
+        <div class="section-container fade-in">
             <div class="section-header">
                 <h2 class="section-title">
-                    <div class="section-icon">🚀</div>
-                    Trending Projecten <span data-count="0" id="total-projects-count">0</span>
+                    <div class="section-icon">👥</div>
+                    Interessante Studenten <span data-count="0" id="total-students-count">0</span>
                 </h2>
             </div>
-            <div class="projects-grid" id="projects-grid">
+            <div class="card-grid" id="students-grid">
                 <!-- Dynamically loaded -->
             </div>
-            <div class="center-btn">
-                <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
+            <div class="btn-center">
+                <a href="/alleStudenten" class="btn">Bekijk alle studenten →</a>
             </div>
-        </section>
+        </div>
 
+        <!-- Aankomende Gesprekken Section -->
+        <div class="section-container fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">📅</div>
+                    Aankomende Gesprekken <span data-count="0" id="upcoming-meetings-count">0</span>
+                </h2>
+            </div>
+            <div class="card-grid" id="upcoming-meetings-grid">
+                <!-- Dynamically loaded -->
+            </div>
+            <div class="btn-center">
+                <a href="/gesprekken-overzicht-bedrijven" class="btn">Alle gesprekken beheren →</a>
+            </div>
+        </div>
+    </div>
 
-        <!-- Footer - Identiek aan standaard homepage -->
+    <!-- Top Student Projects Section -->
+    <section class="projects-section fade-in">
+        <div class="section-header">
+            <h2 class="section-title">
+                <div class="section-icon">🚀</div>
+                Trending Projecten <span data-count="0" id="total-projects-count">0</span>
+            </h2>
+        </div>
+        <div class="projects-grid" id="projects-grid">
+            <!-- Dynamically loaded -->
+        </div>
+        <div class="center-btn">
+            <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
+        </div>
+    </section>
+</div>
+
+<!-- Footer - Identiek aan standaard homepage -->
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-content">

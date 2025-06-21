@@ -95,6 +95,31 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/projecten/stats - Project statistieken
+router.get("/stats", async (req, res) => {
+  try {
+    console.log("📊 Fetching project stats...");
+    const Student = require("../MODELS/student");
+    const stats = await Student.getStats(); // getStats contains project stats
+
+    // FIXED: response format
+    res.json({
+      success: true,
+      data: {
+        total: stats.totalProjects, // Use totalProjects for the total count
+      },
+      message: "Project statistics loaded successfully",
+    });
+  } catch (error) {
+    console.error("❌ Error fetching project stats:", error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch project statistics',
+      message: 'Er ging iets mis bij het ophalen van project statistieken'
+    });
+  }
+});
+
 // GET /api/projecten/:id - Specifiek project ophalen (FIXED)
 router.get('/:id', async (req, res) => {
     try {
@@ -246,44 +271,6 @@ router.get('/search/:searchTerm', async (req, res) => {
             error: 'Failed to search projects',
             message: 'Er ging iets mis bij het zoeken naar projecten',
             details: error.message
-        });
-    }
-});
-
-// GET /api/projecten/stats - Project statistieken
-router.get('/stats', async (req, res) => {
-    try {
-        console.log('📊 Fetching project stats...');
-        
-        const Student = require('../MODELS/student');
-        const allStudents = await Student.getAll();
-        
-        const projectCount = allStudents.filter(student => 
-            student.projectTitel && 
-            student.projectTitel.trim() !== '' && 
-            student.projectTitel.toLowerCase() !== 'geen' &&
-            student.projectTitel.toLowerCase() !== 'nvt'
-        ).length;
-        
-        const stats = {
-            totalProjects: projectCount,
-            totalStudents: allStudents.length,
-            projectPercentage: Math.round((projectCount / allStudents.length) * 100),
-            studentsWithoutProjects: allStudents.length - projectCount
-        };
-        
-        res.json({
-            success: true,
-            data: stats,
-            message: 'Project statistics loaded successfully'
-        });
-        
-    } catch (error) {
-        console.error('❌ Error fetching project stats:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch project statistics',
-            message: 'Er ging iets mis bij het ophalen van project statistieken'
         });
     }
 });

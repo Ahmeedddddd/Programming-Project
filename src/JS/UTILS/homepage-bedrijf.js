@@ -1,5 +1,9 @@
 // Bedrijf Homepage JavaScript - Dynamische data loading
 
+import { fetchWithAuth } from "../api.js";
+import { showNotification } from "./notification-system.js";
+import { updateDataCounts } from "./stat-utils.js";
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Laad alle bedrijf-specifieke data bij het laden van de pagina
     await loadUserInfo();
@@ -9,34 +13,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadUserInfo() {
     try {
-        const response = await fetch('/api/user-info');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-                const welcomeTitle = document.getElementById('bedrijfWelcomeTitle');
-                if (welcomeTitle && data.data.naam) {
-                    welcomeTitle.textContent = `Welkom terug, ${data.data.naam}! 🏢`;
-                }
+        const user = await fetchWithAuth('/api/auth/me');
+        if (user && user.naam) {
+            const welcomeTitle = document.getElementById('bedrijfWelcomeTitle');
+            if (welcomeTitle) {
+                welcomeTitle.textContent = `Welkom, ${user.naam}! 🏢`;
             }
         }
+        updateDataCounts();
     } catch (error) {
-        console.error('Error loading user info:', error);
+        console.error('Fout bij het laden van gebruikersinfo:', error);
+        showNotification('Kon gebruikersinformatie niet laden.', 'error');
     }
 }
 
 async function loadPendingAppointmentsCount() {
     try {
-        const countElement = document.getElementById('pending-appointments-count');
-        const meetings = await ReservatieService.getCompanyReservations();
-        const pendingCount = meetings.filter(m => m.status === 'aangevraagd').length;
-        if (countElement) {
-            countElement.textContent = pendingCount;
-        }
+        const appointments = await fetchWithAuth('/api/reservaties');
+        const pendingCount = appointments.filter(a => a.status === 'aangevraagd').length;
+        
+        updateDataCounts({ '#pending-appointments-count': pendingCount });
+
     } catch (error) {
-        console.error('Error loading pending appointments count:', error);
-        if (document.getElementById('pending-appointments-count')) {
-            document.getElementById('pending-appointments-count').textContent = 'Error';
-        }
+        console.error('Fout bij het laden van aantal afspraken:', error);
     }
 }
 

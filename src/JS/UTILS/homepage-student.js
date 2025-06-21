@@ -1,3 +1,7 @@
+import { fetchWithAuth } from "../api.js";
+import { showNotification } from "./notification-system.js";
+import { updateDataCounts } from "./stat-utils.js";
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeStudentHomepage();
 });
@@ -10,21 +14,17 @@ function initializeStudentHomepage() {
 
 async function loadUserInfo() {
     try {
-        const response = await fetchWithAuth('/api/user-info');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = await response.json();
-        if (result.success && result.data) {
-            const welcomeTitle = document.getElementById('studentWelcomeTitle');
-            if (welcomeTitle && result.data.voornaam) {
-                welcomeTitle.textContent = `Welkom terug, ${result.data.voornaam}! 🎓`;
+        const user = await fetchWithAuth("/api/auth/me");
+        if (user && user.naam) {
+            const welcomeTitle = document.getElementById("studentWelcomeTitle");
+            if (welcomeTitle) {
+                welcomeTitle.textContent = `Welkom terug, ${user.voornaam}! 🎓`;
             }
-        } else {
-            console.warn('User info not found in response:', result.message);
         }
+        updateDataCounts();
     } catch (error) {
-        console.error('Error loading user info:', error);
+        console.error("Fout bij het laden van gebruikersinfo:", error);
+        showNotification("Kon gebruikersinformatie niet laden.", "error");
     }
 }
 
@@ -39,10 +39,14 @@ async function loadUpcomingMeetings() {
     }
 
     try {
-        const meetings = await window.ReservatieService.getMyReservations();
-        const upcomingMeetings = meetings.filter(m => ['bevestigd', 'aangevraagd'].includes(m.status));
+        const reservations = await fetchWithAuth("/api/reservaties/my");
+        
+        const upcomingReservations = reservations.filter(res => 
+            new Date(res.datum) >= new Date() && 
+            (res.status === 'bevestigd' || res.status === 'aangevraagd')
+        );
 
-        const count = upcomingMeetings.length;
+        const count = reservations.length;
         countBadge.textContent = count;
         sectionCount.textContent = count;
         sectionCount.dataset.count = count;
@@ -52,23 +56,23 @@ async function loadUpcomingMeetings() {
             return;
         }
         
-        container.innerHTML = upcomingMeetings.slice(0, 4).map(meeting => {
-             const startTime = new Date(meeting.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
-            const endTime = new Date(meeting.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+        container.innerHTML = upcomingReservations.slice(0, 4).map(reservation => {
+            const startTime = new Date(reservation.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+            const endTime = new Date(reservation.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
 
             return `
                 <div class="preview-card">
-                    <h3 class="card-title">${meeting.bedrijfNaam}</h3>
+                    <h3 class="card-title">${reservation.bedrijfNaam}</h3>
                     <div class="card-description">
                         <p><strong>Tijd:</strong> ${startTime} - ${endTime}</p>
-                        <p><strong>Status:</strong> <span class="status-${meeting.status.toLowerCase()}">${meeting.status}</span></p>
+                        <p><strong>Status:</strong> <span class="status-${reservation.status.toLowerCase()}">${reservation.status}</span></p>
                     </div>
                 </div>
             `;
         }).join('');
 
     } catch (error) {
-        console.error('Failed to load upcoming meetings:', error);
+        console.error("Fout bij het laden van aankomende gesprekken:", error);
         container.innerHTML = `<div class="no-data" style="color: #dc3545;">Kon gesprekken niet laden.</div>`;
     }
 } 
