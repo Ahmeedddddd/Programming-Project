@@ -830,15 +830,12 @@ function openPasswordModal() {
 function closePasswordModal() {
     document.getElementById('passwordModal').style.display = 'none';
     document.body.style.overflow = 'auto';
-
-    // Reset form
     document.getElementById('passwordChangeForm').reset();
     document.getElementById('modalMessage').innerHTML = '';
     document.getElementById('passwordStrengthMeter').style.display = 'none';
     document.getElementById('savePasswordBtn').disabled = true;
-
-    // Reset requirements
     resetPasswordRequirements();
+    setPasswordFormDirty(false); // <-- dirty state resetten
 }
 
 // === PASSWORD VISIBILITY TOGGLE ===
@@ -1026,6 +1023,7 @@ async function changePassword() {
 
         if (result.success) {
             showMessage('Wachtwoord succesvol gewijzigd! 🎉', 'success');
+            setPasswordFormDirty(false); // dirty state resetten
             setTimeout(() => {
                 closePasswordModal();
             }, 2000);
@@ -1124,32 +1122,37 @@ document.addEventListener('DOMContentLoaded', function () {
     connectPasswordChangeButtons();
 });
 
-// === INTEGRATION HELPER ===
-function connectPasswordChangeButtons() {
-    // Find all password change buttons and connect them
-    const buttons = document.querySelectorAll('button');
+// === DIRTY STATE MANAGEMENT VOOR PASSWORD MODAL ===
+let passwordFormDirty = false;
 
-    buttons.forEach(button => {
-        const buttonText = button.textContent || button.innerText;
-        const buttonHTML = button.innerHTML;
-
-        // Check if this is a password change button
-        if ((buttonText.includes('Wachtwoord') && buttonText.includes('Wijzigen')) ||
-            buttonHTML.includes('fa-key')) {
-
-            // Remove any existing onclick handlers
-            button.removeAttribute('onclick');
-
-            // Add new event listener
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                openPasswordModal();
-            });
-
-            console.log('✅ Connected password change button:', button);
-        }
-    });
+function setPasswordFormDirty(isDirty) {
+    passwordFormDirty = isDirty;
+    const dirtyBanner = document.getElementById('unsavedChangesBanner');
+    if (dirtyBanner) {
+        dirtyBanner.style.display = isDirty ? 'block' : 'none';
+    }
+    if (isDirty) {
+        window.addEventListener('beforeunload', beforeUnloadHandler);
+    } else {
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+    }
 }
+
+function beforeUnloadHandler(e) {
+    if (passwordFormDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+}
+
+// Zet dirty bij input in password modal
+['currentPassword','newPassword','confirmPassword'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+        input.addEventListener('input', () => setPasswordFormDirty(true));
+    }
+});
 
 // Export for module usage
 export default StudentGegevens;

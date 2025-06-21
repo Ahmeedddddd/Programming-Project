@@ -468,7 +468,6 @@ h2 {
   animation: carouselSpin 1s linear infinite;
 }
 
-/* Data Count Enhanced Styling */
 .data-count {
   display: inline-block;
   background: linear-gradient(135deg, #881538, #a91b47);
@@ -1292,7 +1291,8 @@ a.project-card:active {
     border-radius: 6px !important;
     font-size: 0.75rem !important;
     font-weight: 600 !important;
-    margin-top: 8px !important;
+    margin-top: auto !important;
+    padding-top: 0.75rem !important;
     border-left: 3px solid #3b82f6 !important;
 }
 
@@ -1303,8 +1303,27 @@ a.project-card:active {
     border-radius: 6px !important;
     font-size: 0.75rem !important;
     font-weight: 600 !important;
-    margin-top: 8px !important;
+    margin-top: auto !important;
+    padding-top: 0.75rem !important;
     border-left: 3px solid #10b981 !important;
+}
+
+.bedrijf-sector span,
+.student-opleiding span {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    background-color: var(--primary-light-gray);
+    color: var(--primary-color);
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.preview-card:hover .bedrijf-sector span,
+.preview-card:hover .student-opleiding span {
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* ===== PROJECT STUDENT INFO ENHANCEMENT ===== */
@@ -1313,7 +1332,7 @@ a.project-card:active {
     border: 1px solid rgba(136, 21, 56, 0.1) !important;
     border-radius: 8px !important;
     padding: 8px 10px !important;
-    margin-top: 12px !important;
+    margin-top: auto !important;
     font-size: 0.85rem !important;
     color: #881538 !important;
     font-weight: 600 !important;
@@ -1423,7 +1442,9 @@ a.project-card:active {
 
 .preview-card:hover .table-number,
 .project-card:hover .table-number {
-    animation: pulse 0.6s ease !important;
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
 }
 
 @keyframes pulse {

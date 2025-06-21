@@ -74,168 +74,129 @@
       <section class="aboutSectionStudenten">
         <h1 class="aboutTitleStudenten" id="studentWelcomeTitle">Welkom terug, Student! 🎓</h1>
         <p class="aboutSubtitleStudenten">Jouw toekomst begint hier. Ontdek bedrijven, plan gesprekken en laat je talent zien.</p>
-        <a href="/mijn-project" class="section-btn1">Mijn Project Beheren</a>
+        <a href="/alleBedrijven" class="section-btn1">Bedrijven Ontdekken</a>
       </section>
 
       <!-- Zoekbalk -->
-<section class="searchSection">
-    <div class="searchBar">
-      <input 
-        type="text"
-        class="search-input"
-        list="search-suggestions"
-        placeholder="Zoeken in bedrijven, studenten" 
-      />
-      <datalist id="search-suggestions"></datalist>
-    </div>
-    <div id="searchResults" class="search-results"></div>
-  </section>
+      <section class="searchSection">
+          <div class="searchBar">
+            <input 
+              type="text"
+              class="search-input"
+              list="search-suggestions"
+              placeholder="Zoek bedrijven, projecten..." 
+            />
+            <datalist id="search-suggestions"></datalist>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+      </section>
   
-    <!-- Éénmaal de resultaten‐container -->
-    <div id="searchResults" class="search-results"></div>
-
-      <!-- Student Quick Actions - Gebruikt bestaande styling -->
-      <section class="content-sections">
-        <div class="sections-container">
-          <!-- Mijn Gesprekken sectie -->
-          <div class="section-card">
-            <h2 class="section-title">
-              <div class="section-icon">📅</div>
-              Mijn Gesprekken <span data-count="0" id="appointmentCount">0</span>
-            </h2>
-            <div class="section-features">
-              <h4>Beheer je geplande gesprekken:</h4>
-              
-              <ul class="feature-list">
-                <li>Bekijk aankomende bedrijfsgesprekken</li>
-                <li>Plan nieuwe gesprekken met bedrijven</li>
-                <li>Ontvang herinneringen en updates</li>
-                <li>Direct contact met bedrijven</li>
-              </ul>
+      <main class="main-content">
+        <!-- Dashboard Cards -->
+        <section class="dashboard">
+            <!-- Gesprekken Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📅</div>
+                    <h2 class="card-title">Mijn Gesprekken <span class="count-badge" id="upcoming-appointments-count">0</span></h2>
+                </div>
+                <p class="card-subtitle">Beheer je geplande gesprekken:</p>
+                <ul class="feature-list">
+                    <li class="feature-item">Bekijk status van aanvragen</li>
+                    <li class="feature-item">Zie bevestigde afspraken</li>
+                </ul>
+                <div class="card-buttons">
+                    <a href="/gesprekken-overzicht-studenten" class="btn-primary">Gesprekken Beheren</a>
+                    <a href="/alleBedrijven" class="btn-secondary">Nieuw Gesprek Plannen</a>
+                </div>
             </div>
-            <a href="/gesprekkenOverzichtStudenten" class="section-btn">Mijn Gesprekken</a>
-            <a href="/alleBedrijven" class="cta-btn">Plan Gesprek</a>
-          </div>
 
-          <!-- Mijn Project sectie -->
-          <div class="section-card">
-            <h2 class="section-title">
-              <div class="section-icon">🚀</div>
-              Mijn Project <span data-count="1" id="projectStatus">✓</span>
-            </h2>
-            <div class="section-features">
-              <h4>Laat je talent zien aan bedrijven:</h4>
-              
-              <ul class="feature-list">
-                <li>Update je projectbeschrijving</li>
-                <li>Upload screenshots en demo's</li>
-                <li>Voeg technologieën en skills toe</li>
-                <li>Wordt automatisch zichtbaar voor bedrijven</li>
-              </ul>
+            <!-- Mijn Project Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <h2 class="card-title">Mijn Project</h2>
+                </div>
+                <p class="card-subtitle">Presenteer je vaardigheden aan bedrijven:</p>
+                <ul class="feature-list">
+                    <li class="feature-item">Projectdetails bijwerken</li>
+                    <li class="feature-item">Technologieën & skills tonen</li>
+                    <li class="feature-item">Zichtbaar voor alle bedrijven</li>
+                </ul>
+                <div class="card-buttons">
+                    <a href="/mijn-project" class="btn-primary">Project Bewerken</a>
+                </div>
             </div>
-            <a href="/mijn-project" class="section-btn">Project Bewerken</a>
-          </div>
-        </div>
-      </section>
 
-      <!-- Bedrijven Grid - Identieke styling maar aangepast voor studenten -->
-      <div class="main-grid">
-        <!-- Interessante Bedrijven Section -->
-        <div class="section-container fade-in">
-          <div class="section-header">
-            <h2 class="section-title">
-              <div class="section-icon">🏢</div>
-              Interessante Bedrijven <span data-count="25">25</span>
-            </h2>
-          </div>
-          
-          <div class="card-grid" id="recommendedCompanies">
-            <!-- Deze worden dynamisch geladen -->
-            <a href="/resultaat-bedrijf?id=BEDRIJFSNUMMER" class="preview-card">
-              <h3 class="card-title">BilalAICorp</h3>
-              <p class="card-description">AI & Machine Learning - Gent • Op zoek naar AI-developers en data scientists voor innovatieve projecten.</p>
-            </a>
-            
-            <a href="/resultaat-bedrijf?id=BEDRIJFSNUMMER" class="preview-card">
-              <h3 class="card-title">Vital'O Network</h3>
-              <p class="card-description">Health Tech - Brussel • Zoekt software developers voor medische IT-oplossingen.</p>
-            </a>
-            
-            <a href="/resultaat-bedrijf?id=BEDRIJFSNUMMER" class="preview-card">
-              <h3 class="card-title">PixelPioniers</h3>
-              <p class="card-description">Netwerk Tech - Antwerpen • Cisco specialisten en network engineers gezocht.</p>
-            </a>
-            
-            <a href="/resultaat-bedrijf?id=BEDRIJFSNUMMER" class="preview-card">
-              <h3 class="card-title">QuantumOps</h3>
-              <p class="card-description">Cloud & DevOps - Brussel • Cloud architects en DevOps engineers voor groeiend team.</p>
-            </a>
-          </div>
-
-          <div class="btn-center">
-            <a href="/alleBedrijven" class="btn">Bekijk alle bedrijven →</a>
-          </div>
-        </div>
-
-        <!-- Aankomende Gesprekken Section -->
-        <div class="section-container fade-in">
-          <div class="section-header">
-            <h2 class="section-title">
-              <div class="section-icon">📅</div>
-              Aankomende Gesprekken <span data-count="0" id="upcomingCount">0</span>
-            </h2>
-          </div>
-          
-          <div class="card-grid" id="upcomingMeetingsList">
-            <!-- Deze worden dynamisch geladen -->
-            <div class="preview-card" style="text-align: center; color: #666;">
-              <h3 class="card-title">Geen gesprekken gepland</h3>
-              <p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p>
+            <!-- Account Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👤</div>
+                    <h2 class="card-title">Mijn Account</h2>
+                </div>
+                <p class="card-subtitle">Beheer je persoonlijke gegevens:</p>
+                <ul class="feature-list">
+                    <li class="feature-item">Contactinformatie aanpassen</li>
+                    <li class="feature-item">Curriculum Vitae uploaden</li>
+                    <li class="feature-item">Wachtwoord wijzigen</li>
+                </ul>
+                <div class="card-buttons">
+                    <a href="/account-student" class="btn-primary">Gegevens Bewerken</a>
+                </div>
             </div>
-          </div>
+        </section>
 
-          <div class="btn-center">
-            <a href="/gesprekken-overzicht-studenten" class="btn">Gesprekken beheren →</a>
-          </div>
-        </div>
-      </div>
+        <!-- Main Grid for Side-by-Side Sections -->
+        <div class="main-grid">
+            <!-- Interessante Bedrijven Section -->
+            <div class="section-container fade-in">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <div class="section-icon">🏢</div>
+                        Interessante Bedrijven <span data-count="0" id="total-companies-count">0</span>
+                    </h2>
+                </div>
+                <div class="card-grid" id="companies-grid">
+                    <!-- Dynamically loaded -->
+                </div>
+                <div class="btn-center">
+                    <a href="/alleBedrijven" class="btn">Bekijk alle bedrijven →</a>
+                </div>
+            </div>
 
-      <!-- Student Projects Section - Identieke styling als bestaande projecten sectie -->
-      <section class="projects-section fade-in">
-        <div class="section-header">
-          <h2 class="section-title">
-            <div class="section-icon">👥</div>
-            Andere Studentenprojecten <span data-count="25">25</span>
-          </h2>
+            <!-- Aankomende Gesprekken Section -->
+            <div class="section-container fade-in">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <div class="section-icon">📅</div>
+                        Aankomende Gesprekken <span data-count="0" id="upcoming-meetings-count">0</span>
+                    </h2>
+                </div>
+                <div class="card-grid" id="upcoming-meetings-grid">
+                    <!-- Dynamically loaded -->
+                </div>
+                <div class="btn-center">
+                    <a href="/gesprekken-overzicht-studenten" class="btn">Alle gesprekken beheren →</a>
+                </div>
+            </div>
         </div>
-        
-        <div class="projects-grid">
-          <a href="/zoekbalk-projecten?id=PROJECTID" class="project-card">
-            <h3 class="project-title">Kokende AI Robot</h3>
-            <p class="project-description">De Kokende AI Robot is een slimme, zelfdenkende keukenrobot die volledig autonoom heerlijke maaltijden bereidt op maat van jouw voorkeuren en allergieën.</p>
-          </a>
-          
-          <a href="/zoekbalk-projecten?id=PROJECTID" class="project-card">
-            <h3 class="project-title">SmartLine Inspector</h3>
-            <p class="project-description">SmartLine Inspector is een vision-gebaseerd edge-systeem voor kwaliteitscontrole in productielijnen met AI en edge computing.</p>
-          </a>
-          
-          <a href="/zoekbalk-projecten?id=PROJECTID" class="project-card">
-            <h3 class="project-title">NeuroTrack</h3>
-            <p class="project-description">NeuroTrack is een draagbare EEG-headset die hersenactiviteit in realtime meet tijdens sportprestaties of meditatie.</p>
-          </a>
-          
-          <a href="/zoekbalk-projecten?id=PROJECTID" class="project-card">
-            <h3 class="project-title">ARchitect Viewer</h3>
-            <p class="project-description">ARchitect Viewer is een augmented reality-oplossing waarmee architecten hun 3D-modellen direct op een bouwlocatie kunnen projecteren.</p>
-          </a>
-        </div>
-        
-        <div class="center-btn">
-          <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
-        </div>
-      </section>
 
+        <!-- Top Student Projects Section -->
+        <section class="projects-section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon">💡</div>
+                    Ontdek Projecten <span data-count="0" id="total-projects-count">0</span>
+                </h2>
+            </div>
+            <div class="projects-grid" id="projects-grid">
+                <!-- Dynamically loaded -->
+            </div>
+            <div class="center-btn">
+                <a href="/alleProjecten" class="main-cta-btn">🔍 Ontdek alle projecten</a>
+            </div>
+        </section>
+    </main>
 
       <!-- Footer - Identiek aan standaard homepage -->
       <footer class="footer">
@@ -322,165 +283,6 @@
     <script type="module" src="/src/JS/index.js"></script>
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script type="module" src="/src/JS/UTILS/zoekbalkHomepage.js"></script>
-    <!-- Student-specific JavaScript -->
-    <script>
-    // Vaste evenementdatum voor deze pagina
-    // Dit is belangrijk voor het correct weergeven van de datum bij de tijden,
-    // aangezien de database alleen tijd zonder datum opslaat.
-    const EVENT_DATE_STRING_HOMEPAGE = '2025-06-25'; // Datum van Student Project Showcase 2025
-
-    document.addEventListener('DOMContentLoaded', async function() {
-      await loadUserInfo();
-      await loadUpcomingMeetings();
-      await loadRecommendedCompanies();
-    });
-
-    async function loadUserInfo() {
-      try {
-        // window.fetchWithAuth is nu globaal beschikbaar en handelt token-controle af.
-        const response = await window.fetchWithAuth('/api/user-info');
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data) {
-            const welcomeTitle = document.getElementById('studentWelcomeTitle');
-            if (welcomeTitle && data.data.voornaam) {
-              welcomeTitle.textContent = `Welkom terug, ${data.data.voornaam}! 🎓`;
-            }
-          }
-        } else {
-          console.warn('Fout bij laden user info:', response.status);
-          // window.showNotification is nu globaal beschikbaar via notification-system.js
-          if (window.showNotification) window.showNotification(`Kan gebruikersinfo niet laden: HTTP ${response.status}`, 'error');
-        }
-      } catch (error) {
-        console.error('Error loading user info:', error);
-        if (window.showNotification) window.showNotification(`Fout bij laden gebruikersinfo: ${error.message}`, 'error');
-      }
-    }
-
-    async function loadUpcomingMeetings() {
-      const container = document.getElementById('upcomingMeetingsList');
-      const countElement = document.getElementById('upcomingCount');
-      const appointmentCount = document.getElementById('appointmentCount');
-
-      // Toon een laadbericht en update tellers tijdens het laden
-      if (container) container.innerHTML = `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Laden...</h3><p class="card-description">Even geduld aub.</p></div>`;
-      if (countElement) countElement.textContent = '...';
-      if (appointmentCount) appointmentCount.textContent = '...';
-
-      try {
-        // Gebruik de ReservatieService om gesprekken op te halen
-        const data = await window.ReservatieService.getMyReservations();
-        
-        if (data && data.length > 0) {
-          // Update counts
-          if (countElement) countElement.textContent = data.length;
-          if (appointmentCount) appointmentCount.textContent = data.length;
-          
-          // Filter voor 'aangevraagd' en 'bevestigd' om alleen aankomende gesprekken te tonen
-          const upcoming = data.filter(meeting => meeting.status === 'aangevraagd' || meeting.status === 'bevestigd');
-
-          if (upcoming.length > 0) {
-            // Sorteer aankomende gesprekken op starttijd
-            upcoming.sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
-
-            container.innerHTML = upcoming.slice(0, 4).map(meeting => {
-              // Backend stuurt nu ISO strings (met datum gecombineerd in de service), dus direct parsen.
-              const startDate = new Date(meeting.startTijd);
-              const endDate = new Date(meeting.eindTijd);
-              
-              // Formatteer de datum en tijd voor weergave
-              const formattedDate = startDate.toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-              const formattedStartTime = startDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
-              const formattedEndTime = endDate.toLocaleTimeString('nl-BE', {hour: '2-digit', minute: '2-digit'});
-              
-              return `
-                <div class="preview-card">
-                  <h3 class="card-title">${meeting.bedrijfNaam}</h3>
-                  <p class="card-description">
-                    <strong>📅 ${formattedDate}</strong><br>
-                    <strong>🕐 ${formattedStartTime} - ${formattedEndTime}</strong><br>
-                    Status: <span class="status-${meeting.status}">${meeting.status}</span>
-                  </p>
-                </div>
-              `;
-            }).join('');
-          } else {
-            container.innerHTML = `
-              <div class="preview-card" style="text-align: center; color: #666;">
-                <h3 class="card-title">Geen aankomende gesprekken</h3>
-                <p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p>
-              </div>
-            `;
-          }
-
-        } else {
-          // Geen gesprekken gevonden
-          if (countElement) countElement.textContent = '0';
-          if (appointmentCount) appointmentCount.textContent = '0';
-          
-          container.innerHTML = `
-            <div class="preview-card" style="text-align: center; color: #666;">
-              <h3 class="card-title">Geen gesprekken gepland</h3>
-              <p class="card-description">Plan je eerste gesprek met een bedrijf om je carrière een boost te geven!</p>
-            </div>
-          `;
-        }
-      } catch (error) {
-        console.error('Error loading meetings:', error);
-        if (window.showNotification) window.showNotification(`Fout bij het laden van je gesprekken: ${error.message}`, 'error');
-        if (countElement) countElement.textContent = '0';
-        if (appointmentCount) appointmentCount.textContent = '0';
-        if (container) container.innerHTML = `
-          <div class="preview-card" style="text-align: center; color: #dc3545;">
-            <h3 class="card-title">Fout bij laden</h3>
-            <p class="card-description">Kan gesprekken niet laden. Probeer later opnieuw.</p>
-          </div>
-        `;
-      }
-    }
-
-    async function loadRecommendedCompanies() {
-      const container = document.getElementById('recommendedCompanies');
-      if (!container) {
-        console.warn('Recommended companies container not found.');
-        return;
-      }
-
-      // Optioneel: toon een laadindicator voor bedrijven
-      container.innerHTML = `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Laden...</h3><p class="card-description">Bedrijven worden opgehaald.</p></div>`;
-
-      try {
-        // FIX: Gebruik window.fetchWithAuth en het gestandaardiseerde pad
-        const response = await window.fetchWithAuth('/api/bedrijven?limit=4');
-        const data = await response.json();
-        
-        if (data.data && data.data.length > 0) {
-          container.innerHTML = data.data.map(company => `
-            <a href="/resultaat-bedrijf?id=${company.bedrijfsnummer}" class="preview-card"> <h3 class="card-title">${company.naam}</h3>
-              <p class="card-description">${company.sector} - ${company.gemeente} • ${company.bechrijving ? company.bechrijving.substring(0, 80) + '...' : 'Ontdek meer over dit bedrijf'}</p>
-            </a>
-          `).join('');
-        } else {
-          container.innerHTML = `
-            <div class="preview-card" style="text-align: center; color: #666;">
-              <h3 class="card-title">Geen bedrijven gevonden</h3>
-              <p class="card-description">Er zijn momenteel geen aanbevolen bedrijven beschikbaar.</p>
-            </div>
-          `;
-        }
-      } catch (error) {
-        console.error('Error loading companies:', error);
-        if (window.showNotification) window.showNotification(`Fout bij het laden van bedrijven: ${error.message}`, 'error');
-        container.innerHTML = `
-          <div class="preview-card" style="text-align: center; color: #dc3545;">
-            <h3 class="card-title">Fout bij laden</h3>
-            <p class="card-description">Kan aanbevolen bedrijven niet laden. Probeer later opnieuw.</p>
-          </div>
-        `;
-      }
-    }
-    </script>
+    <script type="module" src="/src/JS/UTILS/homepage-student.js"></script>
   </body>
 </html>
