@@ -667,6 +667,92 @@
     letter-spacing: 0.02em;
 }
 
+/* Verbeterde config modal styling */
+.config-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #881538;
+}
+
+.config-info p {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+    line-height: 1.4;
+}
+
+.config-info p:last-child {
+    margin-bottom: 0;
+}
+
+.config-info strong {
+    color: #881538;
+    font-weight: 600;
+}
+
+.config-info small {
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.config-input-group small {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+/* Hover effect voor config button */
+.config-btn:focus {
+    outline: 2px solid #881538;
+    outline-offset: 2px;
+}
+
+/* Modal animatie */
+.config-modal {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.config-modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    from { 
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive modal styling */
+@media (max-width: 768px) {
+    .config-modal-content {
+        width: 95%;
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .config-buttons {
+        flex-direction: column;
+    }
+    
+    .config-btn-save,
+    .config-btn-cancel {
+        width: 100%;
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .overzichtContainer {
