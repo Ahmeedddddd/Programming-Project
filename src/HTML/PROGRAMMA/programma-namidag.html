@@ -39,7 +39,7 @@
             <div class="sideMenu-header">
                 <div>
                     <h2 class="sideMenu-title">CareerLaunch EHB</h2>
-                    <p class="sideMenu-subtitle">Menu</p>
+                    <p class="sideMenu-subtitle">Organisator Menu</p>
                 </div>
                 <button class="sideMenu-closeBtn" onclick="toggleMenu()">
                     <i class="fas fa-times"></i>
@@ -75,9 +75,8 @@
                            placeholder="Zoek tafel, project of bedrijf...">
                     <i class="fas fa-search search-icon"></i>
                 </div>
-                
-                <!-- 🆕 Tafel lijst wordt dynamisch gegenereerd -->
-                <ul class="sidebarTafels">
+                  <!-- 🆕 Tafel lijst wordt dynamisch gegenereerd -->
+                <ul class="sidebarTafels" id="tafelSidebar">
                     <!-- JavaScript laadt hier de tafels -->
                     <li class="skeleton-item">
                         <div class="skeleton-content">
