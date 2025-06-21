@@ -62,12 +62,22 @@
 </section>
 
 <!-- Zoekbalk - Identiek -->
+<!-- Zoekbalk -->
 <section class="searchSection">
-  <div class="searchBar">
-    <input placeholder="Zoek studenten, projecten..."></input>
-    <button class="searchBtn"><img src="" alt="Zoek" /></button>
-  </div>
-</section>
+    <div class="searchBar">
+      <input 
+        type="text"
+        class="search-input"
+        list="search-suggestions"
+        placeholder="Zoeken in bedrijven, studenten" 
+      />
+      <datalist id="search-suggestions"></datalist>
+    </div>
+    <div id="searchResults" class="search-results"></div>
+  </section>
+  
+    <!-- Éénmaal de resultaten‐container -->
+    <div id="searchResults" class="search-results"></div>
 
      <main class="main-content">
        
@@ -261,5 +271,6 @@
 <script type="module" src="/src/JS/index.js"></script>
 <script type="module" src="/src/JS/UTILS/startPage.js"></script>
 <script type="module" src="/src/JS/UTILS/homepage-bedrijf.js"></script>
+<script type="module" src="/src/JS/UTILS/zoekbalkHomepage.js"></script>
 </body>
 </html>
