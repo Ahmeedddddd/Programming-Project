@@ -85,9 +85,8 @@ class HomepageTypeDetector {
                 };
             case 'student':
                 return {
-                    bedrijvenGrid: '.companies-grid',
-                    studentenGrid: '.students-grid',
-                    projectsGrid: '.projects-grid',
+                    bedrijvenGrid: '#companies-grid',
+                    projectsGrid: '#projects-grid',
                     searchInput: '.search-input'
                 };
             default:
@@ -681,62 +680,58 @@ class CardRenderer {
             const title = project.titel || project.naam || project.projectTitel || 'Onbekend Project';
             const description = project.beschrijving || project.projectBeschrijving || 'Geen beschrijving beschikbaar';
             const id = project.id || project.projectId || '';
-            const technologieen = project.technologieën || project.technologien || project.opleidingsrichting || '';
-            // 1. Als project.studenten een array is: toon per student
-            if (Array.isArray(project.studenten) && project.studenten.length > 0) {
+            
+            let studentHTML = '';
+            let tafelDisplay = '';
+            let techDisplay = '';
+
+            // Unified Tech Field
+            let tech = project.technologieën || project.technologien || '';
+            if (!tech && Array.isArray(project.studenten) && project.studenten.length > 0 && project.studenten[0].opleidingsrichting) {
+                tech = project.studenten[0].opleidingsrichting;
+            } else if (!tech && project.opleidingsrichting) {
+                tech = project.opleidingsrichting;
+            }
+            if (tech) {
+                techDisplay = `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${tech}</div>`;
+            }
+
+            // Case 1: Rich data with a student array
+            if (Array.isArray(project.studenten) && project.studenten.length > 0 && project.studenten[0].naam) {
                 const studenten = project.studenten;
-                // Verzamel alle unieke, niet-lege tafelNrs van studenten
                 const uniekeTafels = [...new Set(studenten.map(s => s.tafelNr).filter(t => t != null && t !== '' && t !== 'TBD'))];
-                // Toon tafelNr bovenaan alleen als ALLE studenten hetzelfde tafelNr hebben (en niet leeg)
-                let tafelDisplay = '';
-                if (uniekeTafels.length === 1 && studenten.every(s => s.tafelNr === uniekeTafels[0])) {
+                if (uniekeTafels.length === 1) {
                     tafelDisplay = `<span class="table-number">Tafel ${uniekeTafels[0]}</span>`;
                 }
-                const studentListHTML = studenten.map(s => {
-                    const naam = (s.voornaam || s.achternaam) ? `${s.voornaam || ''} ${s.achternaam || ''}`.trim() : (s.naam || 'Onbekende student');
-                    // Toon ALLEEN de eigen tafelNr van de student, of leeg als die ontbreekt
-                    const tafel = (s.tafelNr && s.tafelNr !== 'TBD') ? `<span style='color:#666;font-weight:400'>(Tafel ${s.tafelNr})</span>` : '';
-                    return `<div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${naam} ${tafel}</div>`;
+                studentHTML = studenten.map(s => {
+                    const naam = s.naam || `${s.voornaam || ''} ${s.achternaam || ''}`.trim();
+                    const tafel = (s.tafelNr && s.tafelNr !== 'TBD') ? `<span style='color:#666;font-weight:400'> (Tafel ${s.tafelNr})</span>` : '';
+                    return `<div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${naam}${tafel}</div>`;
                 }).join('');
-                return `
-                    <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
-                        <div class="card-header">
-                            <h3 class="project-title">${title}</h3>
-                            ${tafelDisplay}
-                        </div>
-                        <p class="project-description">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
-                        ${technologieen ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieen}</div>` : ''}
-                        <div class="project-students-multiple" style="margin-top: 10px;">
-                            ${studentListHTML}
-                        </div>
-                        ${studenten.length > 1 ? `<div class="project-team-size" style="font-size: 0.75rem; color: #666; margin-top: 5px;">👥 ${studenten.length} studenten werken aan dit project</div>` : ''}
-                    </a>
-                `;
+                if (studenten.length > 1) {
+                     studentHTML += `<div class="project-team-size" style="font-size: 0.75rem; color: #666; margin-top: 5px;">👥 ${studenten.length} studenten werken aan dit project</div>`;
+                }
+            // Case 2: Flattened object with student info
+            } else if (project.studentnaam || project.voornaam) {
+                const naam = project.studentnaam || `${project.voornaam} ${project.achternaam}`.trim();
+                studentHTML = `<div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${naam}</div>`;
+                if (project.tafelNr && project.tafelNr !== 'TBD') {
+                    tafelDisplay = `<span class="table-number">Tafel ${project.tafelNr}</span>`;
+                }
+            } else {
+                // Fallback
+                studentHTML = `<div class="project-student" style="color:#881538;">Geen studenten gevonden</div>`;
             }
-            // 2. Als alleen project.studentNaam (string) en project.tafelNr (projectniveau): toon die direct
-            if (project.studentNaam && project.tafelNr) {
-                return `
-                    <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
-                        <div class="card-header">
-                            <h3 class="project-title">${title}</h3>
-                            <span class="table-number">Tafel ${project.tafelNr}</span>
-                        </div>
-                        <p class="project-description">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
-                        ${technologieen ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieen}</div>` : ''}
-                        <div class="project-student" style="font-size: 0.85rem; color: #881538; font-weight: 600; margin-top: 6px;">👨‍🎓 ${project.studentNaam}</div>
-                        ${project.aantalStudenten > 1 ? `<div class="project-team-size" style="font-size: 0.75rem; color: #666; margin-top: 5px;">👥 ${project.aantalStudenten} studenten werken aan dit project</div>` : ''}
-                    </a>
-                `;
-            }
-            // 3. Fallback: geen studenteninfo, alleen titel/omschrijving tonen
+
             return `
                 <a href="/zoekbalk-projecten?id=${id}" class="project-card" data-project-id="${id}">
                     <div class="card-header">
                         <h3 class="project-title">${title}</h3>
+                        ${tafelDisplay}
                     </div>
                     <p class="project-description">${description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
-                    ${technologieen ? `<div class="project-tech" style="margin: 10px 0; font-size: 0.8rem; color: #666;"><strong>Tech:</strong> ${technologieen}</div>` : ''}
-                    <div class="project-student" style="color:#881538;">Geen studenten gevonden</div>
+                    ${techDisplay}
+                    ${studentHTML}
                 </a>
             `;
         }).join('');

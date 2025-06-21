@@ -1,11 +1,9 @@
 // Bedrijf Homepage JavaScript - Dynamische data loading
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Laad alle data bij het laden van de pagina
+    // Laad alle bedrijf-specifieke data bij het laden van de pagina
     await loadUserInfo();
     await loadUpcomingMeetings();
-    await loadStudents();
-    await loadProjects();
     await loadPendingAppointmentsCount();
 });
 
@@ -81,84 +79,4 @@ async function loadUpcomingMeetings() {
         console.error('Error loading upcoming meetings:', error);
         container.innerHTML = `<div class="preview-card" style="text-align: center; color: #dc3545;"><h3 class="card-title">Fout bij laden</h3><p class="card-description">Kan gesprekken niet laden.</p></div>`;
     }
-}
-
-async function loadStudents() {
-    const container = document.getElementById('students-grid');
-    const countElement = document.getElementById('total-students-count');
-    if (!container || !countElement) return;
-
-    try {
-        const response = await fetch('/api/studenten?limit=4&all=true');
-        const data = await response.json();
-        
-        countElement.setAttribute('data-count', data.total || 0);
-        countElement.textContent = data.total || 0;
-
-        if (data.data && data.data.length > 0) {
-            container.innerHTML = data.data.map(student => `
-                <a href="/resultaat-student?id=${student.studentnummer}" class="preview-card">
-                    <div class="card-header">
-                        <h3 class="card-title">${student.voornaam} ${student.achternaam}</h3>
-                        ${student.tafelNr ? `<div class="table-number">Tafel ${student.tafelNr}</div>` : ''}
-                    </div>
-                    <p class="card-description">${student.projectBeschrijving ? student.projectBeschrijving.substring(0, 80) + '...' : 'Geen projectbeschrijving'}</p>
-                    <div class="student-opleiding">
-                        <span>${student.opleidingsrichting || 'Onbekende richting'}</span>
-                    </div>
-                </a>
-            `).join('');
-        } else {
-            container.innerHTML = `<div class="preview-card" style="text-align: center; color: #666;"><h3 class="card-title">Geen studenten</h3><p class="card-description">Er zijn geen studentenprofielen beschikbaar.</p></div>`;
-        }
-    } catch (error) {
-        console.error('Error loading students:', error);
-        container.innerHTML = `<div class="preview-card" style="text-align: center; color: #dc3545;"><h3 class="card-title">Fout bij laden</h3><p class="card-description">Kan studenten niet laden.</p></div>`;
-    }
-}
-
-async function loadProjects() {
-    const container = document.getElementById('projects-grid');
-    const countElement = document.getElementById('total-projects-count');
-    if (!container || !countElement) return;
-
-    try {
-        const response = await fetch('/api/projecten?limit=4');
-        const data = await response.json();
-        
-        countElement.setAttribute('data-count', data.total || 0);
-        countElement.textContent = data.total || 0;
-
-        if (data.data && data.data.length > 0) {
-            container.innerHTML = data.data.map(project => `
-                <a href="/zoekbalk-projecten?id=${project.projectId}" class="project-card">
-                     <div class="card-header">
-                        <h3 class="project-title">${project.titel}</h3>
-                        ${project.tafelNr ? `<div class="table-number">Tafel ${project.tafelNr}</div>` : ''}
-                    </div>
-                    <p class="project-description">${project.beschrijving ? project.beschrijving.substring(0, 80) + '...' : 'Geen beschrijving'}</p>
-                    <div class="project-student-single">
-                        <small>door ${project.studentnaam}</small>
-                    </div>
-                </a>
-            `).join('');
-        } else {
-            container.innerHTML = `<div class="project-card" style="text-align: center; color: #666;"><h3 class="project-title">Geen projecten</h3><p class="project-description">Er zijn geen projecten beschikbaar.</p></div>`;
-        }
-    } catch (error) {
-        console.error('Error loading projects:', error);
-        container.innerHTML = `<div class="project-card" style="text-align: center; color: #dc3545;"><h3 class="project-title">Fout bij laden</h3><p class="project-description">Kan projecten niet laden.</p></div>`;
-    }
-}
-
-function getStudentYear(studentnummer) {
-    if (!studentnummer) return 'Onbekend';
-    const year = parseInt(studentnummer.toString().substring(0, 2), 10);
-    const currentYear = new Date().getFullYear() % 100;
-    const yearDiff = currentYear - year;
-    
-    if (yearDiff === 0) return '1e jaar';
-    if (yearDiff === 1) return '2e jaar';
-    if (yearDiff === 2) return '3e jaar';
-    return 'Alumnus';
 } 
