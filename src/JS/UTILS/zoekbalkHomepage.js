@@ -108,9 +108,17 @@ class ZoekbalkHomepage {
       ...fb.map(b => ({ ...b, _type: 'bedrijf' })),
       ...fs.map(s => ({ ...s, _type: 'student' })),
       ...fp.map(p => ({ ...p, _type: 'project' }))
-    ].slice(0, 5);
+    ];
 
-    this.renderResults(combined, term);
+    // Apply filters if the filter system is available
+    if (window.filterSystem && window.filterSystem.hasActiveFilters()) {
+      const filteredCombined = window.filterSystem.filterSearchResults(combined);
+      const finalResults = filteredCombined.slice(0, 5);
+      this.renderResults(finalResults, term);
+    } else {
+      const finalResults = combined.slice(0, 5);
+      this.renderResults(finalResults, term);
+    }
   }
 
   renderResults(items, term) {
