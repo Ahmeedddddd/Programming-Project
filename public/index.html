@@ -70,51 +70,61 @@
       </svg>
     </button>
   </div>
-  
-  <!-- Filter Dropdown Container -->
-  <div class="filterContainer" id="filterContainer">
-    <div class="filterGrid">
-        <!-- Studierichting Filter -->
-        <div class="filterGroup">
-          <label class="filterLabel">Studierichting</label>
-          <select class="filterSelect" id="studierichtingFilter">
-            <option value="">Alle</option>
-            <!-- Dynamisch geladen -->
-          </select>
-        </div>
+  <div id="searchResults" class="search-results"></div>
+</section>
 
-        <!-- Opleidingsrichting Filter -->
-        <div class="filterGroup">
-          <label class="filterLabel">Opleidingsrichting</label>
-          <select class="filterSelect" id="opleidingsrichtingFilter">
-            <option value="">Alle</option>
-             <!-- Dynamisch geladen -->
-          </select>
-        </div>
-        
-        <!-- Talen Filter -->
-        <div class="filterGroup">
-          <label class="filterLabel">Talen</label>
-          <select class="filterSelect" id="talenFilter">
-            <option value="">Alle</option>
-            <!-- Dynamisch geladen -->
-          </select>
-        </div>
-
-        <!-- Sector Filter -->
-        <div class="filterGroup">
-          <label class="filterLabel">Sector</label>
-          <select class="filterSelect" id="sectorFilter">
-            <option value="">Alle</option>
-            <!-- Dynamisch geladen -->
-          </select>
-        </div>
+<!-- Filter Modal -->
+<div class="filterModal" id="filterModal">
+  <div class="filterModalContent">
+    <div class="filterModalHeader">
+      <h3>Filters</h3>
+      <button class="filterModalClose" id="filterModalClose">&times;</button>
     </div>
-     <div class="filterActions">
-        <button class="filterBtn-clear" id="filterClearBtn">Wis Filters</button>
+    
+    <div class="filterOptions">
+      <!-- Studierichting Filter -->
+      <div class="filterGroup">
+        <label class="filterLabel">Studierichting</label>
+        <select class="filterSelect" id="studierichtingFilter">
+          <option value="">Alle</option>
+          <!-- Dynamisch geladen -->
+        </select>
+      </div>
+
+      <!-- Opleidingsrichting Filter -->
+      <div class="filterGroup">
+        <label class="filterLabel">Technologieën</label>
+        <select class="filterSelect" id="opleidingsrichtingFilter">
+          <option value="">Alle</option>
+          <!-- Dynamisch geladen -->
+        </select>
+      </div>
+      
+      <!-- Talen Filter -->
+      <div class="filterGroup">
+        <label class="filterLabel">Talen</label>
+        <select class="filterSelect" id="talenFilter">
+          <option value="">Alle</option>
+          <!-- Dynamisch geladen -->
+        </select>
+      </div>
+
+      <!-- Sector Filter -->
+      <div class="filterGroup">
+        <label class="filterLabel">Sector</label>
+        <select class="filterSelect" id="sectorFilter">
+          <option value="">Alle</option>
+          <!-- Dynamisch geladen -->
+        </select>
+      </div>
+    </div>
+    
+    <div class="filterActions">
+      <button class="filterClearBtn" id="filterClearBtn">Filters wissen</button>
+      <button class="filterApplyBtn" id="filterApplyBtn">Toepassen</button>
     </div>
   </div>
-</section>
+</div>
 
   <!-- Éénmaal de resultaten‐container -->
   <div id="searchResults" class="search-results"></div>

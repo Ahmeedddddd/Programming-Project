@@ -1,11 +1,13 @@
 // src/JS/UTILS/filter-system.js
 // Filter systeem voor de homepage zoekbalk
-console.log('🔧 Filter systeem geladen (v2 - Dropdown)');
+console.log('🔧 Filter systeem geladen (v1 - Modal)');
 
 class FilterSystem {
   constructor() {
     this.filterBtn = document.getElementById('filterBtn');
-    this.filterContainer = document.getElementById('filterContainer');
+    this.filterModal = document.getElementById('filterModal');
+    this.filterModalClose = document.getElementById('filterModalClose');
+    this.filterApplyBtn = document.getElementById('filterApplyBtn');
     this.filterClearBtn = document.getElementById('filterClearBtn');
     
     // Filter inputs
@@ -26,37 +28,40 @@ class FilterSystem {
   }
 
   init() {
-    if (!this.filterBtn || !this.filterContainer) return;
+    if (!this.filterBtn || !this.filterModal) return;
     
-    this.filterBtn.addEventListener('click', () => this.toggleFilterContainer());
-    this.filterClearBtn.addEventListener('click', () => this.clearFilters());
-
-    // Event listeners to apply filters immediately on change
-    this.studierichtingFilter.addEventListener('change', () => this.applyFilters());
-    this.opleidingsrichtingFilter.addEventListener('change', () => this.applyFilters());
-    this.talenFilter.addEventListener('change', () => this.applyFilters());
-    this.sectorFilter.addEventListener('change', () => this.applyFilters());
-
-    document.addEventListener('click', (e) => {
-      if (!this.filterContainer.contains(e.target) && !this.filterBtn.contains(e.target)) {
-        this.closeFilterContainer();
-      }
+    // Event listeners
+    this.filterBtn.addEventListener('click', () => this.openModal());
+    this.filterModalClose.addEventListener('click', () => this.closeModal());
+    this.filterModal.addEventListener('click', (e) => {
+        if (e.target === this.filterModal) {
+            this.closeModal();
+        }
     });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.filterModal.classList.contains('show')) {
+            this.closeModal();
+        }
+    });
+
+    this.filterApplyBtn.addEventListener('click', () => this.applyFilters());
+    this.filterClearBtn.addEventListener('click', () => this.clearFilters());
 
     this.loadFilterOptions();
   }
 
-  toggleFilterContainer() {
-    this.filterContainer.classList.toggle('visible');
+  openModal() {
+    this.filterModal.classList.add('show');
+    document.body.style.overflow = 'hidden';
   }
 
-  closeFilterContainer() {
-    this.filterContainer.classList.remove('visible');
+  closeModal() {
+    this.filterModal.classList.remove('show');
+    document.body.style.overflow = '';
   }
 
   async loadFilterOptions() {
     try {
-      // Fetch and populate all filters
       this.populateSelect(this.studierichtingFilter, (await window.api.get('/studenten/studierichtingen')).data);
       this.populateSelect(this.opleidingsrichtingFilter, (await window.api.get('/studenten/opleidingsrichtingen')).data);
       this.populateSelect(this.talenFilter, (await window.api.get('/studenten/talen')).data);
@@ -68,11 +73,9 @@ class FilterSystem {
   
   populateSelect(selectElement, options) {
     if (!selectElement || !Array.isArray(options)) return;
-    
     const firstOption = selectElement.firstElementChild;
     selectElement.innerHTML = '';
     selectElement.appendChild(firstOption);
-    
     options.forEach(optionData => {
       const option = document.createElement('option');
       option.value = optionData.value;
@@ -87,7 +90,8 @@ class FilterSystem {
     this.activeFilters.taal = this.talenFilter.value;
     this.activeFilters.sector = this.sectorFilter.value;
     
-    // Trigger search in zoekbalkHomepage.js
+    this.closeModal();
+    
     if (window.zoekbalkHomepage) {
       window.zoekbalkHomepage.filterAndDisplay();
     }
@@ -111,13 +115,11 @@ class FilterSystem {
     }
 
     return items.filter(item => {
-      // Student filters
       if (item._type === 'student') {
         if (this.activeFilters.studierichting && item.opleiding !== this.activeFilters.studierichting) return false;
         if (this.activeFilters.opleidingsrichting && item.opleidingsrichting !== this.activeFilters.opleidingsrichting) return false;
         if (this.activeFilters.taal && (!item.talen || !item.talen.includes(this.activeFilters.taal))) return false;
       }
-      // Bedrijf filters
       if (item._type === 'bedrijf') {
         if (this.activeFilters.sector && item.sector !== this.activeFilters.sector) return false;
       }
