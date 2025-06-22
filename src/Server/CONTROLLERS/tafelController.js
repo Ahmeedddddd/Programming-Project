@@ -294,7 +294,7 @@ const tafelController = {
 
       res.json({
         success: true,
-        message: `Project "${projectTitel}" toegewezen aan tafel ${tafelNum}`,
+        message: `Project "${projectTitel}" toegewezen aan tafel ${tafelNr}`,
         projectTitel: projectTitel,
         studentsUpdated: updateResult.affectedRows,
         students: projectStudents.map(s => `${s.voornaam} ${s.achternaam}`),
@@ -915,7 +915,7 @@ const tafelController = {
 
       res.json({
         success: true,
-        message: `Project "${projectTitel}" toegewezen aan tafel ${tafelNum}`,
+        message: `Project "${projectTitel}" toegewezen aan tafel ${tafelNr}`,
         projectTitel: projectTitel,
         tafelNr: tafelNum,
         studentsUpdated: updateResult.affectedRows,
@@ -1039,10 +1039,15 @@ const tafelController = {
       }
 
       // Zoek alle studenten met dit project
+      console.log(`🔍 Searching for students with project: "${projectTitel.trim()}"`);
       const [studentsToUpdate] = await pool.query(
         'SELECT studentnummer, voornaam, achternaam, tafelNr FROM STUDENT WHERE projectTitel = ?',
         [projectTitel.trim()]
       );
+      console.log(`📊 Found ${studentsToUpdate.length} students for project "${projectTitel}"`);
+      if (studentsToUpdate.length > 0) {
+        console.log(`📋 Students found:`, studentsToUpdate.map(s => `${s.voornaam} ${s.achternaam} (tafel: ${s.tafelNr})`));
+      }
 
       if (studentsToUpdate.length === 0) {
         return res.status(404).json({

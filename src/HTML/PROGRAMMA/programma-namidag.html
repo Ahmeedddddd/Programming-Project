@@ -61,9 +61,8 @@
         <!-- Main Content -->
         <div class="overzichtContainer">
             <!-- 🆕 Organisator controls worden dynamisch toegevoegd door JavaScript -->
-              <aside class="sideBar">
-                <div class="sidebar-header">
-                    <h2 class="sidebarTitle">Overzicht Tafels</h2>                    <!-- Tafel configuratie knop -->
+              <aside class="sideBar">                <div class="sidebar-header">
+                    <h2 class="sidebarTitle">Overzicht Tafels</h2><!-- Tafel configuratie knop -->
                     <button id="configTafelsBtn" class="config-btn" title="Configureer aantal tafels">
                         <span id="tafelCountText">Aantal tafels: 15</span>
                     </button>
@@ -385,9 +384,7 @@
             .info-card h4 {
                 font-size: 1rem;
             }
-        }
-
-        /* Extra hover effects voor namiddag */
+        }        /* Extra hover effects voor namiddag */
         .tafel-item:hover {
             border-color: #1f4e79 !important;
         }
@@ -396,5 +393,9 @@
             background: linear-gradient(135deg, #1f4e79 0%, #2a5a8a 100%) !important;
         }
     </style>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    <script type="module" src="/src/JS/PROGRAMMA/plattegrond-namiddag.js"></script>
 </body>
 </html>

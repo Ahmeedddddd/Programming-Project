@@ -1,7 +1,9 @@
 // src/JS/PROGRAMMA/plattegrond-namiddag.js
 // Interactieve functionaliteit voor namiddag plattegrond (bedrijven aan tafels)
 
-console.log('Plattegrond Namiddag script loading...');
+console.log('🔄 [DEBUG] Plattegrond Namiddag script loading...');
+console.log('🌐 [DEBUG] Current page URL:', window.location.href);
+console.log('📅 [DEBUG] Script loaded at:', new Date().toLocaleTimeString());
 
 class PlattegrondNamiddagManager {
     constructor() {
@@ -12,11 +14,10 @@ class PlattegrondNamiddagManager {
         this.availableBedrijven = [];
         this.tafelConfig = { namiddag_aantal_tafels: 25 }; // Default fallback voor namiddag
         this.init();
-    }
-
-    async init() {
+    }    async init() {
         try {
-            console.log('Initializing PlattegrondNamiddagManager...');
+            console.log('🚀 [DEBUG] Initializing PlattegrondNamiddagManager...');
+            console.log('🕐 [DEBUG] Init started at:', new Date().toLocaleTimeString());
             
             // Laad tafel configuratie uit database
             await this.loadTafelConfig();
@@ -213,7 +214,7 @@ class PlattegrondNamiddagManager {
         // Update sidebar titel
         const sidebarTitle = document.querySelector('.sidebarTitle');
         if (sidebarTitle) {
-            sidebarTitle.innerHTML = '⚙️ Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
+            sidebarTitle.innerHTML = 'Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
         }
 
         // Toon edit mode indicator
@@ -232,12 +233,10 @@ class PlattegrondNamiddagManager {
         const configBtn = document.getElementById('configTafelsBtn');
         if (configBtn) {
             configBtn.style.display = 'none';
-        }
-
-          // Update sidebar titel voor bezoekers
+        }        // Update sidebar titel voor bezoekers
         const sidebarTitle = document.querySelector('.sidebarTitle');
         if (sidebarTitle) {
-            sidebarTitle.innerHTML = 'Bedrijven Overzicht';
+            sidebarTitle.innerHTML = 'Overzicht Tafels';
         }
 
         // Verberg edit indicators
@@ -307,7 +306,7 @@ class PlattegrondNamiddagManager {
         modal.innerHTML = `
             <div class="modal-overlay">
                 <div class="modal-content">
-                    <h3>⚙️ Tafel ${tafel.tafelNr} Beheren</h3>
+                    <h3>Tafel ${tafel.tafelNr} Beheren</h3>
                     
                     ${tafel.items && tafel.items.length > 0 ? `
                         <div class="current-assignment">
@@ -362,7 +361,7 @@ class PlattegrondNamiddagManager {
             // Add beschikbare bedrijven met header
             if (beschikbareBedrijven.length > 0) {
                 const optgroupBeschikbaar = document.createElement('optgroup');
-                optgroupBeschikbaar.label = '📋 Nog aan te duiden bedrijven';
+                optgroupBeschikbaar.label = 'Nog aan te duiden bedrijven';
                 beschikbareBedrijven.forEach(bedrijf => {
                     const option = document.createElement('option');
                     option.value = bedrijf.bedrijfsnummer;
@@ -375,7 +374,7 @@ class PlattegrondNamiddagManager {
             // Add toegewezen bedrijven met header
             if (toegewezenBedrijven.length > 0) {
                 const optgroupAssigned = document.createElement('optgroup');
-                optgroupAssigned.label = '✅ Al aangeduide bedrijven';
+                optgroupAssigned.label = 'Al aangeduide bedrijven';
                 toegewezenBedrijven.forEach(bedrijf => {
                     const option = document.createElement('option');
                     option.value = bedrijf.bedrijfsnummer;
@@ -388,9 +387,66 @@ class PlattegrondNamiddagManager {
             
             console.log('🔄 Modal updated with bedrijven data');
         }
-    }
+    }    // Snelle dropdown update zonder volledige modal rebuild
+    updateModalDropdownOnly(bedrijfSelect) {
+        // Rebuild alleen de dropdown opties
+        bedrijfSelect.innerHTML = '<option value="">Selecteer bedrijf...</option>';
+        
+        // Check welke bedrijven toegewezen zijn (quick check)
+        const toegewezenBedrijven = new Map(); // Use Map to track both assignment and table info
+        Object.entries(this.tafelData).forEach(([tafelNr, tafelInfo]) => {
+            if (tafelInfo.items && tafelInfo.items.length > 0) {
+                tafelInfo.items.forEach(bedrijf => {
+                    if (bedrijf.id) {
+                        toegewezenBedrijven.set(bedrijf.id, {
+                            tafelNr: tafelNr,
+                            naam: bedrijf.naam || bedrijf.title,
+                            sector: bedrijf.sector || 'Onbekend'
+                        });
+                    }
+                });
+            }
+        });
 
-    buildBedrijvenOptgroups() {
+        const beschikbareBedrijven = this.availableBedrijven
+            .filter(b => !toegewezenBedrijven.has(b.id))
+            .sort((a, b) => a.naam.localeCompare(b.naam));
+        
+        const alleToegwezenBedrijven = this.availableBedrijven
+            .filter(b => toegewezenBedrijven.has(b.id))
+            .sort((a, b) => a.naam.localeCompare(b.naam));
+
+        // Add beschikbare bedrijven - groene groep
+        if (beschikbareBedrijven.length > 0) {
+            const optgroupBeschikbaar = document.createElement('optgroup');
+            optgroupBeschikbaar.label = '� Beschikbare Bedrijven (nog aan te duiden)';
+            beschikbareBedrijven.forEach(bedrijf => {
+                const option = document.createElement('option');
+                option.value = bedrijf.id;
+                // More detailed option text with icon and sector info
+                option.textContent = `${bedrijf.naam} - ${bedrijf.sector || 'Geen sector'}`;
+                optgroupBeschikbaar.appendChild(option);
+            });
+            bedrijfSelect.appendChild(optgroupBeschikbaar);
+        }
+        
+        // Add toegewezen bedrijven - rode groep (disabled)
+        if (alleToegwezenBedrijven.length > 0) {
+            const optgroupAssigned = document.createElement('optgroup');
+            optgroupAssigned.label = 'Reeds Toegewezen Bedrijven (niet beschikbaar)';
+            alleToegwezenBedrijven.forEach(bedrijf => {
+                const assignmentInfo = toegewezenBedrijven.get(bedrijf.id);
+                const option = document.createElement('option');
+                option.value = bedrijf.id;
+                // More detailed option text showing current assignment
+                option.textContent = `${bedrijf.naam} - ${bedrijf.sector || 'Geen sector'} (Tafel ${assignmentInfo.tafelNr})`;
+                option.disabled = true;
+                option.style.color = '#999';
+                optgroupAssigned.appendChild(option);
+            });
+            bedrijfSelect.appendChild(optgroupAssigned);
+        }
+    }    buildBedrijvenOptgroups() {
         const beschikbareBedrijven = this.availableBedrijven.filter(b => !b.tafelNr)
             .sort((a, b) => a.naam.localeCompare(b.naam));
         const toegewezenBedrijven = this.availableBedrijven.filter(b => b.tafelNr)
@@ -398,23 +454,23 @@ class PlattegrondNamiddagManager {
         
         let html = '';
         
-        // Beschikbare bedrijven
+        // Beschikbare bedrijven - groene groep
         if (beschikbareBedrijven.length > 0) {
-            html += '<optgroup label="📋 Nog aan te duiden bedrijven">';
+            html += '<optgroup label="� Beschikbare Bedrijven (nog aan te duiden)">';
             beschikbareBedrijven.forEach(bedrijf => {
                 html += `<option value="${bedrijf.bedrijfsnummer}">
-                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'}
+                    ${bedrijf.naam} - ${bedrijf.sector || 'Geen sector'}
                 </option>`;
             });
             html += '</optgroup>';
         }
         
-        // Toegewezen bedrijven
+        // Toegewezen bedrijven - rode groep (disabled)
         if (toegewezenBedrijven.length > 0) {
-            html += '<optgroup label="✅ Al aangeduide bedrijven">';
+            html += '<optgroup label="Reeds Toegewezen Bedrijven (niet beschikbaar)">';
             toegewezenBedrijven.forEach(bedrijf => {
-                html += `<option value="${bedrijf.bedrijfsnummer}" disabled>
-                    ${bedrijf.naam} - ${bedrijf.sector || 'Algemeen'} (Tafel ${bedrijf.tafelNr})
+                html += `<option value="${bedrijf.bedrijfsnummer}" disabled style="color: #999;">
+                    ${bedrijf.naam} - ${bedrijf.sector || 'Geen sector'} (Tafel ${bedrijf.tafelNr})
                 </option>`;
             });
             html += '</optgroup>';
@@ -456,14 +512,36 @@ class PlattegrondNamiddagManager {
                     throw new Error(`Server error: ${response.status} ${response.statusText}`);
                 }
             }            const result = await response.json();
-            console.log('📊 API Response Data:', result);
-            
-            if (result.success) {
+            console.log('📊 API Response Data:', result);            if (result.success) {
                 this.showSuccess(`Bedrijf toegewezen aan tafel ${tafelNr}!`);
+                
+                // Reset dropdown direct
+                bedrijfSelect.value = '';
+                
+                // Update tafelData lokaal voor snelle UI update
+                const bedrijf = this.availableBedrijven.find(b => b.id == bedrijfsnummer);
+                if (bedrijf && this.tafelData[tafelNr]) {
+                    this.tafelData[tafelNr].items = [{
+                        id: bedrijf.id,
+                        naam: bedrijf.naam,
+                        sector: bedrijf.sector
+                    }];
+                }
+                
+                // Update dropdown direct zonder API call
+                this.updateModalDropdownOnly(bedrijfSelect);
+                
+                // Update sidebar direct
+                this.updateSidebar();
+                
+                // Herlaad data in background voor consistentie (zonder UI blocking)
+                setTimeout(() => {
+                    this.loadTafelData();
+                    this.loadAvailableBedrijven();
+                }, 100);
+                
+                // Sluit modal
                 this.closeModal();
-                await this.loadTafelData(); // Herlaad data
-                // Cache invalideren zodat bedrijven lijst wordt ververst
-                this.availableBedrijven = [];
             } else {
                 throw new Error(result.message || 'Toewijzing mislukt');
             }
@@ -501,29 +579,37 @@ class PlattegrondNamiddagManager {
             }
 
             const result = await response.json();
-            console.log('📊 API Response Data:', result);if (result.success) {
+            console.log('📊 API Response Data:', result);            if (result.success) {
                 this.showSuccess('Bedrijf verwijderd van tafel!');
-                // NIET de modal sluiten, maar verversen voor directe nieuwe toewijzing
-                await this.loadTafelData(); // Herlaad data
                 
-                // Cache invalideren zodat bedrijven lijst wordt ververst
-                this.availableBedrijven = [];
-                await this.loadAvailableBedrijven(); // Herlaad beschikbare bedrijven
+                // Update tafelData lokaal voor snelle UI update
+                Object.keys(this.tafelData).forEach(tafelNr => {
+                    if (this.tafelData[tafelNr].items) {
+                        this.tafelData[tafelNr].items = this.tafelData[tafelNr].items.filter(
+                            item => item.id != bedrijfId
+                        );
+                    }
+                });
                 
-                // Update de modal met nieuwe gegevens (tafel is nu leeg)
-                const currentModal = document.querySelector('.tafel-assignment-modal');
-                if (currentModal) {
-                    const tafelNr = this.selectedTafel.tafelNr;
-                    const updatedTafel = { tafelNr: tafelNr, items: [] }; // Tafel is nu leeg
-                    this.selectedTafel = updatedTafel;
-                    
-                    // Vervang modal content
-                    const newModal = this.createAssignmentModal(updatedTafel);
-                    currentModal.innerHTML = newModal.innerHTML;
-                    
-                    // Update dropdown met nieuwe bedrijven
-                    this.updateModalWithBedrijven(currentModal, updatedTafel);
-                }
+                // Update sidebar direct
+                this.updateSidebar();
+                
+                // Kleine delay voor de UI update en dan dropdown updaten
+                setTimeout(() => {
+                    const bedrijfSelect = document.querySelector('#bedrijfSelect');
+                    if (bedrijfSelect) {
+                        this.updateModalDropdownOnly(bedrijfSelect);
+                    }
+                }, 50);
+                
+                // Herlaad data in background voor consistentie (zonder UI blocking)
+                setTimeout(() => {
+                    this.loadTafelData();
+                    this.loadAvailableBedrijven();
+                }, 100);
+                
+                // Update selected tafel to empty
+                this.selectedTafel = { tafelNr: this.selectedTafel.tafelNr, items: [] };
             } else {
                 throw new Error(result.message || 'Verwijdering mislukt');
             }
@@ -639,7 +725,7 @@ class PlattegrondNamiddagManager {
         modal.className = 'config-modal';
         modal.innerHTML = `
             <div class="config-modal-content">
-                <h3>⚙️ Tafel Configuratie - Namiddag</h3>
+                <h3>Tafel Configuratie - Namiddag</h3>
                 <div class="config-info">
                     <p><strong>Huidige instelling:</strong> ${currentAantal} tafels</p>
                     <p><small>Dit bepaalt hoeveel tafels zichtbaar zijn in het overzicht en beschikbaar zijn voor bedrijven toewijzing. De instelling wordt opgeslagen in de database.</small></p>
@@ -781,27 +867,47 @@ class PlattegrondNamiddagManager {
             const tafel = this.tafelData[tafelNr] || { tafelNr: tafelNr, items: [] };
             this.showAssignmentModal(tafel);
         }
-    }
-
-    navigateToBedrijf(bedrijf) {
-        console.log(`🧭 Navigating to bedrijf details for: ${bedrijf.naam}`);
+    }    navigateToBedrijf(bedrijfData) {
+        console.log('🔍 [DEBUG] navigateToBedrijf called with data:', bedrijfData);
         
-        // Store bedrijf info in sessionStorage voor overdracht naar volgende pagina
-        sessionStorage.setItem('selectedBedrijf', JSON.stringify({
-            id: bedrijf.id,
-            naam: bedrijf.naam,
-            beschrijving: bedrijf.beschrijving,
-            sector: bedrijf.sector,
-            email: bedrijf.email,
-            gemeente: bedrijf.gemeente,
-            contactpersoon: bedrijf.contactpersoon,
-            tafelNr: bedrijf.tafelNr
-        }));
-          // Navigeer naar resultaat-bedrijf.html
-        window.location.href = '/src/HTML/RESULTS/resultaat-bedrijf.html';
-    }
-
-    updateSidebar() {
+        if (!bedrijfData) {
+            console.error('❌ [ERROR] No bedrijf data provided');
+            return;
+        }
+        
+        // Check if bedrijf has an ID
+        if (!bedrijfData.id && !bedrijfData.bedrijfId) {
+            console.error('❌ [ERROR] No bedrijf ID found in data:', bedrijfData);
+            return;
+        }
+        
+        const bedrijfId = bedrijfData.id || bedrijfData.bedrijfId;
+        console.log('🔢 [DEBUG] Using bedrijf ID:', bedrijfId);
+          const targetUrl = `/resultaat-bedrijf?id=${bedrijfId}`;
+        console.log('🎯 [DEBUG] Target URL:', targetUrl);
+        console.log('🌐 [DEBUG] Current location:', window.location.href);
+        
+        // Extra debugging - check if target file exists
+        console.log('📁 [DEBUG] Checking if target path is correct...');
+        console.log('📍 [DEBUG] Full target URL would be:', window.location.origin + targetUrl);
+          try {
+            console.log('🚀 [DEBUG] About to set window.location.href to:', targetUrl);
+            console.log('⏰ [DEBUG] Navigation attempt at:', new Date().toLocaleTimeString());
+            
+            window.location.href = targetUrl;
+            
+            console.log('✅ [DEBUG] Navigation initiated - if you see this, navigation was successful');
+        } catch (error) {
+            console.error('❌ [ERROR] Navigation failed with exception:', error);
+        }
+        
+        // This should not execute if navigation is successful
+        setTimeout(() => {
+            console.warn('⚠️ [WARNING] Still on same page after 1 second - navigation may have failed');
+            console.log('🌐 [WARNING] Current URL is still:', window.location.href);
+        }, 1000);
+    }updateSidebar() {
+        console.log('🔄 [DEBUG] updateSidebar called');
         const sidebar = document.getElementById('tafelSidebar');
         if (!sidebar) {
             console.error('❌ tafelSidebar element not found in DOM!');
@@ -811,6 +917,7 @@ class PlattegrondNamiddagManager {
         console.log(`🔄 Updating sidebar with ${Object.keys(this.tafelData).length} occupied tables`);
         console.log(`📊 Target max tables: ${this.tafelConfig.namiddag_aantal_tafels || 25}`);
         console.log(`👔 User is organisator: ${this.isOrganisator}`);
+        console.log('📋 [DEBUG] Tafel data:', this.tafelData);
 
         // Clear sidebar first
         sidebar.innerHTML = '';
@@ -835,22 +942,24 @@ class PlattegrondNamiddagManager {
                             <strong>Tafel ${i}: ${bedrijfNaam}</strong><br>
                             <small class="bedrijf-info">${sector}</small>
                         </div>
-                        ${this.isOrganisator ? `<button class="remove-btn" onclick="event.stopPropagation(); window.plattegrondNamiddagManager.removeBedrijfFromTafel('${bedrijf.id}')" style="margin-left: 10px; flex-shrink: 0;">🗑️</button>` : ''}
+                        ${this.isOrganisator ? `<button class="remove-btn" onclick="event.stopPropagation(); window.plattegrondNamiddagManager.removeBedrijfFromTafel('${bedrijf.id}')" style="margin-left: 10px; flex-shrink: 0;">Verwijder</button>` : ''}
                     </div>
-                `;
-
-                // Add click handler gebaseerd op user type
+                `;                // Add click handler gebaseerd op user type
                 if (this.isOrganisator) {
                     listItem.addEventListener('click', () => this.showAssignmentModal(tafel));
                     listItem.style.cursor = 'pointer';
                     listItem.title = 'Klik om bedrijf toe te wijzen';
                 } else {
-                    listItem.addEventListener('click', () => this.navigateToBedrijf(bedrijf));
+                    console.log('🖱️ [DEBUG] Adding click handler for non-organisator to tafel', i, 'with bedrijf:', bedrijf);
+                    listItem.addEventListener('click', () => {
+                        console.log('🖱️ [DEBUG] Tafel item clicked! Tafel:', i, 'Bedrijf:', bedrijf);
+                        this.navigateToBedrijf(bedrijf);
+                    });
                     listItem.style.cursor = 'pointer';
                     listItem.title = 'Klik voor bedrijf details';
                 }            } else {
                 // Lege tafel - gebruik voormiddag stijl met dashed border op listItem
-                listItem.style.border = '2px dashed #ccc';
+                listItem.classList.add('empty-tafel-item'); // Voeg CSS class toe
                 listItem.innerHTML = `
                     <div class="tafel-content">
                         <strong>Tafel ${i}</strong>
@@ -886,9 +995,7 @@ class PlattegrondNamiddagManager {
     showSuccess(message) {
         console.log('✅ Success:', message);
         this.showNotification(message, 'success');
-    }
-
-    showNotification(message, type = 'info') {
+    }    showNotification(message, type = 'info') {
         // Verwijder bestaande notificaties
         const existing = document.querySelectorAll('.notification');
         existing.forEach(el => el.remove());
@@ -906,13 +1013,24 @@ class PlattegrondNamiddagManager {
         // Voeg toe aan body
         document.body.appendChild(notification);
 
+        // Trigger animatie na een kleine delay
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
         // Auto-remove na 5 seconden
         setTimeout(() => {
             if (notification.parentElement) {
-                notification.remove();
+                notification.classList.remove('show');
+                // Verwijder element na animatie
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
             }
         }, 5000);
-    }    showEditModeIndicator() {
+    }showEditModeIndicator() {
         // Organisator modus indicator uitgeschakeld
         console.log('� Edit mode indicator disabled by user request');
     }hideEditIndicators() {
@@ -953,8 +1071,15 @@ window.plattegrondNamiddagManager = null;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM loaded, initializing PlattegrondNamiddagManager...');
-    window.plattegrondNamiddagManager = new PlattegrondNamiddagManager();
+    console.log('🚀 [DEBUG] DOM loaded, initializing PlattegrondNamiddagManager...');
+    console.log('🕐 [DEBUG] DOMContentLoaded fired at:', new Date().toLocaleTimeString());
+    console.log('🌐 [DEBUG] Current URL:', window.location.href);
+    try {
+        window.plattegrondNamiddagManager = new PlattegrondNamiddagManager();
+        console.log('✅ [DEBUG] PlattegrondNamiddagManager instance created and assigned to window');
+    } catch (error) {
+        console.error('❌ [DEBUG] Error creating PlattegrondNamiddagManager:', error);
+    }
 });
 
 // CSS voor modal en extra styling (hergebruikt van voormiddag met kleine aanpassingen)
