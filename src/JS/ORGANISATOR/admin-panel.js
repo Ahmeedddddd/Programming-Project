@@ -1,8 +1,7 @@
 // admin-panel.js - Fixed version met correcte database mapping
 
-class AdminPanel {
-    constructor() {
-        this.API_BASE_URL = 'http://localhost:3301/api';
+class AdminPanel {    constructor() {
+        this.API_BASE_URL = 'http://localhost:8383/api';
         this.students = [];
         this.companies = [];
         this.projects = [];

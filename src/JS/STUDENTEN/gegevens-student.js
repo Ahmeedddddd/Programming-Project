@@ -63,13 +63,12 @@ class StudentGegevens {
     }
 
     // 📡 API Calls
-    async loadStudentGegevens() {
-        console.log("📡 Loading student gegevens...");
+    async loadStudentGegevens() {        console.log("📡 Loading student gegevens...");
         try {
             this.showLoading(true);
 
             const response = await fetch(
-                "http://localhost:3301/api/student/profile",
+                "http://localhost:8383/api/student/profile",
                 {
                     method: "GET",
                     headers: {
@@ -127,10 +126,8 @@ class StudentGegevens {
         this.studentData = { ...this.studentData, ...updatedFields };
 
         try {
-            this.showLoading(true);
-
-            const response = await fetch(
-                "http://localhost:3301/api/student/profile",
+            this.showLoading(true);            const response = await fetch(
+                "http://localhost:8383/api/student/profile",
                 {
                     method: "PUT",
                     headers: {
