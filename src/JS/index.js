@@ -17,6 +17,11 @@
 
 // ===== GLOBAL VARIABLES =====
 let universalInitializer;
+let carouselManager;
+let filterManager;
+let allCompanies = [];
+let allStudents = [];
+let allProjects = [];
 
 // ===== NOTIFICATIE POLLING =====
 let notificationPollingInterval = null;
@@ -84,6 +89,159 @@ class AuthChecker {
             }
         }
         return false;
+    }
+}
+
+// ===== HOMEPAGE FILTER MANAGER =====
+class HomepageFilterManager {
+    constructor(renderer) {
+        this.renderer = renderer;
+        this.currentFilters = {
+            search: '',
+            jaar: 'Alle jaren',
+            specialization: 'Alle'
+        };
+        // Mapping for company sectors based on pills
+        this.specializationMapping = {
+            'Toegepaste Informatica': ['IT', 'Software', 'Consulting', 'Technologie'],
+            'Industriële Wetenschappen': ['Engineering', 'Industrie', 'Technologie'],
+            'Cybersecurity': ['Cybersecurity', 'IT', 'Security', 'Technologie'],
+            'AI & Robotica': ['AI', 'Robotics', 'Data', 'IT', 'Technologie']
+        };
+        // NEW: Mapping for student specializations based on pills and DB values
+        this.studentSpecializationMap = {
+            'Cybersecurity': ['Networks & Security'],
+            'AI & Robotica': ['Intelligent Robotics', 'AI & Multimedia', 'IoT & Data'],
+            'Toegepaste Informatica': ['Software Engineering', 'Web Development', 'Business IT', 'Networks & Security', 'AI & Multimedia', 'IoT & Data', 'Digital Design', 'Creative Media', 'Intelligent Robotics'],
+            'Industriële Wetenschappen': ['Intelligent Robotics']
+        };
+        this.init();
+    }
+
+    init() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupEventListeners());
+        } else {
+            this.setupEventListeners();
+        }
+    }
+
+    setInitialData(companies, students) {
+        this.allCompanies = companies;
+        this.allStudents = students;
+    }
+
+    setupEventListeners() {
+        console.log('▬▬▬▬▬▬▬▬▬ 👂 ATTEMPTING TO SET UP LISTENERS 👂 ▬▬▬▬▬▬▬▬▬');
+        const filterSection = document.querySelector('.student-filter-section');
+        
+        if (!filterSection) {
+            console.error('⛔️ FATAL: Filter section `.student-filter-section` was NOT found in the DOM.');
+            console.log('Debugging info: document.readyState is:', document.readyState);
+            return;
+        }
+
+        console.log('✅ SUCCESS: Filter section found. Attaching listeners...');
+
+        const searchInput = filterSection.querySelector('.search-input');
+        searchInput?.addEventListener('input', e => {
+            console.log('▬▬▬▬▬▬▬▬ 🔎 SEARCH INPUT CHANGED ▬▬▬▬▬▬▬▬');
+            this.currentFilters.search = e.target.value.toLowerCase().trim();
+            this.applyFilters();
+        });
+
+        const yearSelect = filterSection.querySelector('.filter-select');
+        yearSelect?.addEventListener('change', e => {
+            console.log('▬▬▬▬▬▬▬▬ 📅 YEAR SELECT CHANGED ▬▬▬▬▬▬▬▬');
+            this.currentFilters.jaar = e.target.value;
+            this.applyFilters();
+        });
+
+        const pills = filterSection.querySelectorAll('.specialization-pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', e => {
+                console.log('▬▬▬▬▬▬▬▬ 💊 PILL CLICKED ▬▬▬▬▬▬▬▬');
+                pills.forEach(p => p.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                this.currentFilters.specialization = e.currentTarget.textContent.trim();
+                this.applyFilters();
+            });
+        });
+
+        const filterBtn = filterSection.querySelector('.filter-btn');
+        filterBtn?.addEventListener('click', () => {
+             console.log('▬▬▬▬▬▬▬▬ 🔵 FILTER BUTTON CLICKED ▬▬▬▬▬▬▬▬');
+            this.applyFilters();
+        });
+    }
+
+    applyFilters() {
+        console.log('✅✅✅ APPLYING FILTERS ✅✅✅');
+        console.log('Current filter state:', this.currentFilters);
+
+        // --- Filter Students ---
+        let filteredStudents = [...this.allStudents];
+        
+        // 1. Filter by search term
+        if (this.currentFilters.search) {
+            filteredStudents = filteredStudents.filter(student =>
+                (student.voornaam + ' ' + student.achternaam).toLowerCase().includes(this.currentFilters.search) ||
+                (student.opleidingsrichting && student.opleidingsrichting.toLowerCase().includes(this.currentFilters.search))
+            );
+        }
+
+        // 2. Filter by year
+        if (this.currentFilters.jaar && this.currentFilters.jaar !== 'Alle jaren') {
+            const year = parseInt(this.currentFilters.jaar.charAt(0), 10);
+            filteredStudents = filteredStudents.filter(student => student.leerjaar === year);
+        }
+
+        // 3. Filter by specialization using the new map
+        if (this.currentFilters.specialization !== 'Alle') {
+            const relevantOpleidingen = this.studentSpecializationMap[this.currentFilters.specialization];
+            if (relevantOpleidingen) {
+                filteredStudents = filteredStudents.filter(student =>
+                    student.opleidingsrichting && relevantOpleidingen.includes(student.opleidingsrichting)
+                );
+            } else {
+                 filteredStudents = []; // No mapping found, so show no students
+            }
+        }
+        console.log(`🔎 Found ${filteredStudents.length} students after filtering.`);
+
+        // --- Filter Companies ---
+        let filteredCompanies = [...this.allCompanies];
+        if (this.currentFilters.specialization !== 'Alle') {
+            const relevantSectors = this.specializationMapping[this.currentFilters.specialization] || [];
+            if (relevantSectors.length > 0) {
+                filteredCompanies = filteredCompanies.filter(company =>
+                    company.sector && relevantSectors.some(sector => company.sector.toLowerCase().includes(sector.toLowerCase()))
+                );
+            }
+        }
+        console.log(`🔎 Found ${filteredCompanies.length} companies after filtering.`);
+        
+        // --- Apply Filtered Data to UI ---
+        console.log('▶️▶️▶️ APPLYING FILTERED DATA TO UI ◀️◀️◀️');
+        
+        // Store original data
+        const originalCompanies = [...allCompanies];
+        const originalStudents = [...allStudents];
+        
+        // Temporarily replace global data with filtered data
+        allCompanies = filteredCompanies;
+        allStudents = filteredStudents;
+        
+        // Re-render the cards and update counts with filtered data
+        this.renderer.renderCompanyCards();
+        this.renderer.renderStudentCards();
+        this.renderer.updateDataCounts();
+        
+        // Restore original data
+        allCompanies = originalCompanies;
+        allStudents = originalStudents;
+        
+        console.log('✅✅✅ FILTERING COMPLETE ✅✅✅');
     }
 }
 
@@ -268,6 +426,7 @@ class CardRenderer {
     }
 
     renderStudentCard(student) {
+        console.log('[DEBUG] CardRenderer.renderStudentCard wordt aangeroepen:', student);
         // Bepaal genre/soort project op basis van projectTitel
         const genre = this.getProjectGenre(student.projectTitel);
         const hasProject = !!student.projectTitel;
@@ -496,29 +655,21 @@ class UniversalHomepageInitializer {
     async init() {
         try {
             console.log('🚀 Initializing universal homepage...');
-            
             // Check auth and redirect if needed
             if (AuthChecker.checkAuthAndRedirect()) {
                 return;
             }
-
             // Fetch all data
             await this.dataFetcher.fetchAllData();
-            
             // Initialize carousels for each section
             this.initializeCarousels();
-            
             // Render initial cards
             this.renderAllCards();
-            
             // Update data counts
             this.updateDataCounts();
-            
             // Start notification polling
             startNotificationPolling();
-            
             console.log('✅ Universal homepage initialized successfully');
-            
         } catch (error) {
             console.error('❌ Error initializing universal homepage:', error);
         }
@@ -526,10 +677,8 @@ class UniversalHomepageInitializer {
 
     initializeCarousels() {
         const dataTypes = ['bedrijven', 'studenten', 'projecten'];
-        
         dataTypes.forEach(type => {
             const items = this.dataFetcher.getData(type);
-            
             // Only create carousel if there are more than 4 items
             if (items && items.length > 4) {
                 this.carouselManagers[type] = new CarouselManager(type, items, this.cardRenderer);
@@ -544,7 +693,6 @@ class UniversalHomepageInitializer {
     renderAllCards() {
         // Render first 4 items for each section initially
         const dataTypes = ['bedrijven', 'studenten', 'projecten'];
-        
         dataTypes.forEach(type => {
             const items = this.dataFetcher.getData(type);
             if (items && items.length > 0) {

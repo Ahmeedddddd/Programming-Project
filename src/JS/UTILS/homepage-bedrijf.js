@@ -59,45 +59,14 @@ async function renderInteressanteStudenten(students) {
         studentenGrid.innerHTML = '<div class="no-data"><p>Geen interessante studenten gevonden.</p></div>';
         return;
     }
-    // Gebruik de universele renderStudentCard uit index.js
-    function getProjectGenre(projectTitel) {
-        if (!projectTitel) return { className: 'no-project', label: 'Geen project' };
-        const lower = projectTitel.toLowerCase();
-        if (lower.includes('ai') || lower.includes('artificial intelligence')) return { className: 'genre-ai', label: 'AI' };
-        if (lower.includes('biotech') || lower.includes('biotechnologie')) return { className: 'genre-biotech', label: 'Biotech' };
-        if (lower.includes('duurzaam') || lower.includes('sustainab')) return { className: 'genre-duurzaam', label: 'Duurzame energie' };
-        if (lower.includes('multimedia')) return { className: 'genre-multimedia', label: 'Multimedia' };
-        if (lower.includes('security') || lower.includes('beveilig')) return { className: 'genre-security', label: 'Security' };
-        if (lower.includes('iot')) return { className: 'genre-iot', label: 'IoT' };
-        if (lower.includes('data') || lower.includes('big data')) return { className: 'genre-data', label: 'Data' };
-        if (lower.includes('cloud')) return { className: 'genre-cloud', label: 'Cloud' };
-        if (lower.includes('robot')) return { className: 'genre-robot', label: 'Robotica' };
-        return { className: 'genre-default', label: 'Project' };
+    // Gebruik de universele CardRenderer uit index.js
+    const cardRenderer = window.universalInitializer && window.universalInitializer.cardRenderer;
+    if (!cardRenderer) {
+        studentenGrid.innerHTML = '<div class="no-data"><p>Studenten laden mislukt.</p></div>';
+        return;
     }
-    function renderStudentCard(student) {
-        const genre = getProjectGenre(student.projectTitel);
-        const hasProject = !!student.projectTitel;
-        return `
-            <a href="/zoekbalk-studenten?id=${student.studentnummer}" class="preview-card" style="text-decoration: none; color: inherit; display: block;">
-                <div class="card-header">
-                    <h3 class="card-title">${student.voornaam} ${student.achternaam}</h3>
-                </div>
-                <p class="card-description">${student.overMezelf || 'Geen beschrijving.'}</p>
-                 <div class="student-details">
-                    <div class="student-specialization"><span><i class="fas fa-graduation-cap"></i> ${student.opleiding || ''} ${student.opleidingsrichting || ''}</span></div>
-                    <div class="student-year"><span><i class="fas fa-calendar-alt"></i> Jaar ${student.leerjaar || 'N/A'}</span></div>
-                    <div class="student-location"><span><i class="fas fa-map-marker-alt"></i> ${student.gemeente || 'Onbekend'}</span></div>
-                </div>
-                <div class="student-project">
-                  ${hasProject
-                    ? `<span class="student-project-badge ${genre.className}"><i class="fas fa-lightbulb"></i> ${student.projectTitel}</span>`
-                    : `<span class="student-project-badge no-project"><i class="fas fa-lightbulb"></i> Geen project</span>`}
-                </div>
-            </a>`;
-    }
-    // Render maximaal 4 studenten (zoals op de homepage)
     const toShow = students.slice(0, 4);
-    studentenGrid.innerHTML = toShow.map(renderStudentCard).join('');
+    studentenGrid.innerHTML = toShow.map(cardRenderer.renderStudentCard.bind(cardRenderer)).join('');
 }
 
 /**
