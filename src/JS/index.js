@@ -121,25 +121,27 @@ class UniversalDataFetcher {
             this.data.studenten = studentenRes.success ? studentenRes.data : [];
             this.data.projecten = projectenRes.success ? projectenRes.data : [];
             
+            // Project data loaded successfully
+            
             // Enhanced debugging for projects
-            console.log(`📊 [index.js] Projects data analysis:`, {
-                totalProjects: this.data.projecten?.length || 0,
-                projectsWithTechnologies: this.data.projecten?.filter(p => p.technologieen && p.technologieen.trim() !== '').length || 0,
-                projectsWithoutTechnologies: this.data.projecten?.filter(p => !p.technologieen || p.technologieen.trim() === '').length || 0,
-                sampleProject: this.data.projecten?.[0] ? {
-                    titel: this.data.projecten[0].titel || this.data.projecten[0].projectTitel,
-                    technologieen: this.data.projecten[0].technologieen,
-                    hasTechnologies: !!this.data.projecten[0].technologieen
-                } : null
-            });
+            // console.log(`📊 [index.js] Projects data analysis:`, {
+            //     totalProjects: this.data.projecten?.length || 0,
+            //     projectsWithTechnologies: this.data.projecten?.filter(p => p.technologieen && p.technologieen.trim() !== '').length || 0,
+            //     projectsWithoutTechnologies: this.data.projecten?.filter(p => !p.technologieen || p.technologieen.trim() === '').length || 0,
+            //     sampleProject: this.data.projecten?.[0] ? {
+            //         titel: this.data.projecten[0].titel || this.data.projecten[0].projectTitel,
+            //         technologieen: this.data.projecten[0].technologieen,
+            //         hasTechnologies: !!this.data.projecten[0].technologieen
+            //     } : null
+            // });
             
             // Log each project's technology status
-            if (this.data.projecten) {
-                this.data.projecten.forEach((project, index) => {
-                    const hasTech = project.technologieen && project.technologieen.trim() !== '';
-                    console.log(`📋 [index.js] Project ${index + 1}: "${project.titel || project.projectTitel}" - Technologies: ${hasTech ? '✅' : '❌'} (${project.technologieen || 'null'})`);
-                });
-            }
+            // if (this.data.projecten) {
+            //     this.data.projecten.forEach((project, index) => {
+            //         const hasTech = project.technologieen && project.technologieen.trim() !== '';
+            //         console.log(`📋 [index.js] Project ${index + 1}: "${project.titel || project.projectTitel}" - Technologies: ${hasTech ? '✅' : '❌'} (${project.technologieen || 'null'})`);
+            //     });
+            // }
             
         } catch (error) {
             console.error('❌ [index.js] Error fetching data:', error);
@@ -181,7 +183,8 @@ class CarouselManager {
 
 // ===== CARD RENDERER =====
 class CardRenderer {
-    constructor() {
+    constructor(dataFetcher = null) {
+        this.dataFetcher = dataFetcher;
         this.uiSelectors = HomepageTypeDetector.getUISelectors();
     }
 
@@ -246,12 +249,12 @@ class CardRenderer {
     }
 
     renderProjectCard(project) {
-        console.log('🔍 [index.js] Rendering project card:', {
+        // Debug logging to understand data structure
+        console.log('🔍 [DEBUG] Rendering project card:', {
             titel: project.titel || project.projectTitel,
-            technologieen: project.technologieen,
             studenten: project.studenten,
-            hasTechnologies: !!project.technologieen,
-            technologieenType: typeof project.technologieen
+            studentenType: typeof project.studenten,
+            isArray: Array.isArray(project.studenten)
         });
 
         // Handle different student data formats
@@ -261,55 +264,155 @@ class CardRenderer {
             // If it's already an array of objects
             studentenList = project.studenten.map(student => ({
                 naam: `${student.voornaam} ${student.achternaam}`,
+                studentnummer: student.studentnummer || student.id,
                 ...student
             }));
         } else if (typeof project.studenten === 'string' && project.studenten) {
-            // If it's a comma-separated string, split it
-            studentenList = project.studenten.split(', ').map(name => ({ naam: name.trim() }));
+            // If it's a comma-separated string, we need to find the actual student IDs
+            const studentNames = project.studenten.split(', ').map(name => name.trim());
+            console.log('🔍 [DEBUG] Looking up student names:', studentNames);
+            
+            // Get all student data to look up IDs
+            const allStudents = this.dataFetcher ? this.dataFetcher.getData('studenten') : [];
+            console.log('📊 [DEBUG] Available students count:', allStudents.length);
+            
+            studentenList = studentNames.map(name => {
+                // Find the student by name with more flexible matching
+                const foundStudent = allStudents.find(student => {
+                    const fullName = `${student.voornaam} ${student.achternaam}`;
+                    return fullName.toLowerCase() === name.toLowerCase() ||
+                           fullName.toLowerCase().includes(name.toLowerCase()) ||
+                           name.toLowerCase().includes(fullName.toLowerCase());
+                });
+                
+                if (foundStudent) {
+                    console.log('✅ [DEBUG] Exact match found:', {
+                        name: name,
+                        fullName: `${foundStudent.voornaam} ${foundStudent.achternaam}`,
+                        studentnummer: foundStudent.studentnummer
+                    });
+                    return {
+                        naam: `${foundStudent.voornaam} ${foundStudent.achternaam}`,
+                        studentnummer: foundStudent.studentnummer,
+                        ...foundStudent
+                    };
+                } else {
+                    console.warn('⚠️ [DEBUG] No student found for name:', name);
+                    return {
+                        naam: name,
+                        studentnummer: null
+                    };
+                }
+            });
         }
-        
-        const studentenHTML = studentenList.length > 1
-            ? `<div class="project-students-multiple">
-                 <strong>Teamleden (${studentenList.length}):</strong>
-                 <div class="student-names">${studentenList.map(s => `<span><i class="fas fa-user"></i> ${s.naam}</span>`).join('')}</div>
-               </div>`
-            : studentenList.length === 1
-            ? `<div class="project-student-single">
-                 <span><i class="fas fa-user"></i> ${studentenList[0]?.naam || 'N/A'}</span>
-               </div>`
-            : `<div class="project-student-single">
-                 <span><i class="fas fa-user"></i> Geen studenten toegewezen</span>
-               </div>`;
 
-        // Enhanced technologies display with better null handling
-        let technologiesHTML = '';
-        if (project.technologieen && project.technologieen.trim() !== '') {
-            technologiesHTML = `<div class="project-tech"><strong>Technologieën:</strong> ${project.technologieen}</div>`;
-            console.log('✅ [index.js] Technologies found for project:', project.titel || project.projectTitel, '->', project.technologieen);
+        // Use the first student's ID for navigation (backend expects student ID)
+        // If no valid student ID found, try to use project ID directly
+        let firstStudentId = null;
+        let navigationSource = 'none';
+        
+        if (studentenList.length > 0 && studentenList[0].studentnummer) {
+            firstStudentId = studentenList[0].studentnummer;
+            navigationSource = 'student lookup';
+        } else if (project.id) {
+            firstStudentId = project.id;
+            navigationSource = 'project id';
+        } else if (project.projectId) {
+            firstStudentId = project.projectId;
+            navigationSource = 'project projectId';
+        } else if (project.studentnummer) {
+            firstStudentId = project.studentnummer;
+            navigationSource = 'project studentnummer';
+        }
+
+        // Debug logging for projects without valid IDs
+        if (!firstStudentId) {
+            console.warn('⚠️ Project without valid student ID:', {
+                titel: project.titel || project.projectTitel,
+                studenten: project.studenten,
+                studentenList: studentenList,
+                projectId: project.id,
+                projectProjectId: project.projectId
+            });
         } else {
-            console.log('⚠️ [index.js] No technologies found for project:', project.titel || project.projectTitel);
-            technologiesHTML = `<div class="project-tech" style="opacity: 0.6;"><strong>Technologieën:</strong> Nog niet gespecificeerd</div>`;
+            console.log('✅ [DEBUG] Project has valid ID for navigation:', {
+                titel: project.titel || project.projectTitel,
+                firstStudentId: firstStudentId,
+                source: navigationSource
+            });
         }
 
-        // Get the first student's ID for navigation (projects are accessed via student ID)
-        const firstStudentId = studentenList.length > 0 && studentenList[0].studentnummer 
-            ? studentenList[0].studentnummer 
-            : null;
+        // Create navigation link - use project title as fallback for search
+        let linkHref = '#';
+        let linkMethod = 'none';
         
-        const linkHref = firstStudentId 
-            ? `/zoekbalk-projecten?id=${firstStudentId}` 
-            : '#';
+        if (firstStudentId) {
+            // Use student ID for direct project detail page navigation
+            linkHref = `/zoekbalk-projecten?id=${firstStudentId}`;
+            linkMethod = 'student_id';
+        } else if (project.titel || project.projectTitel) {
+            // Use project title for search-based navigation
+            const projectTitle = encodeURIComponent(project.titel || project.projectTitel);
+            linkHref = `/alle-projecten?search=${projectTitle}`;
+            linkMethod = 'project_search';
+            console.log('🔍 [DEBUG] Using project search navigation:', {
+                titel: project.titel || project.projectTitel,
+                searchUrl: linkHref
+            });
+        }
 
-        return `
-            <a href="${linkHref}" class="project-card" style="text-decoration: none; color: inherit; display: block;">
+        // Always create clickable cards - no more non-clickable cards!
+        const cardClass = 'project-card';
+        const cardStyle = 'text-decoration: none; color: inherit; display: block;';
+
+        // Create the card HTML
+        const cardHTML = `
+            <a href="${linkHref}" class="${cardClass}" style="${cardStyle}">
                 <div class="card-header">
-                    <h3 class="project-title">${project.titel || project.projectTitel}</h3>
+                    <h3 class="project-title">${project.titel || project.projectTitel || 'Onbekend Project'}</h3>
                     ${project.tafelNr ? `<div class="table-number">Tafel ${project.tafelNr}</div>` : ''}
                 </div>
-                <p class="project-description">${project.beschrijving || project.projectBeschrijving || 'Geen beschrijving.'}</p>
-                ${studentenHTML}
-                ${technologiesHTML}
-            </a>`;
+                
+                <p class="project-description">
+                    ${project.beschrijving || project.projectBeschrijving || 'Geen beschrijving beschikbaar.'}
+                </p>
+                
+                ${this.renderProjectStudents(studentenList)}
+                
+                ${project.technologieen ? `
+                    <div class="project-tech">
+                        <strong>Technologieën:</strong> ${project.technologieen}
+                    </div>
+                ` : ''}
+                
+                ${!firstStudentId ? `
+                    <div class="project-warning" style="background: #fff3cd; color: #856404; padding: 8px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; border-left: 3px solid #ffc107;">
+                        <i class="fas fa-info-circle"></i> Navigatie via project zoekopdracht
+                    </div>
+                ` : ''}
+            </a>
+        `;
+
+        return cardHTML;
+    }
+
+    renderProjectStudents(studentenList) {
+        if (studentenList.length > 1) {
+            return `
+                <div class="project-students-multiple">
+                    <strong>Teamleden (${studentenList.length}):</strong>
+                    <div class="student-names">${studentenList.map(s => `<span><i class="fas fa-user"></i> ${s.naam}</span>`).join('')}</div>
+                </div>`;
+        } else if (studentenList.length === 1) {
+            return `
+                <div class="project-student-single">
+                    <span><i class="fas fa-user"></i> ${studentenList[0]?.naam || 'N/A'}</span>
+                </div>`;
+        } else {
+            return `<div class="project-student-single">
+                        <span><i class="fas fa-user"></i> Geen studenten toegewezen</span>
+                    </div>`;
+        }
     }
 
     updateDataCounts(data) {
@@ -334,7 +437,7 @@ class CardRenderer {
 class UniversalHomepageInitializer {
     constructor() {
         this.dataFetcher = new UniversalDataFetcher();
-        this.cardRenderer = new CardRenderer();
+        this.cardRenderer = new CardRenderer(this.dataFetcher);
         this.carouselManagers = {};
     }
 

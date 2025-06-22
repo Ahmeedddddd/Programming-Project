@@ -351,6 +351,7 @@ app.get("/alle-studenten", (req, res) => {
 });
 
 app.get("/zoekbalk-projecten", (req, res) => {
+  console.log("[BACKEND] /zoekbalk-projecten hit", req.query);
   res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"));
 });
 

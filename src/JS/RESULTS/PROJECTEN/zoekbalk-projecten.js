@@ -53,53 +53,17 @@ class ProjectDetailManager {
 
     async loadProjectData() {
         try {
-            console.log('📡 Loading project data using student ID as a reference...');
-            const studentId = this.projectId; // projectId from URL is now a student ID
-
-            const response = await fetch(`${this.API_BASE}/api/studenten/projecten`);
+            console.log('📡 Loading project data using project ID...');
+            const response = await fetch(`${this.API_BASE}/api/projecten/${this.projectId}`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch project data: ${response.statusText}`);
             }
-            const allProjectStudents = await response.json();
-
-            if (!allProjectStudents || !allProjectStudents.success || !Array.isArray(allProjectStudents.data)) {
-                 throw new Error('Invalid data format received from API.');
+            const result = await response.json();
+            if (!result.success || !result.data) {
+                throw new Error('Project not found or invalid response.');
             }
-            const projectsData = allProjectStudents.data;
-
-            // 1. Find the reference student using the ID from the URL
-            const referenceStudent = projectsData.find(s => s.studentnummer == studentId);
-
-            if (!referenceStudent) {
-                throw new Error(`Student with ID ${studentId} not found, cannot determine project.`);
-            }
-
-            // 2. Get the project title from the reference student
-            const projectTitel = referenceStudent.projectTitel;
-            if (!projectTitel) {
-                throw new Error(`Student with ID ${studentId} is not associated with a project.`);
-            }
-
-            // 3. Find all students working on the same project
-            const teamMembers = projectsData.filter(s => s.projectTitel === projectTitel);
-            
-            // 4. Construct the final project data object
-            this.projectData = {
-                titel: projectTitel,
-                beschrijving: referenceStudent.projectBeschrijving, // Description should be the same for all team members
-                technologieen: referenceStudent.technologieen,
-                studenten: teamMembers.map(student => ({
-                    naam: `${student.voornaam} ${student.achternaam}`,
-                    email: student.email,
-                    opleiding: student.opleiding,
-                    studentnummer: student.studentnummer,
-                    voornaam: student.voornaam,
-                    achternaam: student.achternaam,
-                }))
-            };
-
-            console.log(`✅ Project data constructed for "${projectTitel}":`, this.projectData);
-
+            this.projectData = result.data;
+            console.log('✅ Project data loaded:', this.projectData);
         } catch (error) {
             console.error('❌ Error in loadProjectData:', error);
             this.showErrorState();
