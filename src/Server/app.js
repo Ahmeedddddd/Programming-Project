@@ -366,6 +366,12 @@ app.get("/resultaat-student", (req, res) => {
   );
 });
 
+app.get("/zoekbalk-studenten", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html")
+  );
+});
+
 app.get("/gesprekken-overzicht-studenten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html")
