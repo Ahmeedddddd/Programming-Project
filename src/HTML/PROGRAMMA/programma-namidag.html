@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programma Namiddag - Interactieve Plattegrond</title>
-    <link rel="stylesheet" href="/src/CSS/style.css">
+    <title>Programma Namiddag - Interactieve Plattegrond</title>    <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/PROGRAMMA/programma-namiddag.css">
+      <!-- 🆕 Font Awesome voor icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Navigation styles and scripts -->
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
-    
-    <!-- 🆕 Font Awesome voor icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navigatie -->
@@ -93,14 +92,7 @@
                         <div class="skeleton-content">
                             <div class="skeleton-line"></div>
                             <div class="skeleton-line small"></div>
-                        </div>
-                    </li>                </ul>
-                
-                <!-- 🆕 Refresh button -->
-                <button id="refreshTafels" class="refresh-btn" title="Gegevens verversen">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Ververs data</span>
-                </button>
+                        </div>                    </li>                </ul>
             </aside>
             
             <div class="plattegrond">                <h3>
@@ -124,11 +116,9 @@
     <div id="loadingOverlay">
         <div class="loader"></div>
         <p>Tafel gegevens laden...</p>
-    </div>
-
-    <!-- Scripts -->
+    </div>    <!-- Scripts -->
+    <script type="module" src="/src/JS/UTILS/navigation-loader.js"></script>
     <script type="module" src="/src/JS/UTILS/startPage.js"></script>
-    <script type="module" src="/src/JS/PROGRAMMA/programma-qol.js"></script>
     <!-- 🆕 NIEUWE SCRIPT VOOR PLATTEGROND FUNCTIONALITEIT -->
     <script type="module" src="/src/JS/PROGRAMMA/plattegrond-namiddag.js"></script>
 
@@ -392,10 +382,8 @@
         .tafel-item.selected {
             background: linear-gradient(135deg, #1f4e79 0%, #2a5a8a 100%) !important;
         }
-    </style>
-
-    <!-- Scripts -->
-    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+    </style>    <!-- Scripts -->
+    <script type="module" src="/src/JS/index.js"></script>
     <script type="module" src="/src/JS/PROGRAMMA/plattegrond-namiddag.js"></script>
 </body>
 </html>
