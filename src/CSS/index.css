@@ -1057,10 +1057,12 @@ h2 {
 .search-input {
   flex: 1;
   min-width: 250px;
-  padding: 12px 20px;
+  padding: 20px 50px;
+  padding-left: 4px;
+  padding-right: 70px;
   border: 2px solid rgba(136, 21, 56, 0.2);
   border-radius: 25px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   background: white;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);

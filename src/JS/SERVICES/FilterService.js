@@ -395,7 +395,7 @@ export class FilterService {
                     ${student.technologieen ? `<p><strong>Technologieën:</strong> ${student.technologieen}</p>` : ''}
                 </div>
                 <div class="card-actions">
-                    <a href="/src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html?id=${student.studentnummer}" class="btn btn-primary">Bekijk Profiel</a>
+                    <a href="/zoekbalk-studenten?id=${student.studentnummer}" target="_blank" class="btn btn-primary">Bekijk Profiel</a>
                 </div>
             </div>
         `;
@@ -411,28 +411,42 @@ export class FilterService {
                 <div class="card-content">
                     <p><strong>Sector:</strong> ${company.sector || 'Niet opgegeven'}</p>
                     <p><strong>Gemeente:</strong> ${company.gemeente || 'Niet opgegeven'}</p>
-                    <p><strong>Email:</strong> ${company.email || 'Niet opgegeven'}</p>
+                    <p><strong>Contactpersoon:</strong> ${company.contactpersoon || 'Niet opgegeven'}</p>
+                    ${company.beschrijving ? `<p><strong>Beschrijving:</strong> ${company.beschrijving}</p>` : ''}
                 </div>
                 <div class="card-actions">
-                    <a href="/src/HTML/RESULTS/BEDRIJVEN/resultaat-bedrijf.html?id=${company.bedrijfsnummer}" class="btn btn-primary">Bekijk Bedrijf</a>
+                    <a href="/resultaat-bedrijf?id=${company.bedrijfsnummer}" target="_blank" class="btn btn-primary">Bekijk Bedrijf</a>
                 </div>
             </div>
         `;
     }
     
     renderProjectCard(project) {
+        // Gebruik de eerste student-ID als die bestaat, anders projecttitel als fallback
+        let firstStudentId = null;
+        if (project.studenten && Array.isArray(project.studenten) && project.studenten.length > 0) {
+            firstStudentId = project.studenten[0].id || project.studenten[0].studentnummer;
+        }
+        let linkHref = '#';
+        if (firstStudentId) {
+            linkHref = `/zoekbalk-projecten?id=${firstStudentId}`;
+        } else if (project.titel) {
+            linkHref = `/alle-projecten?search=${encodeURIComponent(project.titel)}`;
+        }
         return `
             <div class="result-card project-card">
                 <div class="card-header">
                     <h5>${project.titel}</h5>
+                    <span class="project-type">Project</span>
                 </div>
                 <div class="card-content">
-                    <p><strong>Beschrijving:</strong> ${project.beschrijving ? project.beschrijving.substring(0, 150) + '...' : 'Geen beschrijving'}</p>
+                    <p><strong>Beschrijving:</strong> ${project.beschrijving || 'Geen beschrijving beschikbaar'}</p>
                     ${project.technologieen ? `<p><strong>Technologieën:</strong> ${project.technologieen}</p>` : ''}
-                    <p><strong>Studenten:</strong> ${project.studenten ? project.studenten.length : 0}</p>
+                    ${project.studenten && project.studenten.length > 0 ? 
+                        `<p><strong>Studenten:</strong> ${project.studenten.map(s => s.naam).join(', ')}</p>` : ''}
                 </div>
                 <div class="card-actions">
-                    <a href="/src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html?id=${project.titel}" class="btn btn-primary">Bekijk Project</a>
+                    <a href="${linkHref}" target="_blank" class="btn btn-primary">Bekijk Project</a>
                 </div>
             </div>
         `;
