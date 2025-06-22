@@ -3,6 +3,8 @@
 
 console.log("✅ reservatieService.js geladen");
 
+import { fetchWithAuth } from "./api.js";
+
 // Fallback voor showNotification als deze niet bestaat
 if (typeof window.showNotification !== 'function') {
     window.showNotification = function(msg, type) { 
@@ -11,7 +13,7 @@ if (typeof window.showNotification !== 'function') {
     };
 }
 
-class ReservatieService {
+export class ReservatieService {
     /**
      * Sends a reservation request to the backend.
      * @param {string} bedrijfsnummer - The ID of the company.
@@ -172,6 +174,23 @@ class ReservatieService {
             return data;
         } catch (error) {
             console.error('Error deleting reservation:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Herstelt een geannuleerde of geweigerde reservatie.
+     * @param {string} reservatieId - Het ID van de reservatie om te herstellen.
+     * @returns {Promise<object>} - Het resultaat van de server.
+     */
+    static async restoreReservation(reservatieId) {
+        try {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/restore`, {
+                method: 'PUT'
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error restoring reservation:', error);
             throw error;
         }
     }
