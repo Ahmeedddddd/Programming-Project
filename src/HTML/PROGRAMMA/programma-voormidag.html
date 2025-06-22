@@ -6,16 +6,16 @@
     <title>Programma Voormiddag - Interactieve Plattegrond</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
     <link rel="stylesheet" href="/src/CSS/PROGRAMMA/programma-voormiddag.css">
+      <!-- Font Awesome voor icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Navigation styles and scripts -->
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
-    
-    <!-- 🆕 Font Awesome voor icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navigatie -->
     <div class="container">
-            <!-- Dynamic Navigation -->
+        <!-- Dynamic Navigation -->
         <div class="nav">
             <div class="logo">
                 <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
@@ -55,30 +55,31 @@
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">Programma Voormiddag</h1>
-            <p class="page-subtitle">9:00 - 12:00</p>
+            <p class="page-subtitle">09:00 - 12:00</p>
         </div>
 
         <!-- Main Content -->
         <div class="overzichtContainer">
-            <!-- 🆕 Organisator controls worden dynamisch toegevoegd door JavaScript -->
-            
-            <aside class="sideBar">                <div class="sidebar-header">
-                    <h2 class="sidebarTitle">Overzicht Tafels</h2><!-- Tafel configuratie knop -->
+            <aside class="sideBar">
+                <div class="sidebar-header">
+                    <h2 class="sidebarTitle">Overzicht Tafels</h2>
+                    <!-- Tafel configuratie knop -->
                     <button id="configTafelsBtn" class="config-btn" title="Configureer aantal tafels">
                         <span id="tafelCountText">Aantal tafels: 15</span>
                     </button>
                 </div>
-                  <!-- 🆕 Interactieve zoekbalk -->
+                
+                <!-- Interactieve zoekbalk -->
                 <div class="search-container">
                     <input type="text" 
                            class="sidebarZoekbalk" 
                            id="tafelSearch"
-                           placeholder="Zoek tafel, project of student...">
+                           placeholder="Zoek tafel, project of bedrijf...">
                     <i class="fas fa-search search-icon"></i>
                 </div>
                 
-                <!-- 🆕 Tafel lijst wordt dynamisch gegenereerd -->
-                <ul class="sidebarTafels">
+                <!-- Tafel lijst wordt dynamisch gegenereerd -->
+                <ul class="sidebarTafels" id="tafelSidebar">
                     <!-- JavaScript laadt hier de tafels -->
                     <li class="skeleton-item">
                         <div class="skeleton-content">
@@ -96,31 +97,26 @@
                         <div class="skeleton-content">
                             <div class="skeleton-line"></div>
                             <div class="skeleton-line small"></div>
-                        </div>
-                    </li>                </ul>
-                
-                <!-- 🆕 Refresh button -->
-                <button id="refreshTafels" class="refresh-btn" title="Gegevens verversen">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Ververs data</span>
-                </button>
-            </aside>            <div class="plattegrond">
-                <div class="plattegrond-header">
-                    <h3>Plattegrond</h3>
-                </div>
-                <!-- 🆕 Plattegrond met interactiviteit -->
+                        </div>                    </li>
+                </ul>
+            </aside>
+            
+            <div class="plattegrond">
+                <h3>Plattegrond</h3>
+                <!-- Plattegrond met interactiviteit -->
                 <div class="plattegrond-wrapper">
                     <img src="/images/plattegrondProgramma.jpeg" id="plattegrondImg" alt="Plattegrond Voormiddag">
                     
-                    <!-- 🆕 Overlay voor interactieve hotspots (optioneel voor toekomstige uitbreidingen) -->
+                    <!-- Overlay voor interactieve hotspots (optioneel voor toekomstige uitbreidingen) -->
                     <div class="plattegrond-overlay">
                         <!-- Hotspots kunnen hier dynamisch worden toegevoegd -->
-                    </div>                </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 🆕 Notification container -->
+    <!-- Notification container -->
     <div id="notification-container" class="notification-container"></div>
 
     <!-- Loading Overlay -->
@@ -129,135 +125,9 @@
         <p>Tafel gegevens laden...</p>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
-    <script type="module" src="/src/JS/PROGRAMMA/plattegrond-voormiddag.js"></script>
-
-    <!-- 🆕 Extra CSS voor nieuwe elementen -->
     <style>
-        /* Skeleton loading styles */
-        .skeleton-item {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 0.75rem;
-            padding: 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .skeleton-content {
-            animation: skeleton-loading 1.5s infinite ease-in-out;
-        }
-
-        .skeleton-line {
-            background: #e9ecef;
-            height: 16px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-
-        .skeleton-line.small {
-            width: 70%;
-            height: 12px;
-        }        @keyframes skeleton-loading {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        /* Plattegrond wrapper */
-        .plattegrond-wrapper {
-            position: relative;
-            display: inline-block;
-            max-width: 100%;
-        }
-
-        .plattegrond-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        /* Legenda */
-        .plattegrond-legenda {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #881538;
-        }
-
-        .plattegrond-legenda h4 {
-            color: #881538;
-            margin-bottom: 1rem;
-        }
-
-        .legenda-items {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .legenda-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .legenda-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-
-        .legenda-color.student {
-            background: #881538;
-        }
-
-        .legenda-color.available {
-            background: #28a745;
-        }
-
-        /* Notification container */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10001;
-            max-width: 400px;
-        }
-
-        .notification {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            border-left: 4px solid #881538;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.error {
-            border-left-color: #dc3545;
-        }
-
-        .notification.success {
-            border-left-color: #28a745;
-        }
-
-        .notification.info {
-            border-left-color: #17a2b8;
-        }
-
-        /* Page Header Styling */        .page-header {
+        /* Page Header Styling */        
+        .page-header {
             text-align: center;
             padding: 1rem 0;
             background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
@@ -276,273 +146,22 @@
             font-size: 1rem;
             opacity: 0.9;
             font-weight: 500;
-        }        /* Modal overlay styling */
-        .tafel-assignment-modal {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 10000 !important;
-            margin: 0 !important;
-            padding: 0 !important;
         }
 
-        .modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1;
-        }
-
-        .modal-content {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            z-index: 2 !important;
-            margin: 0 !important;
-        }
-
-        .modal-content h3 {
-            color: #881538;
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        .current-assignment {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .current-project {
-            margin-bottom: 1rem;
-        }
-
-        .assign-new {
-            margin-top: 1rem;
-        }
-
-        .assign-new h4 {
-            color: #881538;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }        .project-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            margin-bottom: 1rem;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .project-select:focus {
-            outline: none;
-            border-color: #881538;
-            box-shadow: 0 0 0 3px rgba(136, 21, 56, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
-        }
-
-        .project-select:hover {
-            border-color: #A91B47;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Beautiful optgroup styling */
-        .project-select optgroup {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: #881538;
-            background: #f8f9fa;
-            padding: 0.5rem 0;
-            margin: 0.25rem 0;
-        }
-
-        .project-select option {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            color: #333;
-            background: white;
-            border: none;
-        }
-
-        .project-select option:hover {
-            background: #f8f9fa;
-            color: #881538;
-        }
-
-        .project-select option:disabled {
-            color: #6c757d;
-            background: #f1f3f4;
-            font-style: italic;
-        }
-
-        .project-select option[value=""] {
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        .assign-btn, .remove-btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-right: 0.5rem;
-        }
-
-        .assign-btn {
-            background: #881538;
-            color: white;
-        }
-
-        .assign-btn:hover {
-            background: #A91B47;
-            transform: translateY(-2px);
-        }
-
-        .remove-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .remove-btn:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        .cancel-btn {
-            background: #6c757d;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .cancel-btn:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        /* Plattegrond header styling */
-        .plattegrond-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            margin-top: 1.15rem;
-            border-bottom: 2px solid #881538;
-        }        .plattegrond-header h3 {
-            color: #881538;
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin: 0;
-            padding: 0;
-            border: none !important;
-            border-bottom: none !important;
-            letter-spacing: -0.02em;
-        }/* Beautiful refresh button in sidebar */
-        .refresh-btn {
-            display: none; /* Hidden by default, shown for organisators via JS */
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 0.75rem 1rem;
-            margin-top: 1rem;
-            background: linear-gradient(135deg, #881538 0%, #A91B47 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .refresh-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(136, 21, 56, 0.3);
-            background: linear-gradient(135deg, #A91B47 0%, #C2185B 100%);
-        }
-
-        .refresh-btn:hover::before {
-            left: 100%;
-        }
-
-        .refresh-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(136, 21, 56, 0.2);
-        }
-
-        .refresh-btn i {
-            font-size: 1rem;
-            transition: transform 0.3s ease;
-        }
-
-        .refresh-btn:hover i {
-            transform: rotate(180deg);
-        }
-
-        .refresh-btn span {
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }        /* Responsive adjustments */
         @media (max-width: 768px) {
-            .plattegrond-header h3 {
-                font-size: 1.2rem;
+            .page-title {
+                font-size: 2rem;
             }
             
-            .refresh-btn {
-                padding: 0.6rem 0.8rem;
-                font-size: 0.85rem;
+            .page-subtitle {
+                font-size: 1rem;
             }
         }
     </style>
-</head>
+
+    <!-- Scripts -->
+    <script type="module" src="/src/JS/index.js"></script>
+    <!-- NIEUWE SCRIPT VOOR PLATTEGROND FUNCTIONALITEIT -->
+    <script type="module" src="/src/JS/PROGRAMMA/plattegrond-voormiddag.js"></script>
+</body>
+</html>

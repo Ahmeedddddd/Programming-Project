@@ -124,6 +124,9 @@ function initializeMenu() {
     toggleMenu();
   });
 
+  // Make toggleMenu available globally
+  window.toggleMenu = toggleMenu;
+
   const closeBtn = sideMenu.querySelector('.sideMenu-closeBtn');
   if (closeBtn) {
     closeBtn.addEventListener('click', (e) => {

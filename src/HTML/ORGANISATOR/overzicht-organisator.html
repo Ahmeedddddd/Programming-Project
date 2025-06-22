@@ -2,10 +2,11 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overzicht Organisator</title>
-    <link rel="stylesheet" href="/src/CSS/style.css">
-    <link rel="stylesheet" href="/src/CSS/ORGANISATOR/overzicht-organisator.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Overzicht Organisator</title>
+    <link rel="stylesheet" href="/src/CSS/style.css">    <link rel="stylesheet" href="/src/CSS/ORGANISATOR/overzicht-organisator.css">
+    <!-- Font Awesome voor icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Navigation styles and scripts -->
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
 </head>
@@ -50,16 +51,15 @@
     </div>
     
     <main class="overzichtMain">
-        <h1 class="overzichtTitel">Programma Overzicht</h1>
-        <div class="overzichtBlokken">
-            <a href="/programmaVoormidag" class="overzichtBlok">Voormiddag</a>
-            <a href="/programmaNamidag" class="overzichtBlok">Namiddag</a>
+        <h1 class="overzichtTitel">Programma Overzicht</h1>        <div class="overzichtBlokken">
+            <a href="/programma-voormiddag" class="overzichtBlok">Voormiddag</a>
+            <a href="/programma-namiddag" class="overzichtBlok">Namiddag</a>
         </div>
-    </main>
-    <!-- Loading Overlay  -->
+    </main>  <!-- Loading Overlay  -->
   <div id="loadingOverlay">
     <div class="loader"></div>
   </div>
   <script type="module" src="/src/JS/UTILS/startPage.js"></script>
+  <script type="module" src="/src/JS/index.js"></script>
 </body>
 </html>
