@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/src/CSS/BEDRIJVEN/bedrijf-homepage.css">
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
      <!-- Navigatie - Identiek aan standaard maar zal dynamisch worden aangepast -->
@@ -149,10 +150,7 @@
                         Interessante Studenten <span data-count="studenten" id="total-students-count">0</span>
                     </h2>
                 </div>
-                <div class="card-grid" id="students-grid">
-                    <!-- Dynamically loaded -->
-                </div>
-                <div class="card-grid" id="studentCardsContainer" style="display: none;">
+                <div class="card-grid" id="studentenGrid">
                     <div class="loading-cards">
                         <p>🔄 Studenten laden...</p>
                     </div>
@@ -187,10 +185,7 @@
                     Trending Projecten <span data-count="projecten" id="total-projects-count">0</span>
                 </h2>
             </div>
-            <div class="projects-grid" id="projects-grid">
-                <!-- Dynamically loaded -->
-            </div>
-            <div class="projects-grid" id="projectCardsContainer" style="display: none;">
+            <div class="projects-grid" id="projectsGrid">
                 <div class="loading-cards">
                     <p>🔄 Projecten laden...</p>
                 </div>

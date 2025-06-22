@@ -5,6 +5,7 @@ const app = express();
 const port = 8383;
 const path = require("path");
 const cors = require("cors");
+const http = require('http');
 
 console.log("🚀 Starting CareerLaunch Server...");
 
@@ -80,6 +81,18 @@ app.use(express.static(path.join(__dirname, "../../public")));
 app.use("/src/CSS", express.static(path.join(__dirname, "../CSS")));
 app.use("/src/JS", express.static(path.join(__dirname, "../JS")));
 app.use("/images", express.static(path.join(__dirname, "../../public/images")));
+
+// ===== JAVASCRIPT FILE SERVING WITH CORRECT MIME TYPE =====
+app.get("/src/JS/*.js", (req, res) => {
+  const filePath = path.join(__dirname, "../JS", req.params[0] + ".js");
+  res.setHeader("Content-Type", "application/javascript");
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error(`❌ Error serving JS file: ${filePath}`, err);
+      res.status(404).send("// File not found");
+    }
+  });
+});
 
 // ===== FIXED DYNAMIC SCRIPTS - NO MORE DUPLICATE CLASSES =====
 
@@ -158,6 +171,47 @@ console.log('✅ Role utilities ready - no conflicts');
   }
 });
 
+// ===== API PROXY MIDDLEWARE =====
+// Forward all API calls to backend server
+function proxyToBackend(req, res, next) {
+  // Only proxy API calls
+  if (!req.path.startsWith('/api/')) {
+    return next();
+  }
+
+  console.log(`🔄 [PROXY] Forwarding ${req.method} ${req.path} to backend`);
+  
+  const options = {
+    hostname: 'localhost',
+    port: 3301,
+    path: req.path,
+    method: req.method,
+    headers: {
+      ...req.headers,
+      host: 'localhost:3301'
+    }
+  };
+
+  const proxyReq = http.request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res, { end: true });
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error(`❌ [PROXY] Error forwarding to backend:`, err);
+    res.status(502).json({ 
+      error: 'Backend server unavailable',
+      message: 'De backend server is niet beschikbaar'
+    });
+  });
+
+  if (req.body) {
+    proxyReq.write(JSON.stringify(req.body));
+  }
+  
+  req.pipe(proxyReq, { end: true });
+}
+
 // ===== API ROUTES =====
 console.log("🔗 Mounting API routes...");
 app.get("/api/user-info", getUserInfo);
@@ -182,6 +236,7 @@ app.get("/api/health", async (req, res) => {
         parameterPreservingRedirects: "Enabled",
         contactpersonenAPI: "Added",
         configurationAPI: "Added",
+        apiProxy: "Enabled",
       },
     });
   } catch (error) {
@@ -195,7 +250,7 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// Mount API routers
+// Mount API routers with proxy fallback
 try {
   app.use("/api/auth", authRoutes);
   console.log("✅ Auth routes mounted");
@@ -217,6 +272,10 @@ try {
   console.log("✅ Notificatie routes mounted");
   app.use("/api/config", configRoutes);
   console.log("✅ Config routes mounted");
+  
+  // Add proxy middleware as fallback for any API routes not handled above
+  app.use('/api', proxyToBackend);
+  console.log("✅ API proxy middleware mounted as fallback");
 } catch (error) {
   console.error("❌ Failed to mount one or more API routes:", error);
 }

@@ -135,8 +135,8 @@
                 </div>
 
                 <!-- Submit button -->
-                <button type="submit" class="btn primary" id="registerButton">
-                    Bedrijfsaccount Aanmaken
+                <button type="button" class="btn primary" id="registerButton">
+                    Volgende stap
                 </button>
             </form>
             
@@ -167,6 +167,16 @@
         <h3>❌ Fout bij Registratie</h3>
         <p id="errorText">Er is een fout opgetreden. Probeer het opnieuw.</p>
         <button onclick="hideErrorMessage()" class="btn secondary">Sluiten</button>
+    </div>
+
+    <!-- Pakketkeuze stap voor registratie -->
+    <div id="packageStep" class="hidden">
+        <h2>Kies een pakket</h2>
+        <div id="packageOptions">
+            <!-- Dynamisch gegenereerde pakketten -->
+        </div>
+        <button id="finalRegisterBtn">Bedrijfsaccount Aanmaken</button>
+        <button type="button" onclick="showStep1()">Terug</button>
     </div>
 
     <!-- Scripts -->
