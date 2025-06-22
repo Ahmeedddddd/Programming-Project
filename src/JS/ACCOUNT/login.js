@@ -1,7 +1,7 @@
 // src/JS/ACCOUNT/login.js - FIXED VERSION WITH CORRECT PORT
 
 // ===== FIXED CONFIGURATION - CORRECT PORT =====
-const API_BASE_URL = 'http://localhost:8383';  // FIXED: Changed from 3301 to 8383
+const API_BASE_URL = 'http://localhost:3301';  // FIXED: Back to correct backend port
 const LOGIN_ENDPOINT = API_BASE_URL + '/api/auth/login';
 
 // DOM Elements

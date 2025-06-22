@@ -58,9 +58,9 @@ class HomepageTypeDetector {
 
     static getUISelectors() {
         return {
-            bedrijven: { container: '#companyCardsContainer' },
-            studenten: { container: '#studentCardsContainer' },
-            projecten: { container: '#projectCardsContainer' }
+            bedrijven: { container: '#bedrijvenGrid' },
+            studenten: { container: '#studentenGrid' },
+            projecten: { container: '#projectsGrid' }
         };
     }
 }
@@ -222,7 +222,7 @@ class CardRenderer {
         const config = {
             bedrijven: { selector: this.uiSelectors.bedrijven.container, renderFunc: this.renderCompanyCard },
             studenten: { selector: this.uiSelectors.studenten.container, renderFunc: this.renderStudentCard },
-            projecten: { selector: this.uiSelectors.projecten.container, renderFunc: this.renderProjectCard }
+            projecten: { selector: this.uiSelectors.projecten.container, renderFunc: this.renderProjectCard },
         };
         const { selector, renderFunc } = config[type] || {};
         const container = selector ? document.querySelector(selector) : null;
@@ -232,6 +232,11 @@ class CardRenderer {
             container.innerHTML = '<p class="no-data">Geen gegevens beschikbaar.</p>';
             return;
         }
+        
+        // Remove loading states
+        const loadingElements = container.querySelectorAll('.no-data[id$="Loading"]');
+        loadingElements.forEach(el => el.remove());
+        
         container.innerHTML = items.map(renderFunc.bind(this)).join('');
     }
 
@@ -263,6 +268,9 @@ class CardRenderer {
     }
 
     renderStudentCard(student) {
+        // Bepaal genre/soort project op basis van projectTitel
+        const genre = this.getProjectGenre(student.projectTitel);
+        const hasProject = !!student.projectTitel;
         return `
             <a href="/zoekbalk-studenten?id=${student.studentnummer}" class="preview-card" style="text-decoration: none; color: inherit; display: block;">
                 <div class="card-header">
@@ -274,8 +282,29 @@ class CardRenderer {
                     <div class="student-year"><span><i class="fas fa-calendar-alt"></i> Jaar ${student.leerjaar || 'N/A'}</span></div>
                     <div class="student-location"><span><i class="fas fa-map-marker-alt"></i> ${student.gemeente || 'Onbekend'}</span></div>
                 </div>
-                <div class="student-project"><span><i class="fas fa-lightbulb"></i> ${student.projectTitel || 'Geen project'}</span></div>
+                <div class="student-project">
+                  ${hasProject
+                    ? `<span class="student-project-badge ${genre.className}"><i class="fas fa-lightbulb"></i> ${student.projectTitel}</span>`
+                    : `<span class="student-project-badge no-project"><i class="fas fa-lightbulb"></i> Geen project</span>`}
+                </div>
             </a>`;
+    }
+
+    // Bepaal genre badge en kleur op basis van projectTitel
+    getProjectGenre(projectTitel) {
+        if (!projectTitel) return { className: 'no-project', label: 'Geen project' };
+        const lower = projectTitel.toLowerCase();
+        if (lower.includes('ai') || lower.includes('artificial intelligence')) return { className: 'genre-ai', label: 'AI' };
+        if (lower.includes('biotech') || lower.includes('biotechnologie')) return { className: 'genre-biotech', label: 'Biotech' };
+        if (lower.includes('duurzaam') || lower.includes('sustainab')) return { className: 'genre-duurzaam', label: 'Duurzame energie' };
+        if (lower.includes('multimedia')) return { className: 'genre-multimedia', label: 'Multimedia' };
+        if (lower.includes('security') || lower.includes('beveilig')) return { className: 'genre-security', label: 'Security' };
+        if (lower.includes('iot')) return { className: 'genre-iot', label: 'IoT' };
+        if (lower.includes('data') || lower.includes('big data')) return { className: 'genre-data', label: 'Data' };
+        if (lower.includes('cloud')) return { className: 'genre-cloud', label: 'Cloud' };
+        if (lower.includes('robot')) return { className: 'genre-robot', label: 'Robotica' };
+        // Voeg meer genres toe indien gewenst
+        return { className: 'genre-default', label: 'Project' };
     }
 
     renderProjectCard(project) {
@@ -446,20 +475,13 @@ class CardRenderer {
     }
 
     updateDataCounts(data) {
-        const bedrijvenCount = document.querySelector('[data-count="bedrijven"]');
-        if (bedrijvenCount) {
-            bedrijvenCount.textContent = data.bedrijven?.length ?? 0;
-        }
-
-        const studentenCount = document.querySelector('[data-count="studenten"]');
-        if (studentenCount) {
-            studentenCount.textContent = data.studenten?.length ?? 0;
-        }
-
-        const projectenCount = document.querySelector('[data-count="projecten"]');
-        if (projectenCount) {
-            projectenCount.textContent = data.projecten?.length ?? 0;
-        }
+        // Update using the data-count attribute for universal compatibility
+        document.querySelectorAll('[data-count]').forEach(el => {
+            const type = el.getAttribute('data-count');
+            if (data && data[type]) {
+                el.textContent = data[type].length ?? 0;
+            }
+        });
     }
 }
 

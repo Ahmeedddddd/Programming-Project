@@ -548,7 +548,7 @@ try {
 // Load bedrijf routes
 try {
   const bedrijfRoutes = require('./ROUTES/bedrijf');
-  app.use('/api/bedrijf', bedrijfRoutes);
+  app.use('/api/bedrijven', bedrijfRoutes);
   console.log('✅ Bedrijf routes loaded');
 } catch (error) {
   console.log('❌ Bedrijf routes failed:', error.message);
@@ -609,8 +609,8 @@ app.use('/api/*', (req, res) => {
       ],
       'Companies': [
         'GET /api/bedrijven',
-        'GET /api/bedrijf/profile (requires auth)',
-        'PUT /api/bedrijf/profile (requires auth)',
+        'GET /api/bedrijven/profile (requires auth)',
+        'PUT /api/bedrijven/profile (requires auth)',
         'GET /api/bedrijven/:id'
       ],
       'Students': [
@@ -670,7 +670,7 @@ const startServer = async () => {
       console.log(`   Projects: GET http://localhost:${port}/api/projecten`);
       console.log(`   Individual Student: GET http://localhost:${port}/api/studenten/:id`);
       console.log(`   Student Projects: GET http://localhost:${port}/api/studenten/projecten`);
-      console.log(`   Company Profile: GET http://localhost:${port}/api/bedrijf/profile`);
+      console.log(`   Company Profile: GET http://localhost:${port}/api/bedrijven/profile`);
       console.log('\n🏗️  Architecture: MVC with Authentication, Password Hashing & JWT');
       console.log(`🎓 Frontend Server: http://localhost:8383\n`);
       

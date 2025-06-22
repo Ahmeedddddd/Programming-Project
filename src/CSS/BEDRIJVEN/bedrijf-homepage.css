@@ -62,6 +62,33 @@
     margin: 0;
 }
 
+/* Data count styling for bedrijf homepage */
+.section-title [data-count] {
+    background: linear-gradient(135deg, #8B1538, #A91B47);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 2rem;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(139, 21, 56, 0.3);
+    transition: all 0.3s ease;
+}
+
+.section-title [data-count]:empty::before {
+    content: "0";
+    opacity: 0.7;
+}
+
+.section-title:hover [data-count] {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(139, 21, 56, 0.4);
+}
+
 .section-icon {
     display: flex;
     align-items: center;
@@ -130,6 +157,26 @@
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     font-size: 0.85rem;
+}
+
+/* Meeting card specific styling */
+.preview-card .status-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.preview-card .card-description p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.preview-card .card-description strong {
+    color: #333;
+    font-weight: 600;
 }
 
 /* Scroll to top button */
@@ -345,3 +392,121 @@
         gap: 15px;
     }
 }
+
+/* --- UNIVERSELE STUDENTKAART STYLING (uit index.css) --- */
+.preview-card {
+    background: linear-gradient(135deg, #fff, #f7f7f7 80%);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(139, 21, 56, 0.07);
+    padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 0.5rem;
+    transition: box-shadow 0.3s, transform 0.2s;
+    border: 1px solid #f0f0f0;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    cursor: pointer;
+    animation: cardFadeIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.preview-card:hover {
+    box-shadow: 0 8px 32px rgba(139, 21, 56, 0.13);
+    transform: translateY(-4px) scale(1.02);
+    border-color: #e0e0e0;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+}
+.card-description {
+    color: #444;
+    font-size: 1rem;
+    margin-bottom: 0.7rem;
+    min-height: 2.5em;
+}
+.student-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1.2rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.98rem;
+    color: #5a5a5a;
+}
+.student-specialization span,
+.student-year span,
+.student-location span {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: 0.97em;
+}
+.student-specialization i,
+.student-year i,
+.student-location i {
+    color: #881538;
+    margin-right: 0.3em;
+}
+.student-project span {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: 0.97em;
+    color: #881538;
+    font-weight: 600;
+    margin-top: 0.2em;
+}
+.student-project .no-project {
+    color: #881538 !important;
+    font-weight: 700;
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .preview-card {
+        padding: 1rem 0.7rem 1rem 0.7rem;
+    }
+    .card-title {
+        font-size: 1rem;
+    }
+    .card-description {
+        font-size: 0.95rem;
+    }
+    .student-details {
+        font-size: 0.95rem;
+    }
+}
+
+.student-project-badge {
+    display: inline-block;
+    padding: 0.25em 0.9em;
+    border-radius: 12px;
+    font-size: 0.93em;
+    font-weight: 700;
+    margin-top: 0.2em;
+    margin-bottom: 0.1em;
+    margin-right: 0.2em;
+    background: #f7f7f7;
+    color: #881538;
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 8px rgba(139, 21, 56, 0.07);
+    transition: background 0.2s, color 0.2s;
+}
+.student-project-badge.genre-ai { background: #e3f0ff; color: #2563eb; }
+.student-project-badge.genre-biotech { background: #e6f4ea; color: #15803d; }
+.student-project-badge.genre-duurzaam { background: #f0fdf4; color: #22c55e; }
+.student-project-badge.genre-multimedia { background: #f3e8ff; color: #7c3aed; }
+.student-project-badge.genre-security { background: #fef2f2; color: #dc2626; }
+.student-project-badge.genre-iot { background: #f0f9ff; color: #0ea5e9; }
+.student-project-badge.genre-data { background: #fefce8; color: #ca8a04; }
+.student-project-badge.genre-cloud { background: #f0f9ff; color: #0369a1; }
+.student-project-badge.genre-robot { background: #f3f4f6; color: #64748b; }
+.student-project-badge.genre-default { background: #f3f4f6; color: #881538; }
+.student-project-badge.no-project { background: #fbe9ef; color: #881538; }
