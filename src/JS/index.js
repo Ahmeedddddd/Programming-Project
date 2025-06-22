@@ -1,5 +1,8 @@
 // src/JS/index.js - COMPLETE WORKING VERSION - HERSTELD & OPGESCHOOND
 
+// Import FilterService
+import { FilterService } from './SERVICES/FilterService.js';
+
 /**
  *  UNIVERSAL HOMEPAGE INITIALIZER - COMPLETE WORKING VERSION
  * 
@@ -256,7 +259,7 @@ class UniversalDataFetcher {
         try {
             console.log(`📡 [UniversalDataFetcher] Fetching: ${endpoint}`);
             
-            // Use the new endpoint for projects to get student IDs
+            // Use the new endpoint for projects to get student IDs - ALWAYS use with-ids for consistency
             if (endpoint.includes('/api/projecten') && !endpoint.includes('/with-ids')) {
                 endpoint = endpoint.replace('/api/projecten', '/api/projecten/with-ids');
                 console.log(`🔄 [UniversalDataFetcher] Redirected to: ${endpoint}`);
@@ -634,11 +637,42 @@ class CardRenderer {
     }
 
     updateDataCounts(data) {
+        console.log('📊 [CardRenderer] updateDataCounts called with data:', data);
+        console.log('📊 [CardRenderer] Data structure analysis:', {
+            hasData: !!data,
+            dataKeys: data ? Object.keys(data) : 'no data',
+            bedrijvenType: data?.bedrijven ? typeof data.bedrijven : 'undefined',
+            bedrijvenIsArray: data?.bedrijven ? Array.isArray(data.bedrijven) : 'undefined',
+            bedrijvenLength: data?.bedrijven ? (Array.isArray(data.bedrijven) ? data.bedrijven.length : 'not array') : 'undefined',
+            studentenType: data?.studenten ? typeof data.studenten : 'undefined',
+            studentenIsArray: data?.studenten ? Array.isArray(data.studenten) : 'undefined',
+            studentenLength: data?.studenten ? (Array.isArray(data.studenten) ? data.studenten.length : 'not array') : 'undefined',
+            projectenType: data?.projecten ? typeof data.projecten : 'undefined',
+            projectenIsArray: data?.projecten ? Array.isArray(data.projecten) : 'undefined',
+            projectenLength: data?.projecten ? (Array.isArray(data.projecten) ? data.projecten.length : 'not array') : 'undefined'
+        });
+        
         // Update using the data-count attribute for universal compatibility
-        document.querySelectorAll('[data-count]').forEach(el => {
+        const dataCountElements = document.querySelectorAll('[data-count]');
+        console.log(`📊 [CardRenderer] Found ${dataCountElements.length} data-count elements:`, 
+            Array.from(dataCountElements).map(el => ({
+                id: el.id,
+                className: el.className,
+                currentText: el.textContent,
+                dataCount: el.getAttribute('data-count')
+            }))
+        );
+        
+        dataCountElements.forEach(el => {
             const type = el.getAttribute('data-count');
             if (data && data[type]) {
-                el.textContent = data[type].length ?? 0;
+                // Check if data[type] is an array and get its length, otherwise use the value directly
+                const count = Array.isArray(data[type]) ? data[type].length : data[type];
+                console.log(`📊 [CardRenderer] Updating ${type} count: ${count} (data type: ${typeof data[type]}, isArray: ${Array.isArray(data[type])})`);
+                el.textContent = count;
+            } else {
+                console.warn(`📊 [CardRenderer] No data found for type: ${type}`);
+                el.textContent = '0';
             }
         });
     }
@@ -650,6 +684,7 @@ class UniversalHomepageInitializer {
         this.dataFetcher = new UniversalDataFetcher();
         this.cardRenderer = new CardRenderer(this.dataFetcher);
         this.carouselManagers = {};
+        this.filterService = null;
     }
 
     async init() {
@@ -661,6 +696,8 @@ class UniversalHomepageInitializer {
             }
             // Fetch all data
             await this.dataFetcher.fetchAllData();
+            // Initialize filter service
+            this.initializeFilterService();
             // Initialize carousels for each section
             this.initializeCarousels();
             // Render initial cards
@@ -672,6 +709,18 @@ class UniversalHomepageInitializer {
             console.log('✅ Universal homepage initialized successfully');
         } catch (error) {
             console.error('❌ Error initializing universal homepage:', error);
+        }
+    }
+
+    initializeFilterService() {
+        try {
+            // Initialize FilterService with data
+            const data = this.dataFetcher.getData();
+            this.filterService = new FilterService();
+            this.filterService.setData(data.studenten, data.bedrijven, data.projecten);
+            console.log('🔍 FilterService initialized successfully');
+        } catch (error) {
+            console.error('❌ Error initializing FilterService:', error);
         }
     }
 
@@ -708,6 +757,12 @@ class UniversalHomepageInitializer {
 
     updateDataCounts() {
         const data = this.dataFetcher.getData();
+        console.log('📊 [UniversalHomepageInitializer] Updating data counts with:', data);
+        console.log('📊 [UniversalHomepageInitializer] Data structure:', {
+            bedrijven: Array.isArray(data.bedrijven) ? data.bedrijven.length : 'not array',
+            studenten: Array.isArray(data.studenten) ? data.studenten.length : 'not array',
+            projecten: Array.isArray(data.projecten) ? data.projecten.length : 'not array'
+        });
         this.cardRenderer.updateDataCounts(data);
     }
 }

@@ -3,9 +3,14 @@
 
 console.log("✅ reservatieService.js geladen");
 
+import { fetchWithAuth } from "./api.js";
+
 // Fallback voor showNotification als deze niet bestaat
 if (typeof window.showNotification !== 'function') {
-    window.showNotification = function(msg, type) { alert(msg); };
+    window.showNotification = function(msg, type) { 
+        console.log(`[${type.toUpperCase()}] ${msg}`);
+        alert(msg); 
+    };
 }
 
 export class ReservatieService {
@@ -17,7 +22,7 @@ export class ReservatieService {
      */
     static async requestReservation(bedrijfsnummer, tijdslot) {
         try {
-            const response = await fetchWithAuth('/api/reservaties/aanvragen', {
+            const response = await fetchWithAuth('/api/reservaties/request', {
                 method: 'POST',
                 body: JSON.stringify({
                     bedrijfsnummer: bedrijfsnummer,
@@ -62,8 +67,8 @@ export class ReservatieService {
      */
     static async cancelReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/annuleren`, {
-                method: 'DELETE'
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/cancel`, {
+                method: 'PUT'
             });
 
             if (!response.ok) {
@@ -95,7 +100,9 @@ export class ReservatieService {
         } catch (error) {
             console.error('Error fetching company reservations:', error);
             // In case of error, show a user-friendly notification.
-            showNotification('Kon bedrijfsgesprekken niet laden. Probeer het later opnieuw.', 'error');
+            if (window.showNotification) {
+                window.showNotification('Kon bedrijfsgesprekken niet laden. Probeer het later opnieuw.', 'error');
+            }
             return [];
         }
     }
@@ -107,7 +114,7 @@ export class ReservatieService {
      */
     static async acceptReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/accepteren`, {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/accept`, {
                 method: 'PUT'
             });
 
@@ -131,7 +138,7 @@ export class ReservatieService {
      */
     static async rejectReservation(reservatieId, reden = '') {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/weigeren`, {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/reject`, {
                 method: 'PUT',
                 body: JSON.stringify({ reden: reden })
             });
@@ -170,9 +177,24 @@ export class ReservatieService {
             throw error;
         }
     }
+
+    /**
+     * Herstelt een geannuleerde of geweigerde reservatie.
+     * @param {string} reservatieId - Het ID van de reservatie om te herstellen.
+     * @returns {Promise<object>} - Het resultaat van de server.
+     */
+    static async restoreReservation(reservatieId) {
+        try {
+            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/restore`, {
+                method: 'PUT'
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error restoring reservation:', error);
+            throw error;
+        }
+    }
 }
 
-// Make it available globally if other scripts need it
-if (typeof window !== 'undefined') {
-    window.ReservatieService = ReservatieService;
-}
+// Make it available globally
+window.ReservatieService = ReservatieService;

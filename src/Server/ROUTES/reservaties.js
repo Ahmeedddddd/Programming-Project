@@ -343,21 +343,30 @@ router.put(
 router.delete(
   '/:id',
   authenticateToken,
-  requireRole(['student']),
+  requireRole(['student', 'bedrijf']),
   async (req, res) => {
     const { id } = req.params;
-    const studentnummer = req.user.studentnummer || req.user.userId || req.user.gebruikersId;
+    const { userType, studentnummer, bedrijfsnummer } = req.user;
+
     try {
       const reservatie = await Reservatie.getById(id);
       if (!reservatie) {
         return res.status(404).json({ success: false, message: 'Reservatie niet gevonden.' });
       }
-      if (reservatie.studentnummer != studentnummer) {
+
+      // Check ownership
+      const isOwner = (userType === 'student' && reservatie.studentnummer == studentnummer) ||
+                      (userType === 'bedrijf' && reservatie.bedrijfsnummer == bedrijfsnummer);
+
+      if (!isOwner) {
         return res.status(403).json({ success: false, message: 'Je mag alleen je eigen afspraken verwijderen.' });
       }
-      if (reservatie.status !== 'geweigerd') {
-        return res.status(400).json({ success: false, message: 'Alleen geweigerde afspraken kunnen verwijderd worden.' });
+      
+      // Allow deletion for cancelled or rejected appointments
+      if (!['geweigerd', 'geannuleerd'].includes(reservatie.status)) {
+        return res.status(400).json({ success: false, message: 'Alleen geannuleerde of geweigerde afspraken kunnen worden verwijderd.' });
       }
+
       const deleted = await Reservatie.delete(id);
       if (deleted) {
         return res.status(200).json({ success: true, message: 'Reservatie succesvol verwijderd.' });
@@ -367,6 +376,59 @@ router.delete(
     } catch (error) {
       console.error('Error deleting reservation:', error);
       return res.status(500).json({ success: false, message: 'Interne serverfout bij verwijderen.' });
+    }
+  }
+);
+
+// Herstel een geannuleerde/geweigerde reservatie
+router.put(
+  '/:id/restore',
+  authenticateToken,
+  requireRole(['student', 'bedrijf']),
+  async (req, res) => {
+    const { id } = req.params;
+    const { userType, studentnummer, bedrijfsnummer } = req.user;
+
+    try {
+        const reservatie = await Reservatie.getById(id);
+        if (!reservatie) {
+            return res.status(404).json({ success: false, message: 'Reservatie niet gevonden.' });
+        }
+
+        // Check ownership
+        const isOwner = (userType === 'student' && reservatie.studentnummer == studentnummer) ||
+                        (userType === 'bedrijf' && reservatie.bedrijfsnummer == bedrijfsnummer);
+
+        if (!isOwner) {
+            return res.status(403).json({ success: false, message: 'Niet geautoriseerd voor deze actie.' });
+        }
+        
+        // Check if restorable
+        if (!['geannuleerd', 'geweigerd'].includes(reservatie.status)) {
+            return res.status(400).json({ success: false, message: 'Deze afspraak kan niet hersteld worden.' });
+        }
+
+        // De status wordt teruggezet naar 'aangevraagd'
+        const affectedRows = await Reservatie.updateStatus(id, { status: 'aangevraagd' });
+
+        if (affectedRows > 0) {
+            // Stuur notificatie naar de andere partij
+            const otherParty = reservatie.aangevraagdDoor === 'student' ? 'bedrijf' : 'student';
+            const message = `Een ${reservatie.status} afspraak is hersteld door de ${userType} en is opnieuw aangevraagd.`;
+            
+            if (otherParty === 'bedrijf') {
+                await Notificatie.create({ bedrijfsnummer: reservatie.bedrijfsnummer, type: 'reservering_hersteld', boodschap: message });
+            } else {
+                await Notificatie.create({ studentnummer: reservatie.studentnummer, type: 'reservering_hersteld', boodschap: message });
+            }
+
+            res.status(200).json({ success: true, message: 'Afspraak succesvol hersteld.' });
+        } else {
+            res.status(500).json({ success: false, message: 'Herstellen van afspraak mislukt.' });
+        }
+    } catch (error) {
+        console.error('Error restoring reservation:', error);
+        res.status(500).json({ success: false, message: 'Interne serverfout bij herstellen van afspraak.' });
     }
   }
 );

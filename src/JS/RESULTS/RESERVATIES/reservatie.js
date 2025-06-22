@@ -26,7 +26,7 @@ function formatDateForAPI(date) {
 async function loadTargetInfo() {
   if (targetType === 'bedrijf') {
     try {
-      const resp = await fetch(`/api/bedrijven/${targetId}`);
+      const resp = await fetchWithAuth(`/api/bedrijven/${targetId}`);
       if (!resp.ok) throw new Error();
       const result = await resp.json();
       const company = result.data;
@@ -74,9 +74,18 @@ async function loadTimeSlots(date) {
     let resp, result;
     if (targetType === 'bedrijf') {
       // Student reserveert bij bedrijf: haal slots van bedrijf op
-      resp = await fetch(`/api/bedrijven/${targetId}/slots`);
-      if (!resp.ok) throw new Error();
+      resp = await fetchWithAuth(`/api/bedrijven/${targetId}/slots`);
+      if (!resp.ok) {
+        console.warn('[RESERVATIE] API call failed, using fallback slots');
+        generateMockSlots();
+        return;
+      }
       result = await resp.json();
+      if (!result.success || !result.data || result.data.length === 0) {
+        console.warn('[RESERVATIE] No slots from API, using fallback slots');
+        generateMockSlots();
+        return;
+      }
       availableSlots = (result.data || []).map(slot => ({
         start_time: slot.start,
         end_time: slot.end,
@@ -107,22 +116,31 @@ async function loadTimeSlots(date) {
           errorEl.textContent = 'Je bent niet gemachtigd om deze reserveringen te zien.';
           return;
         }
-        throw new Error();
+        console.warn('[RESERVATIE] Company reservations API failed, using fallback slots');
+        availableSlots = allSlots.map(slot => ({
+          ...slot,
+          is_available: true
+        }));
+      } else {
+        result = await resp.json();
+        const bezet = (result.data || []).filter(r => r.status === 'bevestigd' || r.status === 'aangevraagd')
+          .map(r => `${r.startTijd.split('T')[1].slice(0,5)}-${r.eindTijd.split('T')[1].slice(0,5)}`);
+        availableSlots = allSlots.map(slot => ({
+          ...slot,
+          is_available: !bezet.includes(`${slot.start_time}-${slot.end_time}`)
+        }));
       }
-      result = await resp.json();
-      const bezet = (result.data || []).filter(r => r.status === 'bevestigd' || r.status === 'aangevraagd')
-        .map(r => `${r.startTijd.split('T')[1].slice(0,5)}-${r.eindTijd.split('T')[1].slice(0,5)}`);
-      availableSlots = allSlots.map(slot => ({
-        ...slot,
-        is_available: !bezet.includes(`${slot.start_time}-${slot.end_time}`)
-      }));
     }
-    if (availableSlots.length) {
+    
+    if (availableSlots && availableSlots.length) {
       const first = availableSlots[0].start_time;
       const last  = availableSlots[availableSlots.length-1].end_time;
       document.getElementById('timeRange').textContent = `${first} – ${last}`;
+      displayTimeSlots();
+    } else {
+      console.warn('[RESERVATIE] No slots available, using fallback');
+      generateMockSlots();
     }
-    displayTimeSlots();
   } catch (e) {
     console.error('[RESERVATIE] Fout bij laden van tijdslots:', e);
     generateMockSlots();

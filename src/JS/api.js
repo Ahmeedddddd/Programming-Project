@@ -4,44 +4,43 @@
 console.log("✅ api.js geladen");
 
 /**
- * Performs a fetch request with an authentication token.
- * Automatically retrieves the token from localStorage.
- *
+ * Wrapper for the fetch API that automatically includes the JWT token.
  * @param {string} url - The URL to fetch.
  * @param {object} options - Fetch options (method, headers, body, etc.).
- * @returns {Promise<Response>} - The fetch Response object.
- * @throws {Error} If no authentication token is found or fetch fails.
+ * @returns {Promise<Response>} - The fetch response.
  */
 export async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('authToken');
-    if (!token) {
-        console.warn('No authentication token found. Redirecting to login.');
-        window.location.href = '/login'; // Redirect to login if no token
-        throw new Error('Authentication token missing.');
-    }
 
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        ...options.headers, // Allow overriding or adding more headers
+        ...options.headers,
     };
 
-    const response = await fetch(url, {
-        ...options,
-        headers,
-    });
-
-    if (response.status === 401 || response.status === 403) {
-        console.warn('Unauthorized or Forbidden. Token might be expired or invalid. Redirecting to login.');
-        localStorage.removeItem('authToken'); // Clear invalid token
-        window.location.href = '/login'; // Redirect to login
-        throw new Error('Unauthorized access or token expired.');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return response;
+    try {
+        const response = await fetch(url, { ...options, headers });
+        if (response.status === 401) {
+            // Unauthorized or token expired, redirect to login
+            console.warn('Authentication error (401): Token might be expired or invalid. Redirecting to login.');
+            // Clear potentially bad credentials
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userType');
+            localStorage.removeItem('user');
+            // Redirect
+            window.location.href = '/login?session_expired=true';
+            // Return a promise that never resolves to stop further execution
+            return new Promise(() => {});
+        }
+        return response;
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
 }
 
-// Make it available globally if other scripts need it
-if (typeof window !== 'undefined') {
-    window.fetchWithAuth = fetchWithAuth;
-}
+// Make it available globally
+window.fetchWithAuth = fetchWithAuth;
