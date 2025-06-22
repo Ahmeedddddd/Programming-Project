@@ -252,9 +252,17 @@ document.addEventListener('DOMContentLoaded', function() {
         hidePakketOverlay();
         // Vul hidden input met pakket info
         document.getElementById('selectedPakketInput').value = JSON.stringify(selectedPakket);
-        // Submit het formulier na pakketkeuze
-        document.querySelector('#registerForm form').requestSubmit();
+        // NIET automatisch submitten! Gebruiker klikt daarna zelf op registreren.
     };
+    
+    // Pakketten knop opent overlay
+    const openPakketBtn = document.getElementById('openPakketOverlayBtn');
+    if (openPakketBtn) {
+        openPakketBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showPakketOverlay();
+        });
+    }
     
     // Initialize as bedrijf
     switchUserType('bedrijf');
