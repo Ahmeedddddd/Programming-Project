@@ -44,7 +44,7 @@ class ModalOverlay {
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>${title}</h3>
-                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                    <button class="modal-close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -52,15 +52,40 @@ class ModalOverlay {
                     ${content}
                 </div>
                 <div class="modal-actions">
-                    ${actions.map(action => `
-                        <button class="modal-btn ${action.class || ''}" onclick="${action.onclick}">
+                    ${actions.map((action, index) => `
+                        <button class="modal-btn ${action.class || ''}" data-action-index="${index}">
                             ${action.text}
                         </button>
                     `).join('')}
                 </div>
             </div>
         `;
+        
+        // Add event listeners after creating the modal
+        this.addModalEventListeners(modal, actions);
+        
         return modal;
+    }
+
+    static addModalEventListeners(modal, actions) {
+        // Close button
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+        }
+
+        // Action buttons
+        actions.forEach((action, index) => {
+            const btn = modal.querySelector(`[data-action-index="${index}"]`);
+            if (btn && action.handler) {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    action.handler(modal);
+                });
+            }
+        });
     }
 
     static showConfirmModal(title, message, onConfirm, onCancel = null) {
@@ -70,12 +95,18 @@ class ModalOverlay {
             {
                 text: 'Annuleren',
                 class: 'modal-btn-secondary',
-                onclick: `this.closest('.modal-overlay').remove(); ${onCancel ? onCancel() : ''}`
+                handler: (modal) => {
+                    modal.remove();
+                    if (onCancel) onCancel();
+                }
             },
             {
                 text: 'Bevestigen',
                 class: 'modal-btn-primary',
-                onclick: `this.closest('.modal-overlay').remove(); ${onConfirm}`
+                handler: (modal) => {
+                    modal.remove();
+                    onConfirm();
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -90,15 +121,30 @@ class ModalOverlay {
             {
                 text: 'Annuleren',
                 class: 'modal-btn-secondary',
-                onclick: `this.closest('.modal-overlay').remove(); ${onCancel ? onCancel() : ''}`
+                handler: (modal) => {
+                    modal.remove();
+                    if (onCancel) onCancel();
+                }
             },
             {
                 text: 'Bevestigen',
                 class: 'modal-btn-primary',
-                onclick: `this.closest('.modal-overlay').remove(); ${onConfirm}`
+                handler: (modal) => {
+                    const input = document.getElementById(inputId);
+                    const value = input ? input.value : '';
+                    modal.remove();
+                    onConfirm(value);
+                }
             }
         ]);
         document.body.appendChild(modal);
+        
+        // Focus op het input veld
+        setTimeout(() => {
+            const input = document.getElementById(inputId);
+            if (input) input.focus();
+        }, 100);
+        
         return inputId;
     }
 
@@ -112,7 +158,10 @@ class ModalOverlay {
             {
                 text: 'OK',
                 class: 'modal-btn-primary',
-                onclick: 'this.closest(".modal-overlay").remove(); location.reload();'
+                handler: (modal) => {
+                    modal.remove();
+                    location.reload();
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -128,7 +177,9 @@ class ModalOverlay {
             {
                 text: 'OK',
                 class: 'modal-btn-primary',
-                onclick: 'this.closest(".modal-overlay").remove();'
+                handler: (modal) => {
+                    modal.remove();
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -143,11 +194,19 @@ class NotificationSystem {
         notification.innerHTML = `
             <div class="notification-content">
                 <span class="notification-message">${message}</span>
-                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                <button class="notification-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
         `;
+        
+        // Add event listener to close button
+        const closeBtn = notification.querySelector('.notification-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                notification.remove();
+            });
+        }
         
         // Add to page
         let container = document.getElementById('notification-container');

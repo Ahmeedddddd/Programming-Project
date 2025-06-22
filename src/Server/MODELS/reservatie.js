@@ -11,6 +11,7 @@ class Reservatie {  static async getAll() {
       const [rows] = await pool.query(`
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -41,6 +42,7 @@ class Reservatie {  static async getAll() {
         `
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -72,6 +74,7 @@ class Reservatie {  static async getAll() {
       const query = `
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -107,6 +110,7 @@ class Reservatie {  static async getAll() {
         `
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,

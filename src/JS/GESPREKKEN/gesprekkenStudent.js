@@ -1,4 +1,4 @@
-console.log("✅ gesprekkenStudent.js geladen");
+// [ALLE DEBUG LOGS VERWIJDERD VOOR SCHONE TEST]
 
 import { ReservatieService } from '../reservatieService.js';
 
@@ -59,7 +59,7 @@ class ModalOverlay {
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>${title}</h3>
-                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                    <button class="modal-close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -67,15 +67,40 @@ class ModalOverlay {
                     ${content}
                 </div>
                 <div class="modal-actions">
-                    ${actions.map(action => `
-                        <button class="modal-btn ${action.class || ''}" onclick="${action.onclick}">
+                    ${actions.map((action, index) => `
+                        <button class="modal-btn ${action.class || ''}" data-action-index="${index}">
                             ${action.text}
                         </button>
                     `).join('')}
                 </div>
             </div>
         `;
+        
+        // Add event listeners after creating the modal
+        this.addModalEventListeners(modal, actions);
+        
         return modal;
+    }
+
+    static addModalEventListeners(modal, actions) {
+        // Close button
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+        }
+
+        // Action buttons
+        actions.forEach((action, index) => {
+            const btn = modal.querySelector(`[data-action-index="${index}"]`);
+            if (btn && action.handler) {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    action.handler(modal);
+                });
+            }
+        });
     }
 
     static showConfirmModal(title, message, onConfirm, onCancel = null) {
@@ -85,18 +110,18 @@ class ModalOverlay {
             {
                 text: 'Annuleren',
                 class: 'modal-btn-secondary',
-                onclick: `(function() { 
-                    this.closest('.modal-overlay').remove();
-                    ${onCancel ? onCancel() : ''}
-                }).call(this);`
+                handler: (modal) => {
+                    modal.remove();
+                    if (onCancel) onCancel();
+                }
             },
             {
                 text: 'Bevestigen',
                 class: 'modal-btn-primary',
-                onclick: `(function() { 
-                    this.closest('.modal-overlay').remove();
-                    ${onConfirm}();
-                }).call(this);`
+                handler: (modal) => {
+                    modal.remove();
+                    onConfirm();
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -111,17 +136,20 @@ class ModalOverlay {
             {
                 text: 'Annuleren',
                 class: 'modal-btn-secondary',
-                onclick: `this.closest('.modal-overlay').remove(); ${onCancel ? onCancel() : ''}`
+                handler: (modal) => {
+                    modal.remove();
+                    if (onCancel) onCancel();
+                }
             },
             {
                 text: 'Bevestigen',
                 class: 'modal-btn-primary',
-                onclick: `(function() { 
-                    const input = document.getElementById('${inputId}');
+                handler: (modal) => {
+                    const input = document.getElementById(inputId);
                     const value = input ? input.value : '';
-                    this.closest('.modal-overlay').remove();
-                    ${onConfirm}(value);
-                }).call(this);`
+                    modal.remove();
+                    onConfirm(value);
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -145,7 +173,9 @@ class ModalOverlay {
             {
                 text: 'OK',
                 class: 'modal-btn-primary',
-                onclick: 'this.closest(".modal-overlay").remove();'
+                handler: (modal) => {
+                    modal.remove();
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -161,7 +191,9 @@ class ModalOverlay {
             {
                 text: 'OK',
                 class: 'modal-btn-primary',
-                onclick: 'this.closest(".modal-overlay").remove();'
+                handler: (modal) => {
+                    modal.remove();
+                }
             }
         ]);
         document.body.appendChild(modal);
@@ -176,11 +208,19 @@ class NotificationSystem {
         notification.innerHTML = `
             <div class="notification-content">
                 <span class="notification-message">${message}</span>
-                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                <button class="notification-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
         `;
+        
+        // Add event listener to close button
+        const closeBtn = notification.querySelector('.notification-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                notification.remove();
+            });
+        }
         
         // Add to page
         let container = document.getElementById('notification-container');
@@ -209,22 +249,11 @@ class StudentConversationManager {
 
     async init() {
         try {
-            console.log('🚀 [DEBUG] Initializing student conversation manager...');
-            
             // Initialize DOM elements first
             DOMElements.init();
-            console.log('🎯 [DEBUG] DOM elements initialized:', {
-                aangevraagdTable: !!DOMElements.aangevraagdTable,
-                ontvangenTable: !!DOMElements.ontvangenTable,
-                loadingIndicator: !!DOMElements.loadingIndicator,
-                aangevraagdTableElement: DOMElements.aangevraagdTable,
-                ontvangenTableElement: DOMElements.ontvangenTable
-            });
             
             await this.loadReservations();
             this.setupEventListeners();
-            
-            console.log('✅ [DEBUG] Student conversation manager initialized successfully');
         } catch (error) {
             console.error('❌ [DEBUG] Error initializing student conversation manager:', error);
         }
@@ -232,12 +261,7 @@ class StudentConversationManager {
 
     async loadReservations() {
         try {
-            console.log('📡 [DEBUG] Loading reservations...');
             this.reservations = await ReservatieService.getMyReservations();
-            console.log('📊 [DEBUG] Reservations loaded:', {
-                count: this.reservations?.length || 0,
-                reservations: this.reservations
-            });
             this.renderReservations();
         } catch (error) {
             console.error('❌ [DEBUG] Error loading reservations:', error);
@@ -246,35 +270,24 @@ class StudentConversationManager {
     }
 
     renderReservations() {
-        console.log('🎨 [DEBUG] Rendering reservations...');
-        
         // Containers
         const aangevraagdContainer = DOMElements.aangevraagdTable;
         const ontvangenContainer = DOMElements.ontvangenTable;
         const loadingIndicator = DOMElements.loadingIndicator;
-
-        console.log('🎯 [DEBUG] Containers found:', {
-            aangevraagdContainer: !!aangevraagdContainer,
-            ontvangenContainer: !!ontvangenContainer,
-            loadingIndicator: !!loadingIndicator
-        });
 
         // Reset loading
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         if (aangevraagdContainer) {
             // Verwijder oude rijen behalve de header
             const oldRows = aangevraagdContainer.querySelectorAll('.gesprekkenTableRow, .lege-rij');
-            console.log('🧹 [DEBUG] Removing old rows from aangevraagd:', oldRows.length);
             oldRows.forEach(el => el.remove());
         }
         if (ontvangenContainer) {
             const oldRows = ontvangenContainer.querySelectorAll('.gesprekkenTableRow, .lege-rij');
-            console.log('🧹 [DEBUG] Removing old rows from ontvangen:', oldRows.length);
             oldRows.forEach(el => el.remove());
         }
 
         if (!this.reservations || this.reservations.length === 0) {
-            console.log('📭 [DEBUG] No reservations found, showing empty state');
             // Geen gesprekken
             if (aangevraagdContainer) {
                 const leeg = document.createElement('div');
@@ -295,26 +308,16 @@ class StudentConversationManager {
         const requestedByMe = this.reservations.filter(r => r.aangevraagdDoor === 'student');
         const receivedByMe = this.reservations.filter(r => r.aangevraagdDoor === 'bedrijf');
 
-        console.log('📊 [DEBUG] Split reservations:', {
-            total: this.reservations.length,
-            requestedByMe: requestedByMe.length,
-            receivedByMe: receivedByMe.length
-        });
-
         // Aangevraagd door jou
         if (aangevraagdContainer) {
             if (requestedByMe.length === 0) {
-                console.log('📭 [DEBUG] No requested reservations, showing empty state');
                 const leeg = document.createElement('div');
                 leeg.className = 'lege-rij';
                 leeg.innerHTML = `<i class="fas fa-inbox" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i><h3>Geen gesprekken gevonden</h3><p>Je hebt nog geen gesprekken aangevraagd.</p>`;
                 aangevraagdContainer.appendChild(leeg);
             } else {
-                console.log('✅ [DEBUG] Rendering requested reservations:', requestedByMe.length);
                 requestedByMe.forEach((reservation, index) => {
-                    console.log(`🎨 [DEBUG] Rendering requested reservation ${index + 1}:`, reservation);
                     const rowHtml = this.renderReservationRow(reservation);
-                    console.log(`🎨 [DEBUG] Row HTML for reservation ${index + 1}:`, rowHtml);
                     aangevraagdContainer.insertAdjacentHTML('beforeend', rowHtml);
                 });
             }
@@ -323,28 +326,20 @@ class StudentConversationManager {
         // Ontvangen
         if (ontvangenContainer) {
             if (receivedByMe.length === 0) {
-                console.log('📭 [DEBUG] No received reservations, showing empty state');
                 const leeg = document.createElement('div');
                 leeg.className = 'lege-rij';
                 leeg.innerHTML = `<i class="fas fa-inbox" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i><h3>Geen gesprekken gevonden</h3><p>Je hebt nog geen gesprekken ontvangen.</p>`;
                 ontvangenContainer.appendChild(leeg);
             } else {
-                console.log('✅ [DEBUG] Rendering received reservations:', receivedByMe.length);
                 receivedByMe.forEach((reservation, index) => {
-                    console.log(`🎨 [DEBUG] Rendering received reservation ${index + 1}:`, reservation);
                     const rowHtml = this.renderReservationRow(reservation);
-                    console.log(`🎨 [DEBUG] Row HTML for reservation ${index + 1}:`, rowHtml);
                     ontvangenContainer.insertAdjacentHTML('beforeend', rowHtml);
                 });
             }
         }
-        
-        console.log('✅ [DEBUG] Rendering complete');
     }
 
     renderReservationRow(reservation) {
-        console.log('🎨 [DEBUG] renderReservationRow called with:', reservation);
-        
         const startTime = new Date(reservation.startTijd).toLocaleTimeString('nl-NL', { 
             hour: '2-digit', 
             minute: '2-digit' 
@@ -358,16 +353,6 @@ class StudentConversationManager {
         const statusText = this.getStatusText(reservation.status);
 
         const actions = this.getActionsForReservation(reservation);
-
-        // Debug logging voor tafelnr
-        console.log('🔍 [DEBUG] Reservation data:', {
-            afspraakId: reservation.afspraakId || reservation.id,
-            bedrijfNaam: reservation.bedrijfNaam,
-            tafelNr: reservation.tafelNr,
-            bedrijfTafelNr: reservation.bedrijfTafelNr,
-            status: reservation.status,
-            aangevraagdDoor: reservation.aangevraagdDoor
-        });
 
         // Gebruik bedrijfTafelNr als tafelNr niet bestaat
         const tafelNr = reservation.tafelNr || reservation.bedrijfTafelNr || 'N/A';
@@ -383,9 +368,6 @@ class StudentConversationManager {
                 </div>
             </div>
         `;
-        
-        console.log('🎨 [DEBUG] Generated row HTML:', rowHtml);
-        console.log('🎨 [DEBUG] Actions HTML:', actions);
         
         return rowHtml;
     }
@@ -403,13 +385,6 @@ class StudentConversationManager {
     getActionsForReservation(reservation) {
         const actions = [];
         const reservationId = reservation.afspraakId || reservation.id;
-
-        // Debug logging voor actions
-        console.log('🔧 [DEBUG] Generating actions for reservation:', {
-            id: reservationId,
-            status: reservation.status,
-            aangevraagdDoor: reservation.aangevraagdDoor
-        });
 
         switch (reservation.status) {
             case 'aangevraagd':
@@ -452,50 +427,31 @@ class StudentConversationManager {
                 break;
         }
 
-        console.log('🔧 [DEBUG] Generated actions:', actions);
         return actions.join('');
     }
 
     setupEventListeners() {
-        console.log('🎯 [DEBUG] Setting up event listeners...');
-        
         // Event delegation for action buttons
         document.addEventListener('click', (event) => {
-            console.log('🎯 [DEBUG] Click event detected:', {
-                target: event.target,
-                targetClass: event.target.className,
-                closestButton: event.target.closest('.actieBtn')
-            });
-            
             const button = event.target.closest('.actieBtn');
             if (!button) {
-                console.log('🎯 [DEBUG] No .actieBtn found in click path');
                 return;
             }
 
             const action = button.getAttribute('data-action');
             const reservationId = button.getAttribute('data-reservation-id');
             
-            console.log('🎯 [DEBUG] Button clicked:', {
-                action: action,
-                reservationId: reservationId,
-                buttonClass: button.className
-            });
-            
             if (!action || !reservationId) {
-                console.log('🎯 [DEBUG] Missing action or reservationId');
                 return;
             }
 
             // Prevent multiple clicks
             if (button.disabled) {
-                console.log('🎯 [DEBUG] Button is disabled, ignoring click');
                 return;
             }
             button.disabled = true;
 
             try {
-                console.log('🎯 [DEBUG] Executing action:', action);
                 switch (action) {
                     case 'accept':
                         this.acceptReservation(reservationId);
@@ -513,10 +469,8 @@ class StudentConversationManager {
                         this.restoreReservation(reservationId);
                         break;
                     default:
-                        console.log('🎯 [DEBUG] Unknown action:', action);
                 }
             } catch (error) {
-                console.error('Error handling button action:', error);
                 ModalOverlay.showErrorModal('Er is een fout opgetreden.');
             } finally {
                 // Re-enable button after a short delay
@@ -525,8 +479,6 @@ class StudentConversationManager {
                 }, 1000);
             }
         });
-        
-        console.log('🎯 [DEBUG] Event listeners setup complete');
     }
 
     // Action methods
