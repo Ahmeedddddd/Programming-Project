@@ -1456,3 +1456,35 @@ h2 {
 }
 
 /* ===== CLICKABLE CARD STYLES ===== */
+.student-project .no-project {
+    color: #881538 !important;
+    font-weight: 700;
+    opacity: 1;
+}
+
+.student-project-badge {
+  display: inline-block;
+  padding: 0.25em 0.9em;
+  border-radius: 12px;
+  font-size: 0.93em;
+  font-weight: 700;
+  margin-top: 0.2em;
+  margin-bottom: 0.1em;
+  margin-right: 0.2em;
+  background: #f7f7f7;
+  color: #881538;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(139, 21, 56, 0.07);
+  transition: background 0.2s, color 0.2s;
+}
+.student-project-badge.genre-ai { background: #e3f0ff; color: #2563eb; }
+.student-project-badge.genre-biotech { background: #e6f4ea; color: #15803d; }
+.student-project-badge.genre-duurzaam { background: #f0fdf4; color: #22c55e; }
+.student-project-badge.genre-multimedia { background: #f3e8ff; color: #7c3aed; }
+.student-project-badge.genre-security { background: #fef2f2; color: #dc2626; }
+.student-project-badge.genre-iot { background: #f0f9ff; color: #0ea5e9; }
+.student-project-badge.genre-data { background: #fefce8; color: #ca8a04; }
+.student-project-badge.genre-cloud { background: #f0f9ff; color: #0369a1; }
+.student-project-badge.genre-robot { background: #f3f4f6; color: #64748b; }
+.student-project-badge.genre-default { background: #f3f4f6; color: #881538; }
+.student-project-badge.no-project { background: #fbe9ef; color: #881538; }
