@@ -57,8 +57,10 @@ body {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
     background: linear-gradient(135deg, var(--light-gray) 0%, var(--medium-gray) 100%);
     min-height: 100vh;
+
     padding: 0; /* Removed padding */
     margin: 0; /* Ensure no margin */
+
     line-height: 1.6;
     color: var(--text-dark);
     margin: 0;
@@ -881,6 +883,8 @@ select.form-input {
 /* Tablet styles */
 @media (max-width: 768px) {
     body {
+        padding: 0; /* No padding on mobile */
+
         padding: 0;
     }
     

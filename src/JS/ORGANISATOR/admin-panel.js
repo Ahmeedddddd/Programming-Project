@@ -1,5 +1,6 @@
 // admin-panel.js - Fixed version met correcte database mapping
 
+
 // ===== MENU TOGGLE FUNCTIONS (defined early) =====
 function toggleMenu() {
     console.log('🎛️ toggleMenu called!');
