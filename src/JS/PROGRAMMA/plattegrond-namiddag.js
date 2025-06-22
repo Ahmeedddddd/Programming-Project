@@ -214,7 +214,7 @@ class PlattegrondNamiddagManager {
         // Update sidebar titel
         const sidebarTitle = document.querySelector('.sidebarTitle');
         if (sidebarTitle) {
-            sidebarTitle.innerHTML = 'Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
+            sidebarTitle.innerHTML = '⚙️ Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
         }
 
         // Toon edit mode indicator
