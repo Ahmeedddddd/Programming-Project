@@ -1,5 +1,4 @@
-// src/JS/GESPREKKEN/gesprekkenBedrijf.js
-// Requires api.js, reservatieService.js, and notification-system.js
+import { ReservatieService } from '../reservatieService.js';
 
 console.log("✅ gesprekkenBedrijf.js geladen (studentenstructuur)");
 
@@ -44,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         try {
+            // Gebruik de ReservatieService in plaats van directe fetch
             const meetings = await ReservatieService.getCompanyReservations();
             if (meetings && meetings.length > 0) {
                 // Sorteer meetings op startTijd
@@ -110,9 +110,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const reservatieId = e.target.dataset.id || e.target.closest('[data-id]').dataset.id;
                         if (confirm('Weet je zeker dat je deze afspraak wilt accepteren?')) {
                             showLoading(true);
-                            const success = await ReservatieService.acceptReservation(reservatieId);
-                            if (success) {
-                                await loadCompanyGesprekken();
+                            try {
+                                const result = await ReservatieService.acceptReservation(reservatieId);
+                                if (result.success) {
+                                    await loadCompanyGesprekken();
+                                    showNotification('Afspraak geaccepteerd!', 'success');
+                                } else {
+                                    showNotification(result.message || 'Kon afspraak niet accepteren.', 'error');
+                                }
+                            } catch (error) {
+                                showNotification('Fout bij accepteren van afspraak.', 'error');
                             }
                             showLoading(false);
                         }
@@ -162,14 +169,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         confirmRejectBtn.addEventListener('click', async () => {
             if (!pendingRejectReservationId) return closeRejectModal();
             showLoading(true);
-            const reden = redenWeigeringInput ? redenWeigeringInput.value : '';
-            const success = await ReservatieService.rejectReservation(pendingRejectReservationId, reden);
-            if (success) {
-                await loadCompanyGesprekken();
-                showNotification('Reservatie geweigerd.', 'success');
+            try {
+                const reden = redenWeigeringInput ? redenWeigeringInput.value : '';
+                const result = await ReservatieService.rejectReservation(pendingRejectReservationId, reden);
+                if (result.success) {
+                    await loadCompanyGesprekken();
+                    showNotification('Reservatie geweigerd.', 'success');
+                } else {
+                    showNotification(result.message || 'Kon reservatie niet weigeren.', 'error');
+                }
+            } catch (error) {
+                showNotification('Fout bij weigeren van reservatie.', 'error');
             }
             showLoading(false);
             closeRejectModal();
         });
     }
-});
+}); 

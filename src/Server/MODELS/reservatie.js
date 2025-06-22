@@ -334,8 +334,7 @@ class Reservatie {
   static async getRecent(limit = 10) {
     try {
       const [rows] = await pool.query(
-        `
-                SELECT
+        `                SELECT
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
@@ -361,3 +360,4 @@ class Reservatie {
 }
 
 module.exports = Reservatie;
+

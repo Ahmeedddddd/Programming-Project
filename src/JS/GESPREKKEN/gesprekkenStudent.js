@@ -1,4 +1,3 @@
-// src/JS/GESPREKKEN/gesprekkenStudent.js
 import { ReservatieService } from '../reservatieService.js';
 
 // --- GLOBAAL & CONFIGURATIE ---
@@ -56,6 +55,7 @@ class GesprekkenManager {
     async loadGesprekken() {
         UI.showLoading(true);
         try {
+            // Gebruik de ReservatieService in plaats van directe fetch
             this.meetings = await ReservatieService.getMyReservations();
             this.render();
         } catch (error) {
@@ -92,8 +92,8 @@ class GesprekkenManager {
         row.dataset.id = meeting.id;
         
         // Veilige datumconversie
-        const startTime = meeting.startTijd ? new Date(`1970-01-01T${meeting.startTijd}Z`).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) : 'N/A';
-        const endTime = meeting.eindTijd ? new Date(`1970-01-01T${meeting.eindTijd}Z`).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) : 'N/A';
+        const startTime = meeting.startTijd ? new Date(meeting.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const endTime = meeting.eindTijd ? new Date(meeting.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' }) : 'N/A';
         const time = `${startTime} - ${endTime}`;
         
         row.innerHTML = `
@@ -170,63 +170,83 @@ class GesprekkenManager {
     }
     
     async handleAccept(id) {
-        const result = await ReservatieService.acceptReservation(id);
-        if(result.success) {
-            UI.showNotification('Afspraak bevestigd!', 'success');
-            await this.loadGesprekken();
-        } else {
-            UI.showNotification(result.message || 'Kon afspraak niet bevestigen.', 'error');
+        try {
+            const result = await ReservatieService.acceptReservation(id);
+            if(result.success) {
+                UI.showNotification('Afspraak bevestigd!', 'success');
+                await this.loadGesprekken();
+            } else {
+                UI.showNotification(result.message || 'Kon afspraak niet bevestigen.', 'error');
+            }
+        } catch (error) {
+            UI.showNotification('Fout bij bevestigen van afspraak.', 'error');
         }
     }
 
     async handleReject(id) {
         if (!await UI.confirm('Afspraak weigeren', 'Weet je zeker dat je dit verzoek wilt weigeren?')) return;
-        const result = await ReservatieService.rejectReservation(id);
-         if(result.success) {
-            UI.showNotification('Afspraak geweigerd.', 'info');
-            lastCancelledMeeting = this.meetings.find(m => m.id == id);
-            UI.showUndo('Afspraak geweigerd.', () => this.handleRestore(id));
-            await this.loadGesprekken();
-        } else {
-            UI.showNotification(result.message || 'Kon afspraak niet weigeren.', 'error');
+        try {
+            const result = await ReservatieService.rejectReservation(id, '');
+            if(result.success) {
+                UI.showNotification('Afspraak geweigerd.', 'info');
+                lastCancelledMeeting = this.meetings.find(m => m.id == id);
+                UI.showUndo('Afspraak geweigerd.', () => this.handleRestore(id));
+                await this.loadGesprekken();
+            } else {
+                UI.showNotification(result.message || 'Kon afspraak niet weigeren.', 'error');
+            }
+        } catch (error) {
+            UI.showNotification('Fout bij weigeren van afspraak.', 'error');
         }
     }
     
     async handleCancel(id, message, withUndo = false) {
         if (!await UI.confirm('Actie bevestigen', 'Weet je zeker dat je deze actie wilt uitvoeren?')) return;
-        const result = await ReservatieService.cancelReservation(id);
-        if (result.success) {
-            lastCancelledMeeting = this.meetings.find(m => m.id == id);
-            if (withUndo) {
-                 UI.showUndo(message, () => this.handleRestore(id));
+        try {
+            const result = await ReservatieService.cancelReservation(id);
+            if (result.success) {
+                lastCancelledMeeting = this.meetings.find(m => m.id == id);
+                if (withUndo) {
+                     UI.showUndo(message, () => this.handleRestore(id));
+                } else {
+                    UI.showNotification(message, 'success');
+                }
+                await this.loadGesprekken();
             } else {
-                UI.showNotification(message, 'success');
+                UI.showNotification(result.message || 'Actie mislukt.', 'error');
             }
-            await this.loadGesprekken();
-        } else {
-            UI.showNotification(result.message || 'Actie mislukt.', 'error');
+        } catch (error) {
+            UI.showNotification('Fout bij uitvoeren van actie.', 'error');
         }
     }
 
     async handleDelete(id) {
         if (!await UI.confirm('Permanent verwijderen', 'Deze actie kan niet ongedaan gemaakt worden. Weet je het zeker?')) return;
-        const result = await ReservatieService.deleteReservation(id);
-        if (result.success) {
-            UI.showNotification('Afspraak permanent verwijderd.', 'success');
-            const row = document.querySelector(`.gesprekkenTableRow[data-id='${id}']`);
-            if (row) row.remove();
-        } else {
-            UI.showNotification(result.message || 'Kon afspraak niet verwijderen.', 'error');
+        try {
+            const result = await ReservatieService.deleteReservation(id);
+            if (result.success) {
+                UI.showNotification('Afspraak permanent verwijderd.', 'success');
+                const row = document.querySelector(`.gesprekkenTableRow[data-id='${id}']`);
+                if (row) row.remove();
+            } else {
+                UI.showNotification(result.message || 'Kon afspraak niet verwijderen.', 'error');
+            }
+        } catch (error) {
+            UI.showNotification('Fout bij verwijderen van afspraak.', 'error');
         }
     }
 
     async handleRestore(id) {
-        const result = await ReservatieService.restoreReservation(id);
-        if (result.success) {
-            UI.showNotification('Actie ongedaan gemaakt.', 'success');
-            await this.loadGesprekken();
-        } else {
-            UI.showNotification(result.message || 'Kon actie niet herstellen.', 'error');
+        try {
+            const result = await ReservatieService.restoreReservation(id);
+            if (result.success) {
+                UI.showNotification('Actie ongedaan gemaakt.', 'success');
+                await this.loadGesprekken();
+            } else {
+                UI.showNotification(result.message || 'Kon actie niet herstellen.', 'error');
+            }
+        } catch (error) {
+            UI.showNotification('Fout bij herstellen van actie.', 'error');
         }
     }
 }
@@ -263,4 +283,4 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => notif.remove(), 5000);
         };
     }
-});
+}); 
