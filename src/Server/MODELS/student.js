@@ -69,13 +69,14 @@ class Student {
 
   static async getWithProjects() {
     try {
-      console.log('🔍 [DEBUG] Executing getWithProjects query (JOIN TECHNOLOGIE)...');
+      console.log('🔍 [DEBUG] Executing getWithProjects query (IMPROVED GROUPING)...');
       const [rows] = await pool.query(`
         SELECT
             s.projectTitel,
             MAX(s.projectBeschrijving) as projectBeschrijving,
             GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen,
-            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) SEPARATOR ', ') as studenten
+            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) ORDER BY s.achternaam, s.voornaam SEPARATOR ', ') as studenten,
+            COUNT(DISTINCT s.studentnummer) as aantalStudenten
         FROM
             STUDENT s
         LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
@@ -84,8 +85,8 @@ class Student {
         GROUP BY s.projectTitel
         ORDER BY s.projectTitel;
       `);
-      logger.info(`📊 Found ${rows.length} projects after grouping (with technologies).`);
-      console.log('✅ [DEBUG] Projects loaded successfully (with technologies):', JSON.stringify(rows, null, 2));
+      logger.info(`📊 Found ${rows.length} unique projects after grouping (with technologies).`);
+      console.log('✅ [DEBUG] Projects loaded successfully (improved grouping):', JSON.stringify(rows, null, 2));
       return rows;
     } catch (error) {
         logger.error('Error fetching projects with students and technologies:', error);
