@@ -372,9 +372,7 @@ const studentController = {
         });
       }
     }
-  },
-
-  // PUT /api/studenten/:studentnummer - Student bijwerken (organisator of student zelf)
+  },  // PUT /api/studenten/:studentnummer - Student bijwerken (organisator of student zelf)
   async updateStudent(req, res) {
     try {
       const errors = validationResult(req);
@@ -395,12 +393,27 @@ const studentController = {
           error: 'Forbidden',
           message: 'U kunt alleen uw eigen studentprofiel bijwerken'
         });
-      }
-
-      // Voorkom wijziging van kritieke velden
+      }      // Voorkom wijziging van kritieke velden en filter lege/ongewenste waarden
       const updateData = { ...req.body };
       delete updateData.studentnummer;
       delete updateData.id;
+      
+      // Filter lege strings weg - als iets leeg is, updaten we het niet
+      // Dit voorkomt database constraint problemen met unique fields en NOT NULL constraints
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === '' || updateData[key] === null || updateData[key] === undefined) {
+          delete updateData[key];
+        }
+      });
+      
+      // Als er niets te updaten valt, return vroeg
+      if (Object.keys(updateData).length === 0) {
+        return res.json({ 
+          success: true,
+          message: 'No changes to update',
+          studentnummer: studentnummer
+        });
+      }
 
       const affectedRows = await Student.update(studentnummer, updateData);
       
@@ -416,9 +429,25 @@ const studentController = {
         success: true,
         message: 'Student updated successfully',
         studentnummer: studentnummer
-      });
-    } catch (error) {
+      });    } catch (error) {
       console.error('Error updating student:', error);
+      
+      // Handle specific database errors
+      if (error.code === 'ER_DUP_ENTRY') {
+        if (error.message.includes('email')) {
+          return res.status(400).json({
+            success: false,
+            error: 'Duplicate email',
+            message: 'Dit email adres is al in gebruik door een andere student'
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'Duplicate entry',
+          message: 'Een van de waarden is al in gebruik'
+        });
+      }
+      
       res.status(500).json({ 
         success: false,
         error: 'Failed to update student',

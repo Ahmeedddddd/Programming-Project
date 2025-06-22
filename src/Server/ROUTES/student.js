@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const studentController = require('../CONTROLLERS/studentController');
-const { validateStudent } = require('../MIDDLEWARE/validation');
+const { validateStudent, validateStudentUpdate } = require('../MIDDLEWARE/validation');
 const { authenticateToken, requireRole } = require('../MIDDLEWARE/auth');
 
 // ===== IMPORTANT: SPECIFIC ROUTES FIRST, PARAMETER ROUTES LAST =====
@@ -47,7 +47,7 @@ router.post('/',
 router.put('/:studentnummer',
   authenticateToken,
   requireRole(['organisator', 'student']),
-  validateStudent,
+  validateStudentUpdate,
   studentController.updateStudent
 );
 
