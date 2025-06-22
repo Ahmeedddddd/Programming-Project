@@ -41,10 +41,80 @@
             </div>
         </div>
 
-        <!-- Welcome Section -->
-        <section class="aboutSection">
-            <h1 class="aboutTitle">Welkom, <span id="student-name-placeholder">Student</span>!</h1>
-            <p class="aboutSubtitle">Jouw carrière start hier. Ontdek bedrijven, projecten en leg waardevolle connecties.</p>
+        <!-- Hero Section - Aangepast voor studenten -->
+      <section class="aboutSectionStudenten">
+        <h1 class="aboutTitleStudenten" id="studentWelcomeTitle">Welkom terug, Student! 🎓</h1>
+        <p class="aboutSubtitleStudenten">Jouw toekomst begint hier. Ontdek bedrijven, plan gesprekken en laat je talent zien.</p>
+        <a href="/alleBedrijven" class="section-btn1">Bedrijven Ontdekken</a>
+      </section>
+
+      <!-- Zoekbalk -->
+      <section class="searchSection">
+          <div class="searchBar">
+            <input 
+              type="text"
+              class="search-input"
+              list="search-suggestions"
+              placeholder="Zoek bedrijven, projecten..." 
+            />
+            <datalist id="search-suggestions"></datalist>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+      </section>
+  
+      <main class="main-content">
+        <!-- Dashboard Cards -->
+        <section class="dashboard">
+            <!-- Gesprekken Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📅</div>
+                    <h2 class="card-title">Mijn Gesprekken <span class="count-badge" id="upcoming-appointments-count">0</span></h2>
+                </div>
+                <p class="card-subtitle">Beheer je geplande gesprekken:</p>
+                <ul class="feature-list">
+                    <li class="feature-item">Bekijk status van aanvragen</li>
+                    <li class="feature-item">Zie bevestigde afspraken</li>
+                </ul>
+                <div class="card-buttons">
+                    <a href="/gesprekken-overzicht-studenten" class="btn-primary">Gesprekken Beheren</a>
+                    <a href="/alle-bedrijven" class="btn-secondary">Nieuw Gesprek Plannen</a>
+                </div>
+            </div>
+
+            <!-- Mijn Project Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <h2 class="card-title">Mijn Project</h2>
+                </div>
+                <p class="card-subtitle">Presenteer je vaardigheden aan bedrijven:</p>
+                <ul class="feature-list">
+                    <li class="feature-item">Projectdetails bijwerken</li>
+                    <li class="feature-item">Technologieën & skills tonen</li>
+                    <li class="feature-item">Zichtbaar voor alle bedrijven</li>
+                </ul>
+                <div class="card-buttons">
+                    <a href="/mijn-project" class="btn-primary">Project Bewerken</a>
+                </div>
+            </div>
+
+            <!-- Account Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👤</div>
+                    <h2 class="card-title">Mijn Account</h2>
+                </div>
+                <p class="card-subtitle">Beheer je persoonlijke gegevens:</p>
+                <ul class="feature-list">
+                    <li class="feature-item">Contactinformatie aanpassen</li>
+                    <li class="feature-item">Curriculum Vitae uploaden</li>
+                    <li class="feature-item">Wachtwoord wijzigen</li>
+                </ul>
+                <div class="card-buttons">
+                    <a href="/account-student" class="btn-primary">Gegevens Bewerken</a>
+                </div>
+            </div>
         </section>
 
 <div class="main-grid">
