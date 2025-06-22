@@ -12,9 +12,7 @@ class PlattegrondVoormiddagManager {
         this.availableStudents = [];
         this.tafelConfig = { voormiddag_aantal_tafels: 15 }; // Default fallback
         this.init();
-    }
-
-    async init() {
+    }    async init() {
         try {
             console.log('Initializing PlattegrondVoormiddagManager...');
             
@@ -27,10 +25,11 @@ class PlattegrondVoormiddagManager {
             // Laad tafel data
             await this.loadTafelData();
             
-            // Pre-load studenten data voor organisatoren
-            if (this.isOrganisator) {
-                this.loadAvailableStudents(); // Async load in background
-            }
+            // Laad studenten data voor alle gebruikers (voor student namen op tafelkaarten)
+            await this.loadAvailableStudents();
+            
+            // Update sidebar opnieuw nu we studenten data hebben
+            this.updateSidebar();
             
             // Setup UI
             this.setupUI();
@@ -86,7 +85,7 @@ class PlattegrondVoormiddagManager {
                 return;
             }
 
-            const response = await fetch('/api/user-info', {
+            const response = await fetch('http://localhost:8383/api/user-info', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -210,10 +209,14 @@ class PlattegrondVoormiddagManager {
             configBtn.style.display = 'flex';
         } else {
             console.error('❌ Config button not found in DOM');
-        }
-
-        // Update tafel count display
+        }        // Update tafel count display
         this.updateTafelCountDisplay();
+
+        // Update sidebar titel voor organisatoren
+        const sidebarTitle = document.querySelector('.sidebarTitle');
+        if (sidebarTitle) {
+            sidebarTitle.innerHTML = '⚙️ Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
+        }
     }
 
     setupVisitorUI() {
@@ -228,10 +231,14 @@ class PlattegrondVoormiddagManager {
         const configBtn = document.getElementById('configTafelsBtn');
         if (configBtn) {
             configBtn.style.display = 'none';
-        }
-
-        // Update tafel count display (alleen lezen)
+        }        // Update tafel count display (alleen lezen)
         this.updateTafelCountDisplay();
+
+        // Update sidebar titel voor bezoekers
+        const sidebarTitle = document.querySelector('.sidebarTitle');
+        if (sidebarTitle) {
+            sidebarTitle.innerHTML = 'Overzicht Tafels';
+        }
     }
 
     // ===== NAVIGATION METHODS =====
@@ -249,21 +256,45 @@ class PlattegrondVoormiddagManager {
             const tafel = this.tafelData[tafelNr] || { tafelNr: tafelNr, items: [] };
             this.showAssignmentModal(tafel);
         }
-    }
-
-    navigateToProject(project) {
-        console.log(`🧭 Navigating to project details for: ${project.titel}`);
+    }    navigateToProject(project) {        console.log('🔍 [DEBUG] navigateToProject called with data:', project);
+        console.log(`🧭 Navigating to project details for: ${project.titel || project.naam}`);
         
-        // Store project info in sessionStorage voor overdracht naar volgende pagina
-        sessionStorage.setItem('selectedProject', JSON.stringify({
-            titel: project.titel,
-            beschrijving: project.beschrijving,
-            studenten: project.studenten,
-            tafelNr: project.tafelNr
-        }));
+        // Voor projecten gebruiken we een studentnummer als ID (zoals andere plekken op de site)
+        let studentId = null;
         
-        // Navigeer naar zoekbalk-project.html
-        window.location.href = '/src/HTML/RESULTS/zoekbalk-project.html';
+        if (project.studenten && project.studenten.length > 0) {
+            // Neem de eerste student als ID
+            studentId = project.studenten[0].studentnummer;
+            console.log('📝 [DEBUG] Using first student number as ID:', studentId);
+        }
+        
+        if (studentId) {
+            const targetUrl = `/zoekbalk-projecten?id=${studentId}`;
+            console.log('🎯 [DEBUG] Target URL:', targetUrl);
+            console.log('🌐 [DEBUG] Current location:', window.location.href);
+            console.log('📍 [DEBUG] Full target URL would be:', window.location.origin + targetUrl);
+            
+            try {
+                console.log('🚀 [DEBUG] About to set window.location.href to:', targetUrl);
+                console.log('⏰ [DEBUG] Navigation attempt at:', new Date().toLocaleTimeString());
+                
+                // Navigeer naar zoekbalk-projecten met studentnummer als ID parameter
+                window.location.href = targetUrl;
+                
+                console.log('✅ [DEBUG] Navigation initiated - if you see this, navigation was successful');
+            } catch (error) {
+                console.error('❌ [ERROR] Navigation failed with exception:', error);
+            }
+            
+            // This should not execute if navigation is successful
+            setTimeout(() => {
+                console.warn('⚠️ [WARNING] Still on same page after 1 second - navigation may have failed');
+                console.log('🌐 [WARNING] Current URL is still:', window.location.href);
+            }, 1000);
+        } else {
+            console.error('❌ Geen studentnummer gevonden voor project:', project);
+            this.showError('Kan project details niet laden - geen student info gevonden');
+        }
     }
 
     updateSidebar() {
@@ -295,30 +326,37 @@ class PlattegrondVoormiddagManager {
                         ${this.isOrganisator ? '<span class="edit-indicator">✏️</span>' : ''}
                     </div>
                     <div class="tafel-content">
-            `;
-
-            if (project) {
+            `;            if (project) {
+                // Zorg ervoor dat we studenten data hebben voor dit project
+                let projectStudenten = project.studenten || [];
+                
+                // Als we geen studenten data hebben in het project object, zoek dan in availableStudents
+                if ((!projectStudenten || projectStudenten.length === 0) && this.availableStudents) {
+                    projectStudenten = this.availableStudents.filter(student => 
+                        student.projectTitel === project.titel || student.projectTitel === project.naam
+                    );
+                }
+                
                 html += `
                     <div class="project-info">
-                        <strong>📋 ${project.titel}</strong>
-                        <div class="student-count">👥 ${project.aantalStudenten || 0} student${(project.aantalStudenten || 0) !== 1 ? 'en' : ''}</div>
-                        ${project.studenten ? `
+                        <strong>${project.titel || project.naam}</strong>
+                        <div class="student-count">${projectStudenten.length} student${projectStudenten.length !== 1 ? 'en' : ''}</div>
+                        ${projectStudenten && projectStudenten.length > 0 ? `
                             <div class="student-list">
-                                ${project.studenten.slice(0, 3).map(s => `<span class="student-tag">${s.naam}</span>`).join('')}
-                                ${project.studenten.length > 3 ? `<span class="more-students">+${project.studenten.length - 3} meer</span>` : ''}
+                                ${projectStudenten.slice(0, 3).map(s => `<span class="student-tag">${s.naam}</span>`).join('')}
+                                ${projectStudenten.length > 3 ? `<span class="more-students">+${projectStudenten.length - 3} meer</span>` : ''}
                             </div>
                         ` : ''}
                     </div>
                 `;
             } else {
-                html += '<div class="empty-tafel">📋 Geen project toegewezen</div>';
+                html += '<div class="empty-tafel">Geen project toegewezen</div>';
             }
 
             if (this.isOrganisator && project) {
                 html += `
-                    <div class="organisator-actions">
-                        <button class="remove-btn" onclick="event.stopPropagation(); window.plattegrondVoormiddagManager.removeProjectFromTafel('${project.titel}')">
-                            🗑️ Verwijder
+                    <div class="organisator-actions">                        <button class="remove-btn" onclick="event.stopPropagation(); window.plattegrondVoormiddagManager.removeProjectFromTafel('${project.titel}')">
+                            Verwijder
                         </button>
                     </div>
                 `;
@@ -391,18 +429,26 @@ class PlattegrondVoormiddagManager {
         sortedTafels.forEach(tafel => {
             const listItem = document.createElement('li');
             listItem.className = 'tafel-item';
-            listItem.setAttribute('data-tafel', tafel.tafelNr);
-
-            if (tafel.items && tafel.items.length > 0) {
+            listItem.setAttribute('data-tafel', tafel.tafelNr);            if (tafel.items && tafel.items.length > 0) {
                 const project = tafel.items[0]; // Voor voormiddag is het meestal 1 project per tafel
-                const naam = project.naam || 'Onbekend project';
-                const beschrijving = project.beschrijving || 'Geen beschrijving';
-                const aantalStudenten = project.aantalStudenten || 0;
+                const naam = project.naam || project.titel || 'Onbekend project';
                 
-                listItem.innerHTML = `
-                    <div class="tafel-content">
-                        <strong>Tafel ${tafel.tafelNr}: ${naam}</strong>
-                        <small class="project-info">${aantalStudenten} student(en)</small>
+                // Zorg ervoor dat we studenten data hebben voor dit project
+                let projectStudenten = project.studenten || [];
+                
+                // Als we geen studenten data hebben, zoek dan in availableStudents
+                if ((!projectStudenten || projectStudenten.length === 0) && this.availableStudents) {
+                    projectStudenten = this.availableStudents.filter(student => 
+                        student.projectTitel === naam || student.projectTitel === project.titel
+                    );
+                }
+                  listItem.innerHTML = `
+                    <div class="tafel-content" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div class="tafel-info" style="flex: 1;">
+                            <strong>Tafel ${tafel.tafelNr}: ${naam}</strong><br>
+                            <small class="project-info">${projectStudenten.length} student(en)${projectStudenten.length > 0 ? ': ' + projectStudenten.slice(0, 2).map(s => s.naam).join(', ') + (projectStudenten.length > 2 ? ` +${projectStudenten.length - 2} meer` : '') : ''}</small>
+                        </div>
+                        ${this.isOrganisator ? `<button class="remove-btn" onclick="event.stopPropagation(); window.plattegrondVoormiddagManager.removeProjectFromTafel('${project.titel || project.naam}')" style="margin-left: 10px; flex-shrink: 0;">Verwijder</button>` : ''}
                     </div>
                 `;
 
@@ -556,14 +602,13 @@ class PlattegrondVoormiddagManager {
             <div class="modal-overlay">
                 <div class="modal-content">
                     <h3>⚙️ Tafel ${tafel.tafelNr} Beheren</h3>
-                    
-                    ${tafel.items && tafel.items.length > 0 ? `
+                      ${tafel.items && tafel.items.length > 0 ? `
                         <div class="current-assignment">
                             <div class="current-project">
                                 <strong>${tafel.items[0].naam}</strong><br>
                                 <small>${tafel.items[0].aantalStudenten || 0} student(en)</small>
                             </div>
-                            <button class="remove-btn" onclick="window.plattegrondVoormiddagManager.removeProjectFromTafel('${tafel.items[0].id}')">
+                            <button class="remove-btn" onclick="window.plattegrondVoormiddagManager.removeProjectFromTafel('${tafel.items[0].naam}')">
                                 Verwijderen
                             </button>
                         </div>
@@ -668,33 +713,34 @@ class PlattegrondVoormiddagManager {
             }
 
             // Sorteer projecten: beschikbare eerst, dan toegewezen
-            const beschikbareProjecten = Object.values(projectGroups).filter(p => !p.isToeggewezen)
+            const beschikbareProjecten = Object.values(projectGroups).filter(p => !p.isToegwezen)
                 .sort((a, b) => a.titel.localeCompare(b.titel));
-            const alleToegwezenProjecten = Object.values(projectGroups).filter(p => p.isToeggewezen)
+            const alleToegwezenProjecten = Object.values(projectGroups).filter(p => p.isToegwezen)
                 .sort((a, b) => a.titel.localeCompare(b.titel));
-            
-            // Add beschikbare projecten met header
+              // Add beschikbare projecten met verbeterde header
             if (beschikbareProjecten.length > 0) {
                 const optgroupBeschikbaar = document.createElement('optgroup');
-                optgroupBeschikbaar.label = '📋 Nog aan te duiden projecten';
+                optgroupBeschikbaar.label = 'Beschikbare Projecten (nog aan te duiden)';
                 beschikbareProjecten.forEach(project => {
                     const option = document.createElement('option');
                     option.value = project.titel;
-                    option.textContent = `${project.titel} (${project.studenten.length} studenten)`;
+                    option.textContent = `${project.titel} (${project.studenten.length} student${project.studenten.length === 1 ? '' : 'en'})`;
+                    option.className = 'available-option';
                     optgroupBeschikbaar.appendChild(option);
                 });
                 projectSelect.appendChild(optgroupBeschikbaar);
             }
             
-            // Add toegewezen projecten met header
+            // Add toegewezen projecten met verbeterde header
             if (alleToegwezenProjecten.length > 0) {
                 const optgroupAssigned = document.createElement('optgroup');
-                optgroupAssigned.label = '✅ Al aangeduide projecten';
+                optgroupAssigned.label = 'Reeds Toegewezen Projecten (niet beschikbaar)';
                 alleToegwezenProjecten.forEach(project => {
                     const option = document.createElement('option');
                     option.value = project.titel;
-                    option.textContent = `${project.titel} (${project.studenten.length} studenten) - Tafel ${project.tafelNr || 'onbekend'}`;
+                    option.textContent = `${project.titel} (${project.studenten.length} student${project.studenten.length === 1 ? '' : 'en'}) - Tafel ${project.tafelNr || 'onbekend'}`;
                     option.disabled = true;
+                    option.className = 'assigned-option';
                     optgroupAssigned.appendChild(option);
                 });
                 projectSelect.appendChild(optgroupAssigned);
@@ -725,26 +771,25 @@ class PlattegrondVoormiddagManager {
             .sort((a, b) => a.titel.localeCompare(b.titel));
         const toegewezenProjecten = Object.values(projectGroups).filter(p => p.tafelNr)
             .sort((a, b) => a.titel.localeCompare(b.titel));
+          let html = '';
         
-        let html = '';
-        
-        // Beschikbare projecten
+        // Beschikbare projecten met verbeterde styling
         if (beschikbareProjecten.length > 0) {
-            html += '<optgroup label="📋 Nog aan te duiden projecten">';
+            html += '<optgroup label="Beschikbare Projecten (nog aan te duiden)">';
             beschikbareProjecten.forEach(project => {
-                html += `<option value="${project.titel}">
-                    ${project.titel} (${project.studenten.length} studenten)
+                html += `<option value="${project.titel}" class="available-option">
+                    ${project.titel} (${project.studenten.length} student${project.studenten.length === 1 ? '' : 'en'})
                 </option>`;
             });
             html += '</optgroup>';
         }
         
-        // Toegewezen projecten
+        // Toegewezen projecten met verbeterde styling
         if (toegewezenProjecten.length > 0) {
-            html += '<optgroup label="✅ Al aangeduide projecten">';
+            html += '<optgroup label="Reeds Toegewezen Projecten (niet beschikbaar)">';
             toegewezenProjecten.forEach(project => {
-                html += `<option value="${project.titel}" disabled>
-                    ${project.titel} (${project.studenten.length} studenten) - Tafel ${project.tafelNr}
+                html += `<option value="${project.titel}" disabled class="assigned-option">
+                    ${project.titel} (${project.studenten.length} student${project.studenten.length === 1 ? '' : 'en'}) - Tafel ${project.tafelNr}
                 </option>`;
             });
             html += '</optgroup>';
@@ -762,9 +807,7 @@ class PlattegrondVoormiddagManager {
                 return;
             }
 
-            console.log(`📝 Bulk assigning project "${projectTitel}" to tafel ${tafelNr}`);
-
-            // Gebruik de nieuwe bulk endpoint
+            console.log(`📝 Bulk assigning project "${projectTitel}" to tafel ${tafelNr}`);            // Gebruik de nieuwe bulk endpoint
             const response = await fetch(`http://localhost:8383/api/tafels/project/bulk-assign`, {
                 method: 'POST',
                 headers: {
@@ -790,22 +833,41 @@ class PlattegrondVoormiddagManager {
                     // Als JSON parsing faalt, gooi HTTP status error
                     throw new Error(`Server error: ${response.status} ${response.statusText}`);
                 }
-            }
-
-            const result = await response.json();
-            console.log('📊 API Response Data:', result);            // Check result success
+            }            const result = await response.json();
+            console.log('📊 API Response Data:', result);
+            
+            // Check result success
             if (result.success) {
-                this.showSuccess(`Project "${projectTitel}" toegewezen aan tafel ${tafelNr} (${result.studentsUpdated} studenten bijgewerkt)`);
+                this.showSuccess(`Project "${projectTitel}" toegewezen aan tafel ${tafelNr}`);
                 
-                // Refresh data en update dropdown, maar laat modal open
-                await this.refresh();
-                
-                // Reset de dropdown selectie
+                // Reset de dropdown selectie direct
                 projectSelect.value = '';
+                
+                // Update tafelData lokaal voor snelle UI update
+                const project = this.availableStudents.find(s => s.title === projectTitel);
+                if (project && this.tafelData[tafelNr]) {
+                    this.tafelData[tafelNr].items = result.assignedStudents || [{
+                        title: projectTitel,
+                        project: projectTitel
+                    }];
+                }
+                
+                // Update dropdown direct zonder API call
+                this.updateModalDropdownOnly(projectSelect);
+                
+                // Update sidebar direct
+                this.updateSidebar();
+                
+                // Herlaad data in background voor consistentie (zonder UI blocking)
+                setTimeout(() => {
+                    this.loadTafelData();
+                    this.loadAvailableStudents();
+                }, 100);
+                  // Sluit de modal
+                this.closeModal();
             } else {
                 throw new Error(result.message || 'Toewijzing mislukt - onbekende fout');
             }
-
         } catch (error) {
             console.error('❌ Error assigning project:', error);
             this.showError('Toewijzing mislukt: ' + error.message);
@@ -815,47 +877,149 @@ class PlattegrondVoormiddagManager {
     async removeProjectFromTafel(projectTitel) {
         try {
             console.log(`🗑️ Bulk removing project "${projectTitel}" from tafel`);
-
-            // Gebruik de nieuwe bulk endpoint
-            const response = await fetch(`http://localhost:8383/api/tafels/project/bulk-remove`, {
+            
+            // Debug: check auth token
+            const authToken = localStorage.getItem('authToken');
+            console.log('🔐 Auth token:', authToken ? 'Present' : 'Missing');
+            console.log('🔐 Auth token length:', authToken ? authToken.length : 0);
+            
+            if (!authToken) {
+                throw new Error('Geen authenticatie token gevonden. Log eerst in als organisator.');
+            }            // Gebruik de nieuwe bulk endpoint 
+            const url = `http://localhost:8383/api/tafels/project/bulk-remove`;
+            console.log('🌐 Making DELETE request to:', url);
+            console.log('🌐 Current page URL:', window.location.href);
+            
+            const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                },
-                body: JSON.stringify({
+                    'Authorization': `Bearer ${authToken}`
+                },                body: JSON.stringify({
                     projectTitel: projectTitel
                 })
             });
 
             console.log(`📊 API Response Status: ${response.status}`);
 
-            // Check HTTP status first
+            // Check if we got a JSON response first
+            let result;
+            try {
+                result = await response.json();
+                console.log('📊 API Response Data:', result);
+            } catch (jsonError) {
+                console.error('❌ Failed to parse response as JSON:', jsonError);
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+
+            // Handle specific error cases
             if (!response.ok) {
-                console.error(`❌ HTTP Error: ${response.status} ${response.statusText}`);
-                
-                try {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `Server error: ${response.status}`);
-                } catch (jsonError) {
-                    // Als JSON parsing faalt, gooi HTTP status error
+                if (response.status === 404 && result.error === 'Project not assigned') {
+                    throw new Error(`Project "${projectTitel}" is niet toegewezen aan een tafel.`);
+                } else if (result.message) {
+                    throw new Error(result.message);
+                } else {
                     throw new Error(`Server error: ${response.status} ${response.statusText}`);
                 }
-            }
-
-            const result = await response.json();
-            console.log('📊 API Response Data:', result);            if (result.success) {
-                this.showSuccess(`Project "${projectTitel}" verwijderd van tafel ${result.previousTafelNr || 'onbekend'} (${result.studentsUpdated} studenten bijgewerkt)`);
+            }            if (result.success) {
+                this.showSuccess(`Project "${projectTitel}" verwijderd van tafel ${result.previousTafelNr || 'onbekend'}`);
                 
-                // Refresh data en update dropdown, maar laat modal open
-                await this.refresh();
-            } else {
-                throw new Error(result.message || 'Verwijdering mislukt');
+                // Update tafelData lokaal voor snelle UI update
+                Object.keys(this.tafelData).forEach(tafelNr => {
+                    if (this.tafelData[tafelNr].items) {
+                        this.tafelData[tafelNr].items = this.tafelData[tafelNr].items.filter(
+                            item => item.title !== projectTitel && item.project !== projectTitel
+                        );
+                    }
+                });
+                
+                // Update sidebar direct
+                this.updateSidebar();
+                
+                // Update dropdown direct
+                const projectSelect = document.querySelector('#projectSelect');
+                if (projectSelect) {
+                    this.updateModalDropdownOnly(projectSelect);
+                }
+                
+                // Herlaad data in background voor consistentie (zonder UI blocking)
+                setTimeout(() => {
+                    this.loadTafelData();
+                    this.loadAvailableStudents();
+                }, 100);
+            } else {                throw new Error(result.message || 'Verwijdering mislukt');
             }
-
         } catch (error) {
             console.error('❌ Error removing project:', error);
             this.showError('Verwijdering mislukt: ' + error.message);
+        }
+    }
+
+    // Snelle dropdown update zonder volledige modal rebuild
+    updateModalDropdownOnly(projectSelect) {
+        // Rebuild alleen de dropdown opties
+        projectSelect.innerHTML = '<option value="">Selecteer project...</option>';
+        
+        // Gebruik bestaande studenten data
+        const projectGroups = {};
+        this.availableStudents.forEach(student => {
+            if (student.projectTitel && student.projectTitel.trim() !== '') {
+                if (!projectGroups[student.projectTitel]) {
+                    projectGroups[student.projectTitel] = {
+                        titel: student.projectTitel,
+                        studenten: [],
+                        tafelNr: null
+                    };
+                }
+                projectGroups[student.projectTitel].studenten.push(student);
+            }
+        });
+
+        // Check welke projecten toegewezen zijn (quick check)
+        const toegewezenProjecten = new Set();
+        Object.values(this.tafelData).forEach(tafelInfo => {
+            if (tafelInfo.items && tafelInfo.items.length > 0) {
+                tafelInfo.items.forEach(project => {
+                    if (project.naam) {
+                        toegewezenProjecten.add(project.naam);
+                    }
+                });
+            }
+        });
+
+        const beschikbareProjecten = Object.values(projectGroups)
+            .filter(p => !toegewezenProjecten.has(p.titel))
+            .sort((a, b) => a.titel.localeCompare(b.titel));
+        
+        const alleToegwezenProjecten = Object.values(projectGroups)
+            .filter(p => toegewezenProjecten.has(p.titel))
+            .sort((a, b) => a.titel.localeCompare(b.titel));        // Add beschikbare projecten
+        if (beschikbareProjecten.length > 0) {
+            const optgroupBeschikbaar = document.createElement('optgroup');
+            optgroupBeschikbaar.label = '� Beschikbare Projecten (nog aan te duiden)';
+            beschikbareProjecten.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.titel;
+                option.textContent = `${project.titel} (${project.studenten.length} student${project.studenten.length === 1 ? '' : 'en'})`;
+                option.className = 'available-option';
+                optgroupBeschikbaar.appendChild(option);
+            });
+            projectSelect.appendChild(optgroupBeschikbaar);
+        }
+        
+        // Add toegewezen projecten
+        if (alleToegwezenProjecten.length > 0) {
+            const optgroupAssigned = document.createElement('optgroup');
+            optgroupAssigned.label = '🔴 Reeds Toegewezen Projecten (niet beschikbaar)';
+            alleToegwezenProjecten.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.titel;
+                option.textContent = `${project.titel} (${project.studenten.length} student${project.studenten.length === 1 ? '' : 'en'}) - Toegewezen`;
+                option.disabled = true;
+                option.className = 'assigned-option';
+                optgroupAssigned.appendChild(option);
+            });
+            projectSelect.appendChild(optgroupAssigned);
         }
     }
 
@@ -886,8 +1050,7 @@ class PlattegrondVoormiddagManager {
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.filterTafels(e.target.value);
-            });
-        }
+            });        }
     }
 
     filterTafels(searchTerm) {
@@ -895,14 +1058,31 @@ class PlattegrondVoormiddagManager {
         const term = searchTerm.toLowerCase();
 
         tafelItems.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            if (text.includes(term)) {
+            // Zoek alleen in projectnaam, niet in student count of het woord "student"
+            let searchableText = '';
+            
+            // Probeer projectnaam te vinden
+            const projectInfo = item.querySelector('.project-info strong');
+            if (projectInfo) {
+                // Haal alleen de projectnaam op (zonder emoji en formatting)
+                searchableText = projectInfo.textContent.replace('', '').toLowerCase();
+            } else {
+                // Voor lege tafels, zoek op tafelnummer
+                const tafelTitle = item.querySelector('strong');
+                if (tafelTitle) {
+                    searchableText = tafelTitle.textContent.toLowerCase();
+                }
+            }
+            
+            // Toon/verberg gebaseerd op of de zoekterm in de projectnaam voorkomt
+            if (searchableText.includes(term)) {
                 item.style.display = 'block';
             } else {
                 item.style.display = 'none';
-            }
-        });
-    }    async refresh() {
+            }        });
+    }
+
+    async refresh() {
         console.log('🔄 Refreshing plattegrond data...');
         this.showLoading(true);
         
@@ -1052,7 +1232,7 @@ class PlattegrondVoormiddagManager {
         modal.innerHTML = `
             <div class="modal-overlay">
                 <div class="modal-content">
-                    <h3>📋 ${project.naam}</h3>
+                    <h3>${project.naam}</h3>
                     <div class="project-details">
                         <p><strong>Beschrijving:</strong></p>
                         <p>${project.beschrijving || 'Geen beschrijving beschikbaar'}</p>
@@ -1093,7 +1273,23 @@ class PlattegrondVoormiddagManager {
         this.showNotification(message, 'success');
     }
 
+    showLoading(show) {
+        // Simple loading state - you can enhance this with a spinner if needed
+        if (show) {
+            console.log('🔄 Loading...');
+        } else {
+            console.log('✅ Loading complete');        }
+    }
+
     showNotification(message, type = 'info') {
+        // Voeg validatie toe voor message parameter
+        if (!message || message === 'undefined' || message === 'null') {
+            console.warn('⚠️ Empty or invalid message provided to showNotification:', message);
+            message = 'Actie voltooid'; // Fallback message
+        }
+        
+        console.log(`📢 Showing notification: ${message} (type: ${type})`);
+        
         // Verwijder bestaande notificaties
         const existing = document.querySelectorAll('.notification');
         existing.forEach(el => el.remove());
@@ -1101,20 +1297,39 @@ class PlattegrondVoormiddagManager {
         // Maak nieuwe notificatie
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
+        notification.style.cssText = `
+            position: fixed !important;
+            top: 2rem !important;
+            right: 2rem !important;
+            z-index: 10000 !important;
+            padding: 1rem 1.5rem !important;
+            border-radius: 8px !important;
+            color: white !important;
+            font-weight: 500 !important;
+            min-width: 300px !important;
+            max-width: 500px !important;
+            font-size: 14px !important;
+            line-height: 1.4 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            background: ${type === 'error' ? '#dc2626' : type === 'success' ? '#22c55e' : '#3b82f6'} !important;
+        `;
+        
         notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-message">${message}</span>
-                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                <span style="flex: 1; color: white;">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0;">×</button>
             </div>
         `;
 
         // Voeg toe aan body
         document.body.appendChild(notification);
+        console.log('📢 Notification added to DOM');
 
         // Auto-remove na 5 seconden
         setTimeout(() => {
             if (notification.parentElement) {
                 notification.remove();
+                console.log('📢 Notification auto-removed');
             }
         }, 5000);
     }
@@ -1506,6 +1721,190 @@ const additionalCSS = `
 const style = document.createElement('style');
 style.textContent = additionalCSS;
 document.head.appendChild(style);
+
+// DEBUG FUNCTIES (voor development)
+window.debugVoormiddagManager = {
+    setOrganisator: () => {
+        window.plattegrondVoormiddagManager.isOrganisator = true;
+        window.plattegrondVoormiddagManager.updateSidebar();
+        console.log('🔧 Debug: Organisator modus ingeschakeld');
+    },
+    
+    setAuthToken: (token = 'debug-token') => {
+        localStorage.setItem('authToken', token);
+        console.log('🔧 Debug: Auth token ingesteld:', token);
+    },
+    
+    checkStatus: () => {
+        const instance = window.plattegrondVoormiddagManager;
+        console.log('🔧 Debug Status:', {
+            isOrganisator: instance.isOrganisator,
+            authToken: localStorage.getItem('authToken') ? 'Present' : 'Missing',
+            tafelData: Object.keys(instance.tafelData).length + ' tafels',
+            availableStudents: instance.availableStudents.length + ' studenten'
+        });
+    },
+    
+    testEndpoint: async () => {
+        try {
+            const response = await fetch('http://localhost:8383/api/tafels/beschikbaar');
+            const data = await response.json();
+            console.log('✅ Endpoint test success:', data.success);
+            return data;
+        } catch (error) {
+            console.error('❌ Endpoint test failed:', error);
+            return null;
+        }
+    },
+      testBulkRemove: async () => {
+        try {
+            const authToken = localStorage.getItem('authToken') || 'test-token';
+            console.log('🧪 Testing bulk-remove endpoint...');
+            
+            // Test 1: GET request om te zien of de route bestaat
+            console.log('🔍 Test 1: Checking if route exists with GET...');
+            try {
+                const getResponse = await fetch('http://localhost:8383/api/tafels/project/bulk-remove');
+                console.log('📊 GET Response status:', getResponse.status);
+                const getData = await getResponse.json();
+                console.log('📊 GET Response data:', getData);
+            } catch (getError) {
+                console.error('❌ GET test failed:', getError);
+            }
+            
+            // Test 2: DELETE request zonder auth
+            console.log('🔍 Test 2: DELETE without auth...');
+            try {
+                const noAuthResponse = await fetch('http://localhost:8383/api/tafels/project/bulk-remove', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectTitel: 'Test Project' })
+                });
+                console.log('📊 No-auth Response status:', noAuthResponse.status);
+                const noAuthData = await noAuthResponse.json();
+                console.log('📊 No-auth Response data:', noAuthData);
+            } catch (noAuthError) {
+                console.error('❌ No-auth test failed:', noAuthError);
+            }
+            
+            // Test 3: DELETE request met auth
+            console.log('🔍 Test 3: DELETE with auth...');
+            const response = await fetch('http://localhost:8383/api/tafels/project/bulk-remove', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ projectTitel: 'Test Project' })
+            });
+            
+            console.log('📊 Auth Response status:', response.status);
+            const data = await response.json();
+            console.log('📊 Auth Response data:', data);
+            return data;
+        } catch (error) {
+            console.error('❌ Bulk remove test failed:', error);
+            return null;
+        }
+    },
+    
+    testAllRoutes: async () => {
+        console.log('🧪 Testing all tafel routes...');
+        const routes = [
+            '/api/tafels/voormiddag',
+            '/api/tafels/namiddag', 
+            '/api/tafels/beschikbaar',
+            '/api/tafels/overzicht'
+        ];
+        
+        for (const route of routes) {
+            try {
+                const response = await fetch(route);
+                console.log(`✅ ${route}: ${response.status}`);
+            } catch (error) {
+                console.log(`❌ ${route}: ERROR - ${error.message}`);            }
+        }
+    },
+    
+    validateToken: () => {
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+            console.log('🔐 Auth token found:', authToken.substring(0, 20) + '...');
+            console.log('🔐 Token length:', authToken.length);
+            
+            // Test if it's a valid JWT format
+            const parts = authToken.split('.');
+            console.log('🔐 JWT parts:', parts.length);
+            
+            if (parts.length === 3) {
+                try {
+                    const payload = JSON.parse(atob(parts[1]));
+                    console.log('🔐 JWT payload:', payload);
+                    return true;
+                } catch (error) {
+                    console.error('❌ Invalid JWT payload:', error);
+                    return false;
+                }
+            } else {
+                console.error('❌ Invalid JWT format (should have 3 parts)');
+                return false;
+            }
+        } else {
+            console.error('❌ No auth token found');
+            return false;
+        }
+    },
+    
+    // Debug function to test the DELETE endpoint
+    testDeleteEndpoint: async () => {
+        console.log('🧪 Testing DELETE endpoint...');
+        
+        const authToken = localStorage.getItem('authToken');
+        console.log('🔐 Auth token present:', !!authToken);
+        console.log('🔐 Auth token length:', authToken ? authToken.length : 0);
+        
+        if (authToken) {
+            console.log('🔐 Auth token first 50 chars:', authToken.substring(0, 50));
+            console.log('🔐 Auth token last 50 chars:', authToken.substring(authToken.length - 50));
+        }
+        
+        try {
+            console.log('🌐 Making test DELETE request...');
+            const response = await fetch('http://localhost:8383/api/tafels/project/bulk-remove', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    projectTitel: 'TEST_PROJECT'
+                })
+            });
+            
+            console.log(`📊 Response status: ${response.status}`);
+            console.log(`📊 Response statusText: ${response.statusText}`);
+            console.log(`📊 Response headers:`, Object.fromEntries(response.headers.entries()));
+            
+            const responseText = await response.text();
+            console.log(`📊 Response body:`, responseText);
+            
+            try {
+                const responseJson = JSON.parse(responseText);
+                console.log(`📊 Response JSON:`, responseJson);
+            } catch (e) {
+                console.log('📊 Response is not valid JSON');
+            }
+            
+        } catch (error) {
+            console.error('❌ Test request failed:', error);
+        }
+    }
+};
+
+// Maak global instance beschikbaar voor debugging
+if (typeof window !== 'undefined') {
+    window.plattegrondVoormiddagManager = null;
+}
 
 console.log('✅ Plattegrond Voormiddag script loaded successfully');
 
