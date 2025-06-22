@@ -8,7 +8,7 @@ console.log('📢 Notification system geladen');
  * @param {'info' | 'success' | 'warning' | 'error'} [type='info'] - Het type notificatie.
  * @param {number} [duration=4000] - Hoelang de notificatie zichtbaar blijft in ms.
  */
-export function showNotification(message, type = 'info', duration = 4000) {
+function showNotification(message, type = 'info', duration = 4000) {
   console.log(`📢 Showing notification: ${type} - ${message}`);
   
   // Ensure notification container exists
@@ -153,26 +153,29 @@ export function showNotification(message, type = 'info', duration = 4000) {
   }
 }
 
-// Convenience functions also exported
-export const showSuccess = (message, duration) => showNotification(message, 'success', duration);
-export const showError = (message, duration) => showNotification(message, 'error', duration);
-export const showWarning = (message, duration) => showNotification(message, 'warning', duration);
-export const showInfo = (message, duration) => showNotification(message, 'info', duration);
+// Convenience functions
+const showSuccess = (message, duration) => showNotification(message, 'success', duration);
+const showError = (message, duration) => showNotification(message, 'error', duration);
+const showWarning = (message, duration) => showNotification(message, 'warning', duration);
+const showInfo = (message, duration) => showNotification(message, 'info', duration);
 
 // Toast-style quick notifications
-export const toast = {
+const toast = {
   success: (message) => showNotification(message, 'success', 3000),
   error: (message) => showNotification(message, 'error', 5000),
   warning: (message) => showNotification(message, 'warning', 4000),
   info: (message) => showNotification(message, 'info', 3000)
 };
 
-console.log('✅ Notification system module ready');
+// Make functions globally available
+window.showNotification = showNotification;
+window.showSuccess = showSuccess;
+window.showError = showError;
+window.showWarning = showWarning;
+window.showInfo = showInfo;
+window.toast = toast;
 
-// Example usage (for testing):
-// window.showNotification('Test notification!', 'info');
-// window.toast.success('Operation completed successfully!');
-// window.showError('Something went wrong!');
+console.log('✅ Notification system ready');
 
 // Auto-initialize on DOM ready
 if (document.readyState === 'loading') {

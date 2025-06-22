@@ -12,7 +12,7 @@ console.log("✅ api.js geladen");
  * @returns {Promise<Response>} - The fetch Response object.
  * @throws {Error} If no authentication token is found or fetch fails.
  */
-export async function fetchWithAuth(url, options = {}) {
+async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('authToken');
     if (!token) {
         console.warn('No authentication token found. Redirecting to login.');
@@ -41,7 +41,5 @@ export async function fetchWithAuth(url, options = {}) {
     return response;
 }
 
-// Make it available globally if other scripts need it
-if (typeof window !== 'undefined') {
-    window.fetchWithAuth = fetchWithAuth;
-}
+// Make it available globally
+window.fetchWithAuth = fetchWithAuth;
