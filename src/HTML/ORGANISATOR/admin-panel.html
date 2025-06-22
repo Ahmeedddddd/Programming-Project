@@ -71,94 +71,101 @@
                 <div class="stat-card projects">
                     <div class="stat-number" id="project-count">-</div>
                     <div class="stat-label">Projecten</div>
-                </div>
-                <div class="stat-card appointments">
+                </div>                <div class="stat-card appointments">
                     <div class="stat-number" id="appointment-count">-</div>
                     <div class="stat-label">Afspraken</div>
                 </div>
             </div>
 
-            <!-- Studenten Sectie -->
-            <div class="section" id="students-section">
-                <div class="section-header students">
-                    <div class="section-title">
-                        👨‍🎓 Studenten Beheer
-                    </div>
-                    <div class="expand-icon">▼</div>
-                </div>
-                <div class="section-content">
-                    <div class="content-inner">
-                        <div class="search-filter">
-                            <input type="text" class="search-input" id="student-search" placeholder="Zoek studenten op naam, email, studentnummer...">
-                            <button class="add-btn" onclick="showAddModal('student')">+ Student Toevoegen</button>
+            <!-- Sections Container voor 2-kolommen layout -->
+            <div class="sections-container">                <!-- Linker kolom -->
+                <div class="sections-column">
+                    <!-- Studenten Sectie -->
+                    <div class="section" id="students-section">
+                        <div class="section-header students">
+                            <div class="section-title">
+                                👨‍🎓 Studenten Beheer
+                            </div>
+                            <div class="expand-icon">▼</div>
                         </div>
-                        <div class="items-list" id="students-list">
-                            <div class="loading">Studenten laden...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bedrijven Sectie -->
-            <div class="section" id="companies-section">
-                <div class="section-header companies">
-                    <div class="section-title">
-                        🏢 Bedrijven Beheer
-                    </div>
-                    <div class="expand-icon">▼</div>
-                </div>
-                <div class="section-content">
-                    <div class="content-inner">
-                        <div class="search-filter">
-                            <input type="text" class="search-input" id="company-search" placeholder="Zoek bedrijven op naam, sector, email...">
-                            <button class="add-btn" onclick="showAddModal('company')">+ Bedrijf Toevoegen</button>
-                        </div>
-                        <div class="items-list" id="companies-list">
-                            <div class="loading">Bedrijven laden...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Projecten Sectie -->
-            <div class="section" id="projects-section">
-                <div class="section-header projects">
-                    <div class="section-title">
-                        📋 Projecten Beheer
-                    </div>
-                    <div class="expand-icon">▼</div>
-                </div>
-                <div class="section-content">
-                    <div class="content-inner">
-                        <div class="search-filter">
-                            <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten op naam, beschrijving...">
-                            <button class="add-btn" onclick="showAddModal('project')">+ Project Toevoegen</button>
-                        </div>
-                        <div class="items-list" id="projects-list">
-                            <div class="loading">Projecten laden...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Afspraken Sectie -->
-            <div class="section" id="appointments-section">
-                <div class="section-header appointments">
-                    <div class="section-title">
-                        📅 Afspraken Beheer
-                    </div>
-                    <div class="expand-icon">▼</div>
-                </div>
-                <div class="section-content">
-                    <div class="content-inner">
-                        <div class="search-filter">
-                            <input type="text" class="search-input" id="appointment-search" placeholder="Zoek afspraken op student, bedrijf, status...">
-                            <div style="color: #666; font-style: italic; font-size: 0.9rem;">
-                                💡 Tip: Afspraken worden aangemaakt door studenten en bedrijven via het reservatiesysteem
+                        <div class="section-content">
+                            <div class="content-inner">
+                                <div class="search-filter">
+                                    <input type="text" class="search-input" id="student-search" placeholder="Zoek studenten op naam, email, studentnummer...">
+                                    <button class="add-btn" onclick="showAddModal('student')">+ Student Toevoegen</button>
+                                </div>
+                                <div class="items-list" id="students-list">
+                                    <div class="loading">Studenten laden...</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="items-list" id="appointments-list">
-                            <div class="loading">Afspraken laden...</div>
+                    </div>
+
+                    <!-- Bedrijven Sectie -->
+                    <div class="section" id="companies-section">
+                        <div class="section-header companies">
+                            <div class="section-title">
+                                🏢 Bedrijven Beheer
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="section-content">
+                            <div class="content-inner">
+                                <div class="search-filter">
+                                    <input type="text" class="search-input" id="company-search" placeholder="Zoek bedrijven op naam, sector, email...">
+                                    <button class="add-btn" onclick="showAddModal('company')">+ Bedrijf Toevoegen</button>
+                                </div>
+                                <div class="items-list" id="companies-list">
+                                    <div class="loading">Bedrijven laden...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rechter kolom -->
+                <div class="sections-column">
+                    <!-- Projecten Sectie -->
+                    <div class="section" id="projects-section">
+                        <div class="section-header projects">
+                            <div class="section-title">
+                                📋 Projecten Beheer
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="section-content">
+                            <div class="content-inner">
+                                <div class="search-filter">
+                                    <input type="text" class="search-input" id="project-search" placeholder="Zoek projecten op naam, beschrijving...">
+                                    <button class="add-btn" onclick="showAddModal('project')">+ Project Toevoegen</button>
+                                </div>
+                                <div class="items-list" id="projects-list">
+                                    <div class="loading">Projecten laden...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Afspraken Sectie -->
+                    <div class="section" id="appointments-section">
+                        <div class="section-header appointments">
+                            <div class="section-title">
+                                📅 Afspraken Beheer
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="section-content">
+                            <div class="content-inner">
+                                <div class="search-filter">
+                                    <input type="text" class="search-input" id="appointment-search" placeholder="Zoek afspraken op student, bedrijf, status...">
+                                    <div style="color: #666; font-style: italic; font-size: 0.9rem;">
+                                        💡 Tip: Afspraken worden aangemaakt door studenten en bedrijven via het reservatiesysteem
+                                    </div>
+                                </div>
+                                <div class="items-list" id="appointments-list">
+                                    <div class="loading">Afspraken laden...</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -204,6 +204,16 @@ body {
     border-left-color: var(--primary-color);
 }
 
+.stat-card.debug {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    border: 2px solid #adb5bd;
+}
+
+.stat-card.debug:hover {
+    background: linear-gradient(135deg, #495057, #343a40);
+    border-color: #6c757d;
+}
+
 .stat-number {
     font-size: clamp(2rem, 5vw, 2.5rem);
     font-weight: 800;
@@ -1110,4 +1120,46 @@ select.form-input {
     #test-auth-btn {
         animation: none;
     }
+}
+
+/* ===== 2-KOLOMMEN LAYOUT VOOR SECTIES ===== */
+.sections-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg);
+    align-items: start;
+}
+
+.sections-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* Aanpassing van bestaande section margin om overlap te voorkomen */
+.sections-container .section {
+    margin: 0; /* Reset margin omdat de container nu de spacing beheert */
+}
+
+/* Responsieve aanpassingen voor kleinere schermen */
+@media (max-width: 1200px) {
+    .sections-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .sections-column {
+        gap: var(--spacing-md);
+    }
+}
+
+@media (max-width: 768px) {
+    .sections-container {
+        margin: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+    
+    .sections-column {
+        gap: var(--spacing-sm);    }
 }
