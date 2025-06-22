@@ -98,6 +98,8 @@ class Student {
   static async getProjectsWithStudentIds() {
     try {
       console.log('🔍 [DEBUG] Executing getProjectsWithStudentIds query...');
+      
+      // First, get all students with projects
       const [rows] = await pool.query(`
         SELECT
             s.projectTitel,
@@ -107,13 +109,10 @@ class Student {
             s.achternaam,
             s.opleiding,
             s.tafelNr,
-            GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen
+            s.technologieen
         FROM
             STUDENT s
-        LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
-        LEFT JOIN TECHNOLOGIE t ON st.technologieId = t.technologieId
         WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
-        GROUP BY s.projectTitel, s.studentnummer, s.voornaam, s.achternaam, s.opleiding, s.tafelNr
         ORDER BY s.projectTitel, s.achternaam, s.voornaam;
       `);
       
@@ -125,7 +124,7 @@ class Student {
           groupedProjects[projectTitle] = {
             titel: projectTitle,
             beschrijving: row.projectBeschrijving,
-            technologieen: row.technologieen,
+            technologieen: row.technologieen || '',
             studenten: []
           };
         }
@@ -139,7 +138,7 @@ class Student {
       });
       
       const result = Object.values(groupedProjects);
-      logger.info(`📊 Found ${result.length} projects with student IDs.`);
+      logger.info(`📊 Found ${result.length} unique projects with student IDs.`);
       console.log('✅ [DEBUG] Projects with student IDs loaded successfully:', JSON.stringify(result, null, 2));
       return result;
     } catch (error) {

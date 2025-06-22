@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/src/CSS/index.css">
     <link rel="stylesheet" href="/src/CSS/STUDENTEN/student-homepage.css">
     <script src="/js/navigation-manager.js"></script>
+    <script src="/js/role-manager.js"></script>
 </head>
 <body>
     <div class="container">
@@ -45,7 +46,7 @@
       <section class="aboutSectionStudenten">
         <h1 class="aboutTitleStudenten" id="studentWelcomeTitle">Welkom terug, Student! 🎓</h1>
         <p class="aboutSubtitleStudenten">Jouw toekomst begint hier. Ontdek bedrijven, plan gesprekken en laat je talent zien.</p>
-        <a href="/alleBedrijven" class="section-btn1">Bedrijven Ontdekken</a>
+        <a href="/alle-bedrijven" class="section-btn1">Bedrijven Ontdekken</a>
       </section>
 
       <!-- Zoekbalk -->
@@ -154,7 +155,7 @@
         </div>
 
         <div class="btn-center">
-            <a href="/gesprekken-student" class="btn">Bekijk alle gesprekken →</a>
+            <a href="/gesprekken-overzicht-studenten" class="btn">Bekijk alle gesprekken →</a>
         </div>
     </div>
 </div>
@@ -233,7 +234,6 @@
     </div>
     <div class="menu-overlay"></div>
 
-    <script src="/js/role-manager.js"></script>
     <script type="module">
         import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
         window.updateDataCounts = updateDataCounts;
@@ -242,5 +242,8 @@
     <script type="module" src="/src/JS/UTILS/zoekbalkHomepage.js"></script>
     <script type="module" src="/src/JS/index.js"></script>
     <script type="module" src="/src/JS/UTILS/homepage-student.js"></script>
+    <script type="module" src="/src/JS/UTILS/notification-system.js"></script>
+    <script type="module" src="/src/JS/api.js"></script>
+    <script type="module" src="/src/JS/reservatieService.js"></script>
 </body>
 </html>

@@ -273,11 +273,6 @@
 
   <!-- FIXED: Proper script loading order with stat-utils -->
   <script src="/js/role-manager.js"></script>
-  <script type="module">
-  import { updateDataCounts } from '/src/JS/UTILS/stat-utils.js';
-  window.updateDataCounts = updateDataCounts;
-  console.log('[stat-utils] updateDataCounts globally available');
-</script>
   <script type="module" src="src/JS/UTILS/startPage.js"></script>
   <script type="module" src="/src/JS/UTILS/zoekbalkHomepage.js"></script>
   <script type="module" src="/src/JS/index.js"></script>
