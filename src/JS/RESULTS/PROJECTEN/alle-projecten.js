@@ -14,37 +14,32 @@
 console.log('🚀 [alle-projecten.js] Minimal version loading...');
 
 async function loadAllProjects() {
-    const container = document.querySelector('.projectTegels');
-    if (!container) {
-        console.error('❌ [alle-projecten.js] .projectTegels container not found');
-        return;
-    }
-    
-    container.innerHTML = `<div class="no-data" id="projectenLoading"><i class="fas fa-spinner fa-spin"></i> Projecten laden...</div>`;
-    
     try {
-        console.log('📡 [alle-projecten.js] Fetching projects...');
-        const response = await fetch('/api/projecten');
-        const data = await response.json();
+        console.log('🚀 [alle-projecten.js] Loading all projects...');
         
-        let projects = [];
-        if (data.success && Array.isArray(data.data)) {
-            projects = data.data;
-        } else if (Array.isArray(data)) {
-            projects = data;
+        // Use the new endpoint that returns projects with student IDs
+        const response = await fetch('/api/projecten/with-ids');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        console.log(`📦 [alle-projecten.js] Found ${projects.length} project entries`);
+        const result = await response.json();
         
-        if (projects.length > 0) {
-            renderProjects(projects);
+        if (result.success) {
+            console.log(`✅ [alle-projecten.js] Loaded ${result.data.length} projects with student IDs`);
+            renderProjects(result.data);
+            updateProjectCount(result.data.length);
         } else {
-            // Fallback: probeer studenten API
+            console.error('❌ [alle-projecten.js] Failed to load projects:', result.message);
+            // Fallback to old method if new endpoint fails
             await loadProjectsFromStudents();
         }
+        
     } catch (error) {
-        console.error('❌ [alle-projecten.js] Error:', error);
-        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Fout bij laden van projecten: ${error.message}</div>`;
+        console.error('❌ [alle-projecten.js] Error loading projects:', error);
+        // Fallback to old method
+        await loadProjectsFromStudents();
     }
 }
 
@@ -68,13 +63,12 @@ async function loadProjectsFromStudents() {
                 .filter(student => student.projectTitel && student.projectTitel.trim() !== '')
                 .map(student => ({
                     id: student.studentnummer || student.id,
-                    titel: student.projectTitel,
-                    beschrijving: student.projectBeschrijving || student.beschrijving || 'Geen beschrijving beschikbaar',
+                    projectTitel: student.projectTitel,
+                    projectBeschrijving: student.projectBeschrijving || student.beschrijving || 'Geen beschrijving beschikbaar',
                     voornaam: student.voornaam,
                     achternaam: student.achternaam,
                     opleiding: student.opleiding,
-                    tafelNr: student.tafelNr,
-                    technologieën: student.technologieën || student.vaardigheden
+                    tafelNr: student.tafelNr
                 }));
             
             if (projectsFromStudents.length > 0) {
@@ -93,102 +87,79 @@ async function loadProjectsFromStudents() {
 function renderProjects(projects) {
     console.log('🚀 [alle-projecten.js] Rendering', projects.length, 'projects');
     
-    // Groepeer projecten per titel
-    const grouped = {};
-    projects.forEach(project => {
-        const key = (project.titel || '').trim().toLowerCase();
-        if (!key) return;
-        
-        if (!grouped[key]) {
-            grouped[key] = {
-                ...project,
-                studenten: []
-            };
-        }
-        
-        // Voeg student toe
-        if (project.voornaam && project.achternaam) {
-            const studentName = `${project.voornaam} ${project.achternaam}`;
-            if (!grouped[key].studenten.find(s => s.naam === studentName)) {
-                grouped[key].studenten.push({
-                    naam: studentName,
-                    opleiding: project.opleiding,
-                    tafelNr: project.tafelNr
-                });
-            }
-        }
-    });
-    
-    const uniqueProjects = Object.values(grouped);
-    console.log(`✅ [alle-projecten.js] Grouped into ${uniqueProjects.length} unique projects`);
-    
     const container = document.querySelector('.projectTegels');
+    if (!container) {
+        console.error('❌ [alle-projecten.js] .projectTegels container not found');
+        return;
+    }
+    
+    if (projects.length === 0) {
+        container.innerHTML = '<div class="no-data">Geen projecten gevonden</div>';
+        return;
+    }
+    
+    // Clear container
     container.innerHTML = '';
     
-    uniqueProjects.forEach((project, index) => {
-        container.appendChild(createProjectCard(project, index));
+    // Render each project
+    projects.forEach((project, index) => {
+        const card = createProjectCard(project, index);
+        container.appendChild(card);
     });
     
-    // Update counts
-    updateProjectCount(uniqueProjects.length);
+    console.log(`✅ [alle-projecten.js] Rendered ${projects.length} project cards`);
 }
 
 function createProjectCard(project, index) {
     const card = document.createElement('a');
     card.className = 'projectTegel';
-    card.href = `/zoekbalk-projecten?id=${project.id}`;
-    card.style.animationDelay = `${index * 0.1}s`;
     
-    const titel = project.titel || 'Onbekend Project';
-    const beschrijving = project.beschrijving || 'Geen beschrijving beschikbaar';
-    const technologieën = project.technologieën || '';
+    // Get the first student's ID for navigation
+    const firstStudent = project.studenten && project.studenten.length > 0 ? project.studenten[0] : null;
+    const navigationId = firstStudent ? firstStudent.id : null;
+    const projectTitle = project.titel || 'Onbekend Project';
     
-    // Student info
-    let studentInfo = '';
+    if (navigationId) {
+        // If we have a valid student ID, navigate to the project detail page
+        card.href = `/zoekbalk-projecten?id=${navigationId}`;
+        console.log(`🔗 [alle-projecten.js] Project "${projectTitle}" -> Student ID: ${navigationId}`);
+    } else {
+        // If no student ID available, navigate to search page with project title
+        const searchQuery = encodeURIComponent(projectTitle);
+        card.href = `/alle-projecten?search=${searchQuery}`;
+        console.log(`🔍 [alle-projecten.js] Project "${projectTitle}" -> Search fallback`);
+    }
+    
+    // Create student display
+    let studentDisplay = '';
     if (project.studenten && project.studenten.length > 0) {
         if (project.studenten.length === 1) {
-            const student = project.studenten[0];
-            const tafelInfo = student.tafelNr ? ` - Tafel ${student.tafelNr}` : '';
-            studentInfo = `
-                <div class="project-student-single">
-                    <strong>👨‍🎓 ${student.naam}</strong>
-                    ${student.opleiding ? `<br><small>${student.opleiding}${tafelInfo}</small>` : ''}
-                </div>
-            `;
+            studentDisplay = `<div class="project-student-single">
+                <span>👤 ${project.studenten[0].naam}</span>
+            </div>`;
         } else {
-            const studentList = project.studenten.map(s => {
-                const tafelInfo = s.tafelNr ? ` (T${s.tafelNr})` : '';
-                return s.naam + tafelInfo;
-            }).join(', ');
-            
-            studentInfo = `
-                <div class="project-students-multiple">
-                    <strong>👥 Team (${project.studenten.length} studenten):</strong><br>
-                    <small>${studentList}</small>
-                </div>
-            `;
+            const studentNames = project.studenten.map(s => s.naam).join(', ');
+            studentDisplay = `<div class="project-students-multiple">
+                <strong>👥 Studenten:</strong>
+                <div class="student-names">${studentNames}</div>
+            </div>`;
         }
     }
     
-    card.innerHTML = `
-        <div class="projectTegel-content">
-            <h3 class="project-titel">${titel}</h3>
-            <p class="project-beschrijving">${beschrijving.length > 200 ? beschrijving.substring(0, 200) + '...' : beschrijving}</p>
-            
-            ${technologieën ? `
-                <div class="project-technologien">
-                    <strong>🛠️ Tech:</strong> ${technologieën}
-                </div>
-            ` : ''}
-            
-            ${studentInfo}
-        </div>
-    `;
+    // Create technology display
+    let techDisplay = '';
+    if (project.technologieen) {
+        techDisplay = `<div class="project-tech">
+            <strong>🛠️ Technologieën:</strong> ${project.technologieen}
+        </div>`;
+    }
     
-    card.addEventListener("click", (e) => {
-        e.preventDefault();
-        openProjectDetail(project.id);
-    });
+    card.innerHTML = `
+        <div class="projectTitel">${projectTitle}</div>
+        <div class="projectBeschrijving">${project.beschrijving || 'Geen beschrijving beschikbaar'}</div>
+        ${studentDisplay}
+        ${techDisplay}
+    `;
     
     return card;
 }
@@ -196,7 +167,6 @@ function createProjectCard(project, index) {
 function updateProjectCount(count) {
     console.log(`📊 [alle-projecten.js] Updating count: ${count}`);
     
-    // Update via stat-utils if available
     if (window.updateDataCounts) {
         window.updateDataCounts({ projecten: count });
         console.log('✅ [alle-projecten.js] Updated via stat-utils');
@@ -204,14 +174,96 @@ function updateProjectCount(count) {
 }
 
 function openProjectDetail(projectId) {
-    console.log(`🔗 [alle-projecten.js] Opening project: ${projectId}`);
+    if (!projectId) {
+        console.warn('⚠️ [alle-projecten.js] Kan niet navigeren: geen projectId');
+        return;
+    }
+    console.log(`🔗 [alle-projecten.js] Opening project with student ID: ${projectId}`);
     window.location.href = `/zoekbalk-projecten?id=${projectId}`;
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', loadAllProjects);
-if (document.readyState !== 'loading') {
-    loadAllProjects();
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchTerm = urlParams.get('search');
+    
+    loadAllProjects().then(() => {
+        if (searchTerm) {
+            console.log(`🔍 [alle-projecten.js] Search parameter found: ${searchTerm}`);
+            filterProjectsBySearch(searchTerm);
+        }
+    });
+});
+
+// Search functionality
+function filterProjectsBySearch(searchTerm) {
+    console.log(`🔍 [alle-projecten.js] Filtering projects by: ${searchTerm}`);
+    
+    const cards = document.querySelectorAll('.projectTegel');
+    let foundCount = 0;
+    
+    cards.forEach(card => {
+        const title = card.querySelector('.project-titel')?.textContent || '';
+        const description = card.querySelector('.project-beschrijving')?.textContent || '';
+        const studentInfo = card.querySelector('.project-student-single, .project-students-multiple')?.textContent || '';
+        
+        const searchText = `${title} ${description} ${studentInfo}`.toLowerCase();
+        const searchLower = searchTerm.toLowerCase().trim();
+        
+        if (searchText.includes(searchLower)) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeInUp 0.6s ease forwards';
+            foundCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    console.log(`✅ [alle-projecten.js] Found ${foundCount} matching projects`);
+    
+    const container = document.querySelector('.projectTegels');
+    
+    // Verwijder eventuele vorige zoekresultaat-headers/berichten
+    const existingHeader = container.querySelector('.search-results-header');
+    if (existingHeader) {
+        existingHeader.remove();
+    }
+    const existingNoResults = container.querySelector('.no-data');
+    if (existingNoResults) {
+        existingNoResults.remove();
+    }
+    
+    if (foundCount === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-data';
+        noResults.innerHTML = `
+            <h3>🔍 Geen projecten gevonden</h3>
+            <p>Geen projecten gevonden voor "${searchTerm}"</p>
+            <button onclick="window.location.href='/alle-projecten'" class="btn">
+                <i class="fas fa-arrow-left"></i> Terug naar alle projecten
+            </button>
+        `;
+        // Toon alle kaarten weer als er geen resultaten zijn na het filteren
+        cards.forEach(card => card.style.display = 'none');
+        container.appendChild(noResults);
+    } else {
+        const searchHeader = document.createElement('div');
+        searchHeader.className = 'search-results-header';
+        searchHeader.innerHTML = `
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                <h3 style="margin: 0 0 10px 0; color: #1976d2;">
+                    <i class="fas fa-search"></i> Zoekresultaten
+                </h3>
+                <p style="margin: 0; color: #424242;">
+                    ${foundCount} project${foundCount === 1 ? '' : 'en'} gevonden voor "${searchTerm}"
+                </p>
+                <button onclick="window.location.href='/alle-projecten'" style="margin-top: 10px; background: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-times"></i> Zoekopdracht wissen
+                </button>
+            </div>
+        `;
+        container.insertBefore(searchHeader, container.firstChild);
+    }
 }
 
-console.log('✅ [alle-projecten.js] Minimal version loaded!');
+console.log('✅ [alle-projecten.js] Fixed version loaded!');

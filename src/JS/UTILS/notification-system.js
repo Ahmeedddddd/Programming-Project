@@ -2,8 +2,13 @@
 
 console.log('📢 Notification system geladen');
 
-// 🔔 Notification System - Global implementation
-window.showNotification = function(message, type = 'info', duration = 4000) {
+/**
+ * 🔔 Toont een notificatie op het scherm.
+ * @param {string} message - Het bericht om te tonen.
+ * @param {'info' | 'success' | 'warning' | 'error'} [type='info'] - Het type notificatie.
+ * @param {number} [duration=4000] - Hoelang de notificatie zichtbaar blijft in ms.
+ */
+export function showNotification(message, type = 'info', duration = 4000) {
   console.log(`📢 Showing notification: ${type} - ${message}`);
   
   // Ensure notification container exists
@@ -17,6 +22,9 @@ window.showNotification = function(message, type = 'info', duration = 4000) {
       right: 1rem;
       z-index: 10000;
       pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     `;
     document.body.appendChild(container);
   }
@@ -28,76 +36,52 @@ window.showNotification = function(message, type = 'info', duration = 4000) {
     background: white;
     border-left: 4px solid #881538;
     padding: 1rem 1.5rem;
-    margin-bottom: 0.5rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
+    transform: translateX(110%);
+    transition: transform 0.3s ease, opacity 0.3s ease;
     min-width: 300px;
     max-width: 400px;
     pointer-events: auto;
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    opacity: 0;
   `;
   
   // Set type-specific styles
-  switch (type) {
-    case 'error':
-      notification.style.borderLeftColor = '#dc2626';
-      notification.style.background = '#fef2f2';
-      notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-exclamation-circle" style="color: #dc2626;"></i>
-          <span>${message}</span>
-        </div>
-      `;
-      break;
-    case 'success':
-      notification.style.borderLeftColor = '#16a34a';
-      notification.style.background = '#f0fdf4';
-      notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-check-circle" style="color: #16a34a;"></i>
-          <span>${message}</span>
-        </div>
-      `;
-      break;
-    case 'warning':
-      notification.style.borderLeftColor = '#f59e0b';
-      notification.style.background = '#fffbeb';
-      notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
-          <span>${message}</span>
-        </div>
-      `;
-      break;
-    default: // info
-      notification.style.borderLeftColor = '#2563eb';
-      notification.style.background = '#eff6ff';
-      notification.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fas fa-info-circle" style="color: #2563eb;"></i>
-          <span>${message}</span>
-        </div>
-      `;
-  }
+  const typeStyles = {
+    error: { color: '#dc2626', bg: '#fef2f2', icon: 'fa-exclamation-circle' },
+    success: { color: '#16a34a', bg: '#f0fdf4', icon: 'fa-check-circle' },
+    warning: { color: '#f59e0b', bg: '#fffbeb', icon: 'fa-exclamation-triangle' },
+    info: { color: '#2563eb', bg: '#eff6ff', icon: 'fa-info-circle' }
+  };
+  const style = typeStyles[type] || typeStyles.info;
+
+  notification.style.borderLeftColor = style.color;
+  notification.style.background = style.bg;
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <i class="fas ${style.icon}" style="color: ${style.color}; font-size: 1.2rem;"></i>
+      <span style="color: #333;">${message}</span>
+    </div>
+  `;
   
   // Add close button
   const closeButton = document.createElement('button');
   closeButton.innerHTML = '×';
   closeButton.style.cssText = `
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+    top: 0.3rem;
+    right: 0.3rem;
     background: none;
     border: none;
-    font-size: 1.2rem;
-    color: #666;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #999;
     cursor: pointer;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -105,100 +89,85 @@ window.showNotification = function(message, type = 'info', duration = 4000) {
     transition: all 0.2s ease;
   `;
   
-  closeButton.addEventListener('mouseenter', () => {
-    closeButton.style.background = 'rgba(0,0,0,0.1)';
-    closeButton.style.color = '#333';
-  });
-  
-  closeButton.addEventListener('mouseleave', () => {
-    closeButton.style.background = 'none';
-    closeButton.style.color = '#666';
-  });
+  closeButton.onmouseover = () => { closeButton.style.background = 'rgba(0,0,0,0.1)'; closeButton.style.color = '#333'; };
+  closeButton.onmouseout = () => { closeButton.style.background = 'none'; closeButton.style.color = '#999'; };
   
   notification.appendChild(closeButton);
   
-  // Add progress bar for auto-dismiss
+  // Add progress bar
   const progressBar = document.createElement('div');
   progressBar.style.cssText = `
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 3px;
-    background: ${notification.style.borderLeftColor};
+    height: 4px;
+    background: ${style.color};
     width: 100%;
     transform-origin: left;
-    animation: progressBar ${duration}ms linear;
+    animation: progressBarAnim ${duration}ms linear forwards;
   `;
   
-  // Add progress bar animation
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes progressBar {
-      from { transform: scaleX(1); }
-      to { transform: scaleX(0); }
-    }
-  `;
-  if (!document.querySelector('#progressBarStyles')) {
-    style.id = 'progressBarStyles';
-    document.head.appendChild(style);
+  const progressKeyframesId = 'progressBarKeyframes';
+  if (!document.getElementById(progressKeyframesId)) {
+    const keyframesStyle = document.createElement('style');
+    keyframesStyle.id = progressKeyframesId;
+    keyframesStyle.innerHTML = `
+      @keyframes progressBarAnim {
+        from { transform: scaleX(1); }
+        to { transform: scaleX(0); }
+      }
+    `;
+    document.head.appendChild(keyframesStyle);
   }
   
   notification.appendChild(progressBar);
   
   // Add to container
-  container.appendChild(notification);
+  container.prepend(notification);
   
-  // Trigger show animation
+  // Animate in
   requestAnimationFrame(() => {
     notification.style.transform = 'translateX(0)';
+    notification.style.opacity = '1';
   });
   
-  // Auto-remove function
   const removeNotification = () => {
-    notification.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-      if (container.contains(notification)) {
-        container.removeChild(notification);
-      }
-      // Remove empty container if no more notifications
+    notification.style.transform = 'translateX(110%)';
+    notification.style.opacity = '0';
+    notification.addEventListener('transitionend', () => {
+      notification.remove();
       if (container.children.length === 0) {
-        if (document.body.contains(container)) {
-          document.body.removeChild(container);
-        }
+        container.remove();
       }
-    }, 300);
+    });
   };
   
-  // Click to dismiss
-  notification.addEventListener('click', removeNotification);
-  closeButton.addEventListener('click', (e) => {
+  notification.onclick = removeNotification;
+  closeButton.onclick = (e) => {
     e.stopPropagation();
     removeNotification();
-  });
+  };
   
-  // Auto-dismiss after duration
   if (duration > 0) {
     setTimeout(removeNotification, duration);
   }
-  
-  return notification;
-};
+}
 
-// Convenience functions
-window.showSuccess = (message, duration) => window.showNotification(message, 'success', duration);
-window.showError = (message, duration) => window.showNotification(message, 'error', duration);
-window.showWarning = (message, duration) => window.showNotification(message, 'warning', duration);
-window.showInfo = (message, duration) => window.showNotification(message, 'info', duration);
+// Convenience functions also exported
+export const showSuccess = (message, duration) => showNotification(message, 'success', duration);
+export const showError = (message, duration) => showNotification(message, 'error', duration);
+export const showWarning = (message, duration) => showNotification(message, 'warning', duration);
+export const showInfo = (message, duration) => showNotification(message, 'info', duration);
 
 // Toast-style quick notifications
-window.toast = {
-  success: (message) => window.showNotification(message, 'success', 3000),
-  error: (message) => window.showNotification(message, 'error', 5000),
-  warning: (message) => window.showNotification(message, 'warning', 4000),
-  info: (message) => window.showNotification(message, 'info', 3000)
+export const toast = {
+  success: (message) => showNotification(message, 'success', 3000),
+  error: (message) => showNotification(message, 'error', 5000),
+  warning: (message) => showNotification(message, 'warning', 4000),
+  info: (message) => showNotification(message, 'info', 3000)
 };
 
-console.log('✅ Notification system ready');
+console.log('✅ Notification system module ready');
 
 // Example usage (for testing):
 // window.showNotification('Test notification!', 'info');

@@ -332,25 +332,26 @@ app.get("/programma", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/PROGRAMMA/programma.html"));
 });
 
-app.get("/alleBedrijven", (req, res) => {
+app.get("/alle-bedrijven", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/BEDRIJVEN/alle-bedrijven.html")
   );
 });
 
-app.get("/alleProjecten", (req, res) => {
+app.get("/alle-projecten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/alle-projecten.html")
   );
 });
 
-app.get("/alleStudenten", (req, res) => {
+app.get("/alle-studenten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/alle-studenten.html")
   );
 });
 
 app.get("/zoekbalk-projecten", (req, res) => {
+  console.log("[BACKEND] /zoekbalk-projecten hit", req.query);
   res.sendFile(path.join(__dirname, "../../src/HTML/RESULTS/PROJECTEN/zoekbalk-projecten.html"));
 });
 
@@ -366,13 +367,19 @@ app.get("/resultaat-student", (req, res) => {
   );
 });
 
-app.get("/gesprekkenOverzichtStudenten", (req, res) => {
+app.get("/zoekbalk-studenten", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../../src/HTML/RESULTS/STUDENTEN/zoekbalk-studenten.html")
+  );
+});
+
+app.get("/gesprekken-overzicht-studenten", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/GESPREKKEN/gesprekken-overzicht-studenten.html")
   );
 });
 
-app.get("/gesprekkenOverzichtBedrijven", (req, res) => {
+app.get("/gesprekken-overzicht-bedrijven", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/GESPREKKEN/gesprekken-overzicht-bedrijven.html")
   );
@@ -386,13 +393,13 @@ app.get("/register", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/ACCOUNT/account-aanmaken.html"));
 });
 
-app.get("/programmaVoormidag", (req, res) => {
+app.get("/programma-voormiddag", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-voormidag.html")
   );
 });
 
-app.get("/programmaNamidag", (req, res) => {
+app.get("/programma-namiddag", (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/PROGRAMMA/programma-namidag.html")
   );
@@ -403,20 +410,24 @@ app.get("/info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/info.html"));
 });
 
-app.get("/infoCareerLaunch", (req, res) => {
+app.get("/info-career-launch", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-career-launch.html"));
 });
 
-app.get("/infoBedrijf", (req, res) => {
+app.get("/info-bedrijf", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-bedrijven.html"));
 });
 
-app.get("/infoStudent", (req, res) => {
+app.get("/info-student", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/informatie-studenten.html"));
 });
 
 app.get("/tarieven-info", (req, res) => {
   res.sendFile(path.join(__dirname, "../../src/HTML/INFO/tarieven-info.html"));
+});
+
+app.get("/contacteer", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../src/HTML/INFO/contacteer.html"));
 });
 
 // Test page
@@ -439,7 +450,7 @@ app.get("/account-student", requireAuth, (req, res) => {
   );
 });
 
-app.get("/gegevensStudent", requireAuth, (req, res) => {
+app.get("/gegevens-student", requireAuth, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/STUDENTEN/gegevens-student.html")
   );
@@ -458,7 +469,7 @@ app.get("/account-bedrijf", requireAuth, (req, res) => {
   );
 });
 
-app.get("/gegevensBedrijf", requireAuth, (req, res) => {
+app.get("/gegevens-bedrijf", requireAuth, (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/BEDRIJVEN/gegevens-bedrijf.html")
   );
@@ -475,7 +486,7 @@ app.get("/account-organisator", requireRole(["organisator"]), (req, res) => {
   );
 });
 
-app.get("/gegevensOrganisator", requireRole(["organisator"]), (req, res) => {
+app.get("/gegevens-organisator", requireRole(["organisator"]), (req, res) => {
   res.sendFile(
     path.join(__dirname, "../../src/HTML/ORGANISATOR/gegevens-organisator.html")
   );
@@ -581,7 +592,7 @@ app.get(
 app.get(
   "/tarieven",
   requireAuth,
-  redirectWithParams("/bedrijfgegevens", "/gegevensBedrijf")
+  redirectWithParams("/bedrijfgegevens", "/gegevens-bedrijf")
 )
 
 const passwordChangeRoutes = require('./ROUTES/auth/change-password');

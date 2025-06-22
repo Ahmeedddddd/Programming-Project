@@ -1,13 +1,15 @@
 //src/Server/MODELS/student.js
 const { pool } = require('../CONFIG/database');
+const logger = require('../UTILS/logger');
 
-class Student {  static async getAll() {
+class Student {
+  static async getAll() {
     const [rows] = await pool.query(`
       SELECT
         studentnummer, voornaam, achternaam, email, gsm_nummer,
         opleiding, opleidingsrichting, projectTitel, projectBeschrijving,
         overMezelf, huisnummer, straatnaam, gemeente, postcode, bus,
-        tafelNr, leerjaar
+        tafelNr, leerjaar, technologieen
       FROM STUDENT
       ORDER BY achternaam, voornaam
     `);
@@ -64,20 +66,87 @@ class Student {  static async getAll() {
     );
     return result.affectedRows;
   }
+
   static async getWithProjects() {
-    const [rows] = await pool.query(`
-      SELECT
-        studentnummer,
-        CONCAT(voornaam, ' ', achternaam) as studentNaam,
-        voornaam,
-        achternaam,
-        email, projectTitel, projectBeschrijving,
-        opleiding, opleidingsrichting, tafelNr, leerjaar
-      FROM STUDENT
-      WHERE projectTitel IS NOT NULL AND projectTitel != ''
-      ORDER BY projectTitel
-    `);
-    return rows;
+    try {
+      console.log('🔍 [DEBUG] Executing getWithProjects query (JOIN TECHNOLOGIE)...');
+      const [rows] = await pool.query(`
+        SELECT
+            s.projectTitel,
+            MAX(s.projectBeschrijving) as projectBeschrijving,
+            GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen,
+            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) SEPARATOR ', ') as studenten
+        FROM
+            STUDENT s
+        LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
+        LEFT JOIN TECHNOLOGIE t ON st.technologieId = t.technologieId
+        WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
+        GROUP BY s.projectTitel
+        ORDER BY s.projectTitel;
+      `);
+      logger.info(`📊 Found ${rows.length} projects after grouping (with technologies).`);
+      console.log('✅ [DEBUG] Projects loaded successfully (with technologies):', JSON.stringify(rows, null, 2));
+      return rows;
+    } catch (error) {
+        logger.error('Error fetching projects with students and technologies:', error);
+        console.error('❌ [DEBUG] Error in getWithProjects (with technologies):', error.message);
+        throw error;
+    }
+  }
+
+  // NEW METHOD: Get projects with individual student IDs for navigation
+  static async getProjectsWithStudentIds() {
+    try {
+      console.log('🔍 [DEBUG] Executing getProjectsWithStudentIds query...');
+      const [rows] = await pool.query(`
+        SELECT
+            s.projectTitel,
+            s.projectBeschrijving,
+            s.studentnummer,
+            s.voornaam,
+            s.achternaam,
+            s.opleiding,
+            s.tafelNr,
+            GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen
+        FROM
+            STUDENT s
+        LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
+        LEFT JOIN TECHNOLOGIE t ON st.technologieId = t.technologieId
+        WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
+        GROUP BY s.projectTitel, s.studentnummer, s.voornaam, s.achternaam, s.opleiding, s.tafelNr
+        ORDER BY s.projectTitel, s.achternaam, s.voornaam;
+      `);
+      
+      // Group by project title and create student arrays
+      const groupedProjects = {};
+      rows.forEach(row => {
+        const projectTitle = row.projectTitel;
+        if (!groupedProjects[projectTitle]) {
+          groupedProjects[projectTitle] = {
+            titel: projectTitle,
+            beschrijving: row.projectBeschrijving,
+            technologieen: row.technologieen,
+            studenten: []
+          };
+        }
+        
+        groupedProjects[projectTitle].studenten.push({
+          id: row.studentnummer,
+          naam: `${row.voornaam} ${row.achternaam}`,
+          opleiding: row.opleiding,
+          tafelNr: row.tafelNr
+        });
+      });
+      
+      const result = Object.values(groupedProjects);
+      logger.info(`📊 Found ${result.length} projects with student IDs.`);
+      console.log('✅ [DEBUG] Projects with student IDs loaded successfully:', JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+        logger.error('Error fetching projects with student IDs:', error);
+        console.error('❌ [DEBUG] Error in getProjectsWithStudentIds:', error.message);
+        throw error;
+    }
   }
 
   // ===== STATISTICS METHODS =====
