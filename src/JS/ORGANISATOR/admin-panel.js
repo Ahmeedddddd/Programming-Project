@@ -1,5 +1,6 @@
 // admin-panel.js - Fixed version met correcte database mapping
 
+
 // ===== MENU TOGGLE FUNCTIONS (defined early) =====
 function toggleMenu() {
     console.log('🎛️ toggleMenu called!');
@@ -379,9 +380,7 @@ class AdminPanel {constructor() {
             }
             throw error;
         }
-    }
-
-    // ===== DATA LOADING METHODS =====
+    }    // ===== DATA LOADING METHODS =====
     async loadAllData() {
         try {
             await Promise.all([
@@ -391,6 +390,9 @@ class AdminPanel {constructor() {
                 this.loadProjects(),
                 this.loadAppointments()
             ]);
+            
+            // Add scroll indicators after data is loaded
+            setTimeout(() => this.addScrollIndicators(), 100);
         } catch (error) {
             this.showTemporaryMessage('❌ Fout bij laden van gegevens', 'error');
         }
@@ -402,7 +404,7 @@ class AdminPanel {constructor() {
             const [studentStats, companyStats, projectStats] = await Promise.all([
                 this.apiRequest('/studenten').catch(() => ({ data: [] })),
                 this.apiRequest('/bedrijven').catch(() => ({ data: [] })),
-                this.apiRequest('/studenten/projecten').catch(() => ({ data: [] }))
+                this.apiRequest('/projecten/with-ids').catch(() => ({ data: [] }))
             ]);
 
             // Update statistiek counters
@@ -452,14 +454,20 @@ class AdminPanel {constructor() {
             document.getElementById('companies-list').innerHTML = 
                 '<div class="error-message">Fout bij laden van bedrijven</div>';
         }
-    }
-
-    async loadProjects() {
+    }    async loadProjects() {
         try {
-            const response = await this.apiRequest('/studenten/projecten');
-            this.projects = response.data || response;
+            // Use the same endpoint as alle-projecten for consistent data structure
+            const response = await this.apiRequest('/projecten/with-ids');
+            let projects = response.data || response;
+            
+            console.log('🔍 Raw projects from API (with-ids):', projects);
+            
+            this.projects = projects;
+            console.log('📊 Final projects loaded:', this.projects);
+            console.log('📊 Loaded projects count:', this.projects.length);
             this.renderProjects();
         } catch (error) {
+            console.error('❌ Error loading projects:', error);
             document.getElementById('projects-list').innerHTML = 
                 '<div class="error-message">Fout bij laden van projecten</div>';
         }
@@ -713,36 +721,66 @@ class AdminPanel {constructor() {
                 <div class="item-info">${company.sector} • ${company.email}</div>
             </div>
         `).join('');
-    }
-
-    renderProjects(searchTerm = '') {
+    }    renderProjects(searchTerm = '') {
         const container = document.getElementById('projects-list');
-        if (!container) return;
-
-        const filtered = this.projects.filter(project => 
-            (project.projectTitel && project.projectTitel.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (project.projectBeschrijving && project.projectBeschrijving.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            project.studentNaam?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        if (!container) return;        const filtered = this.projects.filter(project => {
+            const title = project.titel || project.projectTitel || '';
+            const desc = project.beschrijving || project.projectBeschrijving || '';
+            
+            // Search in title and description
+            if (title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                desc.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return true;
+            }
+            
+            // Search in student names (array of objects)
+            if (project.studenten && Array.isArray(project.studenten)) {
+                return project.studenten.some(student => {
+                    const naam = student.naam || `${student.voornaam || ''} ${student.achternaam || ''}`.trim();
+                    return naam.toLowerCase().includes(searchTerm.toLowerCase());
+                });
+            }
+            
+            return false;
+        });
 
         if (filtered.length === 0) {
             container.innerHTML = '<div class="no-items">Geen projecten gevonden</div>';
             return;
-        }
-
-        container.innerHTML = filtered.map(project => `
-            <div class="item-card project" onclick="adminPanel.showDetails('project', '${project.studentnummer}')">
-                <div class="quick-actions">
-                    <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); adminPanel.showEditModal('student', '${project.studentnummer}')" title="Student Bewerken">
-                        ✏️
-                    </button>
+        }        container.innerHTML = filtered.map(project => {
+            // Debug logging
+            console.log('🔍 Project data:', project);
+            console.log('🔍 Project studenten field:', project.studenten);            // Handle array of student objects (from /api/projecten/with-ids)
+            const students = project.studenten || [];
+            const studentCount = students.length;
+            const studentNames = students.map(s => s.naam || `${s.voornaam || ''} ${s.achternaam || ''}`.trim()).filter(name => name);
+            const studentNamesString = studentNames.join(', ');
+            const firstStudentName = studentNames[0] || 'Onbekend';
+            
+            console.log('🔍 Parsed student names:', studentNames);
+            console.log('🔍 Student count:', studentCount);
+              const projectTitle = project.titel || project.projectTitel || 'Geen titel';
+            
+            return `                <div class="item-card project" onclick="adminPanel.showDetails('project', '${projectTitle}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); adminPanel.showEditProjectModal('${projectTitle}')" title="Project Bewerken">
+                            ✏️
+                        </button>
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); adminPanel.deleteProject('${projectTitle}')" title="Project Verwijderen">
+                            🗑️
+                        </button>
+                    </div>
+                    <div class="item-name">${projectTitle}</div>
+                    <div class="item-info">                        <div class="project-students">
+                            <strong>👥 ${studentCount} student${studentCount === 1 ? '' : 'en'}:</strong>                            <div class="student-names">
+                                ${studentNamesString || 'Geen studenten gevonden'}
+                            </div>
+                        </div>
+                        ${project.technologieen ? `<div class="project-tech">🔧 ${project.technologieen}</div>` : ''}
+                    </div>
                 </div>
-                <div class="item-name">${project.projectTitel || 'Geen titel'}</div>
-                <div class="item-info">
-                    Door: ${project.studentNaam} • ${project.opleidingsrichting || 'Geen richting'}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // FIXED: Appointments rendering met correcte status mapping
@@ -895,9 +933,8 @@ class AdminPanel {constructor() {
             case 'company':
                 item = this.companies.find(c => c.bedrijfsnummer == id);
                 title = 'Bedrijf Details';
-                break;
-            case 'project':
-                item = this.projects.find(p => p.studentnummer == id);
+                break;            case 'project':
+                item = this.projects.find(p => (p.titel || p.projectTitel) == id);
                 title = 'Project Details';
                 break;
             case 'appointment':
@@ -957,6 +994,77 @@ class AdminPanel {constructor() {
                     🗑️ Verwijderen
                 </button>
             </div>
+        `;
+
+        document.getElementById('modal-body').innerHTML = detailsHtml;
+        this.showModal();
+    }
+
+    showProjectDetails(projectTitel) {
+        const project = this.projects.find(p => p.projectTitel === projectTitel);
+        
+        if (!project) {
+            this.showTemporaryMessage('❌ Project niet gevonden', 'error');
+            return;
+        }
+
+        document.getElementById('modal-title').textContent = 'Project Details';
+        
+        // Parse student names
+        const studentNames = project.studenten ? project.studenten.split(', ') : [];
+        const studentCount = studentNames.length;
+        
+        const detailsHtml = `
+            <div class="project-details">
+                <div class="detail-item">
+                    <span class="detail-label">Project Titel:</span>
+                    <span class="detail-value"><strong>${project.projectTitel}</strong></span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Beschrijving:</span>
+                    <span class="detail-value">${project.projectBeschrijving || 'Geen beschrijving beschikbaar'}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Teamleden (${studentCount}):</span>
+                    <span class="detail-value">
+                        <div class="student-list">
+                            ${studentNames.map(name => `<span class="student-tag">👤 ${name.trim()}</span>`).join('')}
+                        </div>
+                    </span>
+                </div>
+                
+                ${project.technologieen ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Technologieën:</span>
+                        <span class="detail-value">
+                            <div class="tech-list">
+                                ${project.technologieen.split(', ').map(tech => `<span class="tech-tag">🔧 ${tech.trim()}</span>`).join('')}
+                            </div>
+                        </span>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <style>
+                .student-list, .tech-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    margin-top: 0.5rem;
+                }
+                .student-tag, .tech-tag {
+                    background: #f0f0f0;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    border-left: 3px solid #881538;
+                }
+                .tech-tag {
+                    border-left-color: #007acc;
+                }
+            </style>
         `;
 
         document.getElementById('modal-body').innerHTML = detailsHtml;
@@ -1206,6 +1314,70 @@ class AdminPanel {constructor() {
                 console.error('Delete error:', error);
             }
         }
+    }
+
+    showEditProjectModal(projectTitle) {
+        const project = this.projects.find(p => (p.titel || p.projectTitel) === projectTitle);
+        
+        if (!project) {
+            this.showTemporaryMessage('❌ Project niet gevonden', 'error');
+            return;
+        }
+
+        // For projects, we'll show a modal to edit project details
+        // Since projects are linked to students, we could allow editing the first student's project info
+        const firstStudent = project.studenten && project.studenten.length > 0 ? project.studenten[0] : null;
+        
+        if (firstStudent) {
+            // Edit the first student's project information
+            this.showEditModal('student', firstStudent.id || firstStudent.studentnummer);
+        } else {
+            this.showTemporaryMessage('ℹ️ Geen studenten gekoppeld aan dit project', 'info');
+        }
+    }
+
+    deleteProject(projectTitle) {
+        if (!confirm(`Weet je zeker dat je het project "${projectTitle}" wilt verwijderen? Dit zal het project verwijderen van alle gekoppelde studenten.`)) {
+            return;
+        }
+
+        // Sinds projecten gekoppeld zijn aan studenten, moeten we de projectinformatie van alle studenten wissen
+        const project = this.projects.find(p => (p.titel || p.projectTitel) === projectTitle);
+        
+        if (!project || !project.studenten) {
+            this.showTemporaryMessage('❌ Project niet gevonden', 'error');
+            return;
+        }
+
+        // Voorlopig, toon een info bericht dat deze functie nog geïmplementeerd moet worden
+        this.showTemporaryMessage('ℹ️ Project verwijderen functionaliteit moet nog geïmplementeerd worden in de backend', 'info');
+        
+        // TODO: Implementeer project verwijdering op backend
+        // Dit zou inhouden dat projectTitel op NULL gezet wordt voor alle studenten in dit project
+    }
+
+    // Add scroll indicators for items lists
+    addScrollIndicators() {
+        const itemsLists = document.querySelectorAll('.items-list');
+        itemsLists.forEach(list => {
+            const checkScrollable = () => {
+                if (list.scrollHeight > list.clientHeight) {
+                    list.classList.add('scrollable');
+                } else {
+                    list.classList.remove('scrollable');
+                }
+            };
+            
+            // Check on load and when content changes
+            checkScrollable();
+            
+            // Check when scrolling
+            list.addEventListener('scroll', checkScrollable);
+            
+            // Observer for content changes
+            const observer = new MutationObserver(checkScrollable);
+            observer.observe(list, { childList: true, subtree: true });
+        });
     }
 }
 

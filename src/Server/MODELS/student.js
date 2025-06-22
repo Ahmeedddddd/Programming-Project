@@ -66,7 +66,6 @@ class Student {
     );
     return result.affectedRows;
   }
-
   static async getWithProjects() {
     try {
       console.log('🔍 [DEBUG] Executing getWithProjects query (JOIN TECHNOLOGIE)...');
@@ -75,7 +74,8 @@ class Student {
             s.projectTitel,
             MAX(s.projectBeschrijving) as projectBeschrijving,
             GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen,
-            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) SEPARATOR ', ') as studenten
+            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) ORDER BY s.achternaam, s.voornaam SEPARATOR ', ') as studenten,
+            COUNT(DISTINCT s.studentnummer) as aantalStudenten
         FROM
             STUDENT s
         LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
