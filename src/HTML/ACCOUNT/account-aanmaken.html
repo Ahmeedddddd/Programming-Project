@@ -169,6 +169,16 @@
         <button onclick="hideErrorMessage()" class="btn secondary">Sluiten</button>
     </div>
 
+    <!-- Pakketkeuze stap voor registratie -->
+    <div id="packageStep" class="hidden">
+        <h2>Kies een pakket</h2>
+        <div id="packageOptions">
+            <!-- Dynamisch gegenereerde pakketten -->
+        </div>
+        <button id="finalRegisterBtn">Bedrijfsaccount Aanmaken</button>
+        <button type="button" onclick="showStep1()">Terug</button>
+    </div>
+
     <!-- Scripts -->
     <script src="/src/JS/ACCOUNT/register.js"></script>
     <script type="module" src="/src/JS/UTILS/sendInvoice.js"></script>
