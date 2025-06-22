@@ -78,7 +78,12 @@ async function handleRegistration(event) {
         if (!agreeTerms) throw new Error('Je moet akkoord gaan met de algemene voorwaarden');
         // Verzamel form data
         let registrationData;
+        let pakket = null;
         if (currentUserType === 'bedrijf') {
+            // Haal pakket info op
+            const pakketVal = document.getElementById('selectedPakketInput').value;
+            if (!pakketVal) throw new Error('Kies een pakket om verder te gaan.');
+            pakket = JSON.parse(pakketVal);
             registrationData = {
                 naam: document.getElementById('bedrijfNaam').value,
                 voornaam: document.getElementById('voornaam').value,
@@ -93,7 +98,8 @@ async function handleRegistration(event) {
                 sector: document.getElementById('websiteLinkedin')?.value || '',
                 bus: '',
                 land: 'België',
-                password: password
+                password: password,
+                pakket: pakket // voeg pakket toe
             };
         } else {
             registrationData = {
@@ -141,7 +147,71 @@ async function handleRegistration(event) {
     }
 }
 
+// Pakket selectie en validatie
+let selectedPakket = null;
+
+function showPakketOverlay() {
+    const overlay = document.getElementById('pakketOverlay');
+    const pakketList = document.getElementById('pakketList');
+    const bevestigenBtn = document.getElementById('pakketBevestigenBtn');
+    pakketList.innerHTML = '';
+    selectedPakket = null;
+    bevestigenBtn.disabled = true;
+    // Pakket data hardcoded (kan later via API)
+    const pakketten = [
+        {
+            naam: 'Bronze Partner', prijs: 160, beschrijving: [
+                'Stand: 1,5m x 1,5m',
+                'Duur: 1 dag',
+                'Team: Maximaal 2 informanten',
+                'Ideaal voor bedrijven met minder dan 20 werknemers'
+            ]
+        },
+        {
+            naam: 'Silver Partner', prijs: 460, beschrijving: [
+                'Stand: 3m x 2m',
+                'Duur: 1 dag',
+                'Team: Maximaal 2 informanten'
+            ]
+        },
+        {
+            naam: 'Gold Partner', prijs: 650, beschrijving: [
+                'Presentatie: 30 minuten',
+                'Discussie: Premium vakdiscussie',
+                'Stand: 3m x 2m',
+                'Duur: 1 dag',
+                'Tickets: 4 informanten'
+            ]
+        },
+        {
+            naam: 'Startup Pakket', prijs: 130, beschrijving: [
+                'Voorwaarde: Jonger dan 5 jaar',
+                'Stand: 2m x 2m',
+                'Speciaal tarief voor nieuwe bedrijven'
+            ]
+        }
+    ];
+    pakketten.forEach((pakket, idx) => {
+        const card = document.createElement('div');
+        card.className = 'pakket-card';
+        card.innerHTML = `<div class='pakket-title'>${pakket.naam}</div><div class='pakket-price'>€${pakket.prijs}</div><ul>${pakket.beschrijving.map(f => `<li>${f}</li>`).join('')}</ul>`;
+        card.onclick = () => {
+            document.querySelectorAll('.pakket-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedPakket = pakket;
+            bevestigenBtn.disabled = false;
+        };
+        pakketList.appendChild(card);
+    });
+    overlay.style.display = 'flex';
+}
+
+function hidePakketOverlay() {
+    document.getElementById('pakketOverlay').style.display = 'none';
+}
+
 // Initialize when DOM is loaded
+let registerForm;
 document.addEventListener('DOMContentLoaded', function() {
     // File upload handler
     const fileInput = document.getElementById('bedrijfslogo');
@@ -158,10 +228,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ✅ ADD FORM SUBMIT HANDLER
-    const registerForm = document.querySelector('#registerForm form');
+    registerForm = document.querySelector('#registerForm form');
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegistration);
+        // Intercept submit voor bedrijf
+        registerForm.addEventListener('submit', function(e) {
+            if (currentUserType === 'bedrijf') {
+                // Check of pakket gekozen is
+                const pakketVal = document.getElementById('selectedPakketInput').value;
+                if (!pakketVal) {
+                    e.preventDefault();
+                    showPakketOverlay();
+                    return false;
+                }
+            }
+        }, true);
     }
+    
+    // Pakket overlay annuleren
+    document.getElementById('pakketAnnulerenBtn').onclick = hidePakketOverlay;
+    // Pakket bevestigen
+    document.getElementById('pakketBevestigenBtn').onclick = function() {
+        hidePakketOverlay();
+        // Vul hidden input met pakket info
+        document.getElementById('selectedPakketInput').value = JSON.stringify(selectedPakket);
+        // Submit het formulier na pakketkeuze
+        document.querySelector('#registerForm form').requestSubmit();
+    };
     
     // Initialize as bedrijf
     switchUserType('bedrijf');
