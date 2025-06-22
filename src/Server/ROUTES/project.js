@@ -106,7 +106,6 @@ router.get('/:id', async (req, res) => {
             projectId: student.studentnummer,
             titel: student.projectTitel,
             beschrijving: student.projectBeschrijving || 'Geen beschrijving beschikbaar',
-            technologieën: student.technologieën || null,
             studentnummer: student.studentnummer,
             studentnaam: `${student.voornaam} ${student.achternaam}`,
             studenten: [{
@@ -186,7 +185,6 @@ router.get('/search/:searchTerm', async (req, res) => {
                 projectId: student.studentnummer,
                 titel: student.projectTitel,
                 beschrijving: student.projectBeschrijving || 'Geen beschrijving beschikbaar',
-                technologieën: student.technologieën || null,
                 studentnummer: student.studentnummer,
                 studentnaam: `${student.voornaam} ${student.achternaam}`,
                 studenten: [{

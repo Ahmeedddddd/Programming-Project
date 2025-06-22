@@ -73,8 +73,7 @@ async function loadProjectsFromStudents() {
                     voornaam: student.voornaam,
                     achternaam: student.achternaam,
                     opleiding: student.opleiding,
-                    tafelNr: student.tafelNr,
-                    technologieën: student.technologieën || student.vaardigheden
+                    tafelNr: student.tafelNr
                 }));
             
             if (projectsFromStudents.length > 0) {
@@ -141,7 +140,6 @@ function createProjectCard(project, index) {
     
     const titel = project.titel || 'Onbekend Project';
     const beschrijving = project.beschrijving || 'Geen beschrijving beschikbaar';
-    const technologieën = project.technologieën || '';
     
     // Student info
     let studentInfo = '';
@@ -174,12 +172,6 @@ function createProjectCard(project, index) {
         <div class="projectTegel-content">
             <h3 class="project-titel">${titel}</h3>
             <p class="project-beschrijving">${beschrijving.length > 200 ? beschrijving.substring(0, 200) + '...' : beschrijving}</p>
-            
-            ${technologieën ? `
-                <div class="project-technologien">
-                    <strong>🛠️ Tech:</strong> ${technologieën}
-                </div>
-            ` : ''}
             
             ${studentInfo}
         </div>

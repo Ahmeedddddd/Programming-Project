@@ -108,14 +108,42 @@ class UniversalDataFetcher {
     }
 
     async fetchAllData() {
-        const [bedrijvenRes, studentenRes, projectenRes] = await Promise.all([
-            this.fetchAPI(this.endpoints.bedrijven),
-            this.fetchAPI(this.endpoints.studenten),
-            this.fetchAPI(this.endpoints.projecten)
-        ]);
-        this.data.bedrijven = bedrijvenRes.success ? bedrijvenRes.data : [];
-        this.data.studenten = studentenRes.success ? studentenRes.data : [];
-        this.data.projecten = projectenRes.success ? projectenRes.data : [];
+        try {
+            console.log('🔄 [index.js] Fetching all data...');
+            
+            const [bedrijvenRes, studentenRes, projectenRes] = await Promise.all([
+                this.fetchAPI(this.endpoints.bedrijven),
+                this.fetchAPI(this.endpoints.studenten),
+                this.fetchAPI(this.endpoints.projecten)
+            ]);
+            
+            this.data.bedrijven = bedrijvenRes.success ? bedrijvenRes.data : [];
+            this.data.studenten = studentenRes.success ? studentenRes.data : [];
+            this.data.projecten = projectenRes.success ? projectenRes.data : [];
+            
+            // Enhanced debugging for projects
+            console.log(`📊 [index.js] Projects data analysis:`, {
+                totalProjects: this.data.projecten?.length || 0,
+                projectsWithTechnologies: this.data.projecten?.filter(p => p.technologieen && p.technologieen.trim() !== '').length || 0,
+                projectsWithoutTechnologies: this.data.projecten?.filter(p => !p.technologieen || p.technologieen.trim() === '').length || 0,
+                sampleProject: this.data.projecten?.[0] ? {
+                    titel: this.data.projecten[0].titel || this.data.projecten[0].projectTitel,
+                    technologieen: this.data.projecten[0].technologieen,
+                    hasTechnologies: !!this.data.projecten[0].technologieen
+                } : null
+            });
+            
+            // Log each project's technology status
+            if (this.data.projecten) {
+                this.data.projecten.forEach((project, index) => {
+                    const hasTech = project.technologieen && project.technologieen.trim() !== '';
+                    console.log(`📋 [index.js] Project ${index + 1}: "${project.titel || project.projectTitel}" - Technologies: ${hasTech ? '✅' : '❌'} (${project.technologieen || 'null'})`);
+                });
+            }
+            
+        } catch (error) {
+            console.error('❌ [index.js] Error fetching data:', error);
+        }
     }
 
     getData(type) {
@@ -218,6 +246,14 @@ class CardRenderer {
     }
 
     renderProjectCard(project) {
+        console.log('🔍 [index.js] Rendering project card:', {
+            titel: project.titel || project.projectTitel,
+            technologieen: project.technologieen,
+            studenten: project.studenten,
+            hasTechnologies: !!project.technologieen,
+            technologieenType: typeof project.technologieen
+        });
+
         // Handle different student data formats
         let studentenList = [];
         
@@ -245,6 +281,16 @@ class CardRenderer {
                  <span><i class="fas fa-user"></i> Geen studenten toegewezen</span>
                </div>`;
 
+        // Enhanced technologies display with better null handling
+        let technologiesHTML = '';
+        if (project.technologieen && project.technologieen.trim() !== '') {
+            technologiesHTML = `<div class="project-tech"><strong>Technologieën:</strong> ${project.technologieen}</div>`;
+            console.log('✅ [index.js] Technologies found for project:', project.titel || project.projectTitel, '->', project.technologieen);
+        } else {
+            console.log('⚠️ [index.js] No technologies found for project:', project.titel || project.projectTitel);
+            technologiesHTML = `<div class="project-tech" style="opacity: 0.6;"><strong>Technologieën:</strong> Nog niet gespecificeerd</div>`;
+        }
+
         return `
             <div class="project-card">
                 <div class="card-header">
@@ -253,7 +299,7 @@ class CardRenderer {
                 </div>
                 <p class="project-description">${project.beschrijving || project.projectBeschrijving || 'Geen beschrijving.'}</p>
                 ${studentenHTML}
-                ${project.technologieen ? `<div class="project-tech"><strong>Technologieën:</strong> ${project.technologieen}</div>` : ''}
+                ${technologiesHTML}
             </div>`;
     }
 

@@ -2,13 +2,14 @@
 const { pool } = require('../CONFIG/database');
 const logger = require('../UTILS/logger');
 
-class Student {  static async getAll() {
+class Student {
+  static async getAll() {
     const [rows] = await pool.query(`
       SELECT
         studentnummer, voornaam, achternaam, email, gsm_nummer,
         opleiding, opleidingsrichting, projectTitel, projectBeschrijving,
         overMezelf, huisnummer, straatnaam, gemeente, postcode, bus,
-        tafelNr, leerjaar
+        tafelNr, leerjaar, technologieen
       FROM STUDENT
       ORDER BY achternaam, voornaam
     `);
@@ -68,23 +69,27 @@ class Student {  static async getAll() {
 
   static async getWithProjects() {
     try {
+      console.log('🔍 [DEBUG] Executing getWithProjects query (JOIN TECHNOLOGIE)...');
       const [rows] = await pool.query(`
         SELECT
             s.projectTitel,
             MAX(s.projectBeschrijving) as projectBeschrijving,
+            GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen,
             GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) SEPARATOR ', ') as studenten
         FROM
             STUDENT s
+        LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
+        LEFT JOIN TECHNOLOGIE t ON st.technologieId = t.technologieId
         WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
-        GROUP BY
-            s.projectTitel
-        ORDER BY
-            s.projectTitel;
+        GROUP BY s.projectTitel
+        ORDER BY s.projectTitel;
       `);
-      logger.info(`📊 Found ${rows.length} projects after grouping.`);
+      logger.info(`📊 Found ${rows.length} projects after grouping (with technologies).`);
+      console.log('✅ [DEBUG] Projects loaded successfully (with technologies):', JSON.stringify(rows, null, 2));
       return rows;
     } catch (error) {
-        logger.error('Error fetching projects with students:', error);
+        logger.error('Error fetching projects with students and technologies:', error);
+        console.error('❌ [DEBUG] Error in getWithProjects (with technologies):', error.message);
         throw error;
     }
   }
