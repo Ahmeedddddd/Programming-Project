@@ -131,9 +131,9 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    min-height: 5rem; /* Zorgt voor consistente minimale hoogte */
+    height: 7rem; /* 2x de hoogte van beschikbare kaarten (3.5rem) */
     display: flex;
-    align-items: stretch;
+    align-items: center; /* Verticale centrering van content */
 }
 
 .sidebarTafels li::before {
@@ -237,8 +237,10 @@
 .sidebarTafels li.empty-tafel-item {
     opacity: 0.7;
     border-style: dashed !important;
-    min-height: 3.5rem !important; /* Lagere hoogte voor lege tafels */
+    height: 3.5rem !important; /* Vaste hoogte voor beschikbare kaarten */
     padding: 0.75rem 1rem !important; /* Minder padding voor compacte look */
+    display: flex !important;
+    align-items: center !important; /* Verticale centrering voor beschikbare kaarten */
 }
 
 /* Specifieke styling voor lege tafel content */
@@ -393,45 +395,384 @@
 /* Tafel content styling voor consistente hoogte */
 .tafel-content {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    flex-direction: row !important; /* Horizontale layout voor verwijder knop rechts */
+    justify-content: space-between !important;
+    align-items: center !important;
     height: 100%;
     min-height: 3rem; /* Minimum hoogte voor consistentie */
+    width: 100% !important;
 }
 
 .tafel-content strong {
     display: block;
-    margin-bottom: 0.25rem;
-    line-height: 1.3;
+    margin-bottom: 0.1rem; /* Verkleind van 0.25rem naar 0.1rem */
+    line-height: 1.2; /* Verkleind van 1.3 naar 1.2 */
     font-size: inherit; /* Inherit from parent li element */
     font-weight: 600;   /* Consistent bold weight */
 }
 
 .tafel-content small {
-    line-height: 1.2;
+    line-height: 1.1; /* Verkleind van 1.2 naar 1.1 */
     color: #6c757d;
     font-size: 0.85rem; /* Consistent smaller size for subtitles */
 }
 
-/* Responsive Design */
+/* Extra visuele verbeteringen */
+
+/* ===== NOTIFICATION SYSTEM ===== */
+.notification {
+    position: fixed !important;
+    top: 2rem !important;
+    right: 2rem !important;
+    z-index: 10000 !important;
+    padding: 1rem 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    border-radius: 8px !important;
+    color: white !important;
+    font-weight: 500 !important;
+    min-width: 300px !important;
+    max-width: 500px !important;
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.notification-success,
+.notification.success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+}
+
+.notification-error,
+.notification.error {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+}
+
+.notification-info,
+.notification.info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+}
+
+.notification-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+}
+
+.notification-message {
+    flex: 1 !important;
+    color: white !important;
+    font-size: 14px !important;
+}
+
+.notification-close {
+    background: none !important;
+    border: none !important;
+    color: white !important;
+    font-size: 1.5rem !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.2s ease !important;
+}
+
+.notification-close:hover {
+    opacity: 1 !important;
+}
+
+/* Animatie voor nieuwe notificaties */
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification {
+    animation: slideInFromRight 0.3s ease forwards;
+}
+
+/* ===== EINDE NOTIFICATION SYSTEM ===== */
+
+/* 🎨 Modal en Dropdown Styling */
+
+/* Modal overlay styling */
+.tafel-assignment-modal, .project-assignment-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 10000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1;
+}
+
+.modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 2 !important;
+    margin: 0 !important;
+}
+
+.modal-content h3 {
+    color: #881538;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.current-assignment {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.current-project, .current-bedrijf {
+    margin-bottom: 1rem;
+}
+
+.assign-new {
+    margin-top: 1rem;
+}
+
+.assign-new h4 {
+    color: #881538;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+/* EHB Stijl dropdown styling */
+.project-select, .bedrijf-select {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #495057;
+}
+
+.project-select:focus, .bedrijf-select:focus {
+    outline: none;
+    border-color: #881538;
+    background: linear-gradient(135deg, #ffffff 0%, #fff5f6 100%);
+    color: #881538;
+}
+
+.project-select:hover, .bedrijf-select:hover {
+    border-color: #A91B47;
+    background: linear-gradient(135deg, #ffffff 0%, #fff8f9 100%);
+}
+
+/* EHB Stijl optgroup styling - alleen titels met icoontjes */
+.project-select optgroup, .bedrijf-select optgroup {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #881538;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 0.8rem 1rem;
+    margin: 0.3rem 0;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Styling voor beschikbare items - EHB groen accent */
+.project-select optgroup[label*="Beschikbare"], .bedrijf-select optgroup[label*="Beschikbare"] {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    color: #155724;
+    border: 2px solid #28a745;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+}
+
+/* Styling voor toegewezen items - EHB rood accent */
+.project-select optgroup[label*="Reeds"], .bedrijf-select optgroup[label*="Reeds"] {
+    background: linear-gradient(135deg, #f8e8e8 0%, #f5c6cb 100%);
+    color: #721c24;
+    border: 2px solid #dc3545;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+}
+
+.project-select option, .bedrijf-select option {
+    padding: 0.75rem 1.2rem;
+    font-size: 0.95rem;
+    color: #495057;
+    background: white;
+    border: none;
+    line-height: 1.5;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.project-select option:hover, .bedrijf-select option:hover {
+    background: linear-gradient(135deg, #fff5f6 0%, #fff0f1 100%);
+    color: #881538;
+    font-weight: 600;
+}
+
+/* Available options styling */
+.project-select optgroup[label*="Beschikbare"] option, .bedrijf-select optgroup[label*="Beschikbare"] option {
+    background: #fff;
+    color: #2d5a2d;
+    font-weight: 500;
+}
+
+.project-select optgroup[label*="Beschikbare"] option:hover, .bedrijf-select optgroup[label*="Beschikbare"] option:hover {
+    background: #e8f5e8;
+    color: #1a3d1a;
+}
+
+/* Disabled/assigned options styling */
+.project-select option:disabled, .bedrijf-select option:disabled {
+    color: #6c757d !important;
+    background: #f1f3f4 !important;
+    font-style: italic;
+    text-decoration: line-through;
+    font-size: 0.85rem;
+}
+
+.project-select optgroup[label*="Reeds"] option, .bedrijf-select optgroup[label*="Reeds"] option {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.project-select optgroup[label*="🔴"] option, .bedrijf-select optgroup[label*="🔴"] option {
+    background: #fff5f5;
+    color: #721c24;
+    opacity: 0.7;
+}
+
+.project-select option[value=""], .bedrijf-select option[value=""] {
+    color: #6c757d;
+    font-style: italic;
+    font-weight: 600;
+    background: #f8f9fa;
+}
+
+/* Button styling */
+.assign-btn, .remove-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.assign-btn {
+    background: #881538;
+    color: white;
+}
+
+.assign-btn:hover {
+    background: #A91B47;
+    transform: translateY(-2px);
+}
+
+.remove-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.remove-btn:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.close-btn {
+    background: #6c757d;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+
+
+/* ===============================================
+   RESPONSIVE DESIGN
+   =============================================== */
+
+/* Responsive Design - Layout */
 @media (max-width: 1200px) {
     .overzichtContainer {
         flex-direction: column;
-        align-items: stretch;
-        gap: 1.5rem;
+        padding: 1rem;
+        max-width: 100%;
     }
     
     .sideBar {
         width: 100%;
         max-width: 100%;
         min-width: unset;
-        order: 1; /* Sidebar eerst */
+        height: auto;
+        max-height: 500px;
+        order: 1;
     }
     
     .plattegrond {
         width: 100%;
         max-width: 100%;
-        order: 2; /* Plattegrond daarna */
+        height: auto;
+        order: 2;
     }
 }
 
@@ -456,16 +797,18 @@
         max-width: 100%;
     }
     
-    .sidebarTitle {
-        font-size: 1.3rem;
-    }
-    
+    .sidebarTitle,
     .plattegrond h3 {
         font-size: 1.3rem;
     }
     
+    .sidebarTafels li {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+    
     .search-container {
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
     }
     
     .sidebarZoekbalk {
@@ -476,37 +819,66 @@
     .search-icon {
         left: 0.8rem; /* Iets dichter bij rand op medium schermen */
         font-size: 0.85rem;
+    }    /* Responsive dropdown styling */
+    .project-select, 
+    .bedrijf-select {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.9rem;
     }
     
-    #plattegrondImg {
-        max-width: 95%;
+    .project-select optgroup, 
+    .bedrijf-select optgroup {
+        font-size: 0.8rem;
+        padding: 0.375rem 0.625rem;
+    }
+    
+    .project-select option, 
+    .bedrijf-select option {
+        padding: 0.5rem 0.625rem;
+        font-size: 0.85rem;
     }
 }
 
 @media (max-width: 480px) {
     .overzichtContainer {
         padding: 0.5rem;
+        gap: 1rem;
     }
     
     .sideBar {
         padding: 1rem;
-        border-radius: 12px;
-        max-height: 300px;
+        width: 100%;
+        max-width: 100%;
+        min-width: unset;
+        height: auto;
+        max-height: 350px;
     }
     
     .plattegrond {
         padding: 1rem;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .sidebarTitle,
+    .plattegrond h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
     }
     
     .sidebarTafels li {
-        padding: 0.75rem;
+        padding: 0.6rem;
         font-size: 0.85rem;
         margin-bottom: 0.5rem;
     }
     
-    .refresh-btn {
-        padding: 0.6rem 0.8rem;
+    .search-container {
+        margin-bottom: 0.8rem;
+    }
+    
+    .sidebarZoekbalk {
         font-size: 0.85rem;
+        padding: 0.6rem 0.6rem 0.6rem 2rem; /* Behoud ruimte voor icon */
     }
     
     .search-icon {
@@ -515,8 +887,95 @@
     }
     
     #plattegrondImg {
-        max-width: 100%;
+        max-width: 95%;
+    }    /* Responsive dropdown styling voor kleine schermen */
+    .project-select, 
+    .bedrijf-select {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.875rem;
     }
 }
 
-/* Extra visuele verbeteringen */
+/* ===============================================
+   BROWSER COMPATIBILITY
+   =============================================== */
+
+/* Firefox */
+@-moz-document url-prefix() {
+    .project-select, 
+    .bedrijf-select {
+        text-indent: 0.01px;
+        text-overflow: '';
+    }
+}
+
+/* Internet Explorer / Edge Legacy */
+.project-select::-ms-expand,
+.bedrijf-select::-ms-expand {
+    display: none;
+}
+
+/* ===============================================
+   ACCESSIBILITY IMPROVEMENTS
+   =============================================== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .project-select, 
+    .bedrijf-select {
+        border-width: 2px;
+        border-color: #000000;
+    }
+    
+    .project-select:focus, 
+    .bedrijf-select:focus {
+        border-color: #000000;
+        box-shadow: 0 0 0 2px #000000;
+    }
+    
+    .project-select optgroup, 
+    .bedrijf-select optgroup {
+        background: #ffffff;
+        color: #000000;
+        border-left-color: #000000;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .project-select, 
+    .bedrijf-select,
+    .project-select::after, 
+    .bedrijf-select::after {
+        transition: none;
+    }
+}
+
+/* Focus-visible voor betere keyboard navigation */
+.project-select:focus-visible,
+.bedrijf-select:focus-visible {
+    outline: 2px solid #881538;
+    outline-offset: 2px;
+}
+
+/* Tafel info styling voor flexbox layout */
+.tafel-info {
+    flex: 1 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.1; /* Compactere line-height */
+}
+
+.tafel-info strong {
+    margin-bottom: 0.1rem !important; /* Minder ruimte onder titel */
+    line-height: 1.2;
+    font-size: 0.9rem; /* Iets kleinere titel voor meer ruimte */
+}
+
+.tafel-info small {
+    margin-top: 0 !important; /* Geen extra margin boven subtekst */
+    line-height: 1.1;
+    font-size: 0.8rem; /* Kleinere subtekst */
+}
