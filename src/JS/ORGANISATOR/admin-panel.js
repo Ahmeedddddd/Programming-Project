@@ -1,6 +1,57 @@
 // admin-panel.js - Fixed version met correcte database mapping
 
-class AdminPanel {    constructor() {
+// ===== MENU TOGGLE FUNCTIONS (defined early) =====
+function toggleMenu() {
+    console.log('🎛️ toggleMenu called!');
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.querySelector('.menu-overlay');
+    const body = document.body;
+    
+    console.log('📱 SideMenu found:', !!sideMenu);
+    console.log('🔄 Overlay found:', !!overlay);
+    
+    if (sideMenu) {
+        // Check the actual computed style position, not just the class
+        const computedStyle = window.getComputedStyle(sideMenu);
+        const rightPos = computedStyle.right;
+        const isVisuallyOpen = rightPos === '0px';
+        const hasOpenClass = sideMenu.classList.contains('open');
+        
+        console.log('📊 Menu has open class:', hasOpenClass);
+        console.log('📊 Menu right position:', rightPos);
+        console.log('📊 Menu visually open:', isVisuallyOpen);
+        
+        // Use visual state as the source of truth, but force with inline styles
+        if (isVisuallyOpen) {
+            // Close menu - force with inline style
+            console.log('❌ Closing menu with inline styles...');
+            sideMenu.style.right = '-400px';
+            sideMenu.classList.remove('open');
+            body.classList.remove('menu-open');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+        } else {
+            // Open menu - force with inline style
+            console.log('✅ Opening menu with inline styles...');
+            sideMenu.style.right = '0px';
+            sideMenu.classList.add('open');
+            body.classList.add('menu-open');
+            if (overlay) {
+                overlay.classList.add('show');
+            }
+        }
+        
+        // Debug: Check final state
+        const finalRight = window.getComputedStyle(sideMenu).right;
+        console.log('🔍 Menu final right position:', finalRight);
+        console.log('🔍 Menu final has open class:', sideMenu.classList.contains('open'));
+    } else {
+        console.error('❌ SideMenu element not found!');
+    }
+}
+
+class AdminPanel {constructor() {
         this.API_BASE_URL = 'http://localhost:8383/api';
         this.students = [];
         this.companies = [];
@@ -64,18 +115,42 @@ class AdminPanel {    constructor() {
             return false;
         }
         return true;
-    }
-
-    async init() {
+    }    async init() {
         console.log('🔧 Setting up event listeners...');
         this.setupEventListeners();
         this.initModal();
+        
+        // Force menu to be closed initially
+        const sideMenu = document.getElementById('sideMenu');
+        if (sideMenu) {
+            sideMenu.classList.remove('open');
+            document.body.classList.remove('menu-open');
+            const overlay = document.querySelector('.menu-overlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+            console.log('🔧 Forced menu to closed state on init');
+        }
         
         console.log('📊 Loading data...');
         await this.loadAllData();
         
         this.addTestAuthButton();
         console.log('✅ AdminPanel initialization complete!');
+        
+        // Force menu closed again after everything loads (to counter navigation manager)
+        setTimeout(() => {
+            const sideMenu = document.getElementById('sideMenu');
+            if (sideMenu) {
+                sideMenu.classList.remove('open');
+                document.body.classList.remove('menu-open');
+                const overlay = document.querySelector('.menu-overlay');
+                if (overlay) {
+                    overlay.classList.remove('show');
+                }
+                console.log('🔧 Re-forced menu to closed state after navigation load');
+            }
+        }, 100);
     }
 
     initModal() {
@@ -202,12 +277,57 @@ class AdminPanel {    constructor() {
                 const sectionId = header.parentElement.id;
                 this.toggleSection(sectionId);
             });
-        });
+        });        // Burger menu toggle - with retry mechanism
+        const setupBurgerToggle = () => {            const burgerToggle = document.getElementById('burgerToggle');
+            console.log('🍔 BurgerToggle element found:', !!burgerToggle);
+            
+            // Debug: Check initial menu state
+            const sideMenu = document.getElementById('sideMenu');
+            if (sideMenu) {
+                console.log('🔍 Initial menu state - has open class:', sideMenu.classList.contains('open'));
+                console.log('🔍 Initial menu classList:', Array.from(sideMenu.classList));
+                
+                // Force menu to be closed initially
+                sideMenu.classList.remove('open');
+                document.body.classList.remove('menu-open');
+                const overlay = document.querySelector('.menu-overlay');
+                if (overlay) {
+                    overlay.classList.remove('show');
+                }
+                console.log('🔧 Forced menu to closed state');
+            }if (burgerToggle) {
+                burgerToggle.addEventListener('click', (e) => {
+                    console.log('🍔 Burger clicked!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🔍 About to call toggleMenu...');
+                    console.log('🔍 toggleMenu type:', typeof toggleMenu);
+                    console.log('🔍 toggleMenu function:', toggleMenu);
+                    
+                    try {
+                        toggleMenu();
+                        console.log('✅ toggleMenu called successfully');
+                    } catch (error) {
+                        console.error('❌ Error calling toggleMenu:', error);
+                    }
+                });
+                return true;
+            } else {
+                console.warn('⚠️ BurgerToggle element not found, retrying...');
+                return false;
+            }
+        };
 
-        // Burger menu toggle
-        document.getElementById('burgerToggle')?.addEventListener('click', () => {
-            toggleMenu();
-        });
+        // Try immediately
+        if (!setupBurgerToggle()) {
+            // If not found, retry after navigation loads
+            setTimeout(() => {
+                if (!setupBurgerToggle()) {
+                    console.error('❌ BurgerToggle element not found after retry!');
+                }
+            }, 1000);
+        }
     }
 
     // ===== API HELPER METHODS =====
@@ -1089,19 +1209,13 @@ class AdminPanel {    constructor() {
     }
 }
 
-// ===== MENU TOGGLE FUNCTIONS =====
-function toggleMenu() {
-    const sideMenu = document.getElementById('sideMenu');
-    if (sideMenu) {
-        sideMenu.classList.toggle('active');
-    }
-}
-
 // Global functions voor onclick handlers
 window.showAddModal = (type) => window.adminPanel?.showAddModal(type);
 window.toggleSection = (sectionId) => window.adminPanel?.toggleSection(sectionId);
 window.closeModal = () => window.adminPanel?.closeModal();
 window.toggleMenu = toggleMenu;
+console.log('🔧 admin-panel.js: Set window.toggleMenu');
+console.log('🔧 admin-panel.js: toggleMenu function preview:', toggleMenu.toString().substring(0, 100)+'...');
 
 // Initialize admin panel when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
