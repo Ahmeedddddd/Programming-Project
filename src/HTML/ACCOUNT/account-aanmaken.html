@@ -135,6 +135,9 @@
                 </div>
 
                 <!-- Submit button -->
+                <button type="button" class="btn pakket-btn" id="openPakketOverlayBtn" style="margin-bottom: 10px;">
+                    Pakketten
+                </button>
                 <button type="submit" class="btn primary" id="registerButton">
                     Bedrijfsaccount Aanmaken
                 </button>
@@ -196,10 +199,37 @@
         border: 2px solid #ccc; border-radius: 8px; padding: 1rem; flex: 1 1 200px; cursor: pointer;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .pakket-card.selected { border-color: #007bff; box-shadow: 0 0 8px #007bff44; }
-    .pakket-card .pakket-title { font-weight: bold; margin-bottom: 0.5rem; }
-    .pakket-card .pakket-price { color: #007bff; font-size: 1.2em; margin-bottom: 0.5rem; }
-    .overlay-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+    .btn.pakket-btn {
+        background: #8b1538;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: background 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(139,21,56,0.08);
+    }
+    .btn.pakket-btn:hover, .btn.pakket-btn:focus {
+        background: #a01a44;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(139,21,56,0.15);
+    }
+    .pakket-card.selected { border-color: #8b1538; box-shadow: 0 0 8px #8b153888; }
+    .pakket-card .pakket-title { color: #8b1538; }
+    .overlay-content h2 {
+        color: #8b1538;
+        font-weight: 700;
+    }
+    .overlay-actions .btn.primary {
+        background: #8b1538;
+        color: #fff;
+    }
+    .overlay-actions .btn.primary:hover {
+        background: #a01a44;
+    }
     </style>
 
     <!-- Scripts -->
