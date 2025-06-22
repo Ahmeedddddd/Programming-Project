@@ -313,4 +313,4 @@ function showSuccessDialog() {
 }
 
 // PATCH: Stuur factuurmail na registratie (server moet endpoint /api/send-invoice ondersteunen)
-// (Client stuurt automatisch factuurdata na registratie, zie sendInvoice.js)
+// (Client stuurt automatisch factuurdata na registratie, zie sendInvoice.js)   
