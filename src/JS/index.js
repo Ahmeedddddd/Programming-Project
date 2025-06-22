@@ -1,5 +1,8 @@
 // src/JS/index.js - COMPLETE WORKING VERSION - HERSTELD & OPGESCHOOND
 
+// Import FilterService
+import { FilterService } from './SERVICES/FilterService.js';
+
 /**
  *  UNIVERSAL HOMEPAGE INITIALIZER - COMPLETE WORKING VERSION
  * 
@@ -681,6 +684,7 @@ class UniversalHomepageInitializer {
         this.dataFetcher = new UniversalDataFetcher();
         this.cardRenderer = new CardRenderer(this.dataFetcher);
         this.carouselManagers = {};
+        this.filterService = null;
     }
 
     async init() {
@@ -692,6 +696,8 @@ class UniversalHomepageInitializer {
             }
             // Fetch all data
             await this.dataFetcher.fetchAllData();
+            // Initialize filter service
+            this.initializeFilterService();
             // Initialize carousels for each section
             this.initializeCarousels();
             // Render initial cards
@@ -703,6 +709,18 @@ class UniversalHomepageInitializer {
             console.log('✅ Universal homepage initialized successfully');
         } catch (error) {
             console.error('❌ Error initializing universal homepage:', error);
+        }
+    }
+
+    initializeFilterService() {
+        try {
+            // Initialize FilterService with data
+            const data = this.dataFetcher.getData();
+            this.filterService = new FilterService();
+            this.filterService.setData(data.studenten, data.bedrijven, data.projecten);
+            console.log('🔍 FilterService initialized successfully');
+        } catch (error) {
+            console.error('❌ Error initializing FilterService:', error);
         }
     }
 
