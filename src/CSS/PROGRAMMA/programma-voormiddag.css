@@ -1,4 +1,5 @@
 /* Programma Voormiddag Specifieke Styling */
+
 .navItem.active {
     background: #881538;
     color: white;
@@ -30,7 +31,7 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    height: 782px;
+    height: 801px;
 }
 
 .sidebar-header {
