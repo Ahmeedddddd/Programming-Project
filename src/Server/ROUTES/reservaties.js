@@ -154,20 +154,63 @@ router.get(
 router.put(
   "/:id/accept",
   authenticateToken,
-  requireRole(["bedrijf"]),
+  requireRole(["bedrijf", "student"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
+    const { userType, studentnummer, bedrijfsnummer } = req.user;
+
+    // Debug logging
+    console.log('[ACCEPT] User object:', req.user);
+    console.log('[ACCEPT] Reservation ID:', afspraakId);
+    console.log('[ACCEPT] User type:', userType);
+    console.log('[ACCEPT] Student number:', studentnummer);
+    console.log('[ACCEPT] Company number:', bedrijfsnummer);
 
     try {
       const reservatie = await Reservatie.getById(afspraakId);
-      if (!reservatie || reservatie.bedrijfsnummer !== bedrijfsnummer) {
+      if (!reservatie) {
+        console.log('[ACCEPT] Reservation not found:', afspraakId);
+        return res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden.",
+        });
+      }
+
+      console.log('[ACCEPT] Found reservation:', {
+        id: reservatie.afspraakId,
+        studentnummer: reservatie.studentnummer,
+        bedrijfsnummer: reservatie.bedrijfsnummer,
+        status: reservatie.status
+      });
+
+      // Check ownership based on user type
+      let isOwner = false;
+      if (userType === 'bedrijf') {
+        isOwner = reservatie.bedrijfsnummer == bedrijfsnummer;
+        console.log('[ACCEPT] Company ownership check:', {
+          reservationCompany: reservatie.bedrijfsnummer,
+          userCompany: bedrijfsnummer,
+          isOwner: isOwner
+        });
+      } else if (userType === 'student') {
+        isOwner = reservatie.studentnummer == studentnummer;
+        console.log('[ACCEPT] Student ownership check:', {
+          reservationStudent: reservatie.studentnummer,
+          userStudent: studentnummer,
+          isOwner: isOwner
+        });
+      }
+
+      if (!isOwner) {
+        console.log('[ACCEPT] Access denied - not owner');
         return res.status(403).json({
           success: false,
           message: "Niet geautoriseerd om deze reservatie te beheren.",
         });
       }
+
       if (reservatie.status !== "aangevraagd") {
+        console.log('[ACCEPT] Invalid status:', reservatie.status);
         return res.status(400).json({
           success: false,
           message:
@@ -180,16 +223,26 @@ router.put(
       });
 
       if (affectedRows > 0) {
-        // Notificatie voor student: geaccepteerd
-        await Notificatie.create({
-          studentnummer: reservatie.studentnummer,
-          type: 'reservering_geaccepteerd',
-          boodschap: `Je reservering bij bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} is geaccepteerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
-        });
+        // Notificatie voor de andere partij
+        if (userType === 'bedrijf') {
+          await Notificatie.create({
+            studentnummer: reservatie.studentnummer,
+            type: 'reservering_geaccepteerd',
+            boodschap: `Je reservering bij bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} is geaccepteerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+          });
+        } else if (userType === 'student') {
+          await Notificatie.create({
+            bedrijfsnummer: reservatie.bedrijfsnummer,
+            type: 'reservering_geaccepteerd',
+            boodschap: `Student ${reservatie.studentNaam || reservatie.studentnummer} heeft je reserveringsaanvraag geaccepteerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+          });
+        }
+        console.log('[ACCEPT] Success - reservation accepted');
         res
           .status(200)
           .json({ success: true, message: "Reservatie succesvol bevestigd." });
       } else {
+        console.log('[ACCEPT] No rows affected');
         res.status(404).json({
           success: false,
           message: "Reservatie niet gevonden of niet gewijzigd.",
@@ -209,21 +262,62 @@ router.put(
 router.put(
   "/:id/reject",
   authenticateToken,
-  requireRole(["bedrijf"]),
+  requireRole(["bedrijf", "student"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const bedrijfsnummer = req.user.bedrijfsnummer || req.user.userId || req.user.gebruikersId;
+    const { userType, studentnummer, bedrijfsnummer } = req.user;
     const { reden } = req.body;
+
+    // Debug logging
+    console.log('[REJECT] User object:', req.user);
+    console.log('[REJECT] Reservation ID:', afspraakId);
+    console.log('[REJECT] Reason:', reden);
 
     try {
       const reservatie = await Reservatie.getById(afspraakId);
-      if (!reservatie || reservatie.bedrijfsnummer !== bedrijfsnummer) {
+      if (!reservatie) {
+        console.log('[REJECT] Reservation not found:', afspraakId);
+        return res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden.",
+        });
+      }
+
+      console.log('[REJECT] Found reservation:', {
+        id: reservatie.afspraakId,
+        studentnummer: reservatie.studentnummer,
+        bedrijfsnummer: reservatie.bedrijfsnummer,
+        status: reservatie.status
+      });
+
+      // Check ownership based on user type
+      let isOwner = false;
+      if (userType === 'bedrijf') {
+        isOwner = reservatie.bedrijfsnummer == bedrijfsnummer;
+        console.log('[REJECT] Company ownership check:', {
+          reservationCompany: reservatie.bedrijfsnummer,
+          userCompany: bedrijfsnummer,
+          isOwner: isOwner
+        });
+      } else if (userType === 'student') {
+        isOwner = reservatie.studentnummer == studentnummer;
+        console.log('[REJECT] Student ownership check:', {
+          reservationStudent: reservatie.studentnummer,
+          userStudent: studentnummer,
+          isOwner: isOwner
+        });
+      }
+
+      if (!isOwner) {
+        console.log('[REJECT] Access denied - not owner');
         return res.status(403).json({
           success: false,
           message: "Niet geautoriseerd om deze reservatie te beheren.",
         });
       }
+
       if (reservatie.status !== "aangevraagd") {
+        console.log('[REJECT] Invalid status:', reservatie.status);
         return res.status(400).json({
           success: false,
           message: "Reservatie kan niet worden geweigerd in de huidige status.",
@@ -236,16 +330,26 @@ router.put(
       const affectedRows = await Reservatie.update(afspraakId, updateData);
 
       if (affectedRows > 0) {
-        // Notificatie voor student: geweigerd
-        await Notificatie.create({
-          studentnummer: reservatie.studentnummer,
-          type: 'reservering_geweigerd',
-          boodschap: `Je reservering bij bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} is geweigerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
-        });
+        // Notificatie voor de andere partij
+        if (userType === 'bedrijf') {
+          await Notificatie.create({
+            studentnummer: reservatie.studentnummer,
+            type: 'reservering_geweigerd',
+            boodschap: `Je reservering bij bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} is geweigerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+          });
+        } else if (userType === 'student') {
+          await Notificatie.create({
+            bedrijfsnummer: reservatie.bedrijfsnummer,
+            type: 'reservering_geweigerd',
+            boodschap: `Student ${reservatie.studentNaam || reservatie.studentnummer} heeft je reserveringsaanvraag geweigerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+          });
+        }
+        console.log('[REJECT] Success - reservation rejected');
         res
           .status(200)
           .json({ success: true, message: "Reservatie succesvol geweigerd." });
       } else {
+        console.log('[REJECT] No rows affected');
         res.status(404).json({
           success: false,
           message: "Reservatie niet gevonden of niet gewijzigd.",
@@ -265,23 +369,63 @@ router.put(
 router.put(
   "/:id/cancel",
   authenticateToken,
-  requireRole(["student"]),
+  requireRole(["student", "bedrijf"]),
   async (req, res) => {
     const { id: afspraakId } = req.params;
-    const studentnummer = req.user.studentnummer;
+    const { userType, studentnummer, bedrijfsnummer } = req.user;
+
+    // Debug logging
+    console.log('[CANCEL] User object:', req.user);
+    console.log('[CANCEL] Reservation ID:', afspraakId);
 
     try {
       const reservatie = await Reservatie.getById(afspraakId);
-      if (!reservatie || reservatie.studentnummer !== studentnummer) {
+      if (!reservatie) {
+        console.log('[CANCEL] Reservation not found:', afspraakId);
+        return res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden.",
+        });
+      }
+
+      console.log('[CANCEL] Found reservation:', {
+        id: reservatie.afspraakId,
+        studentnummer: reservatie.studentnummer,
+        bedrijfsnummer: reservatie.bedrijfsnummer,
+        status: reservatie.status
+      });
+
+      // Check ownership based on user type
+      let isOwner = false;
+      if (userType === 'student') {
+        isOwner = reservatie.studentnummer == studentnummer;
+        console.log('[CANCEL] Student ownership check:', {
+          reservationStudent: reservatie.studentnummer,
+          userStudent: studentnummer,
+          isOwner: isOwner
+        });
+      } else if (userType === 'bedrijf') {
+        isOwner = reservatie.bedrijfsnummer == bedrijfsnummer;
+        console.log('[CANCEL] Company ownership check:', {
+          reservationCompany: reservatie.bedrijfsnummer,
+          userCompany: bedrijfsnummer,
+          isOwner: isOwner
+        });
+      }
+
+      if (!isOwner) {
+        console.log('[CANCEL] Access denied - not owner');
         return res.status(403).json({
           success: false,
           message: "Niet geautoriseerd om deze reservatie te annuleren.",
         });
       }
+
       if (
         reservatie.status !== "aangevraagd" &&
         reservatie.status !== "bevestigd"
       ) {
+        console.log('[CANCEL] Invalid status:', reservatie.status);
         return res.status(400).json({
           success: false,
           message:
@@ -294,11 +438,27 @@ router.put(
       });
 
       if (affectedRows > 0) {
+        // Notificatie voor de andere partij
+        if (userType === 'student') {
+          await Notificatie.create({
+            bedrijfsnummer: reservatie.bedrijfsnummer,
+            type: 'reservering_geannuleerd',
+            boodschap: `Student ${reservatie.studentNaam || reservatie.studentnummer} heeft de reservering geannuleerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+          });
+        } else if (userType === 'bedrijf') {
+          await Notificatie.create({
+            studentnummer: reservatie.studentnummer,
+            type: 'reservering_geannuleerd',
+            boodschap: `Bedrijf ${reservatie.bedrijfNaam || reservatie.bedrijfsnummer} heeft de reservering geannuleerd voor tijdslot ${reservatie.startTijd}-${reservatie.eindTijd}.`
+          });
+        }
+        console.log('[CANCEL] Success - reservation cancelled');
         res.status(200).json({
           success: true,
           message: "Reservatie succesvol geannuleerd.",
         });
       } else {
+        console.log('[CANCEL] No rows affected');
         res.status(404).json({
           success: false,
           message: "Reservatie niet gevonden of niet gewijzigd.",
@@ -323,29 +483,54 @@ router.delete(
     const { id } = req.params;
     const { userType, studentnummer, bedrijfsnummer } = req.user;
 
+    // Debug logging
+    console.log('[DELETE] User object:', req.user);
+    console.log('[DELETE] Reservation ID:', id);
+
     try {
       const reservatie = await Reservatie.getById(id);
       if (!reservatie) {
+        console.log('[DELETE] Reservation not found:', id);
         return res.status(404).json({ success: false, message: 'Reservatie niet gevonden.' });
       }
+
+      console.log('[DELETE] Found reservation:', {
+        id: reservatie.afspraakId,
+        studentnummer: reservatie.studentnummer,
+        bedrijfsnummer: reservatie.bedrijfsnummer,
+        status: reservatie.status
+      });
 
       // Check ownership
       const isOwner = (userType === 'student' && reservatie.studentnummer == studentnummer) ||
                       (userType === 'bedrijf' && reservatie.bedrijfsnummer == bedrijfsnummer);
 
+      console.log('[DELETE] Ownership check:', {
+        userType: userType,
+        reservationStudent: reservatie.studentnummer,
+        reservationCompany: reservatie.bedrijfsnummer,
+        userStudent: studentnummer,
+        userCompany: bedrijfsnummer,
+        isOwner: isOwner
+      });
+
       if (!isOwner) {
+        console.log('[DELETE] Access denied - not owner');
         return res.status(403).json({ success: false, message: 'Je mag alleen je eigen afspraken verwijderen.' });
       }
       
       // Allow deletion for cancelled or rejected appointments
       if (!['geweigerd', 'geannuleerd'].includes(reservatie.status)) {
+        console.log('[DELETE] Invalid status for deletion:', reservatie.status);
         return res.status(400).json({ success: false, message: 'Alleen geannuleerde of geweigerde afspraken kunnen worden verwijderd.' });
       }
 
       const deleted = await Reservatie.delete(id);
       if (deleted) {
+        console.log('[DELETE] Success - reservation deleted');
         return res.status(200).json({ success: true, message: 'Reservatie succesvol verwijderd.' });
       } else {
+        console.log('[DELETE] Delete failed');
         return res.status(500).json({ success: false, message: 'Verwijderen mislukt.' });
       }
     } catch (error) {
@@ -364,22 +549,45 @@ router.put(
     const { id } = req.params;
     const { userType, studentnummer, bedrijfsnummer } = req.user;
 
+    // Debug logging
+    console.log('[RESTORE] User object:', req.user);
+    console.log('[RESTORE] Reservation ID:', id);
+
     try {
         const reservatie = await Reservatie.getById(id);
         if (!reservatie) {
+            console.log('[RESTORE] Reservation not found:', id);
             return res.status(404).json({ success: false, message: 'Reservatie niet gevonden.' });
         }
+
+        console.log('[RESTORE] Found reservation:', {
+            id: reservatie.afspraakId,
+            studentnummer: reservatie.studentnummer,
+            bedrijfsnummer: reservatie.bedrijfsnummer,
+            status: reservatie.status
+        });
 
         // Check ownership
         const isOwner = (userType === 'student' && reservatie.studentnummer == studentnummer) ||
                         (userType === 'bedrijf' && reservatie.bedrijfsnummer == bedrijfsnummer);
 
+        console.log('[RESTORE] Ownership check:', {
+            userType: userType,
+            reservationStudent: reservatie.studentnummer,
+            reservationCompany: reservatie.bedrijfsnummer,
+            userStudent: studentnummer,
+            userCompany: bedrijfsnummer,
+            isOwner: isOwner
+        });
+
         if (!isOwner) {
+            console.log('[RESTORE] Access denied - not owner');
             return res.status(403).json({ success: false, message: 'Niet geautoriseerd voor deze actie.' });
         }
         
         // Check if restorable
         if (!['geannuleerd', 'geweigerd'].includes(reservatie.status)) {
+            console.log('[RESTORE] Invalid status for restore:', reservatie.status);
             return res.status(400).json({ success: false, message: 'Deze afspraak kan niet hersteld worden.' });
         }
 
@@ -397,8 +605,10 @@ router.put(
                 await Notificatie.create({ studentnummer: reservatie.studentnummer, type: 'reservering_hersteld', boodschap: message });
             }
 
+            console.log('[RESTORE] Success - reservation restored');
             res.status(200).json({ success: true, message: 'Afspraak succesvol hersteld.' });
         } else {
+            console.log('[RESTORE] No rows affected');
             res.status(500).json({ success: false, message: 'Herstellen van afspraak mislukt.' });
         }
     } catch (error) {

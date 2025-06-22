@@ -1,3 +1,5 @@
+console.log("✅ gesprekkenStudent.js geladen");
+
 import { ReservatieService } from '../reservatieService.js';
 
 // --- GLOBAAL & CONFIGURATIE ---
@@ -29,11 +31,14 @@ const UI = {
         }
     },
     confirm: async (title, message) => {
-        // Gebruik een custom dialog als die bestaat, anders een simpele `confirm`
-        if (window.showCustomDialog) {
-            return await window.showCustomDialog({ title, message, confirmText: 'Ja', cancelText: 'Nee', type: 'warning' });
-        }
-        return confirm(`${title}\n\n${message}`);
+        return new Promise((resolve) => {
+            ModalOverlay.showConfirmModal(
+                title,
+                message,
+                () => resolve(true),
+                () => resolve(false)
+            );
+        });
     },
     showUndo: (message, onUndo) => {
         // Gebruik de bestaande `showUndoNotification` logica of een fallback
@@ -45,223 +50,636 @@ const UI = {
     }
 };
 
-// --- GESPREKKEN MANAGER ---
-class GesprekkenManager {
-    constructor() {
-        this.meetings = [];
-        this.initEventListeners();
-    }
-
-    async loadGesprekken() {
-        UI.showLoading(true);
-        try {
-            // Gebruik de ReservatieService in plaats van directe fetch
-            this.meetings = await ReservatieService.getMyReservations();
-            this.render();
-        } catch (error) {
-            console.error("Fout bij laden gesprekken:", error);
-            UI.showNotification("Kon je gesprekken niet laden.", "error");
-        } finally {
-            UI.showLoading(false);
-        }
-    }
-
-    render() {
-        const clearTable = (table) => {
-            Array.from(table.children).forEach(child => {
-                if (!child.classList.contains('gesprekkenTableHeader')) child.remove();
-            });
-        };
-        
-        clearTable(DOMElements.aangevraagdTable);
-        clearTable(DOMElements.ontvangenTable);
-
-        const aangevraagd = this.meetings.filter(m => m.aangevraagdDoor === currentUser.type);
-        const ontvangen = this.meetings.filter(m => m.aangevraagdDoor !== currentUser.type);
-
-        aangevraagd.forEach(m => DOMElements.aangevraagdTable.appendChild(this.createRow(m)));
-        ontvangen.forEach(m => DOMElements.ontvangenTable.appendChild(this.createRow(m)));
-        
-        if (aangevraagd.length === 0) this.showEmptyMessage(DOMElements.aangevraagdTable, 'Je hebt nog geen gesprekken aangevraagd.');
-        if (ontvangen.length === 0) this.showEmptyMessage(DOMElements.ontvangenTable, 'Je hebt nog geen gesprekken ontvangen.');
-    }
-
-    createRow(meeting) {
-        const row = document.createElement('div');
-        row.className = `gesprekkenTableRow status-${meeting.status.toLowerCase()}`;
-        row.dataset.id = meeting.id;
-        
-        // Veilige datumconversie
-        const startTime = meeting.startTijd ? new Date(meeting.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' }) : 'N/A';
-        const endTime = meeting.eindTijd ? new Date(meeting.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' }) : 'N/A';
-        const time = `${startTime} - ${endTime}`;
-        
-        row.innerHTML = `
-            <div class="naamCel">${meeting.bedrijfNaam || 'Onbekend Bedrijf'}</div>
-            <div class="locatieCel">${meeting.bedrijfTafelNr ? `Tafel ${meeting.bedrijfTafelNr}` : '-'}</div>
-            <div class="tijdslotCel">${time}</div>
-            <div class="statusCel status-${meeting.status.toLowerCase()}">${meeting.status}</div>
-            <div class="gesprekkenActions">${this.getActionsHtml(meeting)}</div>
+// Modal overlay system
+class ModalOverlay {
+    static createModal(title, content, actions = []) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                <div class="modal-actions">
+                    ${actions.map(action => `
+                        <button class="modal-btn ${action.class || ''}" onclick="${action.onclick}">
+                            ${action.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
         `;
-        return row;
+        return modal;
     }
 
-    getActionsHtml(meeting) {
-        const { status, aangevraagdDoor, id } = meeting;
-        const isRequester = aangevraagdDoor === currentUser.type;
-
-        switch (status) {
-            case 'aangevraagd':
-                if (isRequester) {
-                    return `<button class="actieBtn intrekkenBtn" data-action="withdraw" data-id="${id}">Intrekken</button>`;
-                } else {
-                    return `
-                        <button class="actieBtn bevestigBtn" data-action="accept" data-id="${id}">Accepteren</button>
-                        <button class="actieBtn weigerBtn" data-action="reject" data-id="${id}">Weigeren</button>
-                    `;
-                }
-            case 'bevestigd':
-                return `<button class="actieBtn annuleerBtn" data-action="cancel" data-id="${id}">Annuleren</button>`;
-            case 'geannuleerd':
-                return `
-                    <button class="actieBtn herstelBtn" data-action="restore" data-id="${id}">Herstellen</button>
-                    <button class="actieBtn verwijderBtn" data-action="delete" data-id="${id}">Verwijder</button>
-                `;
-            case 'geweigerd':
-                return `<button class="actieBtn verwijderBtn" data-action="delete" data-id="${id}">Verwijder</button>`;
-            default:
-                return '<span>-</span>';
-        }
-    }
-    
-    showEmptyMessage(table, message) {
-        const row = document.createElement('div');
-        row.className = 'gesprekkenTableRow lege-rij';
-        row.innerHTML = `<div class="geen-gesprekken">${message}</div>`;
-        table.appendChild(row);
+    static showConfirmModal(title, message, onConfirm, onCancel = null) {
+        const modal = this.createModal(title, `
+            <p>${message}</p>
+        `, [
+            {
+                text: 'Annuleren',
+                class: 'modal-btn-secondary',
+                onclick: `(function() { 
+                    this.closest('.modal-overlay').remove();
+                    ${onCancel ? onCancel() : ''}
+                }).call(this);`
+            },
+            {
+                text: 'Bevestigen',
+                class: 'modal-btn-primary',
+                onclick: `(function() { 
+                    this.closest('.modal-overlay').remove();
+                    ${onConfirm}();
+                }).call(this);`
+            }
+        ]);
+        document.body.appendChild(modal);
     }
 
-    initEventListeners() {
-        const tableContainer = document.querySelector('.gesprekkenKaart');
-        tableContainer.addEventListener('click', this.handleActionClick.bind(this));
-    }
-
-    async handleActionClick(e) {
-        const button = e.target.closest('[data-action]');
-        if (!button) return;
-
-        const { action, id } = button.dataset;
-        button.disabled = true;
-
-        const actions = {
-            'withdraw': () => this.handleCancel(id, 'Intrekking succesvol', true),
-            'cancel': () => this.handleCancel(id, 'Afspraak geannuleerd', true),
-            'accept': () => this.handleAccept(id),
-            'reject': () => this.handleReject(id),
-            'delete': () => this.handleDelete(id),
-            'restore': () => this.handleRestore(id)
-        };
+    static showInputModal(title, message, placeholder, onConfirm, onCancel = null) {
+        const inputId = 'modal-input-' + Date.now();
+        const modal = this.createModal(title, `
+            <p>${message}</p>
+            <textarea id="${inputId}" placeholder="${placeholder}" rows="4"></textarea>
+        `, [
+            {
+                text: 'Annuleren',
+                class: 'modal-btn-secondary',
+                onclick: `this.closest('.modal-overlay').remove(); ${onCancel ? onCancel() : ''}`
+            },
+            {
+                text: 'Bevestigen',
+                class: 'modal-btn-primary',
+                onclick: `(function() { 
+                    const input = document.getElementById('${inputId}');
+                    const value = input ? input.value : '';
+                    this.closest('.modal-overlay').remove();
+                    ${onConfirm}(value);
+                }).call(this);`
+            }
+        ]);
+        document.body.appendChild(modal);
         
-        if (actions[action]) {
-            await actions[action]();
-        }
-
-        button.disabled = false;
-    }
-    
-    async handleAccept(id) {
-        try {
-            const result = await ReservatieService.acceptReservation(id);
-            if(result.success) {
-                UI.showNotification('Afspraak bevestigd!', 'success');
-                await this.loadGesprekken();
-            } else {
-                UI.showNotification(result.message || 'Kon afspraak niet bevestigen.', 'error');
-            }
-        } catch (error) {
-            UI.showNotification('Fout bij bevestigen van afspraak.', 'error');
-        }
+        // Focus op het input veld
+        setTimeout(() => {
+            const input = document.getElementById(inputId);
+            if (input) input.focus();
+        }, 100);
+        
+        return inputId;
     }
 
-    async handleReject(id) {
-        if (!await UI.confirm('Afspraak weigeren', 'Weet je zeker dat je dit verzoek wilt weigeren?')) return;
-        try {
-            const result = await ReservatieService.rejectReservation(id, '');
-            if(result.success) {
-                UI.showNotification('Afspraak geweigerd.', 'info');
-                lastCancelledMeeting = this.meetings.find(m => m.id == id);
-                UI.showUndo('Afspraak geweigerd.', () => this.handleRestore(id));
-                await this.loadGesprekken();
-            } else {
-                UI.showNotification(result.message || 'Kon afspraak niet weigeren.', 'error');
+    static showSuccessModal(message) {
+        const modal = this.createModal('Succes!', `
+            <div style="text-align: center; padding: 2rem;">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: #10b981; margin-bottom: 1rem;"></i>
+                <p>${message}</p>
+            </div>
+        `, [
+            {
+                text: 'OK',
+                class: 'modal-btn-primary',
+                onclick: 'this.closest(".modal-overlay").remove();'
             }
+        ]);
+        document.body.appendChild(modal);
+    }
+
+    static showErrorModal(message) {
+        const modal = this.createModal('Fout!', `
+            <div style="text-align: center; padding: 2rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                <p>${message}</p>
+            </div>
+        `, [
+            {
+                text: 'OK',
+                class: 'modal-btn-primary',
+                onclick: 'this.closest(".modal-overlay").remove();'
+            }
+        ]);
+        document.body.appendChild(modal);
+    }
+}
+
+// Notification system
+class NotificationSystem {
+    static show(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        // Add to page
+        let container = document.getElementById('notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            document.body.appendChild(container);
+        }
+        container.appendChild(notification);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+}
+
+// Main conversation manager
+class StudentConversationManager {
+    constructor() {
+        this.reservations = [];
+        this.init();
+    }
+
+    async init() {
+        try {
+            console.log('🚀 [DEBUG] Initializing student conversation manager...');
+            
+            // Initialize DOM elements first
+            DOMElements.init();
+            console.log('🎯 [DEBUG] DOM elements initialized:', {
+                aangevraagdTable: !!DOMElements.aangevraagdTable,
+                ontvangenTable: !!DOMElements.ontvangenTable,
+                loadingIndicator: !!DOMElements.loadingIndicator,
+                aangevraagdTableElement: DOMElements.aangevraagdTable,
+                ontvangenTableElement: DOMElements.ontvangenTable
+            });
+            
+            await this.loadReservations();
+            this.setupEventListeners();
+            
+            console.log('✅ [DEBUG] Student conversation manager initialized successfully');
         } catch (error) {
-            UI.showNotification('Fout bij weigeren van afspraak.', 'error');
+            console.error('❌ [DEBUG] Error initializing student conversation manager:', error);
         }
     }
-    
-    async handleCancel(id, message, withUndo = false) {
-        if (!await UI.confirm('Actie bevestigen', 'Weet je zeker dat je deze actie wilt uitvoeren?')) return;
+
+    async loadReservations() {
         try {
-            const result = await ReservatieService.cancelReservation(id);
-            if (result.success) {
-                lastCancelledMeeting = this.meetings.find(m => m.id == id);
-                if (withUndo) {
-                     UI.showUndo(message, () => this.handleRestore(id));
+            console.log('📡 [DEBUG] Loading reservations...');
+            this.reservations = await ReservatieService.getMyReservations();
+            console.log('📊 [DEBUG] Reservations loaded:', {
+                count: this.reservations?.length || 0,
+                reservations: this.reservations
+            });
+            this.renderReservations();
+        } catch (error) {
+            console.error('❌ [DEBUG] Error loading reservations:', error);
+            NotificationSystem.show('Kon gesprekken niet laden. Probeer het later opnieuw.', 'error');
+        }
+    }
+
+    renderReservations() {
+        console.log('🎨 [DEBUG] Rendering reservations...');
+        
+        // Containers
+        const aangevraagdContainer = DOMElements.aangevraagdTable;
+        const ontvangenContainer = DOMElements.ontvangenTable;
+        const loadingIndicator = DOMElements.loadingIndicator;
+
+        console.log('🎯 [DEBUG] Containers found:', {
+            aangevraagdContainer: !!aangevraagdContainer,
+            ontvangenContainer: !!ontvangenContainer,
+            loadingIndicator: !!loadingIndicator
+        });
+
+        // Reset loading
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (aangevraagdContainer) {
+            // Verwijder oude rijen behalve de header
+            const oldRows = aangevraagdContainer.querySelectorAll('.gesprekkenTableRow, .lege-rij');
+            console.log('🧹 [DEBUG] Removing old rows from aangevraagd:', oldRows.length);
+            oldRows.forEach(el => el.remove());
+        }
+        if (ontvangenContainer) {
+            const oldRows = ontvangenContainer.querySelectorAll('.gesprekkenTableRow, .lege-rij');
+            console.log('🧹 [DEBUG] Removing old rows from ontvangen:', oldRows.length);
+            oldRows.forEach(el => el.remove());
+        }
+
+        if (!this.reservations || this.reservations.length === 0) {
+            console.log('📭 [DEBUG] No reservations found, showing empty state');
+            // Geen gesprekken
+            if (aangevraagdContainer) {
+                const leeg = document.createElement('div');
+                leeg.className = 'lege-rij';
+                leeg.innerHTML = `<i class="fas fa-inbox" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i><h3>Geen gesprekken gevonden</h3><p>Je hebt nog geen gesprekken aangevraagd.</p>`;
+                aangevraagdContainer.appendChild(leeg);
+            }
+            if (ontvangenContainer) {
+                const leeg = document.createElement('div');
+                leeg.className = 'lege-rij';
+                leeg.innerHTML = `<i class="fas fa-inbox" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i><h3>Geen gesprekken gevonden</h3><p>Je hebt nog geen gesprekken ontvangen.</p>`;
+                ontvangenContainer.appendChild(leeg);
+            }
+            return;
+        }
+
+        // Split reservations by type
+        const requestedByMe = this.reservations.filter(r => r.aangevraagdDoor === 'student');
+        const receivedByMe = this.reservations.filter(r => r.aangevraagdDoor === 'bedrijf');
+
+        console.log('📊 [DEBUG] Split reservations:', {
+            total: this.reservations.length,
+            requestedByMe: requestedByMe.length,
+            receivedByMe: receivedByMe.length
+        });
+
+        // Aangevraagd door jou
+        if (aangevraagdContainer) {
+            if (requestedByMe.length === 0) {
+                console.log('📭 [DEBUG] No requested reservations, showing empty state');
+                const leeg = document.createElement('div');
+                leeg.className = 'lege-rij';
+                leeg.innerHTML = `<i class="fas fa-inbox" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i><h3>Geen gesprekken gevonden</h3><p>Je hebt nog geen gesprekken aangevraagd.</p>`;
+                aangevraagdContainer.appendChild(leeg);
+            } else {
+                console.log('✅ [DEBUG] Rendering requested reservations:', requestedByMe.length);
+                requestedByMe.forEach((reservation, index) => {
+                    console.log(`🎨 [DEBUG] Rendering requested reservation ${index + 1}:`, reservation);
+                    const rowHtml = this.renderReservationRow(reservation);
+                    console.log(`🎨 [DEBUG] Row HTML for reservation ${index + 1}:`, rowHtml);
+                    aangevraagdContainer.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            }
+        }
+
+        // Ontvangen
+        if (ontvangenContainer) {
+            if (receivedByMe.length === 0) {
+                console.log('📭 [DEBUG] No received reservations, showing empty state');
+                const leeg = document.createElement('div');
+                leeg.className = 'lege-rij';
+                leeg.innerHTML = `<i class="fas fa-inbox" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i><h3>Geen gesprekken gevonden</h3><p>Je hebt nog geen gesprekken ontvangen.</p>`;
+                ontvangenContainer.appendChild(leeg);
+            } else {
+                console.log('✅ [DEBUG] Rendering received reservations:', receivedByMe.length);
+                receivedByMe.forEach((reservation, index) => {
+                    console.log(`🎨 [DEBUG] Rendering received reservation ${index + 1}:`, reservation);
+                    const rowHtml = this.renderReservationRow(reservation);
+                    console.log(`🎨 [DEBUG] Row HTML for reservation ${index + 1}:`, rowHtml);
+                    ontvangenContainer.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            }
+        }
+        
+        console.log('✅ [DEBUG] Rendering complete');
+    }
+
+    renderReservationRow(reservation) {
+        console.log('🎨 [DEBUG] renderReservationRow called with:', reservation);
+        
+        const startTime = new Date(reservation.startTijd).toLocaleTimeString('nl-NL', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        const endTime = new Date(reservation.eindTijd).toLocaleTimeString('nl-NL', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+
+        const statusClass = `status-${reservation.status}`;
+        const statusText = this.getStatusText(reservation.status);
+
+        const actions = this.getActionsForReservation(reservation);
+
+        // Debug logging voor tafelnr
+        console.log('🔍 [DEBUG] Reservation data:', {
+            afspraakId: reservation.afspraakId || reservation.id,
+            bedrijfNaam: reservation.bedrijfNaam,
+            tafelNr: reservation.tafelNr,
+            bedrijfTafelNr: reservation.bedrijfTafelNr,
+            status: reservation.status,
+            aangevraagdDoor: reservation.aangevraagdDoor
+        });
+
+        // Gebruik bedrijfTafelNr als tafelNr niet bestaat
+        const tafelNr = reservation.tafelNr || reservation.bedrijfTafelNr || 'N/A';
+
+        const rowHtml = `
+            <div class="gesprekkenTableRow" data-id="${reservation.afspraakId || reservation.id}">
+                <div class="naamCel">${reservation.bedrijfNaam || 'Onbekend bedrijf'}</div>
+                <div class="locatieCel">Tafel ${tafelNr}</div>
+                <div class="tijdslotCel">${startTime} - ${endTime}</div>
+                <div class="statusCel ${statusClass}">${statusText}</div>
+                <div class="gesprekkenActions">
+                    ${actions}
+                </div>
+            </div>
+        `;
+        
+        console.log('🎨 [DEBUG] Generated row HTML:', rowHtml);
+        console.log('🎨 [DEBUG] Actions HTML:', actions);
+        
+        return rowHtml;
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            'aangevraagd': 'Aangevraagd',
+            'bevestigd': 'Bevestigd',
+            'geweigerd': 'Geweigerd',
+            'geannuleerd': 'Geannuleerd'
+        };
+        return statusMap[status] || status;
+    }
+
+    getActionsForReservation(reservation) {
+        const actions = [];
+        const reservationId = reservation.afspraakId || reservation.id;
+
+        // Debug logging voor actions
+        console.log('🔧 [DEBUG] Generating actions for reservation:', {
+            id: reservationId,
+            status: reservation.status,
+            aangevraagdDoor: reservation.aangevraagdDoor
+        });
+
+        switch (reservation.status) {
+            case 'aangevraagd':
+                if (reservation.aangevraagdDoor === 'student') {
+                    actions.push(`
+                        <button class="actieBtn annuleerBtn" data-action="cancel" data-reservation-id="${reservationId}">
+                            <i class="fas fa-times"></i> Annuleren
+                        </button>
+                    `);
                 } else {
-                    UI.showNotification(message, 'success');
+                    actions.push(`
+                        <button class="actieBtn accepteerBtn" data-action="accept" data-reservation-id="${reservationId}">
+                            <i class="fas fa-check"></i> Accepteren
+                        </button>
+                        <button class="actieBtn weigerBtn" data-action="reject" data-reservation-id="${reservationId}">
+                            <i class="fas fa-times"></i> Weigeren
+                        </button>
+                    `);
                 }
-                await this.loadGesprekken();
-            } else {
-                UI.showNotification(result.message || 'Actie mislukt.', 'error');
+                break;
+
+            case 'bevestigd':
+                actions.push(`
+                    <button class="actieBtn annuleerBtn" data-action="cancel" data-reservation-id="${reservationId}">
+                        <i class="fas fa-times"></i> Annuleren
+                    </button>
+                `);
+                break;
+
+            case 'geweigerd':
+            case 'geannuleerd':
+                actions.push(`
+                    <button class="actieBtn herstelBtn" data-action="restore" data-reservation-id="${reservationId}">
+                        <i class="fas fa-undo"></i> Herstellen
+                    </button>
+                    <button class="actieBtn verwijderBtn" data-action="delete" data-reservation-id="${reservationId}">
+                        <i class="fas fa-trash"></i> Verwijderen
+                    </button>
+                `);
+                break;
+        }
+
+        console.log('🔧 [DEBUG] Generated actions:', actions);
+        return actions.join('');
+    }
+
+    setupEventListeners() {
+        console.log('🎯 [DEBUG] Setting up event listeners...');
+        
+        // Event delegation for action buttons
+        document.addEventListener('click', (event) => {
+            console.log('🎯 [DEBUG] Click event detected:', {
+                target: event.target,
+                targetClass: event.target.className,
+                closestButton: event.target.closest('.actieBtn')
+            });
+            
+            const button = event.target.closest('.actieBtn');
+            if (!button) {
+                console.log('🎯 [DEBUG] No .actieBtn found in click path');
+                return;
             }
+
+            const action = button.getAttribute('data-action');
+            const reservationId = button.getAttribute('data-reservation-id');
+            
+            console.log('🎯 [DEBUG] Button clicked:', {
+                action: action,
+                reservationId: reservationId,
+                buttonClass: button.className
+            });
+            
+            if (!action || !reservationId) {
+                console.log('🎯 [DEBUG] Missing action or reservationId');
+                return;
+            }
+
+            // Prevent multiple clicks
+            if (button.disabled) {
+                console.log('🎯 [DEBUG] Button is disabled, ignoring click');
+                return;
+            }
+            button.disabled = true;
+
+            try {
+                console.log('🎯 [DEBUG] Executing action:', action);
+                switch (action) {
+                    case 'accept':
+                        this.acceptReservation(reservationId);
+                        break;
+                    case 'reject':
+                        this.rejectReservation(reservationId);
+                        break;
+                    case 'cancel':
+                        this.cancelReservation(reservationId);
+                        break;
+                    case 'delete':
+                        this.deleteReservation(reservationId);
+                        break;
+                    case 'restore':
+                        this.restoreReservation(reservationId);
+                        break;
+                    default:
+                        console.log('🎯 [DEBUG] Unknown action:', action);
+                }
+            } catch (error) {
+                console.error('Error handling button action:', error);
+                ModalOverlay.showErrorModal('Er is een fout opgetreden.');
+            } finally {
+                // Re-enable button after a short delay
+                setTimeout(() => {
+                    button.disabled = false;
+                }, 1000);
+            }
+        });
+        
+        console.log('🎯 [DEBUG] Event listeners setup complete');
+    }
+
+    // Action methods
+    async acceptReservation(reservationId) {
+        try {
+            ModalOverlay.showConfirmModal(
+                'Gesprek accepteren',
+                'Weet je zeker dat je dit gesprek wilt accepteren?',
+                () => this.performAcceptReservation(reservationId)
+            );
         } catch (error) {
-            UI.showNotification('Fout bij uitvoeren van actie.', 'error');
+            console.error('Error showing accept modal:', error);
         }
     }
 
-    async handleDelete(id) {
-        if (!await UI.confirm('Permanent verwijderen', 'Deze actie kan niet ongedaan gemaakt worden. Weet je het zeker?')) return;
+    async performAcceptReservation(reservationId) {
         try {
-            const result = await ReservatieService.deleteReservation(id);
+            const result = await ReservatieService.acceptReservation(reservationId);
             if (result.success) {
-                UI.showNotification('Afspraak permanent verwijderd.', 'success');
-                const row = document.querySelector(`.gesprekkenTableRow[data-id='${id}']`);
-                if (row) row.remove();
+                ModalOverlay.showSuccessModal('Gesprek succesvol geaccepteerd!');
+                await this.loadReservations(); // Reload data
             } else {
-                UI.showNotification(result.message || 'Kon afspraak niet verwijderen.', 'error');
+                ModalOverlay.showErrorModal(result.message || 'Er is een fout opgetreden.');
             }
         } catch (error) {
-            UI.showNotification('Fout bij verwijderen van afspraak.', 'error');
+            console.error('Error accepting reservation:', error);
+            ModalOverlay.showErrorModal('Er is een fout opgetreden bij het accepteren van het gesprek.');
         }
     }
 
-    async handleRestore(id) {
+    async rejectReservation(reservationId) {
         try {
-            const result = await ReservatieService.restoreReservation(id);
+            ModalOverlay.showInputModal(
+                'Gesprek weigeren',
+                'Geef een reden op voor het weigeren van dit gesprek (optioneel):',
+                'Reden voor weigering...',
+                (reason) => this.performRejectReservation(reservationId, reason)
+            );
+        } catch (error) {
+            console.error('Error showing reject modal:', error);
+        }
+    }
+
+    async performRejectReservation(reservationId, reason) {
+        try {
+            const result = await ReservatieService.rejectReservation(reservationId, reason);
             if (result.success) {
-                UI.showNotification('Actie ongedaan gemaakt.', 'success');
-                await this.loadGesprekken();
+                ModalOverlay.showSuccessModal('Gesprek succesvol geweigerd.');
+                await this.loadReservations(); // Reload data
             } else {
-                UI.showNotification(result.message || 'Kon actie niet herstellen.', 'error');
+                ModalOverlay.showErrorModal(result.message || 'Er is een fout opgetreden.');
             }
         } catch (error) {
-            UI.showNotification('Fout bij herstellen van actie.', 'error');
+            console.error('Error rejecting reservation:', error);
+            ModalOverlay.showErrorModal('Er is een fout opgetreden bij het weigeren van het gesprek.');
+        }
+    }
+
+    async cancelReservation(reservationId) {
+        try {
+            ModalOverlay.showConfirmModal(
+                'Gesprek annuleren',
+                'Weet je zeker dat je dit gesprek wilt annuleren?',
+                () => this.performCancelReservation(reservationId)
+            );
+        } catch (error) {
+            console.error('Error showing cancel modal:', error);
+        }
+    }
+
+    async performCancelReservation(reservationId) {
+        try {
+            const result = await ReservatieService.cancelReservation(reservationId);
+            if (result.success) {
+                ModalOverlay.showSuccessModal('Gesprek succesvol geannuleerd.');
+                await this.loadReservations(); // Reload data
+            } else {
+                ModalOverlay.showErrorModal(result.message || 'Er is een fout opgetreden.');
+            }
+        } catch (error) {
+            console.error('Error canceling reservation:', error);
+            ModalOverlay.showErrorModal('Er is een fout opgetreden bij het annuleren van het gesprek.');
+        }
+    }
+
+    async deleteReservation(reservationId) {
+        try {
+            ModalOverlay.showConfirmModal(
+                'Gesprek verwijderen',
+                'Weet je zeker dat je dit gesprek definitief wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+                () => this.performDeleteReservation(reservationId)
+            );
+        } catch (error) {
+            console.error('Error showing delete modal:', error);
+        }
+    }
+
+    async performDeleteReservation(reservationId) {
+        try {
+            const result = await ReservatieService.deleteReservation(reservationId);
+            if (result.success) {
+                ModalOverlay.showSuccessModal('Gesprek succesvol verwijderd.');
+                await this.loadReservations(); // Reload data
+            } else {
+                ModalOverlay.showErrorModal(result.message || 'Er is een fout opgetreden.');
+            }
+        } catch (error) {
+            console.error('Error deleting reservation:', error);
+            ModalOverlay.showErrorModal('Er is een fout opgetreden bij het verwijderen van het gesprek.');
+        }
+    }
+
+    async restoreReservation(reservationId) {
+        try {
+            ModalOverlay.showConfirmModal(
+                'Gesprek herstellen',
+                'Weet je zeker dat je dit gesprek wilt herstellen? Het wordt opnieuw aangevraagd.',
+                () => this.performRestoreReservation(reservationId)
+            );
+        } catch (error) {
+            console.error('Error showing restore modal:', error);
+        }
+    }
+
+    async performRestoreReservation(reservationId) {
+        try {
+            const result = await ReservatieService.restoreReservation(reservationId);
+            if (result.success) {
+                ModalOverlay.showSuccessModal('Gesprek succesvol hersteld.');
+                await this.loadReservations(); // Reload data
+            } else {
+                ModalOverlay.showErrorModal(result.message || 'Er is een fout opgetreden.');
+            }
+        } catch (error) {
+            console.error('Error restoring reservation:', error);
+            ModalOverlay.showErrorModal('Er is een fout opgetreden bij het herstellen van het gesprek.');
         }
     }
 }
 
-// --- INITIALISATIE ---
+// Initialize when DOM is loaded
+let studentConversationManager;
+
 document.addEventListener('DOMContentLoaded', () => {
     DOMElements.init();
-    const manager = new GesprekkenManager();
+    studentConversationManager = new StudentConversationManager();
     // Probeer de huidige gebruiker op te halen
     const userInfo = JSON.parse(localStorage.getItem('user'));
     if (userInfo && userInfo.studentnummer) {
         currentUser.id = userInfo.studentnummer;
     }
 
-    manager.loadGesprekken();
+    studentConversationManager.loadReservations();
     
     // Fallback voor undo-notificatie
     if (!window.showUndoNotification) {
@@ -283,4 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => notif.remove(), 5000);
         };
     }
-}); 
+});
+
+// Make it available globally
+window.studentConversationManager = studentConversationManager; 
