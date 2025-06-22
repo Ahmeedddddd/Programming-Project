@@ -57,30 +57,49 @@ body {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
     background: linear-gradient(135deg, var(--light-gray) 0%, var(--medium-gray) 100%);
     min-height: 100vh;
-    padding: var(--spacing-xl);
+
+    padding: 0; /* Removed padding */
+    margin: 0; /* Ensure no margin */
+
     line-height: 1.6;
     color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .container {
-    max-width: 1400px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
     background: rgba(255, 255, 255, 0.95);
-    border-radius: var(--radius-xxl);
-    box-shadow: var(--shadow-xl);
+    border-radius: 0;
+    box-shadow: none;
     overflow: hidden;
     backdrop-filter: blur(10px);
     position: relative;
+    min-height: 100vh;
+}
+
+/* Override nav padding to ensure full width alignment */
+.container .nav {
+    padding: 1rem var(--spacing-xl);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* ===== HEADER STYLES ===== */
 .header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: var(--white);
-    padding: var(--spacing-xxl) var(--spacing-xl);
+    padding: var(--spacing-xl) 0;
     text-align: center;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .header::before {
@@ -126,9 +145,11 @@ body {
 .stats-overview {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-xl);
-    padding: var(--spacing-xl);
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
     background: linear-gradient(135deg, var(--light-gray), var(--medium-gray));
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .stat-card {
@@ -172,15 +193,25 @@ body {
 }
 
 .stat-card.projects { 
-    --card-color: var(--info-color);
-    --card-color-light: #3498db;
-    border-left-color: var(--info-color);
+    --card-color: var(--primary-color);
+    --card-color-light: var(--secondary-color);
+    border-left-color: var(--primary-color);
 }
 
 .stat-card.appointments { 
     --card-color: var(--primary-color);
     --card-color-light: var(--secondary-color);
     border-left-color: var(--primary-color);
+}
+
+.stat-card.debug {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    border: 2px solid #adb5bd;
+}
+
+.stat-card.debug:hover {
+    background: linear-gradient(135deg, #495057, #343a40);
+    border-color: #6c757d;
 }
 
 .stat-number {
@@ -243,8 +274,8 @@ body {
 }
 
 .section-header.projects { 
-    --section-color: 52, 152, 219;
-    border-left-color: var(--info-color);
+    --section-color: 136, 21, 56;
+    border-left-color: var(--primary-color);
 }
 
 .section-header.appointments { 
@@ -279,11 +310,13 @@ body {
 }
 
 .section.expanded .section-content {
-    max-height: 2000px;
+    max-height: 700px; /* Verhoogd voor scrollable content */
 }
 
 .content-inner {
-    padding: var(--spacing-xl);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* ===== SEARCH AND FILTER STYLES ===== */
@@ -362,6 +395,66 @@ body {
 .items-list {
     display: grid;
     gap: var(--spacing-md);
+    max-height: 500px; /* Vaste maximale hoogte */
+    overflow-y: auto; /* Verticale scroll indien nodig */
+    overflow-x: hidden; /* Geen horizontale scroll */
+    padding-right: 8px; /* Ruimte voor scrollbar */
+    border-radius: var(--radius-md);
+    position: relative;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+}
+
+/* Visual indicator for scrollable content */
+.items-list.scrollable::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 12px; /* Account for scrollbar */
+    height: 30px;
+    background: linear-gradient(to bottom, transparent 0%, #ffffff 80%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Custom scrollbar styling */
+.items-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.items-list::-webkit-scrollbar-track {
+    background: var(--light-gray);
+    border-radius: 4px;
+}
+
+.items-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+    opacity: 0.7;
+}
+
+.items-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+    opacity: 1;
+}
+
+/* Fade indicator when scrollable */
+.items-list::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 12px; /* Account for scrollbar */
+    height: 20px;
+    background: linear-gradient(transparent, var(--card-background));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.items-list.scrollable::after {
+    opacity: 1;
 }
 
 .item-card {
@@ -399,13 +492,12 @@ body {
 .item-card:hover {
     background: var(--white);
     box-shadow: var(--shadow-lg);
-    transform: translateX(5px) translateY(-2px);
     border-color: var(--primary-color);
 }
 
 .item-card.student { border-left-color: var(--primary-color); }
 .item-card.company { border-left-color: var(--secondary-color); }
-.item-card.project { border-left-color: var(--info-color); }
+.item-card.project { border-left-color: var(--primary-color); }
 .item-card.appointment { border-left-color: var(--primary-color); }
 
 .item-name {
@@ -426,45 +518,58 @@ body {
     position: absolute;
     top: var(--spacing-md);
     right: var(--spacing-md);
-    opacity: 0;
-    transform: translateY(-10px);
+    opacity: 1; /* Always visible */
+    transform: translateY(0); /* No initial transform */
     transition: all var(--transition-normal);
     display: flex;
     gap: var(--spacing-sm);
+    z-index: 2; /* Ensure buttons are above other content */
 }
 
 .item-card:hover .quick-actions {
     opacity: 1;
     transform: translateY(0);
+    /* Optional: could add scale effect on hover */
+    transform: scale(1.05);
 }
 
 .quick-action-btn {
-    width: 32px;
-    height: 32px;
+    width: 40px; /* Increased from 32px */
+    height: 40px; /* Increased from 32px */
     border-radius: 50%;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 1.1rem; /* Increased from 0.9rem */
     transition: all var(--transition-normal);
     backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Add subtle shadow for better visibility */
 }
 
 .quick-edit {
-    background: rgba(243, 156, 18, 0.9);
+    background: rgba(243, 156, 18, 0.95); /* Increased opacity from 0.9 */
     color: var(--white);
 }
 
 .quick-delete {
-    background: rgba(231, 76, 60, 0.9);
+    background: rgba(231, 76, 60, 0.95); /* Increased opacity from 0.9 */
+    color: var(--white);
+}
+
+.quick-view {
+    background: rgba(52, 152, 219, 0.95); /* Blue for view/details */
     color: var(--white);
 }
 
 .quick-action-btn:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-sm);
+    transform: scale(1.15); /* Increased from 1.1 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); /* Enhanced shadow */
+}
+
+.quick-action-btn:active {
+    transform: scale(0.95);
 }
 
 /* ===== MODAL STYLES ===== */
@@ -788,21 +893,28 @@ select.form-input {
 /* Tablet styles */
 @media (max-width: 768px) {
     body {
-        padding: var(--spacing-md);
+        padding: 0; /* No padding on mobile */
+
+        padding: 0;
     }
     
     .container {
         margin: 0;
-        border-radius: var(--radius-lg);
+        border-radius: 0;
+        padding: 0;
+    }
+    
+    .container .nav {
+        padding: 1rem var(--spacing-md);
     }
     
     .header {
-        padding: var(--spacing-xl) var(--spacing-md);
+        padding: var(--spacing-lg) 0;
     }
     
     .stats-overview {
         grid-template-columns: 1fr;
-        padding: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
         gap: var(--spacing-md);
     }
     
@@ -828,13 +940,12 @@ select.form-input {
     .search-input {
         min-width: 100%;
     }
-    
-    .section {
-        margin: var(--spacing-md) var(--spacing-sm);
+      .section {
+        margin: var(--spacing-md) 0; /* Remove horizontal margin */
     }
     
     .content-inner {
-        padding: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
     }
     
     #test-auth-btn {
@@ -866,6 +977,18 @@ select.form-input {
 
 /* Mobile styles */
 @media (max-width: 480px) {
+    .container .nav {
+        padding: 1rem var(--spacing-sm);
+    }
+    
+    .stats-overview {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+    
+    .content-inner {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+    
     .header h1 {
         font-size: 1.8rem;
     }
@@ -894,12 +1017,32 @@ select.form-input {
         justify-content: flex-end;
     }
     
+    .quick-action-btn {
+        width: 44px; /* Even larger for touch */
+        height: 44px;
+        font-size: 1.2rem;
+    }
+    
+    .quick-actions {
+        gap: var(--spacing-md); /* More spacing between buttons */
+    }
+    
+    /* Ensure buttons don't overlap content on small screens */
+    .item-card {
+        padding-right: calc(var(--spacing-lg) + 100px); /* Extra space for buttons */
+    }
+    
     .form-input, .form-textarea {
         font-size: 16px; /* Prevent zoom on iOS */
     }
     
     .modal-content {
         padding: var(--spacing-md);
+    }
+    
+    /* Smaller max-height for mobile items lists */
+    .items-list {
+        max-height: 300px;
     }
 }
 
@@ -977,4 +1120,46 @@ select.form-input {
     #test-auth-btn {
         animation: none;
     }
+}
+
+/* ===== 2-KOLOMMEN LAYOUT VOOR SECTIES ===== */
+.sections-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg);
+    align-items: start;
+}
+
+.sections-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* Aanpassing van bestaande section margin om overlap te voorkomen */
+.sections-container .section {
+    margin: 0; /* Reset margin omdat de container nu de spacing beheert */
+}
+
+/* Responsieve aanpassingen voor kleinere schermen */
+@media (max-width: 1200px) {
+    .sections-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .sections-column {
+        gap: var(--spacing-md);
+    }
+}
+
+@media (max-width: 768px) {
+    .sections-container {
+        margin: var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+    
+    .sections-column {
+        gap: var(--spacing-sm);    }
 }

@@ -44,19 +44,26 @@ class Student {
     ]);
    
     return result.insertId;
-  }
-
-  static async update(studentnummer, studentData) {
-    const fields = Object.keys(studentData);
-    const values = Object.values(studentData);
-    const setClause = fields.map(field => `${field} = ?`).join(', ');
-   
-    const [result] = await pool.query(
-      `UPDATE STUDENT SET ${setClause} WHERE studentnummer = ?`,
-      [...values, studentnummer]
-    );
-   
-    return result.affectedRows;
+  }  static async update(studentnummer, studentData) {
+    try {
+      const fields = Object.keys(studentData);
+      const values = Object.values(studentData);
+      
+      if (fields.length === 0) {
+        return 0;
+      }
+      
+      const setClause = fields.map(field => `${field} = ?`).join(', ');
+      const query = `UPDATE STUDENT SET ${setClause} WHERE studentnummer = ?`;
+      const params = [...values, studentnummer];
+      
+      const [result] = await pool.query(query, params);
+      
+      return result.affectedRows;
+    } catch (error) {
+      console.error('Error in Student.update:', error);
+      throw error;
+    }
   }
 
   static async delete(studentnummer) {
@@ -66,7 +73,6 @@ class Student {
     );
     return result.affectedRows;
   }
-
   static async getWithProjects() {
     try {
       console.log('🔍 [DEBUG] Executing getWithProjects query (JOIN TECHNOLOGIE)...');
@@ -75,7 +81,8 @@ class Student {
             s.projectTitel,
             MAX(s.projectBeschrijving) as projectBeschrijving,
             GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen,
-            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) SEPARATOR ', ') as studenten
+            GROUP_CONCAT(DISTINCT CONCAT(s.voornaam, ' ', s.achternaam) ORDER BY s.achternaam, s.voornaam SEPARATOR ', ') as studenten,
+            COUNT(DISTINCT s.studentnummer) as aantalStudenten
         FROM
             STUDENT s
         LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer

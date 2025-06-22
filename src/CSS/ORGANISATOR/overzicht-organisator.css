@@ -99,7 +99,7 @@
 }
 
 .overzichtBlok:last-child::after {
-    content: "13:00 - 16:00";
+    content: "13:00 - 19:00";
     position: absolute;
     bottom: 0.5rem;
     left: 50%;

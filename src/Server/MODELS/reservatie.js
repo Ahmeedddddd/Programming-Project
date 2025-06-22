@@ -6,8 +6,7 @@ const { pool } = require("../CONFIG/database"); // Zorg dat dit pad klopt
 // om ISO strings te reconstrueren voor de frontend.
 const EVENT_DATE_FOR_FRONTEND = "2025-06-25"; // Datum van Student Project Showcase 2025
 
-class Reservatie {
-  static async getAll() {
+class Reservatie {  static async getAll() {
     try {
       const [rows] = await pool.query(`
                 SELECT
@@ -15,7 +14,6 @@ class Reservatie {
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
-                    a.datum,  
                     a.startTijd,
                     a.eindTijd,
                     a.status,

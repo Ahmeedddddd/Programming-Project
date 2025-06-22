@@ -5,7 +5,7 @@
  * Werkt voor student, bedrijf en organisator accounts
  */
 
-const API_BASE_URL = 'http://localhost:3301';
+const API_BASE_URL = 'http://localhost:8383';
 
 class LogoutSystem {
   

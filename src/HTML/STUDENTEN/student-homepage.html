@@ -49,19 +49,74 @@
         <a href="/alle-bedrijven" class="section-btn1">Bedrijven Ontdekken</a>
       </section>
 
-      <!-- Zoekbalk -->
-      <section class="searchSection">
-          <div class="searchBar">
-            <input 
-              type="text"
-              class="search-input"
-              list="search-suggestions"
-              placeholder="Zoek bedrijven, projecten..." 
-            />
-            <datalist id="search-suggestions"></datalist>
-          </div>
-          <div id="searchResults" class="search-results"></div>
-      </section>
+      <!-- Student Filter Section -->
+<section class="student-filter-section">
+    <!-- Filter Pills -->
+    <div class="specialization-pills">
+        <span class="specialization-pill active">Alle</span>
+        <span class="specialization-pill">Dagtraject Toegepaste informatica</span>
+        <span class="specialization-pill">Werktraject Toegepaste informatica</span>
+        <span class="specialization-pill">Graduaat Programmeren</span>
+        <span class="specialization-pill">Graduaat IOT</span>
+        <span class="specialization-pill">Multimedia & Creatieve Technologie</span>
+    </div>
+  
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <input type="text" class="search-input" placeholder="Zoek studenten, bedrijven of projecten...">
+        <select class="filter-select">
+            <option>Alle jaren</option>
+            <option>1e jaar</option>
+            <option>2e jaar</option>
+            <option>3e jaar</option>
+            <option>Master</option>
+        </select>
+  
+        <select class="filter-select">
+            <option>Alle talen</option>
+            <option>Nederlands</option>
+            <option>Frans</option>
+            <option>Engels</option>
+            <option>Duits</option>
+            <option>Spaans</option>
+            <option>Italiaans</option>
+            <option>Portugees</option>
+            <option>Japans</option>
+            <option>Arabisch</option>
+            <option>Roemeens</option>
+            <option>Pools</option>
+        </select>
+  
+        <select class="filter-select">
+            <option>Alle sectoren</option>
+            <option>AI</option>
+            <option>Health informatics</option>
+            <option>Netwerk- en infrastructuurtechnologie</option>
+            <option>Duurzaamheid</option>
+            <option>Onderwijs</option>
+            <option>Gezondheidszorg</option>
+            <option>Luchtvaartindustrie</option>
+            <option>Software</option>
+            <option>Biotech</option>
+            <option>Design & Engineering</option>
+            <option>Duurzame Energie</option>
+        </select>
+  
+        <!-- Technologie filter als pillen -->
+        <div class="technology-pills">
+          <!-- Dynamisch gevuld door JS -->
+        </div>
+  
+        <button class="filter-btn">Filter</button>
+        <button class="reset-filter-btn">
+            <i class="fas fa-undo"></i>
+            Reset
+        </button>
+    </div>
+  </section>
+  
+  <!-- Éénmaal de resultaten‐container -->
+  <div id="searchResults" class="search-results"></div>
   
       <main class="main-content">
         <!-- Dashboard Cards -->
@@ -245,5 +300,6 @@
     <script type="module" src="/src/JS/UTILS/notification-system.js"></script>
     <script type="module" src="/src/JS/api.js"></script>
     <script type="module" src="/src/JS/reservatieService.js"></script>
+    <script type="module" src="/src/JS/UTILS/FilterService.js"></script>
 </body>
 </html>

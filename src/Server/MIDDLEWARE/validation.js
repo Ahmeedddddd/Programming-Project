@@ -8,6 +8,24 @@ const validateStudent = [
   body('email').isEmail().withMessage('Valid email is required')
 ];
 
+const validateStudentUpdate = [
+  body('voornaam').optional({ nullable: true, checkFalsy: false }).isLength({ min: 1 }).withMessage('Voornaam cannot be empty'),
+  body('achternaam').optional({ nullable: true, checkFalsy: false }).isLength({ min: 1 }).withMessage('Achternaam cannot be empty'),
+  body('email').optional({ nullable: true, checkFalsy: false }).isEmail().withMessage('Valid email is required'),
+  body('gsm_nummer').optional({ nullable: true, checkFalsy: false }),
+  body('opleiding').optional({ nullable: true, checkFalsy: false }),
+  body('opleidingsrichting').optional({ nullable: true, checkFalsy: false }),
+  body('projectTitel').optional({ nullable: true, checkFalsy: false }),
+  body('projectBeschrijving').optional({ nullable: true, checkFalsy: false }),
+  body('overMezelf').optional({ nullable: true, checkFalsy: false }),
+  body('huisnummer').optional({ nullable: true, checkFalsy: false }),
+  body('straatnaam').optional({ nullable: true, checkFalsy: false }),
+  body('gemeente').optional({ nullable: true, checkFalsy: false }),
+  body('postcode').optional({ nullable: true, checkFalsy: false }),
+  body('bus').optional({ nullable: true, checkFalsy: false }),
+  body('technologieen').optional({ nullable: true, checkFalsy: false })
+];
+
 const validateBedrijf = [
   body('naam').notEmpty().withMessage('Bedrijfsnaam is required'),
   body('email').isEmail().withMessage('Valid email is required'),
@@ -37,6 +55,7 @@ const validateAfspraak = [
 
 module.exports = {
   validateStudent,
+  validateStudentUpdate,
   validateBedrijf,
   validateOrganisator,
   validateReservatie,

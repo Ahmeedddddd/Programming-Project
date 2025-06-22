@@ -7,6 +7,31 @@ const Notificatie = require('../MODELS/notificatie');
 
 const EVENT_DATE_STRING = "2025-06-25"; // De vaste datum van het evenement
 
+// Organisator haalt alle reservaties op (voor admin panel)
+router.get(
+  "/",
+  authenticateToken,
+  requireRole(["organisator"]),
+  async (req, res) => {
+    try {
+      const reservaties = await Reservatie.getAll();
+      // Voor de frontend, voeg de vaste datum toe aan de tijdvelden
+      const formattedReservations = reservaties.map((r) => ({
+        ...r,
+        startTijd: new Date(`${EVENT_DATE_STRING}T${r.startTijd}`).toISOString(),
+        eindTijd: new Date(`${EVENT_DATE_STRING}T${r.eindTijd}`).toISOString(),
+      }));
+      res.status(200).json({ success: true, data: formattedReservations });
+    } catch (error) {
+      console.error("Error fetching all reservations:", error);
+      res.status(500).json({
+        success: false,
+        message: "Interne serverfout bij het ophalen van alle reservaties.",
+      });
+    }
+  }
+);
+
 // Student of bedrijf vraagt een reservatie aan
 router.post(
   "/request",
@@ -536,6 +561,133 @@ router.delete(
     } catch (error) {
       console.error('Error deleting reservation:', error);
       return res.status(500).json({ success: false, message: 'Interne serverfout bij verwijderen.' });
+    }  }
+);
+
+// Organisator annuleert een reservatie (admin functie)
+router.put(
+  "/:id/admin-cancel",
+  authenticateToken,
+  requireRole(["organisator"]),
+  async (req, res) => {
+    const { id: afspraakId } = req.params;
+
+    try {
+      const reservatie = await Reservatie.getById(afspraakId);
+      if (!reservatie) {
+        return res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden.",
+        });
+      }
+
+      // Organisator mag elke afspraak annuleren (behalve al geannuleerde)
+      if (reservatie.status === "geannuleerd") {
+        return res.status(400).json({
+          success: false,
+          message: "Reservatie is al geannuleerd.",
+        });
+      }
+
+      const affectedRows = await Reservatie.updateStatus(afspraakId, {
+        status: "geannuleerd",
+      });
+
+      if (affectedRows > 0) {
+        // Optioneel: verstuur notificatie naar student en bedrijf
+        try {
+          await Notificatie.create({
+            studentnummer: reservatie.studentnummer,
+            bedrijfsnummer: reservatie.bedrijfsnummer,
+            type: 'afspraak_geannuleerd_admin',
+            bericht: `Uw afspraak van ${reservatie.startTijd} is geannuleerd door de organisator.`,
+            status: 'nieuw'
+          });
+        } catch (notificationError) {
+          console.warn('Could not send notification:', notificationError);
+          // Continue anyway - cancellation was successful
+        }
+
+        res.status(200).json({
+          success: true,
+          message: "Reservatie succesvol geannuleerd door organisator.",
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden of niet gewijzigd.",
+        });
+      }
+    } catch (error) {
+      console.error("Error canceling reservation (admin):", error);
+      res.status(500).json({
+        success: false,
+        message: "Interne serverfout bij het annuleren van de afspraak.",
+      });
+    }
+  }
+);
+
+// Organisator wijzigt status van een reservatie (admin functie)
+router.put(
+  "/:id/admin-status",
+  authenticateToken,
+  requireRole(["organisator"]),
+  async (req, res) => {
+    const { id: afspraakId } = req.params;
+    const { status } = req.body;
+
+    // Valideer status
+    const validStatuses = ['aangevraagd', 'bevestigd', 'geannuleerd', 'afgewerkt', 'no-show', 'geweigerd'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Ongeldige status. Toegestane waarden: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    try {
+      const reservatie = await Reservatie.getById(afspraakId);
+      if (!reservatie) {
+        return res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden.",
+        });
+      }
+
+      const affectedRows = await Reservatie.updateStatus(afspraakId, { status });
+
+      if (affectedRows > 0) {
+        // Optioneel: verstuur notificatie bij statuswijziging
+        try {
+          await Notificatie.create({
+            studentnummer: reservatie.studentnummer,
+            bedrijfsnummer: reservatie.bedrijfsnummer,
+            type: 'afspraak_status_gewijzigd',
+            bericht: `Status van uw afspraak is gewijzigd naar: ${status}`,
+            status: 'nieuw'
+          });
+        } catch (notificationError) {
+          console.warn('Could not send notification:', notificationError);
+        }
+
+        res.status(200).json({
+          success: true,
+          message: `Status succesvol gewijzigd naar: ${status}`,
+          data: { id: afspraakId, status }
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "Reservatie niet gevonden of niet gewijzigd.",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating reservation status (admin):", error);
+      res.status(500).json({
+        success: false,
+        message: "Interne serverfout bij het wijzigen van de status.",
+      });
     }
   }
 );

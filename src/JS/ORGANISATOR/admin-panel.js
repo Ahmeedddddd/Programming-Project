@@ -1,8 +1,59 @@
 // admin-panel.js - Fixed version met correcte database mapping
 
-class AdminPanel {
-    constructor() {
-        this.API_BASE_URL = 'http://localhost:3301/api';
+
+// ===== MENU TOGGLE FUNCTIONS (defined early) =====
+function toggleMenu() {
+    console.log('🎛️ toggleMenu called!');
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.querySelector('.menu-overlay');
+    const body = document.body;
+    
+    console.log('📱 SideMenu found:', !!sideMenu);
+    console.log('🔄 Overlay found:', !!overlay);
+    
+    if (sideMenu) {
+        // Check the actual computed style position, not just the class
+        const computedStyle = window.getComputedStyle(sideMenu);
+        const rightPos = computedStyle.right;
+        const isVisuallyOpen = rightPos === '0px';
+        const hasOpenClass = sideMenu.classList.contains('open');
+        
+        console.log('📊 Menu has open class:', hasOpenClass);
+        console.log('📊 Menu right position:', rightPos);
+        console.log('📊 Menu visually open:', isVisuallyOpen);
+        
+        // Use visual state as the source of truth, but force with inline styles
+        if (isVisuallyOpen) {
+            // Close menu - force with inline style
+            console.log('❌ Closing menu with inline styles...');
+            sideMenu.style.right = '-400px';
+            sideMenu.classList.remove('open');
+            body.classList.remove('menu-open');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+        } else {
+            // Open menu - force with inline style
+            console.log('✅ Opening menu with inline styles...');
+            sideMenu.style.right = '0px';
+            sideMenu.classList.add('open');
+            body.classList.add('menu-open');
+            if (overlay) {
+                overlay.classList.add('show');
+            }
+        }
+        
+        // Debug: Check final state
+        const finalRight = window.getComputedStyle(sideMenu).right;
+        console.log('🔍 Menu final right position:', finalRight);
+        console.log('🔍 Menu final has open class:', sideMenu.classList.contains('open'));
+    } else {
+        console.error('❌ SideMenu element not found!');
+    }
+}
+
+class AdminPanel {constructor() {
+        this.API_BASE_URL = 'http://localhost:8383/api';
         this.students = [];
         this.companies = [];
         this.projects = [];
@@ -15,47 +66,22 @@ class AdminPanel {
         console.log('Auth token available:', !!this.authToken);
         
         this.init();
-    }
-
-    // ===== UTILITY METHODS =====
+    }    // ===== UTILITY METHODS =====
     getValidAuthToken() {
         const token = localStorage.getItem('authToken');
-        const tokenTimestamp = localStorage.getItem('authTokenTimestamp');
-        const isTestToken = localStorage.getItem('isTestToken') === 'true';
-        
-        if (isTestToken && tokenTimestamp) {
-            const sessionStartTime = sessionStorage.getItem('sessionStartTime');
-            if (!sessionStartTime) {
-                console.log('🔄 Pagina refresh gedetecteerd - test token expired');
-                this.clearAuthToken();
-                return null;
-            }
-        }
-        
         return token;
     }
-    
-    setAuthToken(token, isTestToken = false) {
+      setAuthToken(token) {
         this.authToken = token;
         localStorage.setItem('authToken', token);
         localStorage.setItem('authTokenTimestamp', Date.now().toString());
-        localStorage.setItem('isTestToken', isTestToken.toString());
-        
-        if (isTestToken) {
-            sessionStorage.setItem('sessionStartTime', Date.now().toString());
-            console.log('🧪 Test token ingesteld - vervalt bij pagina refresh');
-        }
         
         console.log('✅ Auth token set successfully');
         this.loadAllData();
-    }
-
-    clearAuthToken() {
+    }    clearAuthToken() {
         this.authToken = null;
         localStorage.removeItem('authToken');
         localStorage.removeItem('authTokenTimestamp');
-        localStorage.removeItem('isTestToken');
-        sessionStorage.removeItem('sessionStartTime');
         console.log('🔑 Auth token cleared');
     }
 
@@ -66,104 +92,47 @@ class AdminPanel {
         }
         return true;
     }
-
+    
     async init() {
         console.log('🔧 Setting up event listeners...');
         this.setupEventListeners();
         this.initModal();
         
-        console.log('📊 Loading data...');
+        // Force menu to be closed initially
+        const sideMenu = document.getElementById('sideMenu');
+        if (sideMenu) {
+            sideMenu.classList.remove('open');
+            document.body.classList.remove('menu-open');
+            const overlay = document.querySelector('.menu-overlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+            console.log('🔧 Forced menu to closed state on init');
+        }
+          console.log('📊 Loading data...');
         await this.loadAllData();
-        
-        this.addTestAuthButton();
         console.log('✅ AdminPanel initialization complete!');
+        
+        // Force menu closed again after everything loads (to counter navigation manager)
+        setTimeout(() => {
+            const sideMenu = document.getElementById('sideMenu');
+            if (sideMenu) {
+                sideMenu.classList.remove('open');
+                document.body.classList.remove('menu-open');
+                const overlay = document.querySelector('.menu-overlay');
+                if (overlay) {
+                    overlay.classList.remove('show');
+                }
+                console.log('🔧 Re-forced menu to closed state after navigation load');
+            }
+        }, 100);
     }
 
     initModal() {
         const modal = document.getElementById('modal');
         if (modal) {
             modal.style.display = 'none';
-        }
-    }
-
-    addTestAuthButton() {
-        const header = document.querySelector('.header');
-        if (header && !document.getElementById('test-auth-btn')) {
-            const testButton = document.createElement('button');
-            testButton.id = 'test-auth-btn';
-            testButton.innerHTML = '🔑 Test Auth Token (Tijdelijk)';
-            testButton.title = 'Klik om admin functies te testen zonder echte login';
-            testButton.style.cssText = `
-                position: absolute;
-                top: 1rem;
-                right: 1rem;
-                background: linear-gradient(135deg, #27ae60, #2ecc71);
-                color: white;
-                border: none;
-                padding: 0.75rem 1rem;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 0.9rem;
-                font-weight: 600;
-                z-index: 10;
-                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-                transition: all 0.3s ease;
-                animation: pulse 2s infinite;
-            `;
-            
-            const pulseStyle = document.createElement('style');
-            pulseStyle.textContent = `
-                @keyframes pulse {
-                    0% { box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
-                    50% { box-shadow: 0 4px 15px rgba(39, 174, 96, 0.6); }
-                    100% { box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3); }
-                }
-            `;
-            document.head.appendChild(pulseStyle);
-            
-            testButton.addEventListener('click', () => {
-                if (confirm('⚠️ WAARSCHUWING: Dit is een test functie!\n\nDeze knop geeft je tijdelijk admin rechten voor testing.\nAlleen gebruiken in development omgeving.\n\nTest token vervalt automatisch bij pagina refresh.\n\nDoorgaan?')) {
-                    this.setAuthToken('test-admin-token-12345', true);
-                    this.showTemporaryMessage('🔑 Test auth token ingesteld! Vervalt bij refresh.', 'success');
-                    
-                    console.log('🧪 TEST MODE ACTIVATED');
-                    console.log('📝 Nu kan je testen:');
-                    console.log('   - Studenten toevoegen/bewerken/verwijderen');
-                    console.log('   - Bedrijven toevoegen/bewerken/verwijderen');
-                    console.log('   - Afspraken bekijken/status wijzigen/verwijderen');
-                    console.log('🔄 Token vervalt automatisch bij pagina refresh');
-                    console.log('🧹 Gebruik removeTestButton() om deze knop te verwijderen');
-                    
-                    testButton.style.display = 'none';
-                }
-            });
-            
-            testButton.addEventListener('mouseover', () => {
-                testButton.style.transform = 'translateY(-2px)';
-                testButton.style.boxShadow = '0 8px 25px rgba(39, 174, 96, 0.4)';
-            });
-            
-            testButton.addEventListener('mouseout', () => {
-                testButton.style.transform = 'translateY(0)';
-                testButton.style.boxShadow = '0 4px 15px rgba(39, 174, 96, 0.3)';
-            });
-            
-            header.appendChild(testButton);
-        }
-    }
-
-    enableTestMode() {
-        this.setAuthToken('test-admin-token-12345', true);
-        this.showTemporaryMessage('🧪 Test modus geactiveerd! Vervalt bij refresh.', 'info');
-    }
-
-    removeTestButton() {
-        const testButton = document.getElementById('test-auth-btn');
-        if (testButton) {
-            testButton.remove();
-            console.log('🧹 Test knop verwijderd');
-        }
-    }
+        }    }
 
     setupEventListeners() {
         // Search event listeners
@@ -203,12 +172,57 @@ class AdminPanel {
                 const sectionId = header.parentElement.id;
                 this.toggleSection(sectionId);
             });
-        });
+        });        // Burger menu toggle - with retry mechanism
+        const setupBurgerToggle = () => {            const burgerToggle = document.getElementById('burgerToggle');
+            console.log('🍔 BurgerToggle element found:', !!burgerToggle);
+            
+            // Debug: Check initial menu state
+            const sideMenu = document.getElementById('sideMenu');
+            if (sideMenu) {
+                console.log('🔍 Initial menu state - has open class:', sideMenu.classList.contains('open'));
+                console.log('🔍 Initial menu classList:', Array.from(sideMenu.classList));
+                
+                // Force menu to be closed initially
+                sideMenu.classList.remove('open');
+                document.body.classList.remove('menu-open');
+                const overlay = document.querySelector('.menu-overlay');
+                if (overlay) {
+                    overlay.classList.remove('show');
+                }
+                console.log('🔧 Forced menu to closed state');
+            }if (burgerToggle) {
+                burgerToggle.addEventListener('click', (e) => {
+                    console.log('🍔 Burger clicked!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🔍 About to call toggleMenu...');
+                    console.log('🔍 toggleMenu type:', typeof toggleMenu);
+                    console.log('🔍 toggleMenu function:', toggleMenu);
+                    
+                    try {
+                        toggleMenu();
+                        console.log('✅ toggleMenu called successfully');
+                    } catch (error) {
+                        console.error('❌ Error calling toggleMenu:', error);
+                    }
+                });
+                return true;
+            } else {
+                console.warn('⚠️ BurgerToggle element not found, retrying...');
+                return false;
+            }
+        };
 
-        // Burger menu toggle
-        document.getElementById('burgerToggle')?.addEventListener('click', () => {
-            toggleMenu();
-        });
+        // Try immediately
+        if (!setupBurgerToggle()) {
+            // If not found, retry after navigation loads
+            setTimeout(() => {
+                if (!setupBurgerToggle()) {
+                    console.error('❌ BurgerToggle element not found after retry!');
+                }
+            }, 1000);
+        }
     }
 
     // ===== API HELPER METHODS =====
@@ -227,10 +241,8 @@ class AdminPanel {
 
         if (data) {
             config.body = JSON.stringify(data);
-        }
-
-        try {
-            console.log(`🌐 API Request: ${method} ${endpoint}`, { requireAuth, hasToken: !!this.authToken });
+        }        try {
+            console.log(`🌐 API Request: ${method} ${endpoint}`);
             
             const response = await fetch(`${this.API_BASE_URL}${endpoint}`, config);
             
@@ -243,10 +255,7 @@ class AdminPanel {
                     errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                 }
                 throw new Error(errorMessage);
-            }
-
-            const result = await response.json();
-            console.log(`✅ API Response:`, result);
+            }            const result = await response.json();
             return result;
         } catch (error) {
             console.error('❌ API Error:', error);
@@ -260,9 +269,7 @@ class AdminPanel {
             }
             throw error;
         }
-    }
-
-    // ===== DATA LOADING METHODS =====
+    }    // ===== DATA LOADING METHODS =====
     async loadAllData() {
         try {
             await Promise.all([
@@ -272,6 +279,9 @@ class AdminPanel {
                 this.loadProjects(),
                 this.loadAppointments()
             ]);
+            
+            // Add scroll indicators after data is loaded
+            setTimeout(() => this.addScrollIndicators(), 100);
         } catch (error) {
             this.showTemporaryMessage('❌ Fout bij laden van gegevens', 'error');
         }
@@ -283,7 +293,7 @@ class AdminPanel {
             const [studentStats, companyStats, projectStats] = await Promise.all([
                 this.apiRequest('/studenten').catch(() => ({ data: [] })),
                 this.apiRequest('/bedrijven').catch(() => ({ data: [] })),
-                this.apiRequest('/studenten/projecten').catch(() => ({ data: [] }))
+                this.apiRequest('/projecten/with-ids').catch(() => ({ data: [] }))
             ]);
 
             // Update statistiek counters
@@ -328,8 +338,7 @@ class AdminPanel {
         try {
             const response = await this.apiRequest('/bedrijven');
             this.companies = response.data || response;
-            this.renderCompanies();
-        } catch (error) {
+            this.renderCompanies();        } catch (error) {
             document.getElementById('companies-list').innerHTML = 
                 '<div class="error-message">Fout bij laden van bedrijven</div>';
         }
@@ -337,20 +346,22 @@ class AdminPanel {
 
     async loadProjects() {
         try {
-            const response = await this.apiRequest('/studenten/projecten');
-            this.projects = response.data || response;
+            // Use the same endpoint as alle-projecten for consistent data structure
+            const response = await this.apiRequest('/projecten/with-ids');
+            let projects = response.data || response;
+            
+            this.projects = projects;
             this.renderProjects();
         } catch (error) {
+            console.error('❌ Error loading projects:', error);
             document.getElementById('projects-list').innerHTML = 
                 '<div class="error-message">Fout bij laden van projecten</div>';
         }
     }
 
     async loadAppointments() {
-        try {
-            const response = await this.apiRequest('/reservaties', 'GET', null, true);
+        try {            const response = await this.apiRequest('/reservaties', 'GET', null, true);
             this.appointments = response.data || response;
-            console.log('📅 Loaded appointments:', this.appointments);
             this.renderAppointments();
         } catch (error) {
             console.log('ℹ️ Could not load appointments:', error.message);
@@ -441,9 +452,7 @@ class AdminPanel {
                 }
             }, 300);
         }, 4000); // FIXED: Longer display time for better UX
-    }
-
-    getFieldLabel(field) {
+    }    getFieldLabel(field) {
         const labels = {
             voornaam: 'Voornaam',
             achternaam: 'Achternaam',
@@ -453,7 +462,11 @@ class AdminPanel {
             opleiding: 'Opleiding',
             opleidingsrichting: 'Opleidingsrichting',
             projectTitel: 'Project Titel',
+            titel: 'Project Titel',
             projectBeschrijving: 'Project Beschrijving',
+            beschrijving: 'Project Beschrijving',
+            technologieen: 'Technologieën',
+            studenten: 'Studenten',
             overMezelf: 'Over mezelf',
             sector: 'Sector',
             TVA_nummer: 'TVA Nummer',
@@ -594,36 +607,62 @@ class AdminPanel {
                 <div class="item-info">${company.sector} • ${company.email}</div>
             </div>
         `).join('');
-    }
-
-    renderProjects(searchTerm = '') {
+    }    renderProjects(searchTerm = '') {
         const container = document.getElementById('projects-list');
-        if (!container) return;
-
-        const filtered = this.projects.filter(project => 
-            (project.projectTitel && project.projectTitel.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (project.projectBeschrijving && project.projectBeschrijving.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            project.studentNaam?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        if (!container) return;        const filtered = this.projects.filter(project => {
+            const title = project.titel || project.projectTitel || '';
+            const desc = project.beschrijving || project.projectBeschrijving || '';
+            
+            // Search in title and description
+            if (title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                desc.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return true;
+            }
+            
+            // Search in student names (array of objects)
+            if (project.studenten && Array.isArray(project.studenten)) {
+                return project.studenten.some(student => {
+                    const naam = student.naam || `${student.voornaam || ''} ${student.achternaam || ''}`.trim();
+                    return naam.toLowerCase().includes(searchTerm.toLowerCase());
+                });
+            }
+            
+            return false;
+        });
 
         if (filtered.length === 0) {
             container.innerHTML = '<div class="no-items">Geen projecten gevonden</div>';
             return;
-        }
+        }        container.innerHTML = filtered.map(project => {
+            // Handle array of student objects (from /api/projecten/with-ids)
+            const students = project.studenten || [];
+            const studentCount = students.length;
+            const studentNames = students.map(s => s.naam || `${s.voornaam || ''} ${s.achternaam || ''}`.trim()).filter(name => name);
+            const studentNamesString = studentNames.join(', ');
 
-        container.innerHTML = filtered.map(project => `
-            <div class="item-card project" onclick="adminPanel.showDetails('project', '${project.studentnummer}')">
-                <div class="quick-actions">
-                    <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); adminPanel.showEditModal('student', '${project.studentnummer}')" title="Student Bewerken">
-                        ✏️
-                    </button>
+            const projectTitle = project.titel || project.projectTitel || 'Geen titel';
+            const projectId = project.id || projectTitle;
+
+            return `                <div class="item-card project" onclick="adminPanel.showDetails('project', '${projectTitle}')">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); adminPanel.showEditModal('project', '${projectId}')" title="Project Bewerken">
+                            ✏️
+                        </button>
+                        <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); adminPanel.deleteProject('${projectTitle}')" title="Project Verwijderen">
+                            🗑️
+                        </button>
+                    </div>
+                    <div class="item-name">${projectTitle}</div>
+                    <div class="item-info">                        <div class="project-students">
+                            <strong>👥 ${studentCount} student${studentCount === 1 ? '' : 'en'}:</strong>                            <div class="student-names">
+                ${studentNamesString || 'Geen studenten gevonden'}
+                            </div>
+                        </div>
+                        ${project.technologieen ? `<div class="project-tech">🔧 ${project.technologieen}</div>` : ''}
+                    </div>
                 </div>
-                <div class="item-name">${project.projectTitel || 'Geen titel'}</div>
-                <div class="item-info">
-                    Door: ${project.studentNaam} • ${project.opleidingsrichting || 'Geen richting'}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // FIXED: Appointments rendering met correcte status mapping
@@ -640,16 +679,14 @@ class AdminPanel {
         if (filtered.length === 0) {
             container.innerHTML = '<div class="no-items">Geen afspraken gevonden</div>';
             return;
-        }
-
-        container.innerHTML = filtered.map(appointment => `
+        }        container.innerHTML = filtered.map(appointment => `
             <div class="item-card appointment" onclick="adminPanel.showDetails('appointment', '${appointment.id}')">
                 <div class="quick-actions">
                     <button class="quick-action-btn quick-edit" onclick="event.stopPropagation(); adminPanel.showEditModal('appointment', '${appointment.id}')" title="Status Bewerken">
                         ✏️
                     </button>
-                    <button class="quick-action-btn quick-delete" onclick="event.stopPropagation(); adminPanel.deleteItem('appointment', '${appointment.id}')" title="Verwijderen">
-                        🗑️
+                    <button class="quick-action-btn quick-cancel" onclick="event.stopPropagation(); adminPanel.cancelAppointment('${appointment.id}')" title="Afspraak Annuleren">
+                        ❌
                     </button>
                 </div>
                 <div class="item-name">${appointment.studentNaam} ↔ ${appointment.bedrijfNaam}</div>
@@ -716,13 +753,12 @@ class AdminPanel {
             case 'student':
                 item = this.students.find(s => s.studentnummer == id);
                 title = 'Student Bewerken';
-                break;
-            case 'company':
+                break;            case 'company':
                 item = this.companies.find(c => c.bedrijfsnummer == id);
                 title = 'Bedrijf Bewerken';
                 break;
             case 'project':
-                item = this.projects.find(p => p.studentnummer == id);
+                item = this.projects.find(p => (p.titel || p.projectTitel) == id);
                 title = 'Project Bewerken';
                 break;
             case 'appointment':
@@ -744,9 +780,12 @@ class AdminPanel {
             case 'student':
                 formHtml = this.getStudentFormHtml(item);
                 break;
-                
-            case 'company':
+                  case 'company':
                 formHtml = this.getCompanyFormHtml(item);
+                break;
+            
+            case 'project':
+                formHtml = this.getProjectFormHtml(item);
                 break;
 
             case 'appointment':
@@ -776,9 +815,8 @@ class AdminPanel {
             case 'company':
                 item = this.companies.find(c => c.bedrijfsnummer == id);
                 title = 'Bedrijf Details';
-                break;
-            case 'project':
-                item = this.projects.find(p => p.studentnummer == id);
+                break;            case 'project':
+                item = this.projects.find(p => (p.titel || p.projectTitel) == id);
                 title = 'Project Details';
                 break;
             case 'appointment':
@@ -793,8 +831,7 @@ class AdminPanel {
         }
 
         document.getElementById('modal-title').textContent = title;
-        
-        let detailsHtml = '';
+          let detailsHtml = '';
         for (const [key, value] of Object.entries(item)) {
             if (key !== 'studentnummer' && key !== 'bedrijfsnummer' && key !== 'id' && value) {
                 const label = this.getFieldLabel(key);
@@ -810,6 +847,18 @@ class AdminPanel {
                     displayValue = this.formatTime(value);
                 } else if (key === 'status') {
                     displayValue = `<span class="status-badge ${this.getStatusClass(value)}">${this.getStatusText(value)}</span>`;
+                } else if (key === 'studenten' && Array.isArray(value)) {
+                    // Speciale behandeling voor studenten array
+                    const studentNames = value.map(student => {
+                        if (typeof student === 'object') {
+                            return student.naam || `${student.voornaam || ''} ${student.achternaam || ''}`.trim() || 'Onbekende student';
+                        }
+                        return student;
+                    }).filter(name => name);
+                    displayValue = studentNames.length > 0 ? studentNames.join(', ') : 'Geen studenten';
+                } else if (Array.isArray(value)) {
+                    // Algemene behandeling voor andere arrays
+                    displayValue = value.join(', ');
                 }
                 
                 detailsHtml += `
@@ -819,14 +868,16 @@ class AdminPanel {
                     </div>
                 `;
             }
-        }
-
-        // Add action buttons
+        }        // Add action buttons
         let editButtonText = '✏️ Bewerken';
         let editAction = `adminPanel.showEditModal('${type}', '${id}')`;
+        let deleteButtonText = '🗑️ Verwijderen';
+        let deleteAction = `adminPanel.deleteItem('${type}', '${id}')`;
         
         if (type === 'appointment') {
             editButtonText = '📝 Status Wijzigen';
+            deleteButtonText = '❌ Annuleren';
+            deleteAction = `adminPanel.cancelAppointment('${id}')`;
         }
 
         detailsHtml += `
@@ -834,10 +885,81 @@ class AdminPanel {
                 <button onclick="${editAction}" class="submit-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); flex: 1;">
                     ${editButtonText}
                 </button>
-                <button onclick="adminPanel.deleteItem('${type}', '${id}')" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); flex: 1;">
-                    🗑️ Verwijderen
+                <button onclick="${deleteAction}" class="submit-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); flex: 1;">
+                    ${deleteButtonText}
                 </button>
             </div>
+        `;
+
+        document.getElementById('modal-body').innerHTML = detailsHtml;
+        this.showModal();
+    }
+
+    showProjectDetails(projectTitel) {
+        const project = this.projects.find(p => p.projectTitel === projectTitel);
+        
+        if (!project) {
+            this.showTemporaryMessage('❌ Project niet gevonden', 'error');
+            return;
+        }
+
+        document.getElementById('modal-title').textContent = 'Project Details';
+        
+        // Parse student names
+        const studentNames = project.studenten ? project.studenten.split(', ') : [];
+        const studentCount = studentNames.length;
+        
+        const detailsHtml = `
+            <div class="project-details">
+                <div class="detail-item">
+                    <span class="detail-label">Project Titel:</span>
+                    <span class="detail-value"><strong>${project.projectTitel}</strong></span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Beschrijving:</span>
+                    <span class="detail-value">${project.projectBeschrijving || 'Geen beschrijving beschikbaar'}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Teamleden (${studentCount}):</span>
+                    <span class="detail-value">
+                        <div class="student-list">
+                            ${studentNames.map(name => `<span class="student-tag">👤 ${name.trim()}</span>`).join('')}
+                        </div>
+                    </span>
+                </div>
+                
+                ${project.technologieen ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Technologieën:</span>
+                        <span class="detail-value">
+                            <div class="tech-list">
+                                ${project.technologieen.split(', ').map(tech => `<span class="tech-tag">🔧 ${tech.trim()}</span>`).join('')}
+                            </div>
+                        </span>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <style>
+                .student-list, .tech-list {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    margin-top: 0.5rem;
+                }
+                .student-tag, .tech-tag {
+                    background: #f0f0f0;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    border-left: 3px solid #881538;
+                }
+                .tech-tag {
+                    border-left-color: #007acc;
+                }
+            </style>
         `;
 
         document.getElementById('modal-body').innerHTML = detailsHtml;
@@ -978,6 +1100,42 @@ class AdminPanel {
         `;
     }
 
+    getProjectFormHtml(item = null) {
+        const isEdit = !!item;
+        
+        // Voor projecten tonen we alle relevante velden
+        const studentNames = item?.studenten ? 
+            item.studenten.map(s => s.naam || `${s.voornaam || ''} ${s.achternaam || ''}`.trim()).join(', ') 
+            : '';
+
+        return `
+            <form id="data-form">
+                <div class="form-group">
+                    <label class="form-label">Project Titel *</label>
+                    <input type="text" class="form-input" name="titel" value="${item?.titel || item?.projectTitel || ''}" required placeholder="Mijn geweldige project">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Project Beschrijving *</label>
+                    <textarea class="form-input" name="beschrijving" rows="4" required placeholder="Beschrijf je project...">${item?.beschrijving || item?.projectBeschrijving || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Technologieën</label>
+                    <input type="text" class="form-input" name="technologieen" value="${item?.technologieen || ''}" placeholder="JavaScript, React, Node.js, ...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gekoppelde Studenten</label>
+                    <input type="text" class="form-input" value="${studentNames}" disabled readonly 
+                           placeholder="Geen studenten gekoppeld" 
+                           title="Studenten kunnen alleen via de student bewerking aangepast worden">
+                    <small style="color: #666; font-size: 0.8rem;">
+                        💡 Tip: Om studenten toe te voegen/verwijderen, bewerk de individuele studenten
+                    </small>
+                </div>
+                <button type="submit" class="submit-btn">${isEdit ? 'Project Bijwerken' : 'Project Toevoegen'}</button>
+            </form>
+        `;
+    }
+
     // ===== CRUD OPERATIONS =====
     async handleFormSubmit(event) {
         event.preventDefault();
@@ -1005,9 +1163,26 @@ class AdminPanel {
                         await this.apiRequest(`/bedrijven/${this.currentEditId}`, 'PUT', data, true);
                         await this.loadCompanies();
                         break;
-                    case 'appointment':
-                        // FIXED: Use correct status endpoint
-                        await this.apiRequest(`/reservaties/${this.currentEditId}/status`, 'PUT', data, true);
+                    case 'project':
+                        await this.apiRequest(`/projecten/${this.currentEditId}`, 'PUT', data, true);
+                        await this.loadProjects();
+                        break;                    case 'appointment':
+                        // Probeer eerst admin status endpoint, val terug naar algemene updates
+                        try {
+                            await this.apiRequest(`/reservaties/${this.currentEditId}/admin-status`, 'PUT', data, true);                        } catch (adminError) {
+                            try {
+                                await this.apiRequest(`/reservaties/${this.currentEditId}/status`, 'PUT', data, true);
+                            } catch (statusError) {
+                                const appointment = this.appointments.find(a => a.id == this.currentEditId);
+                                if (appointment) {
+                                    const updateData = { ...appointment, ...data };
+                                    delete updateData.id;
+                                    await this.apiRequest(`/reservaties/${this.currentEditId}`, 'PUT', updateData, true);
+                                } else {
+                                    throw new Error('Afspraak niet gevonden voor update');
+                                }
+                            }
+                        }
                         await this.loadAppointments();
                         break;
                 }
@@ -1022,6 +1197,10 @@ class AdminPanel {
                     case 'company':
                         await this.apiRequest('/bedrijven', 'POST', data, true);
                         await this.loadCompanies();
+                        break;
+                    case 'project':
+                        await this.apiRequest('/projecten', 'POST', data, true);
+                        await this.loadProjects();
                         break;
                 }
                 this.showTemporaryMessage('✅ Item succesvol toegevoegd!', 'success');
@@ -1055,6 +1234,11 @@ class AdminPanel {
                 itemName = company ? company.naam : 'Dit bedrijf';
                 confirmMessage = `Weet je zeker dat je het bedrijf "${itemName}" wilt verwijderen?`;
                 break;
+            case 'project':
+                const project = this.projects.find(p => (p.id || p.titel || p.projectTitel) == id);
+                itemName = project ? (project.titel || project.projectTitel || 'Dit project') : 'Dit project';
+                confirmMessage = `Weet je zeker dat je het project "${itemName}" wilt verwijderen?`;
+                break;
             case 'appointment':
                 const appointment = this.appointments.find(a => a.id == id);
                 itemName = appointment ? `${appointment.studentNaam} ↔ ${appointment.bedrijfNaam}` : 'Deze afspraak';
@@ -1074,6 +1258,11 @@ class AdminPanel {
                         await this.apiRequest(`/bedrijven/${id}`, 'DELETE', null, true);
                         await this.loadCompanies();
                         break;
+                    case 'project':
+                        await this.apiRequest(`/projecten/${id}`, 'DELETE', null, true);
+                        await this.loadProjects();
+                        await this.loadStudents(); // Studenten kunnen veranderen
+                        break;
                     case 'appointment':
                         // FIXED: Use correct endpoint
                         await this.apiRequest(`/reservaties/${id}`, 'DELETE', null, true);
@@ -1087,6 +1276,202 @@ class AdminPanel {
                 console.error('Delete error:', error);
             }
         }
+    }
+    
+    async cancelAppointment(appointmentId) {
+        if (!this.requiresAuth('afspraken annuleren')) {
+            return;
+        }
+
+        const appointment = this.appointments.find(a => a.id == appointmentId);
+        if (!appointment) {
+            this.showTemporaryMessage('❌ Afspraak niet gevonden', 'error');
+            return;
+        }
+
+        if (appointment.status === 'geannuleerd') {
+            this.showTemporaryMessage('ℹ️ Deze afspraak is al geannuleerd', 'info');
+            return;
+        }
+
+        if (!confirm(`Weet je zeker dat je de afspraak tussen ${appointment.studentNaam} en ${appointment.bedrijfNaam} wilt annuleren?`)) {
+            return;
+        }
+
+        try {
+            let success = false;
+            let successMethod = '';            // Probeer verschillende endpoints in volgorde van voorkeur
+            const attempts = [
+                // 1. Admin-specifieke endpoints (nieuw toegevoegd)
+                { 
+                    endpoint: `/reservaties/${appointmentId}/admin-cancel`, 
+                    method: 'PUT', 
+                    data: {},
+                    description: 'admin cancel endpoint'
+                },
+                { 
+                    endpoint: `/reservaties/${appointmentId}/admin-status`, 
+                    method: 'PUT', 
+                    data: { status: 'geannuleerd' },
+                    description: 'admin status endpoint'
+                },
+                // 2. Specifieke cancel endpoints (voor studenten)
+                { 
+                    endpoint: `/reservaties/${appointmentId}/cancel`, 
+                    method: 'PUT', 
+                    data: {},
+                    description: 'student cancel endpoint'
+                },
+                // 3. Algemene status endpoints
+                { 
+                    endpoint: `/reservaties/${appointmentId}/status`, 
+                    method: 'PUT', 
+                    data: { status: 'geannuleerd' },
+                    description: 'status PUT endpoint'
+                },
+                { 
+                    endpoint: `/reservaties/${appointmentId}/status`, 
+                    method: 'PATCH', 
+                    data: { status: 'geannuleerd' },
+                    description: 'status PATCH endpoint'
+                },
+                // 4. Directe update endpoints
+                { 
+                    endpoint: `/reservaties/${appointmentId}`, 
+                    method: 'PATCH', 
+                    data: { status: 'geannuleerd' },
+                    description: 'PATCH endpoint'
+                },
+                // 5. Volledige PUT update (fallback)
+                { 
+                    endpoint: `/reservaties/${appointmentId}`, 
+                    method: 'PUT', 
+                    data: { ...appointment, status: 'geannuleerd', id: undefined },
+                    description: 'volledige PUT endpoint'
+                }
+            ];            for (const attempt of attempts) {
+                try {
+                    await this.apiRequest(attempt.endpoint, attempt.method, attempt.data, true);
+                    success = true;
+                    successMethod = attempt.description;
+                    break;
+                } catch (error) {
+                    // Stop bij bepaalde kritieke fouten
+                    if (error.message.includes('403') || error.message.includes('Unauthorized')) {
+                        throw new Error('Geen rechten om afspraken te annuleren');
+                    }
+                    
+                    // Ga door naar volgende poging voor andere fouten (404, 500, etc.)
+                }
+            }
+
+            if (!success) {
+                throw new Error('Geen van de API endpoints ondersteunt het annuleren van afspraken. Neem contact op met de systeembeheerder.');
+            }
+              await this.loadAppointments();
+            await this.loadStatistics();
+            this.showTemporaryMessage(`✅ Afspraak succesvol geannuleerd via ${successMethod}!`, 'success');
+        } catch (error) {
+            console.error('Cancel appointment error:', error);
+            this.showTemporaryMessage('❌ Fout bij annuleren afspraak: ' + (error.message || error), 'error');
+        }
+    }
+
+    showEditProjectModal(projectTitle) {
+        const project = this.projects.find(p => (p.titel || p.projectTitel) === projectTitle);
+        
+        if (!project) {
+            this.showTemporaryMessage('❌ Project niet gevonden', 'error');
+            return;
+        }
+
+        // For projects, we'll show a modal to edit project details
+        // Since projects are linked to students, we could allow editing the first student's project info
+        const firstStudent = project.studenten && project.studenten.length > 0 ? project.studenten[0] : null;
+        
+        if (firstStudent) {
+            // Edit the first student's project information
+            this.showEditModal('student', firstStudent.id || firstStudent.studentnummer);
+        } else {
+            this.showTemporaryMessage('ℹ️ Geen studenten gekoppeld aan dit project', 'info');
+        }
+    }    async deleteProject(projectTitle) {
+        if (!this.requiresAuth('projecten verwijderen')) {
+            return;
+        }
+
+        if (!confirm(`Weet je zeker dat je het project "${projectTitle}" wilt verwijderen? Dit zal het project verwijderen van alle gekoppelde studenten.`)) {
+            return;
+        }
+
+        const project = this.projects.find(p => (p.titel || p.projectTitel) === projectTitle);
+        
+        if (!project) {
+            this.showTemporaryMessage('❌ Project niet gevonden', 'error');
+            return;
+        }        try {
+            // Probeer eerst via project API
+            const projectId = project.id || projectTitle;
+            if (project.id) {
+                await this.apiRequest(`/projecten/${project.id}`, 'DELETE', null, true);
+            } else {
+                // Anders, probeer via student update (zet projectTitel op lege string voor alle gekoppelde studenten)
+                if (project.studenten && project.studenten.length > 0) {
+                    for (const student of project.studenten) {
+                        const studentId = student.id || student.studentnummer;
+                        if (studentId) {
+                            await this.apiRequest(`/studenten/${studentId}`, 'PUT', {
+                                projectTitel: '',
+                                projectBeschrijving: '',
+                                technologieen: ''
+                            }, true);
+                        }
+                    }
+                } else {
+                    throw new Error('Geen studenten gekoppeld aan dit project om te updaten');
+                }
+            }
+            
+            await this.loadProjects();
+            await this.loadStudents();
+            await this.loadStatistics();
+            this.showTemporaryMessage('🗑️ Project succesvol verwijderd!', 'success');
+            
+        } catch (error) {
+            console.error('Delete project error:', error);
+            this.showTemporaryMessage('❌ Fout bij verwijderen project: ' + (error.message || error), 'error');
+        }    }
+
+    // Add scroll indicators for items lists
+    addScrollIndicators() {
+        const itemsLists = document.querySelectorAll('.items-list');
+        itemsLists.forEach(list => {
+            const checkScrollable = () => {
+                if (list.scrollHeight > list.clientHeight) {
+                    list.classList.add('scrollable');
+                } else {
+                    list.classList.remove('scrollable');
+                }
+            };
+            
+            // Check on load and when content changes
+            checkScrollable();
+            
+            // Check when scrolling
+            list.addEventListener('scroll', checkScrollable);
+            
+            // Observer for content changes
+            const observer = new MutationObserver(checkScrollable);
+            observer.observe(list, { childList: true, subtree: true });
+        });
+    }
+
+}
+// ===== MENU TOGGLE FUNCTIONS =====
+function toggleMenu() {
+    const sideMenu = document.getElementById('sideMenu');
+    if (sideMenu) {
+        sideMenu.classList.toggle('active');
     }
 }
 
@@ -1103,6 +1488,8 @@ window.showAddModal = (type) => window.adminPanel?.showAddModal(type);
 window.toggleSection = (sectionId) => window.adminPanel?.toggleSection(sectionId);
 window.closeModal = () => window.adminPanel?.closeModal();
 window.toggleMenu = toggleMenu;
+console.log('🔧 admin-panel.js: Set window.toggleMenu');
+console.log('🔧 admin-panel.js: toggleMenu function preview:', toggleMenu.toString().substring(0, 100)+'...');
 
 // Initialize admin panel when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -1111,18 +1498,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     window.adminPanel = new AdminPanel();
-    
-    // Debug helpers voor de console
+      // Debug helpers voor de console
     window.setAuthToken = (token) => window.adminPanel?.setAuthToken(token);
     window.clearAuthToken = () => window.adminPanel?.clearAuthToken();
-    window.enableTestMode = () => window.adminPanel?.enableTestMode();
-    window.removeTestButton = () => window.adminPanel?.removeTestButton();
     
     console.log('🔧 Debug helpers available:');
     console.log('- setAuthToken(token) - Zet auth token voor admin functies');
     console.log('- clearAuthToken() - Wis auth token');
-    console.log('- enableTestMode() - Activeer test modus voor debugging');
-    console.log('- removeTestButton() - Verwijder test knop');
     console.log('- adminPanel - Direct toegang tot AdminPanel instance');
 });
 
@@ -1206,13 +1588,7 @@ function addAppointmentStyling() {
             background: linear-gradient(135deg, #95a5a6, #7f8c8d); 
             color: white; 
         }
-        
-        /* Test knop hover effect verbetering */
-        #test-auth-btn:hover {
-            background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
-        }
-        
-        /* Afspraak item specifieke styling */
+          /* Afspraak item specifieke styling */
         .item-card.appointment:hover {
             border-color: #881538;
             box-shadow: 0 8px 25px rgba(136, 21, 56, 0.2);

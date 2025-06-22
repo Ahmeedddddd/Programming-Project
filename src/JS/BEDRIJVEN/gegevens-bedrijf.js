@@ -61,13 +61,12 @@ class BedrijfGegevens {
     }
 
     // 📡 API Calls
-    async loadBedrijfGegevens() {
-        console.log("📡 Loading bedrijf gegevens...");
+    async loadBedrijfGegevens() {        console.log("📡 Loading bedrijf gegevens...");
         try {
             this.showLoading(true);
 
             const response = await fetch(
-                "http://localhost:3301/api/bedrijven/profile",
+                "http://localhost:8383/api/bedrijven/profile",
                 {
                     method: "GET",
                     headers: {
@@ -122,10 +121,8 @@ class BedrijfGegevens {
         this.bedrijfData = { ...this.bedrijfData, ...updatedFields };
 
         try {
-            this.showLoading(true);
-
-            const response = await fetch(
-                "http://localhost:3301/api/bedrijven/profile",
+            this.showLoading(true);            const response = await fetch(
+                "http://localhost:8383/api/bedrijven/profile",
                 {
                     method: "PUT",
                     headers: {

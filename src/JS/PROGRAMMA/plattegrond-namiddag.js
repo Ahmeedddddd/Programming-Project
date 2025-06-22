@@ -214,7 +214,7 @@ class PlattegrondNamiddagManager {
         // Update sidebar titel
         const sidebarTitle = document.querySelector('.sidebarTitle');
         if (sidebarTitle) {
-            sidebarTitle.innerHTML = 'Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
+            sidebarTitle.innerHTML = '⚙️ Tafel Beheer <br> <small>(Klik om te bewerken)</small>';
         }
 
         // Toon edit mode indicator
@@ -956,25 +956,36 @@ class PlattegrondNamiddagManager {
                         this.navigateToBedrijf(bedrijf);
                     });
                     listItem.style.cursor = 'pointer';
-                    listItem.title = 'Klik voor bedrijf details';
-                }            } else {
-                // Lege tafel - gebruik voormiddag stijl met dashed border op listItem
-                listItem.classList.add('empty-tafel-item'); // Voeg CSS class toe
-                listItem.innerHTML = `
-                    <div class="tafel-content">
-                        <strong>Tafel ${i}</strong>
-                        <small class="empty-tafel">📭 Beschikbaar</small>
-                    </div>
-                `;
-
+                    listItem.title = 'Klik voor bedrijf details';                }
+                
+                // Voeg bezette tafel toe aan sidebar
+                sidebar.appendChild(listItem);
+                
+            } else {
+                // Lege tafel - alleen tonen aan organisatoren
                 if (this.isOrganisator) {
+                    console.log(`📋 [DEBUG] Adding empty table ${i} for organisator`);
+                    listItem.classList.add('empty-tafel-item'); // Voeg CSS class toe
+                    listItem.innerHTML = `
+                        <div class="tafel-content">
+                            <strong>Tafel ${i}</strong>
+                            <small class="empty-tafel">📭 Beschikbaar</small>
+                        </div>
+                    `;
+
                     listItem.addEventListener('click', () => this.showAssignmentModal({tafelNr: i, items: []}));
                     listItem.style.cursor = 'pointer';
                     listItem.title = 'Klik om bedrijf toe te wijzen';
+                    
+                    // Voeg lege tafel toe aan sidebar
+                    sidebar.appendChild(listItem);
+                } else {
+                    // Voor niet-organisatoren: skip lege tafels volledig
+                    console.log(`🚫 [DEBUG] Skipping empty table ${i} for non-organisator`);
+                    // Continue met de loop, voeg deze lege tafel niet toe
                 }
             }
-
-            sidebar.appendChild(listItem);        }
+        }
 
         console.log(`✅ Sidebar updated with ${maxTafels} tables`);
     }

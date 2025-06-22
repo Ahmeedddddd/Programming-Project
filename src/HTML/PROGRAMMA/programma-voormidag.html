@@ -52,8 +52,7 @@
             </div>
         </div>
 
-        <!-- Page Header -->
-        <div class="page-header">
+        <!-- Page Header -->        <div class="page-header">
             <h1 class="page-title">Programma Voormiddag</h1>
             <p class="page-subtitle">09:00 - 12:00</p>
         </div>
@@ -117,7 +116,10 @@
     </div>
 
     <!-- Notification container -->
-    <div id="notification-container" class="notification-container"></div>
+    <div id="notification-container" class="notification-container">    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay"></div>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
@@ -157,9 +159,8 @@
                 font-size: 1rem;
             }
         }
-    </style>
-
-    <!-- Scripts -->
+    </style>    <!-- Scripts -->
+    <script type="module" src="/src/JS/UTILS/startPage.js"></script>
     <script type="module" src="/src/JS/index.js"></script>
     <!-- NIEUWE SCRIPT VOOR PLATTEGROND FUNCTIONALITEIT -->
     <script type="module" src="/src/JS/PROGRAMMA/plattegrond-voormiddag.js"></script>
