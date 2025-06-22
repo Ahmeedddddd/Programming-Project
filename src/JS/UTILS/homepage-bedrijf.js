@@ -5,18 +5,102 @@ import { ReservatieService } from '../reservatieService.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Wacht een kort moment tot de universele initializer (index.js) de basisdata heeft geladen.
-    setTimeout(initializeBedrijfHomepage, 200);
+    setTimeout(initializeBedrijfHomepage, 500);
 });
 
 /**
  * Initialiseert de bedrijf-specifieke functionaliteiten op de homepage.
  */
 async function initializeBedrijfHomepage() {
-    console.log(" Initializing bedrijf-specific homepage functions...");
+    console.log("🏢 Initializing bedrijf-specific homepage functions...");
     await loadBedrijfInfo();
     await loadUpcomingMeetings();
     await loadPendingAppointmentsCount();
-    // De algemene kaarten (studenten, projecten) worden al door index.js geladen.
+    
+    // Wacht tot index.js de data heeft geladen en toon deze dan
+    await waitForIndexJSData();
+    await displayIndexJSData();
+}
+
+/**
+ * Wacht tot index.js de data heeft geladen
+ */
+async function waitForIndexJSData() {
+    let attempts = 0;
+    const maxAttempts = 20; // 10 seconden max
+    
+    while (attempts < maxAttempts) {
+        const studentContainer = document.getElementById('studentCardsContainer');
+        const projectContainer = document.getElementById('projectCardsContainer');
+        
+        if (studentContainer && projectContainer && 
+            studentContainer.innerHTML !== '' && 
+            !studentContainer.innerHTML.includes('🔄 Studenten laden') &&
+            projectContainer.innerHTML !== '' && 
+            !projectContainer.innerHTML.includes('🔄 Projecten laden')) {
+            console.log("✅ Index.js data loaded successfully");
+            return;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+    }
+    
+    console.warn("⚠️ Index.js data loading timeout");
+}
+
+/**
+ * Toont de data van index.js in de juiste containers
+ */
+async function displayIndexJSData() {
+    // Toon studenten data
+    const studentContainer = document.getElementById('studentCardsContainer');
+    const studentsGrid = document.getElementById('students-grid');
+    if (studentContainer && studentsGrid) {
+        studentsGrid.innerHTML = studentContainer.innerHTML;
+        studentContainer.style.display = 'none';
+    }
+    
+    // Toon projecten data
+    const projectContainer = document.getElementById('projectCardsContainer');
+    const projectsGrid = document.getElementById('projects-grid');
+    if (projectContainer && projectsGrid) {
+        projectsGrid.innerHTML = projectContainer.innerHTML;
+        projectContainer.style.display = 'none';
+    }
+    
+    // Update data counts
+    await updateDataCounts();
+}
+
+/**
+ * Update de data counts op de pagina
+ */
+async function updateDataCounts() {
+    try {
+        // Haal de data op van de containers
+        const studentContainer = document.getElementById('studentCardsContainer');
+        const projectContainer = document.getElementById('projectCardsContainer');
+        
+        // Tel studenten
+        const studentCards = studentContainer ? studentContainer.querySelectorAll('.preview-card') : [];
+        const studentCount = studentCards.length;
+        
+        // Tel projecten
+        const projectCards = projectContainer ? projectContainer.querySelectorAll('.project-card') : [];
+        const projectCount = projectCards.length;
+        
+        // Update de count elements
+        const studentCountElement = document.getElementById('total-students-count');
+        const projectCountElement = document.getElementById('total-projects-count');
+        
+        if (studentCountElement) studentCountElement.textContent = studentCount;
+        if (projectCountElement) projectCountElement.textContent = projectCount;
+        
+        console.log(`📊 Updated counts - Students: ${studentCount}, Projects: ${projectCount}`);
+    } catch (error) {
+        console.error('Error updating data counts:', error);
+    }
 }
 
 /**
@@ -30,7 +114,7 @@ async function loadBedrijfInfo() {
             if (result.success && result.data) {
                 const welcomeTitle = document.getElementById('bedrijfWelcomeTitle');
                 if (welcomeTitle && result.data.naam) {
-                    welcomeTitle.textContent = `Welkom terug, ${result.data.naam}! `;
+                    welcomeTitle.textContent = `Welkom terug, ${result.data.naam}! 🏢`;
                 }
             }
         }
@@ -44,7 +128,7 @@ async function loadBedrijfInfo() {
  */
 async function loadPendingAppointmentsCount() {
     try {
-        const countElement = document.getElementById('pending-appointments-count');
+        const countElement = document.getElementById('pending-requests-count');
         if (!countElement) return;
 
         const meetings = await ReservatieService.getCompanyReservations();
@@ -52,7 +136,7 @@ async function loadPendingAppointmentsCount() {
         countElement.textContent = pendingCount;
     } catch (error) {
         console.error('Error loading pending appointments count:', error);
-        const countElement = document.getElementById('pending-appointments-count');
+        const countElement = document.getElementById('pending-requests-count');
         if(countElement) countElement.textContent = 'Error';
     }
 }
@@ -99,3 +183,21 @@ async function loadUpcomingMeetings() {
         container.innerHTML = `<div class="no-data error"><p>Kan gesprekken niet laden.</p></div>`;
     }
 } 
+
+// ===== STARTUP =====
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeBedrijfHomepage);
+} else {
+    initializeBedrijfHomepage();
+}
+
+console.log('✅ Bedrijf homepage script loaded!');
+
+// ===== STARTUP =====
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeBedrijfHomepage);
+} else {
+    initializeBedrijfHomepage();
+}
+
+console.log('✅ Bedrijf homepage script loaded!'); 

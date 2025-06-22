@@ -31,9 +31,9 @@ async function loadUserInfo() {
         }
         const result = await response.json();
         if (result.success && result.data) {
-            const welcomeTitle = document.getElementById('studentWelcomeTitle');
-            if (welcomeTitle && result.data.voornaam) {
-                welcomeTitle.textContent = `Welkom terug, ${result.data.voornaam}! `;
+            const namePlaceholder = document.getElementById('student-name-placeholder');
+            if (namePlaceholder && result.data.voornaam) {
+                namePlaceholder.textContent = result.data.voornaam;
             }
         } else {
             console.warn('User info not found in response:', result.message);
@@ -44,53 +44,62 @@ async function loadUserInfo() {
 }
 
 /**
- * Haalt de aankomende gesprekken voor de student op en toont ze in de daarvoor bestemde grid.
+ * Haalt de aankomende gesprekken voor de student op en toont ze.
  */
 async function loadUpcomingMeetings() {
-    const container = document.getElementById('upcoming-meetings-grid');
-    const countBadge = document.getElementById('upcoming-appointments-count');
-    const sectionCount = document.getElementById('upcoming-meetings-count');
+    const container = document.getElementById('meetingsCardsContainer');
+    const countElement = document.querySelector('[data-count="gesprekken"]');
 
     if (!container) {
-        console.warn('Container for upcoming meetings (#upcoming-meetings-grid) not found. Skipping meetings load.');
+        console.error('Meeting container (#meetingsCardsContainer) not found!');
         return;
     }
 
+    container.innerHTML = `<div class="loading-cards"><p>🔄 Gesprekken laden...</p></div>`;
+
     try {
-        const meetings = await ReservatieService.getMyReservations();
-        const upcomingMeetings = meetings.filter(m => ['bevestigd', 'aangevraagd'].includes(m.status))
-                                         .sort((a, b) => new Date(a.startTijd) - new Date(b.startTijd));
-
-        const count = upcomingMeetings.length;
-        if (countBadge) countBadge.textContent = count;
-        if (sectionCount) sectionCount.textContent = count;
-        
-        if (count === 0) {
-            container.innerHTML = `<div class="no-data"><p>Geen aankomende gesprekken gevonden. Ga op zoek naar een interessant bedrijf!</p></div>`;
-            return;
+        const response = await fetchWithAuth('/api/reservaties/my');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const result = await response.json();
         
-        container.innerHTML = upcomingMeetings.slice(0, 4).map(meeting => {
-             const startTime = new Date(meeting.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
-            const endTime = new Date(meeting.eindTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
-            const date = new Date(meeting.startTijd).toLocaleDateString('nl-BE', { day: 'numeric', month: 'long' });
+        if (result.success && result.data) {
+            const reservations = result.data;
+            if (countElement) {
+                countElement.textContent = reservations.length;
+            }
 
-            return `
-                <div class="preview-card">
-                    <div class="card-header">
-                        <h3 class="card-title">${meeting.bedrijfNaam}</h3>
-                        <span class="status-badge status-${meeting.status.toLowerCase()}">${meeting.status}</span>
-                    </div>
-                    <div class="card-description">
-                        <p><strong>Datum:</strong> ${date}</p>
-                        <p><strong>Tijd:</strong> ${startTime} - ${endTime}</p>
-                    </div>
-                </div>
-            `;
-        }).join('');
+            if (reservations.length === 0) {
+                container.innerHTML = `<div class="no-data"><p>Je hebt nog geen aankomende gesprekken.</p></div>`;
+                return;
+            }
 
+            // Toon alleen de eerste 4 gesprekken
+            const meetingsHtml = reservations.slice(0, 4).map(res => {
+                const meetingTime = new Date(res.startTijd).toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <div class="preview-card">
+                        <div class="card-header">
+                            <h3 class="card-title">${res.bedrijfNaam ?? 'Onbekend Bedrijf'}</h3>
+                        </div>
+                        <div class="card-description">
+                            <p><strong>Tijd:</strong> ${meetingTime}</p>
+                            <p><strong>Status:</strong> <span class="status-${res.status.toLowerCase()}">${res.status}</span></p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            container.innerHTML = meetingsHtml;
+
+        } else {
+            throw new Error(result.message || 'Kon gesprekken niet ophalen.');
+        }
     } catch (error) {
         console.error('Failed to load upcoming meetings for student:', error);
-        container.innerHTML = `<div class="no-data error"><p>Kon gesprekken niet laden. Probeer het later opnieuw.</p></div>`;
+        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Kon je gesprekken niet laden. Probeer het later opnieuw.</div>`;
+        if (countElement) {
+            countElement.textContent = '0';
+        }
     }
 }

@@ -258,9 +258,20 @@ class CardRenderer {
     }
 
     updateDataCounts(data) {
-        document.querySelector('[data-count="bedrijven"]').textContent = data.bedrijven.length;
-        document.querySelector('[data-count="studenten"]').textContent = data.studenten.length;
-        document.querySelector('[data-count="projecten"]').textContent = data.projecten.length;
+        const bedrijvenCount = document.querySelector('[data-count="bedrijven"]');
+        if (bedrijvenCount) {
+            bedrijvenCount.textContent = data.bedrijven?.length ?? 0;
+        }
+
+        const studentenCount = document.querySelector('[data-count="studenten"]');
+        if (studentenCount) {
+            studentenCount.textContent = data.studenten?.length ?? 0;
+        }
+
+        const projectenCount = document.querySelector('[data-count="projecten"]');
+        if (projectenCount) {
+            projectenCount.textContent = data.projecten?.length ?? 0;
+        }
     }
 }
 
