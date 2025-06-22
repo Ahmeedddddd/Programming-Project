@@ -66,10 +66,9 @@ class Student {
     );
     return result.affectedRows;
   }
-
   static async getWithProjects() {
     try {
-      console.log('🔍 [DEBUG] Executing getWithProjects query (IMPROVED GROUPING)...');
+      console.log('🔍 [DEBUG] Executing getWithProjects query (JOIN TECHNOLOGIE)...');
       const [rows] = await pool.query(`
         SELECT
             s.projectTitel,
@@ -85,8 +84,8 @@ class Student {
         GROUP BY s.projectTitel
         ORDER BY s.projectTitel;
       `);
-      logger.info(`📊 Found ${rows.length} unique projects after grouping (with technologies).`);
-      console.log('✅ [DEBUG] Projects loaded successfully (improved grouping):', JSON.stringify(rows, null, 2));
+      logger.info(`📊 Found ${rows.length} projects after grouping (with technologies).`);
+      console.log('✅ [DEBUG] Projects loaded successfully (with technologies):', JSON.stringify(rows, null, 2));
       return rows;
     } catch (error) {
         logger.error('Error fetching projects with students and technologies:', error);
