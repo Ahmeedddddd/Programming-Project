@@ -46,6 +46,45 @@ router.get('/', async (req, res) => {
     }
 });
 
+// NEW ENDPOINT: GET /api/projecten/with-ids - Projecten met student IDs voor navigatie
+router.get('/with-ids', async (req, res) => {
+    try {
+        console.log('📡 Fetching projects with student IDs for navigation...');
+        
+        // Get limit parameter from query
+        const limit = req.query.limit ? parseInt(req.query.limit) : null;
+        
+        let projects = await Student.getProjectsWithStudentIds();
+        const totalProjects = projects.length;
+
+        // Apply limit if specified
+        if (limit && limit > 0) {
+            projects = projects.slice(0, limit);
+            console.log(`📊 Limited to ${limit} projects`);
+        }
+        
+        console.log(`📊 Found ${projects.length} projects with student IDs.`);
+        
+        // Always return successful response, even if no projects
+        res.json({
+            success: true,
+            data: projects,
+            count: projects.length,
+            total: totalProjects,
+            message: projects.length > 0 ? 'Projects with student IDs loaded successfully' : 'No projects found'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching projects with student IDs:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch projects with student IDs',
+            message: 'Er ging iets mis bij het ophalen van de projecten met student IDs',
+            details: error.message
+        });
+    }
+});
+
 // GET /api/projecten/stats - Project statistieken
 router.get("/stats", async (req, res) => {
   try {

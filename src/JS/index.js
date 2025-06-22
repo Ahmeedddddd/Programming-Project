@@ -96,14 +96,31 @@ class UniversalDataFetcher {
 
     async fetchAPI(endpoint) {
         try {
-            const response = await fetch(endpoint, {
-                headers: { 'Accept': 'application/json' }
-            });
-            if (!response.ok) return { success: false, data: [] };
-            const result = await response.json();
-            return Array.isArray(result) ? { success: true, data: result } : result;
+            console.log(`📡 [UniversalDataFetcher] Fetching: ${endpoint}`);
+            
+            // Use the new endpoint for projects to get student IDs
+            if (endpoint.includes('/api/projecten') && !endpoint.includes('/with-ids')) {
+                endpoint = endpoint.replace('/api/projecten', '/api/projecten/with-ids');
+                console.log(`🔄 [UniversalDataFetcher] Redirected to: ${endpoint}`);
+            }
+            
+            const response = await fetch(endpoint);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success === false) {
+                throw new Error(data.message || 'API request failed');
+            }
+            
+            // Return the data array directly from the response
+            return data.data || data;
         } catch (error) {
-            return { success: false, data: [] };
+            console.error(`❌ [UniversalDataFetcher] Error fetching ${endpoint}:`, error);
+            throw error;
         }
     }
 
@@ -117,9 +134,22 @@ class UniversalDataFetcher {
                 this.fetchAPI(this.endpoints.projecten)
             ]);
             
-            this.data.bedrijven = bedrijvenRes.success ? bedrijvenRes.data : [];
-            this.data.studenten = studentenRes.success ? studentenRes.data : [];
-            this.data.projecten = projectenRes.success ? projectenRes.data : [];
+            console.log('📊 [index.js] Raw API responses:', {
+                bedrijven: bedrijvenRes,
+                studenten: studentenRes,
+                projecten: projectenRes
+            });
+            
+            // Fix: Handle both response formats (direct data or nested under success)
+            this.data.bedrijven = bedrijvenRes || [];
+            this.data.studenten = studentenRes || [];
+            this.data.projecten = projectenRes || [];
+            
+            console.log('�� [index.js] Processed data:', {
+                bedrijven: this.data.bedrijven.length,
+                studenten: this.data.studenten.length,
+                projecten: this.data.projecten.length
+            });
             
             // Project data loaded successfully
             
@@ -261,14 +291,14 @@ class CardRenderer {
         let studentenList = [];
         
         if (Array.isArray(project.studenten)) {
-            // If it's already an array of objects
+            // New format from /api/projecten/with-ids: array of objects with id and naam
             studentenList = project.studenten.map(student => ({
-                naam: `${student.voornaam} ${student.achternaam}`,
-                studentnummer: student.studentnummer || student.id,
+                naam: student.naam || `${student.voornaam || ''} ${student.achternaam || ''}`.trim(),
+                studentnummer: student.id || student.studentnummer,
                 ...student
             }));
         } else if (typeof project.studenten === 'string' && project.studenten) {
-            // If it's a comma-separated string, we need to find the actual student IDs
+            // Legacy format: comma-separated string, we need to find the actual student IDs
             const studentNames = project.studenten.split(', ').map(name => name.trim());
             console.log('🔍 [DEBUG] Looking up student names:', studentNames);
             

@@ -94,6 +94,61 @@ class Student {
     }
   }
 
+  // NEW METHOD: Get projects with individual student IDs for navigation
+  static async getProjectsWithStudentIds() {
+    try {
+      console.log('🔍 [DEBUG] Executing getProjectsWithStudentIds query...');
+      const [rows] = await pool.query(`
+        SELECT
+            s.projectTitel,
+            s.projectBeschrijving,
+            s.studentnummer,
+            s.voornaam,
+            s.achternaam,
+            s.opleiding,
+            s.tafelNr,
+            GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen
+        FROM
+            STUDENT s
+        LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
+        LEFT JOIN TECHNOLOGIE t ON st.technologieId = t.technologieId
+        WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
+        GROUP BY s.projectTitel, s.studentnummer, s.voornaam, s.achternaam, s.opleiding, s.tafelNr
+        ORDER BY s.projectTitel, s.achternaam, s.voornaam;
+      `);
+      
+      // Group by project title and create student arrays
+      const groupedProjects = {};
+      rows.forEach(row => {
+        const projectTitle = row.projectTitel;
+        if (!groupedProjects[projectTitle]) {
+          groupedProjects[projectTitle] = {
+            titel: projectTitle,
+            beschrijving: row.projectBeschrijving,
+            technologieen: row.technologieen,
+            studenten: []
+          };
+        }
+        
+        groupedProjects[projectTitle].studenten.push({
+          id: row.studentnummer,
+          naam: `${row.voornaam} ${row.achternaam}`,
+          opleiding: row.opleiding,
+          tafelNr: row.tafelNr
+        });
+      });
+      
+      const result = Object.values(groupedProjects);
+      logger.info(`📊 Found ${result.length} projects with student IDs.`);
+      console.log('✅ [DEBUG] Projects with student IDs loaded successfully:', JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+        logger.error('Error fetching projects with student IDs:', error);
+        console.error('❌ [DEBUG] Error in getProjectsWithStudentIds:', error.message);
+        throw error;
+    }
+  }
+
   // ===== STATISTICS METHODS =====
 
   static async getStats() {
