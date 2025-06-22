@@ -1390,3 +1390,45 @@ h2 {
     font-size: 1rem;
   }
 }
+
+/* ===== CLICKABLE CARD STYLES ===== */
+.preview-card, .project-card {
+  text-decoration: none !important;
+  color: inherit !important;
+  display: block !important;
+  cursor: pointer !important;
+}
+
+.preview-card:hover, .project-card:hover {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.preview-card:focus, .project-card:focus {
+  text-decoration: none !important;
+  color: inherit !important;
+  outline: 2px solid #881538 !important;
+  outline-offset: 2px !important;
+}
+
+.preview-card:visited, .project-card:visited {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+/* Ensure card content maintains styling when wrapped in anchor */
+.preview-card .card-header,
+.preview-card .card-title,
+.preview-card .card-description,
+.preview-card .company-details,
+.preview-card .student-details,
+.preview-card .bedrijf-sector,
+.preview-card .student-project,
+.project-card .card-header,
+.project-card .project-title,
+.project-card .project-description,
+.project-card .project-student,
+.project-card .project-students-multiple,
+.project-card .project-tech {
+  pointer-events: none !important;
+}

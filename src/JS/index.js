@@ -215,7 +215,7 @@ class CardRenderer {
 
     renderCompanyCard(bedrijf) {
         return `
-            <div class="preview-card">
+            <a href="/resultaat-bedrijf?id=${bedrijf.bedrijfsnummer}" class="preview-card" style="text-decoration: none; color: inherit; display: block;">
                 <div class="card-header">
                     <h3 class="card-title">${bedrijf.naam}</h3>
                     ${bedrijf.tafelNr ? `<div class="table-number">Tafel ${bedrijf.tafelNr}</div>` : ''}
@@ -226,12 +226,12 @@ class CardRenderer {
                     <div class="company-contact"><span><i class="fas fa-envelope"></i> ${bedrijf.email}</span></div>
                 </div>
                 <div class="bedrijf-sector"><span><i class="fas fa-briefcase"></i> ${bedrijf.sector || 'N/A'}</span></div>
-            </div>`;
+            </a>`;
     }
 
     renderStudentCard(student) {
         return `
-            <div class="preview-card">
+            <a href="/zoekbalk-studenten?id=${student.studentnummer}" class="preview-card" style="text-decoration: none; color: inherit; display: block;">
                 <div class="card-header">
                     <h3 class="card-title">${student.voornaam} ${student.achternaam}</h3>
                 </div>
@@ -242,7 +242,7 @@ class CardRenderer {
                     <div class="student-location"><span><i class="fas fa-map-marker-alt"></i> ${student.gemeente || 'Onbekend'}</span></div>
                 </div>
                 <div class="student-project"><span><i class="fas fa-lightbulb"></i> ${student.projectTitel || 'Geen project'}</span></div>
-            </div>`;
+            </a>`;
     }
 
     renderProjectCard(project) {
@@ -291,8 +291,17 @@ class CardRenderer {
             technologiesHTML = `<div class="project-tech" style="opacity: 0.6;"><strong>Technologieën:</strong> Nog niet gespecificeerd</div>`;
         }
 
+        // Get the first student's ID for navigation (projects are accessed via student ID)
+        const firstStudentId = studentenList.length > 0 && studentenList[0].studentnummer 
+            ? studentenList[0].studentnummer 
+            : null;
+        
+        const linkHref = firstStudentId 
+            ? `/zoekbalk-projecten?id=${firstStudentId}` 
+            : '#';
+
         return `
-            <div class="project-card">
+            <a href="${linkHref}" class="project-card" style="text-decoration: none; color: inherit; display: block;">
                 <div class="card-header">
                     <h3 class="project-title">${project.titel || project.projectTitel}</h3>
                     ${project.tafelNr ? `<div class="table-number">Tafel ${project.tafelNr}</div>` : ''}
@@ -300,7 +309,7 @@ class CardRenderer {
                 <p class="project-description">${project.beschrijving || project.projectBeschrijving || 'Geen beschrijving.'}</p>
                 ${studentenHTML}
                 ${technologiesHTML}
-            </div>`;
+            </a>`;
     }
 
     updateDataCounts(data) {
