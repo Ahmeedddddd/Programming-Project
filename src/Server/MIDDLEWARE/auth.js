@@ -18,6 +18,17 @@ const authenticateToken = (req, res, next) => {
     });
   }
   
+  // Handle test token for admin panel development
+  if (token === 'test-admin-token-12345') {
+    req.user = {
+      userId: 'test-admin',
+      userType: 'organisator',
+      role: 'organisator',
+      email: 'admin@test.com'
+    };
+    return next();
+  }
+  
   jwt.verify(token, config.jwt.secret, (err, user) => {
     if (err) {
       console.error('JWT verification error:', err.message);

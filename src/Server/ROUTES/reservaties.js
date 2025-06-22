@@ -7,6 +7,31 @@ const Notificatie = require('../MODELS/notificatie');
 
 const EVENT_DATE_STRING = "2025-06-25"; // De vaste datum van het evenement
 
+// Organisator haalt alle reservaties op (voor admin panel)
+router.get(
+  "/",
+  authenticateToken,
+  requireRole(["organisator"]),
+  async (req, res) => {
+    try {
+      const reservaties = await Reservatie.getAll();
+      // Voor de frontend, voeg de vaste datum toe aan de tijdvelden
+      const formattedReservations = reservaties.map((r) => ({
+        ...r,
+        startTijd: new Date(`${EVENT_DATE_STRING}T${r.startTijd}`).toISOString(),
+        eindTijd: new Date(`${EVENT_DATE_STRING}T${r.eindTijd}`).toISOString(),
+      }));
+      res.status(200).json({ success: true, data: formattedReservations });
+    } catch (error) {
+      console.error("Error fetching all reservations:", error);
+      res.status(500).json({
+        success: false,
+        message: "Interne serverfout bij het ophalen van alle reservaties.",
+      });
+    }
+  }
+);
+
 // Student of bedrijf vraagt een reservatie aan
 router.post(
   "/request",

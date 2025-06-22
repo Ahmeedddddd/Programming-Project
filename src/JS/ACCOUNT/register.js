@@ -123,7 +123,7 @@ async function handleRegistration(event) {
         }
         
         // Send registration request
-        const response = await fetch(`http://localhost:3301/api/auth/register/${currentUserType}`, {
+        const response = await fetch(`http://localhost:8383/api/auth/register/${currentUserType}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
