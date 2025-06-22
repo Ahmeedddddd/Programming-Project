@@ -50,14 +50,46 @@ async function waitForIndexJSData() {
 }
 
 /**
+ * Render de interessante studenten in de juiste grid met universele kaartstructuur
+ */
+async function renderInteressanteStudenten(students) {
+    const studentenGrid = document.getElementById('studentenGrid');
+    if (!studentenGrid) return;
+    if (!students || students.length === 0) {
+        studentenGrid.innerHTML = '<div class="no-data"><p>Geen interessante studenten gevonden.</p></div>';
+        return;
+    }
+    // Gebruik de universele CardRenderer uit index.js
+    const cardRenderer = window.universalInitializer && window.universalInitializer.cardRenderer;
+    if (!cardRenderer) {
+        studentenGrid.innerHTML = '<div class="no-data"><p>Studenten laden mislukt.</p></div>';
+        return;
+    }
+    const toShow = students.slice(0, 4);
+    studentenGrid.innerHTML = toShow.map(cardRenderer.renderStudentCard.bind(cardRenderer)).join('');
+}
+
+/**
  * Toont de data van index.js in de juiste containers
  */
 async function displayIndexJSData() {
     // Toon studenten data
     const studentContainer = document.getElementById('studentCardsContainer');
-    const studentsGrid = document.getElementById('students-grid');
-    if (studentContainer && studentsGrid) {
-        studentsGrid.innerHTML = studentContainer.innerHTML;
+    const studentenGrid = document.getElementById('studentenGrid');
+    if (studentContainer && studentenGrid) {
+        // Parseer studenten uit de container als JSON indien mogelijk, anders fallback op bestaande kaarten
+        let students = [];
+        try {
+            // Probeer data uit een data-attribuut of window variabele te halen als beschikbaar
+            if (window.universalInitializer && window.universalInitializer.dataFetcher) {
+                students = window.universalInitializer.dataFetcher.getData('studenten') || [];
+            }
+        } catch (e) { /* fallback */ }
+        if (!students || students.length === 0) {
+            // Fallback: probeer uit bestaande kaarten te reconstrueren
+            students = [];
+        }
+        await renderInteressanteStudenten(students);
         studentContainer.style.display = 'none';
     }
     

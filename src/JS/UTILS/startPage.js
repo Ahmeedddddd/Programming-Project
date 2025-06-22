@@ -123,9 +123,13 @@ function initializeMenu() {
     e.stopPropagation();
     toggleMenu();
   });
-
-  // Make toggleMenu available globally
-  window.toggleMenu = toggleMenu;
+  // Make toggleMenu available globally (only if not already defined)
+  if (!window.toggleMenu) {
+    window.toggleMenu = toggleMenu;
+    console.log('📱 startPage.js: Set window.toggleMenu');
+  } else {
+    console.log('📱 startPage.js: toggleMenu already exists, not overriding');
+  }
 
   const closeBtn = sideMenu.querySelector('.sideMenu-closeBtn');
   if (closeBtn) {

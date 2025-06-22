@@ -64,36 +64,20 @@ function setRequiredFields(type) {
 // ✅ NEW: Form submission handler
 async function handleRegistration(event) {
     event.preventDefault();
-    
     const loadingOverlay = document.getElementById('loadingOverlay');
     const registerButton = document.getElementById('registerButton');
-    
     try {
-        // Show loading
         loadingOverlay.style.display = 'flex';
         registerButton.disabled = true;
-        
         // Validate passwords match
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        if (password !== confirmPassword) {
-            throw new Error('Wachtwoorden komen niet overeen');
-        }
-        
-        if (password.length < 8) {
-            throw new Error('Wachtwoord moet minimaal 8 karakters lang zijn');
-        }
-        
-        // Check terms agreement
+        if (password !== confirmPassword) throw new Error('Wachtwoorden komen niet overeen');
+        if (password.length < 8) throw new Error('Wachtwoord moet minimaal 8 karakters lang zijn');
         const agreeTerms = document.getElementById('agreeTerms').checked;
-        if (!agreeTerms) {
-            throw new Error('Je moet akkoord gaan met de algemene voorwaarden');
-        }
-        
-        // Collect form data based on user type
+        if (!agreeTerms) throw new Error('Je moet akkoord gaan met de algemene voorwaarden');
+        // Verzamel form data
         let registrationData;
-        
         if (currentUserType === 'bedrijf') {
             registrationData = {
                 naam: document.getElementById('bedrijfNaam').value,
@@ -107,7 +91,7 @@ async function handleRegistration(event) {
                 gemeente: document.getElementById('gemeente').value,
                 gsm_nummer: document.getElementById('telefoonnummer').value,
                 sector: document.getElementById('websiteLinkedin')?.value || '',
-                bus: '', // Optional field
+                bus: '',
                 land: 'België',
                 password: password
             };
@@ -121,43 +105,37 @@ async function handleRegistration(event) {
                 password: password
             };
         }
-        
-        // Send registration request
+        // Stuur registratie request
         const response = await fetch(`http://localhost:8383/api/auth/register/${currentUserType}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(registrationData)
         });
-        
         const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Registratie mislukt');
-        }
-        
-        // Success! Store token and redirect
+        if (!response.ok) throw new Error(result.message || 'Registratie mislukt');
+        // Zet token in localStorage en als cookie (voor backend)
         if (result.token) {
             localStorage.setItem('authToken', result.token);
             localStorage.setItem('userType', result.user.userType);
+            // Zet cookie met juiste flags (voor localhost: gebruik geen Secure, voor productie wel)
+            document.cookie = `authToken=${result.token}; path=/; SameSite=Lax`;
         }
-        
-        // Show success message
+        // Succesmelding
         alert('Account succesvol aangemaakt! Je wordt doorgestuurd...');
-        
-        // Redirect based on user type
-        if (currentUserType === 'bedrijf') {
-            window.location.href = '/accountBedrijf';
+        // Hard redirect naar juiste homepage (zorgt voor volledige reload)
+        let targetUrl;
+        if (result.user && result.user.userType === 'bedrijf') {
+            targetUrl = '/bedrijf-homepage';
+        } else if (result.user && result.user.userType === 'student') {
+            targetUrl = '/student-homepage';
         } else {
-            window.location.href = '/accountStudent';
+            targetUrl = '/';
         }
-        
+        window.location.replace(targetUrl);
     } catch (error) {
         console.error('Registration error:', error);
         alert(`Fout bij registratie: ${error.message}`);
     } finally {
-        // Hide loading
         loadingOverlay.style.display = 'none';
         registerButton.disabled = false;
     }
