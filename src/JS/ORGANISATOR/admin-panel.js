@@ -1,9 +1,28 @@
-// admin-panel.js - Fixed version met correcte database mapping
+/**
+ * @fileoverview Dit script is de motor achter het beheerderspaneel (Admin Panel).
+ * Het beheert alle CRUD-operaties (Create, Read, Update, Delete) voor studenten,
+ * bedrijven, projecten en afspraken. Het script is opgebouwd als een enkele klasse
+ * `AdminPanel` die de volledige logica en gebruikersinteractie afhandelt.
+ *
+ * Belangrijkste functionaliteiten:
+ * - Ophalen en weergeven van alle relevante data in uitklapbare secties.
+ * - Zoekfunctionaliteit per sectie.
+ * - Modals voor het toevoegen, bewerken en bekijken van details.
+ * - Authenticatie-check voor alle acties.
+ * - Dynamische menu- en UI-interacties.
+ *
+ * @version 1.5
+ * @author [Jouw Naam/Team]
+ */
 
 
-// ===== MENU TOGGLE FUNCTIONS (defined early) =====
+// ===== MENU TOGGLE FUNCTIE (vroeg gedefinieerd voor globale toegang) =====
+/**
+ * Schakelt de zichtbaarheid van het zijmenu (side menu) in en uit.
+ * Gebruikt inline stijlen om de positie te forceren en conflicten met andere scripts te vermijden.
+ */
 function toggleMenu() {
-    console.log('🎛️ toggleMenu called!');
+    console.log('🎛️ toggleMenu aangeroepen!');
     const sideMenu = document.getElementById('sideMenu');
     const overlay = document.querySelector('.menu-overlay');
     const body = document.body;
@@ -48,11 +67,19 @@ function toggleMenu() {
         console.log('🔍 Menu final right position:', finalRight);
         console.log('🔍 Menu final has open class:', sideMenu.classList.contains('open'));
     } else {
-        console.error('❌ SideMenu element not found!');
+        console.error('❌ SideMenu element niet gevonden!');
     }
 }
 
-class AdminPanel {constructor() {
+/**
+ * @class AdminPanel
+ * @classdesc De hoofdklasse die alle logica van het beheerderspaneel omvat.
+ */
+class AdminPanel {
+    /**
+     * Initialiseert het AdminPanel.
+     */
+    constructor() {
         this.API_BASE_URL = 'http://localhost:8383/api';
         this.students = [];
         this.companies = [];
@@ -62,29 +89,51 @@ class AdminPanel {constructor() {
         this.currentEditType = null;
         this.authToken = this.getValidAuthToken();
         
-        console.log('🚀 AdminPanel initializing...');
-        console.log('Auth token available:', !!this.authToken);
+        console.log('🚀 AdminPanel initialiseren...');
+        console.log('Auth token beschikbaar:', !!this.authToken);
         
         this.init();
-    }    // ===== UTILITY METHODS =====
+    }
+
+    // ===== UTILITY & AUTH METHODES =====
+
+    /**
+     * Haalt het authenticatietoken op uit de localStorage.
+     * @returns {string|null} Het token, of null als het niet bestaat.
+     */
     getValidAuthToken() {
         const token = localStorage.getItem('authToken');
         return token;
     }
+
+    /**
+     * Stelt het authenticatietoken in en slaat het op in localStorage.
+     * @param {string} token - Het te bewaren token.
+     */
       setAuthToken(token) {
         this.authToken = token;
         localStorage.setItem('authToken', token);
         localStorage.setItem('authTokenTimestamp', Date.now().toString());
         
-        console.log('✅ Auth token set successfully');
+        console.log('✅ Auth token succesvol ingesteld');
         this.loadAllData();
-    }    clearAuthToken() {
+    }
+    
+    /**
+     * Wist het authenticatietoken uit de klasse en localStorage.
+     */
+    clearAuthToken() {
         this.authToken = null;
         localStorage.removeItem('authToken');
         localStorage.removeItem('authTokenTimestamp');
-        console.log('🔑 Auth token cleared');
+        console.log('🔑 Auth token gewist');
     }
 
+    /**
+     * Controleert of een gebruiker is ingelogd voordat een actie wordt uitgevoerd.
+     * @param {string} [action='deze actie'] - Beschrijving van de actie die autorisatie vereist.
+     * @returns {boolean} - `true` als de gebruiker is ingelogd, anders `false`.
+     */
     requiresAuth(action = 'deze actie') {
         if (!this.authToken) {
             this.showTemporaryMessage(`🔒 Login als organisator vereist voor ${action}`, 'info');
@@ -93,6 +142,11 @@ class AdminPanel {constructor() {
         return true;
     }
     
+    /**
+     * Initialiseert de volledige applicatie: stelt event listeners in, laadt data
+     * en zorgt ervoor dat de UI correct is ingesteld.
+     * @async
+     */
     async init() {
         console.log('🔧 Setting up event listeners...');
         this.setupEventListeners();
