@@ -1,14 +1,33 @@
-// startPage.js - Herbruikbare functionaliteit met QoL features voor alle paginas
-// Wacht tot DOM volledig geladen is
+/**
+ * 🚀 startPage.js - Herbruikbare functionaliteit met Quality of Life features voor alle pagina's
+ * 
+ * Dit bestand bevat alle gedeelde functionaliteit die op elke pagina van de applicatie wordt gebruikt:
+ * - Automatische redirects op basis van gebruikerstype
+ * - Menu systeem met animaties
+ * - Performance monitoring
+ * - Keyboard shortcuts
+ * - Accessibility tools
+ * - Error handling
+ * - Auto-save functionaliteit
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ */
+
+// ⏳ Wacht tot DOM volledig geladen is
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializePage);
 } else {
   initializePage();
 }
 
+/**
+ * 🎯 Hoofdfunctie voor het initialiseren van de pagina
+ * Start alle systemen en features die op elke pagina nodig zijn
+ */
 function initializePage() {
-   // ======= AUTO REDIRECT OP ROOT =======
-  // Stuur direct door naar juiste homepage op /
+  // ======= AUTOMATISCHE REDIRECT OP ROOT =======
+  // Stuur direct door naar juiste homepage op basis van gebruikerstype
   if (
     typeof window.getUserType === "function" &&
     window.location.pathname === "/"
@@ -27,7 +46,8 @@ function initializePage() {
       return;
     }
   }
-  // Start alle systemen
+  
+  // 🚀 Start alle systemen
   hideLoading();
   scrollToTop();
   initializeMenu();
@@ -36,7 +56,10 @@ function initializePage() {
   initializeExtraQoL(); // 🌟 NIEUWE EXTRA QOL FEATURES
 }
 
-// Verberg loading overlay
+/**
+ * 🎭 Verbergt de loading overlay
+ * Wordt aangeroepen wanneer de pagina volledig geladen is
+ */
 function hideLoading() {
   const loadingOverlay = document.getElementById('loadingOverlay');
   if (loadingOverlay) {
@@ -44,7 +67,10 @@ function hideLoading() {
   }
 }
 
-// Scroll naar boven bij pagina laden
+/**
+ * 📜 Scrollt naar boven bij het laden van de pagina
+ * Vooral belangrijk voor de hoofdpagina om een consistente startpositie te garanderen
+ */
 function scrollToTop() {
   const isIndexPage = window.location.pathname === '/' || 
                      window.location.pathname.includes('index.html') ||
@@ -55,6 +81,7 @@ function scrollToTop() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     
+    // Dubbele scroll voor betrouwbaarheid
     setTimeout(() => {
       window.scrollTo({
         top: 0,
@@ -62,11 +89,13 @@ function scrollToTop() {
         behavior: 'instant'
       });
     }, 50);
-    
   }
 }
 
-// Menu systeem - werkt op alle paginas
+/**
+ * 📱 Menu systeem - werkt op alle pagina's
+ * Beheert het zijmenu met animaties en interacties
+ */
 function initializeMenu() {
   const avatar = document.getElementById('burgerToggle');
   const sideMenu = document.getElementById('sideMenu');
@@ -75,11 +104,13 @@ function initializeMenu() {
     return;
   }
 
+  /**
+   * 🔄 Schakelt het menu tussen open en gesloten
+   */
   function toggleMenu() {
     const sideMenu = document.getElementById('sideMenu');
     const overlay = document.querySelector('.menu-overlay');
     const body = document.body;
-    
     
     if (sideMenu.classList.contains('open')) {
       closeMenu();
@@ -88,6 +119,9 @@ function initializeMenu() {
     }
   }
 
+  /**
+   * ➡️ Opent het zijmenu met animaties
+   */
   function openMenu() {
     const overlay = document.querySelector('.menu-overlay');
     const body = document.body;
@@ -101,6 +135,9 @@ function initializeMenu() {
     body.classList.add('menu-open');
   }
 
+  /**
+   * ⬅️ Sluit het zijmenu en herstelt de pagina
+   */
   function closeMenu() {
     const overlay = document.querySelector('.menu-overlay');
     const body = document.body;
@@ -115,22 +152,20 @@ function initializeMenu() {
     body.classList.remove('menu-open');
     body.style.overflow = '';
     body.style.paddingRight = '';
-    
   }
 
-  // Event listeners
+  // 🎧 Event listeners voor menu interacties
   avatar.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleMenu();
   });
-  // Make toggleMenu available globally (only if not already defined)
+  
+  // Maak toggleMenu globaal beschikbaar (alleen als het nog niet bestaat)
   if (!window.toggleMenu) {
     window.toggleMenu = toggleMenu;
-    console.log('📱 startPage.js: Set window.toggleMenu');
-  } else {
-    console.log('📱 startPage.js: toggleMenu already exists, not overriding');
   }
 
+  // Sluitknop event listener
   const closeBtn = sideMenu.querySelector('.sideMenu-closeBtn');
   if (closeBtn) {
     closeBtn.addEventListener('click', (e) => {
@@ -139,6 +174,7 @@ function initializeMenu() {
     });
   }
 
+  // Overlay click om menu te sluiten
   const overlay = document.querySelector('.menu-overlay');
   if (overlay) {
     overlay.addEventListener('click', () => {
@@ -146,6 +182,7 @@ function initializeMenu() {
     });
   }
 
+  // Click outside om menu te sluiten
   document.addEventListener('click', (e) => {
     // Pak altijd een Element, niet een TextNode
     const tgt = (e.target.nodeType === Node.ELEMENT_NODE)
@@ -159,14 +196,15 @@ function initializeMenu() {
       closeMenu();
     }
   });
-  ;
 
+  // Escape toets om menu te sluiten
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
       closeMenu();
     }
   });
 
+  // Hover effecten voor menu links
   const menuLinks = sideMenu.querySelectorAll('a');
   menuLinks.forEach(link => {
     link.addEventListener('mouseenter', () => {
@@ -181,14 +219,18 @@ function initializeMenu() {
   });
 }
 
-// Globale features die op alle paginas werken
+/**
+ * 🌐 Globale features die op alle pagina's werken
+ * Bevat functionaliteit die overal beschikbaar moet zijn
+ */
 function initializeGlobalFeatures() {
+  // Smooth scroll voor anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
       e.preventDefault();
       const href = this.getAttribute('href');
       
-      // Check if href is more than just '#' and is a valid selector
+      // Controleer of href meer is dan alleen '#' en een geldige selector is
       if (href && href.length > 1) {
         try {
           const target = document.querySelector(href);
@@ -199,21 +241,65 @@ function initializeGlobalFeatures() {
             });
           }
         } catch (error) {
-          console.warn('Invalid selector:', href);
+          console.warn('⚠️ Ongeldige anchor link:', href);
         }
       }
     });
   });
 
-  setActiveNavigation();
-  enhanceForms();
+  // Performance monitoring
+  initializePerformanceMonitoring();
   
-  window.fixScroll = function() {
-    const body = document.body;
-    body.classList.remove('menu-open');
-    body.style.overflow = '';
-    body.style.paddingRight = '';
-  };
+  // Network status monitoring
+  initializeNetworkStatus();
+  
+  // Keyboard shortcuts
+  initializeKeyboardShortcuts();
+  
+  // Context menu aanpassingen
+  initializeContextMenu();
+  
+  // Auto-save functionaliteit
+  initializeAutoSave();
+  
+  // Copy URL functionaliteit
+  initializeCopyURL();
+  
+  // Print feature
+  initializePrintFeature();
+  
+  // Back button enhancement
+  initializeBackButton();
+  
+  // Tooltips
+  initializeTooltips();
+  
+  // Notification system
+  initializeNotificationSystem();
+  
+  // Error handling
+  initializeErrorHandling();
+  
+  // Accessibility tools
+  initializeAccessibilityTools();
+  
+  // Developer tools
+  initializeDeveloperTools();
+  
+  // Recent pages tracking
+  initializeRecentPages();
+  
+  // Quick search
+  initializeQuickSearch();
+  
+  // Mobile gestures
+  initializeMobileGestures();
+  
+  // Active navigation highlighting
+  setActiveNavigation();
+  
+  // Form enhancements
+  enhanceForms();
 }
 
 // ===== 🌟 QUALITY OF LIFE FEATURES ===== 
