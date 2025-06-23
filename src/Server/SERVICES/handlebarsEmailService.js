@@ -2,12 +2,34 @@
 const nodemailer = require('nodemailer');
 const config = require('../CONFIG/config');
 
+/**
+ * 📧 Handlebars Email Service
+ * 
+ * Deze service verzorgt alle email functionaliteit voor de CareerLaunch applicatie:
+ * - Welkom emails voor nieuwe studenten en bedrijven
+ * - Test emails voor debugging
+ * - Afspraak bevestigingen
+ * - Facturen en andere bedrijfscommunicatie
+ * 
+ * De service gebruikt Nodemailer met SMTP configuratie en ondersteunt
+ * HTML templates met inline styling voor professionele emails.
+ * 
+ * @author CareerLaunch Development Team
+ * @version 1.0
+ */
 class HandlebarsEmailService {
   constructor() {
     this.transporter = null;
     this.initializeTransporter();
   }
 
+  /**
+   * 🔧 Initialiseert de email transporter
+   * 
+   * Zet de Nodemailer transporter op met de configuratie uit config.js
+   * 
+   * @returns {void}
+   */
   initializeTransporter() {
     try {
       //createTransport instead of createTransporter
@@ -20,8 +42,6 @@ class HandlebarsEmailService {
           pass: config.email.password
         }
       });
-
-      console.log('✅ Email transporter initialized');
     } catch (error) {
       console.error('❌ Email transporter failed to initialize:', error);
       this.transporter = null;
@@ -29,7 +49,18 @@ class HandlebarsEmailService {
   }
 
   /**
-   * Verstuur welcome email naar nieuwe student
+   * 🎓 Verstuur welcome email naar nieuwe student
+   * 
+   * Stuurt een professionele welkom email naar nieuwe studenten met
+   * hun accountgegevens en instructies voor het platform.
+   * 
+   * @param {Object} studentData - Student gegevens object
+   * @param {string} studentData.voornaam - Voornaam van de student
+   * @param {string} studentData.studentnummer - Studentnummer
+   * @param {string} studentData.email - Email adres
+   * @param {string} studentData.opleiding - Opleiding
+   * @param {string} [studentData.opleidingsrichting] - Opleidingsrichting (optioneel)
+   * @returns {Promise<Object>} Resultaat van het email versturen
    */
   async sendStudentWelcomeEmail(studentData) {
     try {
@@ -104,7 +135,6 @@ class HandlebarsEmailService {
 
       const result = await this.transporter.sendMail(mailOptions);
       
-      console.log(`✅ Student welcome email sent to ${studentData.email}`);
       return {
         success: true,
         messageId: result.messageId,
@@ -121,7 +151,20 @@ class HandlebarsEmailService {
   }
 
   /**
-   * Verstuur welcome email naar nieuw bedrijf
+   * 🏢 Verstuur welcome email naar nieuw bedrijf
+   * 
+   * Stuurt een professionele welkom email naar nieuwe bedrijven met
+   * hun accountgegevens en partnership bevestiging.
+   * 
+   * @param {Object} bedrijfData - Bedrijf gegevens object
+   * @param {string} bedrijfData.naam - Bedrijfsnaam
+   * @param {string} bedrijfData.email - Email adres
+   * @param {string} bedrijfData.sector - Sector
+   * @param {string} bedrijfData.TVA_nummer - TVA nummer
+   * @param {string} bedrijfData.gemeente - Gemeente
+   * @param {string} bedrijfData.postcode - Postcode
+   * @param {Object} [vatInfo] - TVA validatie informatie (optioneel)
+   * @returns {Promise<Object>} Resultaat van het email versturen
    */
   async sendBedrijfWelcomeEmail(bedrijfData, vatInfo = null) {
     try {
@@ -183,7 +226,6 @@ class HandlebarsEmailService {
 
       const result = await this.transporter.sendMail(mailOptions);
       
-      console.log(`✅ Bedrijf welcome email sent to ${bedrijfData.email}`);
       return {
         success: true,
         messageId: result.messageId,
