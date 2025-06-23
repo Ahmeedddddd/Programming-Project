@@ -37,7 +37,6 @@ class VATService {
       }
       
       const data = await response.json();
-      console.log('VAT API Response:', data);
       
       // Process de response
       return this.processVATResponse(data, cleanVAT);
@@ -193,7 +192,12 @@ function getVATNumber() {
 }
 
 /**
- * Jouw originele code als standalone functie (voor backwards compatibility)
+ * 🔍 Jouw originele code als standalone functie (voor backwards compatibility)
+ * 
+ * Valideert een VAT nummer via de VIES API
+ * 
+ * @param {string} vatNumber - Het VAT nummer om te valideren
+ * @returns {Promise<Object>} API response met validatie resultaat
  */
 async function checkVAT(vatNumber) {
   const url = `https://${key_id}:${key}@viesapi.eu/api/get/vies/euvat/${vatNumber}`;
@@ -206,7 +210,6 @@ async function checkVAT(vatNumber) {
     }
     
     const data = await response.json();
-    console.log(data);
     // data.valid === true betekent dat het BTW-nummer bestaat en klopt
     return data;
     
@@ -227,12 +230,17 @@ module.exports = {
   quickValidate: VATService.quickValidate.bind(VATService)
 };
 
-// Als dit bestand direct wordt uitgevoerd (jouw originele gebruik)
+/**
+ * 🧪 Test functie voor directe uitvoering
+ * 
+ * Als dit bestand direct wordt uitgevoerd, voert het een test uit
+ * met een voorbeeld VAT nummer
+ */
 if (require.main === module) {
   const vatNumber = getVATNumber();
   checkVAT(vatNumber)
     .then(data => {
-      console.log('VAT validation result:', data);
+      // Test resultaat wordt stil verwerkt
     })
     .catch(error => {
       console.error('VAT validation failed:', error);
