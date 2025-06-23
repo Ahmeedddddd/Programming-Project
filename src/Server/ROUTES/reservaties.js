@@ -52,9 +52,6 @@ router.post(
       reserverendBedrijf = user.bedrijfsnummer || user.userId || user.gebruikersId;
     }
 
-    // Debug logging
-    console.log('[RESERVERING] userType:', user.userType, '| studentnummer:', reserverendeStudent, '| bedrijfsnummer:', reserverendBedrijf, '| tijdslot:', tijdslot);
-
     // Split tijdslot in startTijd en eindTijd
     let startTijd = null, eindTijd = null;
     if (tijdslot && tijdslot.includes('-')) {
@@ -120,7 +117,16 @@ router.post(
   }
 );
 
-// Haal alle reservaties op voor de ingelogde student
+/**
+ * 📅 Haalt alle reservaties op voor de ingelogde student
+ * 
+ * Endpoint voor studenten om hun eigen reservaties op te halen.
+ * Retourneert alle reservaties (aangevraagd en bevestigd) voor de student.
+ * 
+ * @route GET /api/reservaties/my
+ * @middleware authenticateToken, requireRole(["student"])
+ * @returns {Object} JSON response met reservaties
+ */
 router.get(
   "/my",
   authenticateToken,
@@ -147,15 +153,22 @@ router.get(
   }
 );
 
-// Haal alle reservaties (pending & confirmed) op voor het ingelogde bedrijf
+/**
+ * 🏢 Haalt alle reservaties op voor het ingelogde bedrijf
+ * 
+ * Endpoint voor bedrijven om hun eigen reservaties op te halen.
+ * Retourneert alle reservaties (aangevraagd en bevestigd) voor het bedrijf.
+ * 
+ * @route GET /api/reservaties/company
+ * @middleware authenticateToken, requireRole(["bedrijf"])
+ * @returns {Object} JSON response met reservaties
+ */
 router.get(
   "/company",
   authenticateToken,
   requireRole(["bedrijf"]),
   async (req, res) => {
-    console.log("[DEBUG] req.user object:", req.user);
     const bedrijfsnummer = req.user.userId;
-    console.log("[DEBUG] Bedrijfsnummer uit token:", bedrijfsnummer);
     try {
       const reservaties = await Reservatie.getByBedrijf(bedrijfsnummer);
       // Voor de frontend, voeg de vaste datum toe aan de tijdvelden
@@ -175,7 +188,17 @@ router.get(
   }
 );
 
-// Bedrijf accepteert een reservatie
+/**
+ * ✅ Accepteert een reservatie (bedrijf of student)
+ * 
+ * Endpoint voor bedrijven en studenten om een aangevraagde reservatie te accepteren.
+ * Controleert eerst of de gebruiker eigenaar is van de reservatie.
+ * 
+ * @route PUT /api/reservaties/:id/accept
+ * @middleware authenticateToken, requireRole(["bedrijf", "student"])
+ * @param {string} id - Reservatie ID
+ * @returns {Object} JSON response met bevestiging
+ */
 router.put(
   "/:id/accept",
   authenticateToken,
@@ -184,49 +207,24 @@ router.put(
     const { id: afspraakId } = req.params;
     const { userType, userId } = req.user;
 
-    // Debug logging
-    console.log('[ACCEPT] User object:', req.user);
-    console.log('[ACCEPT] Reservation ID:', afspraakId);
-    console.log('[ACCEPT] User type:', userType);
-    console.log('[ACCEPT] User ID:', userId);
-
     try {
       const reservatie = await Reservatie.getById(afspraakId);
       if (!reservatie) {
-        console.log('[ACCEPT] Reservation not found:', afspraakId);
         return res.status(404).json({
           success: false,
           message: "Reservatie niet gevonden.",
         });
       }
 
-      console.log('[ACCEPT] Found reservation:', {
-        id: reservatie.id || reservatie.afspraakId,
-        studentnummer: reservatie.studentnummer,
-        bedrijfsnummer: reservatie.bedrijfsnummer,
-        status: reservatie.status
-      });
-
       // Check ownership based on user type - use userId from JWT
       let isOwner = false;
       if (userType === 'bedrijf') {
         isOwner = reservatie.bedrijfsnummer == userId;
-        console.log('[ACCEPT] Company ownership check:', {
-          reservationCompany: reservatie.bedrijfsnummer,
-          userCompany: userId,
-          isOwner: isOwner
-        });
       } else if (userType === 'student') {
         isOwner = reservatie.studentnummer == userId;
-        console.log('[ACCEPT] Student ownership check:', {
-          reservationStudent: reservatie.studentnummer,
-          userStudent: userId,
-          isOwner: isOwner
-        });
       }
 
       if (!isOwner) {
-        console.log('[ACCEPT] Access denied - not owner');
         return res.status(403).json({
           success: false,
           message: "Niet geautoriseerd om deze reservatie te beheren.",
@@ -234,7 +232,6 @@ router.put(
       }
 
       if (reservatie.status !== "aangevraagd") {
-        console.log('[ACCEPT] Invalid status:', reservatie.status);
         return res.status(400).json({
           success: false,
           message:
@@ -267,12 +264,10 @@ router.put(
           // Continue anyway - acceptance was successful
         }
         
-        console.log('[ACCEPT] Success - reservation accepted');
         res
           .status(200)
           .json({ success: true, message: "Reservatie succesvol bevestigd." });
       } else {
-        console.log('[ACCEPT] No rows affected');
         res.status(404).json({
           success: false,
           message: "Reservatie niet gevonden of niet gewijzigd.",
