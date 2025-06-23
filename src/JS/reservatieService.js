@@ -1,22 +1,49 @@
-// src/JS/reservatieService.js
-// Service for handling reservation operations
-
-console.log("✅ reservatieService.js geladen");
+/**
+ * 📅 reservatieService.js - Service voor het beheren van reservatie operaties
+ * 
+ * Dit bestand biedt een complete service voor het beheren van reservaties:
+ * - Aanvragen van nieuwe reservaties door studenten
+ * - Ophalen van bestaande reservaties
+ * - Accepteren/weigeren van reservaties door bedrijven
+ * - Annuleren en herstellen van reservaties
+ * - Error handling en notificaties
+ * 
+ * Belangrijke functionaliteiten:
+ * - Authenticated API calls met JWT tokens
+ * - Uitgebreide error handling
+ * - Gebruiksvriendelijke notificaties
+ * - Fallback mechanismen voor ontbrekende functies
+ * - Consistent response handling
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ * @since 2024
+ */
 
 // Fallback voor showNotification als deze niet bestaat
 if (typeof window.showNotification !== 'function') {
     window.showNotification = function(msg, type) { 
-        console.log(`[${type.toUpperCase()}] ${msg}`);
         alert(msg); 
     };
 }
 
+/**
+ * 📅 ReservatieService - Hoofdklasse voor reservatie beheer
+ * 
+ * Deze klasse biedt alle methoden voor het beheren van reservaties
+ * tussen studenten en bedrijven in het CareerLaunch systeem
+ */
 class ReservatieService {
     /**
-     * Sends a reservation request to the backend.
-     * @param {string} bedrijfsnummer - The ID of the company.
-     * @param {string} tijdslot - The selected time slot (e.g., "14:00-14:30").
-     * @returns {Promise<boolean>} - True if the request was successful, false otherwise.
+     * Verzendt een reservatie aanvraag naar de backend
+     * 
+     * Deze functie stelt studenten in staat om een reservatie aan te vragen
+     * bij een bedrijf voor een specifiek tijdslot
+     * 
+     * @param {string} bedrijfsnummer - Het ID van het bedrijf
+     * @param {string} tijdslot - Het geselecteerde tijdslot (bijv. "14:00-14:30")
+     * @returns {Promise<Object>} - Server response met succes/error informatie
+     * @throws {Error} - Bij netwerk of server fouten
      */
     static async requestReservation(bedrijfsnummer, tijdslot) {
         try {
@@ -35,14 +62,17 @@ class ReservatieService {
             const data = await response.json();
             return data;
         } catch (error) {
-            console.error('Error requesting reservation:', error);
             throw error;
         }
     }
 
     /**
-     * Fetches reservations for the current student.
-     * @returns {Promise<Array>} - An array of reservation objects.
+     * Haalt alle reservaties op voor de huidige student
+     * 
+     * Deze functie toont alle actieve en historische reservaties
+     * van de ingelogde student
+     * 
+     * @returns {Promise<Array>} - Array van reservatie objecten
      */
     static async getMyReservations() {
         try {
@@ -53,15 +83,19 @@ class ReservatieService {
             const data = await response.json();
             return data.data || [];
         } catch (error) {
-            console.error('Error fetching my reservations:', error);
             return [];
         }
     }
 
     /**
-     * Cancels a student's reservation.
-     * @param {string} reservatieId - The ID of the reservation to cancel.
-     * @returns {Promise<boolean>} - True if cancellation was successful, false otherwise.
+     * Annuleert een reservatie van een student
+     * 
+     * Deze functie stelt studenten in staat om hun eigen reservaties
+     * te annuleren voordat deze geaccepteerd zijn
+     * 
+     * @param {string} reservatieId - Het ID van de te annuleren reservatie
+     * @returns {Promise<Object>} - Server response met succes/error informatie
+     * @throws {Error} - Bij netwerk of server fouten
      */
     static async cancelReservation(reservatieId) {
         try {
@@ -76,28 +110,29 @@ class ReservatieService {
             const data = await response.json();
             return data;
         } catch (error) {
-            console.error('Error canceling reservation:', error);
             throw error;
         }
     }
 
     /**
-     * Fetches reservation requests for the current company.
-     * @returns {Promise<Array>} - An array of reservation request objects.
+     * Haalt reservatie aanvragen op voor het huidige bedrijf
+     * 
+     * Deze functie toont alle inkomende reservatie aanvragen
+     * die wachten op acceptatie/weigering door het bedrijf
+     * 
+     * @returns {Promise<Array>} - Array van reservatie aanvraag objecten
      */
     static async getCompanyReservations() {
         try {
             const response = await window.fetchWithAuth('/api/reservaties/company');
             if (!response.ok) {
                 const errorBody = await response.text();
-                console.error("Error body from /api/reservaties/company:", errorBody);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
             return data.data || [];
         } catch (error) {
-            console.error('Error fetching company reservations:', error);
-            // In case of error, show a user-friendly notification.
+            // Toon gebruiksvriendelijke notificatie bij fout
             if (window.showNotification) {
                 window.showNotification('Kon bedrijfsgesprekken niet laden. Probeer het later opnieuw.', 'error');
             }
@@ -106,9 +141,14 @@ class ReservatieService {
     }
 
     /**
-     * Accepts a company's reservation request.
-     * @param {string} reservatieId - The ID of the reservation to accept.
-     * @returns {Promise<boolean>} - True if accepted successfully, false otherwise.
+     * Accepteert een reservatie aanvraag van een bedrijf
+     * 
+     * Deze functie stelt bedrijven in staat om reservatie aanvragen
+     * van studenten te accepteren
+     * 
+     * @param {string} reservatieId - Het ID van de te accepteren reservatie
+     * @returns {Promise<Object>} - Server response met succes/error informatie
+     * @throws {Error} - Bij netwerk of server fouten
      */
     static async acceptReservation(reservatieId) {
         try {
@@ -123,16 +163,20 @@ class ReservatieService {
             const data = await response.json();
             return data;
         } catch (error) {
-            console.error('Error accepting reservation:', error);
             throw error;
         }
     }
 
     /**
-     * Rejects a company's reservation request.
-     * @param {string} reservatieId - The ID of the reservation to reject.
-     * @param {string} [reden] - Optional reason for rejection.
-     * @returns {Promise<boolean>} - True if rejected successfully, false otherwise.
+     * Weigert een reservatie aanvraag van een bedrijf
+     * 
+     * Deze functie stelt bedrijven in staat om reservatie aanvragen
+     * van studenten te weigeren met een optionele reden
+     * 
+     * @param {string} reservatieId - Het ID van de te weigeren reservatie
+     * @param {string} [reden] - Optionele reden voor weigering
+     * @returns {Promise<Object>} - Server response met succes/error informatie
+     * @throws {Error} - Bij netwerk of server fouten
      */
     static async rejectReservation(reservatieId, reden = '') {
         try {
@@ -148,15 +192,19 @@ class ReservatieService {
             const data = await response.json();
             return data;
         } catch (error) {
-            console.error('Error rejecting reservation:', error);
             throw error;
         }
     }
 
     /**
-     * Verwijdert een reservatie definitief (alleen toegestaan voor geweigerde afspraken).
-     * @param {string} reservatieId - Het ID van de reservatie om te verwijderen.
-     * @returns {Promise<boolean>} - True als verwijderen gelukt is, anders false.
+     * Verwijdert een reservatie definitief
+     * 
+     * Deze functie verwijdert een reservatie permanent uit het systeem.
+     * Alleen toegestaan voor geweigerde of geannuleerde afspraken.
+     * 
+     * @param {string} reservatieId - Het ID van de te verwijderen reservatie
+     * @returns {Promise<Object>} - Server response met succes/error informatie
+     * @throws {Error} - Bij netwerk of server fouten
      */
     static async deleteReservation(reservatieId) {
         try {
@@ -171,15 +219,19 @@ class ReservatieService {
             const data = await response.json();
             return data;
         } catch (error) {
-            console.error('Error deleting reservation:', error);
             throw error;
         }
     }
 
     /**
-     * Herstelt een geannuleerde of geweigerde reservatie.
-     * @param {string} reservatieId - Het ID van de reservatie om te herstellen.
-     * @returns {Promise<object>} - Het resultaat van de server.
+     * Herstelt een geannuleerde of geweigerde reservatie
+     * 
+     * Deze functie stelt gebruikers in staat om geannuleerde of
+     * geweigerde reservaties te herstellen naar hun originele status
+     * 
+     * @param {string} reservatieId - Het ID van de te herstellen reservatie
+     * @returns {Promise<Object>} - Server response met succes/error informatie
+     * @throws {Error} - Bij netwerk of server fouten
      */
     static async restoreReservation(reservatieId) {
         try {
@@ -188,13 +240,12 @@ class ReservatieService {
             });
             return await response.json();
         } catch (error) {
-            console.error('Error restoring reservation:', error);
             throw error;
         }
     }
 }
 
-// Make it available globally
+// Maak de klasse globaal beschikbaar
 window.ReservatieService = ReservatieService;
 
 // Export de klasse voor ES6 module import
