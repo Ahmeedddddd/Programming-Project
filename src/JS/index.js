@@ -467,14 +467,6 @@ class CardRenderer {
     }
 
     renderProjectCard(project) {
-        // Debug logging to understand data structure
-        console.log('🔍 [DEBUG] Rendering project card:', {
-            titel: project.titel || project.projectTitel,
-            studenten: project.studenten,
-            studentenType: typeof project.studenten,
-            isArray: Array.isArray(project.studenten)
-        });
-
         // Handle different student data formats
         let studentenList = [];
         

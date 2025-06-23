@@ -106,7 +106,7 @@ class Student {
     try {
       console.log('🔍 [DEBUG] Executing getProjectsWithStudentIds query...');
       
-      // First, get all students with projects
+      // First, get all students with projects and their technologies
       const [rows] = await pool.query(`
         SELECT
             s.projectTitel,
@@ -116,10 +116,13 @@ class Student {
             s.achternaam,
             s.opleiding,
             s.tafelNr,
-            s.technologieen
+            GROUP_CONCAT(DISTINCT t.naam ORDER BY t.naam SEPARATOR ', ') as technologieen
         FROM
             STUDENT s
+        LEFT JOIN STUDENT_TECHNOLOGIE st ON s.studentnummer = st.studentnummer
+        LEFT JOIN TECHNOLOGIE t ON st.technologieId = t.technologieId
         WHERE s.projectTitel IS NOT NULL AND s.projectTitel != ''
+        GROUP BY s.projectTitel, s.projectBeschrijving, s.studentnummer, s.voornaam, s.achternaam, s.opleiding, s.tafelNr
         ORDER BY s.projectTitel, s.achternaam, s.voornaam;
       `);
       
@@ -145,8 +148,8 @@ class Student {
       });
       
       const result = Object.values(groupedProjects);
-      logger.info(`📊 Found ${result.length} unique projects with student IDs.`);
-      console.log('✅ [DEBUG] Projects with student IDs loaded successfully:', JSON.stringify(result, null, 2));
+      logger.info(`📊 Found ${result.length} unique projects with student IDs and technologies.`);
+      console.log('✅ [DEBUG] Projects with student IDs and technologies loaded successfully:', JSON.stringify(result, null, 2));
       return result;
     } catch (error) {
         logger.error('Error fetching projects with student IDs:', error);

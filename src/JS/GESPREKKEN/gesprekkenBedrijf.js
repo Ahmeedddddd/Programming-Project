@@ -1,4 +1,4 @@
-const { ReservatieService } = window;
+import { ReservatieService } from '../reservatieService.js';
 
 console.log("✅ gesprekkenBedrijf.js geladen");
 
@@ -654,4 +654,7 @@ let companyConversationManager;
 
 document.addEventListener('DOMContentLoaded', () => {
     companyConversationManager = new CompanyConversationManager();
-}); 
+});
+
+// Make it available globally
+window.companyConversationManager = companyConversationManager; 
