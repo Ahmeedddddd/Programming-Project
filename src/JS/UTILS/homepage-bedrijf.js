@@ -1,4 +1,25 @@
-// src/JS/UTILS/homepage-bedrijf.js
+/**
+ * 🏢 homepage-bedrijf.js - Bedrijf Homepage Functionaliteit voor CareerLaunch EHB
+ * 
+ * Dit bestand beheert de bedrijf-specifieke functionaliteiten op de homepage:
+ * - Laden en tonen van bedrijfsinformatie
+ * - Weergave van interessante studenten
+ * - Aankomende gesprekken en reservaties
+ * - Statistieken en tellingen
+ * - Integratie met universele homepage initializer
+ * 
+ * Belangrijke functionaliteiten:
+ * - Bedrijf-specifieke dashboard elementen
+ * - Student preview kaarten
+ * - Reservatie management interface
+ * - Real-time data updates
+ * - Error handling en loading states
+ * - Responsive design ondersteuning
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ * @since 2024
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
     // Wacht een kort moment tot de universele initializer (index.js) de basisdata heeft geladen.
@@ -7,10 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Initialiseert de bedrijf-specifieke functionaliteiten op de homepage.
+ * 🚀 Initialiseert de bedrijf-specifieke functionaliteiten op de homepage
+ * 
+ * Deze functie is het hoofdpunt voor het opzetten van bedrijf-specifieke features:
+ * - Wacht op universele data van index.js
+ * - Laadt bedrijfsinformatie
+ * - Toont aankomende gesprekken
+ * - Update statistieken
+ * 
+ * @returns {Promise<void>}
  */
 async function initializeBedrijfHomepage() {
-    console.log(" Initializing bedrijf-specific homepage functions...");
     await waitForIndexJSData();
     await loadBedrijfInfo();
     await loadPendingAppointmentsCount();
@@ -19,7 +47,12 @@ async function initializeBedrijfHomepage() {
 }
 
 /**
- * Wacht tot index.js de basisdata heeft geladen en toont deze dan.
+ * ⏳ Wacht tot index.js de basisdata heeft geladen en toont deze dan
+ * 
+ * Deze functie wacht tot de universele homepage initializer klaar is
+ * en toont dan de bedrijf-specifieke data
+ * 
+ * @returns {Promise<void>}
  */
 async function waitForIndexJSData() {
     // Wacht tot de globale variabelen beschikbaar zijn
@@ -28,7 +61,6 @@ async function waitForIndexJSData() {
     
     while (attempts < maxAttempts) {
         if (window.allStudents && window.allCompanies && window.allProjects) {
-            console.log('✅ Index.js data gevonden, rendering interessante studenten...');
             await renderInteressanteStudenten(window.allStudents);
             await displayIndexJSData();
             await updateDataCounts();
@@ -37,17 +69,20 @@ async function waitForIndexJSData() {
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
     }
-    
-    console.warn('⚠️ Index.js data niet gevonden na 5 seconden, doorgaan zonder...');
 }
 
 /**
- * Toont interessante studenten op de bedrijfshomepage.
+ * 🎨 Toont interessante studenten op de bedrijfshomepage
+ * 
+ * Rendert een preview van studenten die interessant kunnen zijn
+ * voor het bedrijf om contact mee op te nemen
+ * 
+ * @param {Array} students - Array van student objecten om te tonen
+ * @returns {Promise<void>}
  */
 async function renderInteressanteStudenten(students) {
     const container = document.getElementById('interessanteStudentenContainer');
     if (!container) {
-        console.warn('Interessante studenten container niet gevonden');
         return;
     }
 
@@ -69,7 +104,11 @@ async function renderInteressanteStudenten(students) {
 }
 
 /**
- * Toont de data van index.js op de bedrijfshomepage.
+ * 📊 Toont de data van index.js op de bedrijfshomepage
+ * 
+ * Update alle data tellingen en statistieken met de universele data
+ * 
+ * @returns {Promise<void>}
  */
 async function displayIndexJSData() {
     const data = {
@@ -77,12 +116,6 @@ async function displayIndexJSData() {
         bedrijven: window.allCompanies || [],
         projecten: window.allProjects || []
     };
-
-    console.log('📊 Displaying index.js data:', {
-        studenten: data.studenten.length,
-        bedrijven: data.bedrijven.length,
-        projecten: data.projecten.length
-    });
 
     // Update data counts
     const dataCountElements = document.querySelectorAll('[data-count]');
@@ -95,7 +128,11 @@ async function displayIndexJSData() {
 }
 
 /**
- * Update data counts using the global updateDataCounts function if available.
+ * 📊 Update data counts using the global updateDataCounts function if available
+ * 
+ * Gebruikt de universele updateDataCounts functie om statistieken bij te werken
+ * 
+ * @returns {Promise<void>}
  */
 async function updateDataCounts() {
     if (window.updateDataCounts) {
@@ -109,7 +146,12 @@ async function updateDataCounts() {
 }
 
 /**
- * Haalt bedrijfsinformatie op en toont deze.
+ * 🏢 Haalt bedrijfsinformatie op en toont deze
+ * 
+ * Laadt de specifieke informatie van het ingelogde bedrijf
+ * en toont deze in de UI
+ * 
+ * @returns {Promise<void>}
  */
 async function loadBedrijfInfo() {
     try {
@@ -131,12 +173,17 @@ async function loadBedrijfInfo() {
             }
         }
     } catch (error) {
-        console.error('Error loading bedrijf info:', error);
+        // Silent error handling - bedrijf info is niet kritiek
     }
 }
 
 /**
- * Haalt het aantal wachtende afspraken op en toont deze.
+ * 📅 Haalt het aantal wachtende afspraken op en toont deze
+ * 
+ * Laadt het aantal reservaties met status 'aangevraagd' en
+ * toont deze in een badge of counter
+ * 
+ * @returns {Promise<void>}
  */
 async function loadPendingAppointmentsCount() {
     try {
@@ -160,19 +207,23 @@ async function loadPendingAppointmentsCount() {
             }
         }
     } catch (error) {
-        console.error('Error loading pending appointments count:', error);
+        // Silent error handling - pending count is niet kritiek
     }
 }
 
 /**
- * Haalt de aankomende gesprekken voor het bedrijf op en toont ze.
+ * 📅 Haalt de aankomende gesprekken voor het bedrijf op en toont ze
+ * 
+ * Laadt alle reservaties van het bedrijf en toont de aankomende
+ * gesprekken in een overzichtelijke grid
+ * 
+ * @returns {Promise<void>}
  */
 async function loadUpcomingMeetings() {
     const container = document.getElementById('upcoming-meetings-grid');
     const countElement = document.querySelector('[data-count="upcoming-meetings"]');
 
     if (!container) {
-        console.error('Meeting container (#upcoming-meetings-grid) not found!');
         return;
     }
 
@@ -200,78 +251,69 @@ async function loadUpcomingMeetings() {
             const requestedMeetings = allMeetings.filter(
                 (m) => m.status === 'aangevraagd'
             );
+            const confirmedMeetings = allMeetings.filter(
+                (m) => m.status === 'bevestigd'
+            );
 
-            console.log('Valid meetings:', validMeetings);
-
+            // Update count
             if (countElement) {
                 countElement.textContent = validMeetings.length;
             }
 
+            // Render meetings
             if (validMeetings.length === 0) {
-                container.innerHTML = `<div class="no-data"><p>Je hebt nog geen aankomende gesprekken.</p></div>`;
-                return;
+                container.innerHTML = `
+                    <div class="no-meetings">
+                        <p>Geen aankomende gesprekken</p>
+                        <a href="/alle-studenten" class="btn-primary">Studenten bekijken</a>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = validMeetings
+                    .slice(0, 6) // Toon maximaal 6 gesprekken
+                    .map(meeting => renderMeetingCard(meeting))
+                    .join('');
             }
-
-            container.innerHTML = validMeetings.slice(0, 4).map(renderMeetingCard).join('');
-
-            const dashboardBadge = document.getElementById('pending-requests-count');
-            if (dashboardBadge) {
-                dashboardBadge.textContent = requestedMeetings.length;
-            }
-
-        } else {
-            throw new Error(result.message || 'Kon gesprekken niet ophalen.');
         }
     } catch (error) {
-        console.error('Failed to load upcoming meetings for bedrijf:', error);
-        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Kon je gesprekken niet laden. Probeer het later opnieuw.</div>`;
-        if (countElement) {
-            countElement.textContent = '0';
-        }
+        container.innerHTML = `
+            <div class="error-state">
+                <p>Kon gesprekken niet laden</p>
+            </div>
+        `;
     }
 }
 
 /**
- * Renders a single, well-formatted meeting card.
- * @param {object} meeting - The meeting data object.
- * @returns {string} HTML string for the meeting card.
+ * 🎴 Rendert een individuele meeting kaart
+ * 
+ * Genereert een kaart met informatie over een specifiek gesprek
+ * 
+ * @param {Object} meeting - Meeting object met gegevens
+ * @returns {string} HTML string voor de meeting kaart
  */
 function renderMeetingCard(meeting) {
-    const { studentNaam, startTijd, eindTijd, status, studentTafelNr } = meeting;
-    const eventDate = '13/03/2025'; // This seems to be a fixed date for the event
-
-    // Correctly formats an ISO date-time string (e.g., "2025-06-25T16:30:00.000Z")
-    // into a user-friendly time format (e.g., "16:30").
     const formatTime = (timeString) => {
-        if (!timeString || typeof timeString !== 'string') {
-            return 'N/A';
-        }
-        try {
-            const date = new Date(timeString);
-            // Use toLocaleTimeString for robust time formatting, respecting locale (24h format for nl-BE)
-            return date.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
-        } catch (error) {
-            console.error(`Failed to format time: ${timeString}`, error);
-            return 'Error'; // Return an error indicator if parsing fails
-        }
+        if (!timeString) return 'TBD';
+        return timeString.replace(':', 'h');
     };
 
-    const formattedStart = formatTime(startTijd);
-    const formattedEnd = formatTime(eindTijd);
-
-    // Generate a status badge with appropriate class
-    const statusBadge = `<span class="status-badge status-${status.toLowerCase()}">${status}</span>`;
+    const statusClass = meeting.status === 'bevestigd' ? 'confirmed' : 'pending';
+    const statusText = meeting.status === 'bevestigd' ? 'Bevestigd' : 'Aangevraagd';
 
     return `
-        <div class="preview-card">
-            <div class="card-header">
-                <h3 class="card-title">${studentNaam || 'Onbekende Student'}</h3>
-                ${studentTafelNr ? `<span class="table-number">Tafel ${studentTafelNr}</span>` : ''}
+        <div class="meeting-card ${statusClass}">
+            <div class="meeting-header">
+                <h4>${meeting.studentNaam || 'Onbekende student'}</h4>
+                <span class="status-badge ${statusClass}">${statusText}</span>
             </div>
-            <div class="card-details">
-                <p><i class="fas fa-calendar-alt"></i> <strong>Datum:</strong> ${eventDate}</p>
-                <p><i class="fas fa-clock"></i> <strong>Tijd:</strong> ${formattedStart} - ${formattedEnd}</p>
-                <p><i class="fas fa-info-circle"></i> <strong>Status:</strong> ${statusBadge}</p>
+            <div class="meeting-details">
+                <p><i class="fas fa-calendar"></i> ${meeting.datum || 'TBD'}</p>
+                <p><i class="fas fa-clock"></i> ${formatTime(meeting.tijdslot)}</p>
+                <p><i class="fas fa-map-marker-alt"></i> Tafel ${meeting.tafelNr || 'TBD'}</p>
+            </div>
+            <div class="meeting-actions">
+                <a href="/gesprekken-overzicht-bedrijven" class="btn-secondary">Details</a>
             </div>
         </div>
     `;
@@ -284,4 +326,16 @@ if (document.readyState === 'loading') {
     initializeBedrijfHomepage();
 }
 
-console.log('✅ Bedrijf homepage script loaded!'); 
+/**
+ * 🏢 Bedrijf Homepage Management Systeem
+ * 
+ * Dit bestand bevat alle functionaliteit voor de bedrijf homepage:
+ * - Initialisatie van de homepage met data loading
+ * - Weergave van interessante studenten
+ * - Laden van bedrijfsinformatie
+ * - Tonen van aankomende gesprekken en wachtende afspraken
+ * - Update van statistieken
+ * 
+ * Het systeem wacht op data van index.js en toont een loading state
+ * totdat alle benodigde informatie is geladen.
+ */ 
