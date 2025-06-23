@@ -102,22 +102,23 @@ async function handleRegistration(event) {
                 opleiding: document.getElementById('opleiding').value,
                 email: document.getElementById('studentMail').value,
                 gsm_nummer: document.getElementById('gsmNummer').value,
+                opleidingsrichting: '',
+                projectTitel: '',
+                projectBeschrijving: '',
+                overMezelf: '',
                 huisnummer: '',
                 straatnaam: '',
                 gemeente: '',
                 postcode: '',
                 bus: '',
-                opleidingsrichting: '',
-                projectTitel: '',
-                projectBeschrijving: '',
-                overMezelf: '',
+                evenementId: 1,
                 leerjaar: 3,
                 tafelNr: 1,
-                evenementId: 1,
                 password: password
             };
         }
         // Stuur registratie request
+        console.log('Registratie data:', JSON.stringify(registrationData)); // Debug: log payload
         const endpoint = `http://localhost:8383/api/auth/register/${currentUserType === 'bedrijf' ? 'bedrijf' : 'student'}`;
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -125,7 +126,14 @@ async function handleRegistration(event) {
             body: JSON.stringify(registrationData)
         });
         const result = await response.json();
-        if (!response.ok) throw new Error(result.message || 'Registratie mislukt');
+        if (!response.ok) {
+            // Toon backend validatiefouten indien aanwezig
+            if (result.details && Array.isArray(result.details)) {
+                const detailMsg = result.details.map(e => e.msg).join('\n');
+                throw new Error(detailMsg || result.message || 'Registratie mislukt');
+            }
+            throw new Error(result.message || 'Registratie mislukt');
+        }
         // Zet token in localStorage en als cookie (voor backend)
         if (result.token) {
             localStorage.setItem('authToken', result.token);
