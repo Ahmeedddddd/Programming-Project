@@ -61,15 +61,15 @@ function setRequiredFields(type) {
     }
 }
 
-// ✅ NEW: Form submission handler
+// ✅ VERNIEUWD: Form submission handler voor registratie
 async function handleRegistration(event) {
     event.preventDefault();
     const loadingOverlay = document.getElementById('loadingOverlay');
     const registerButton = document.getElementById('registerButton');
     try {
-        loadingOverlay.style.display = 'flex';
-        registerButton.disabled = true;
-        // Validate passwords match
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        if (registerButton) registerButton.disabled = true;
+        // Validatie wachtwoorden
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         if (password !== confirmPassword) throw new Error('Wachtwoorden komen niet overeen');
@@ -78,12 +78,7 @@ async function handleRegistration(event) {
         if (!agreeTerms) throw new Error('Je moet akkoord gaan met de algemene voorwaarden');
         // Verzamel form data
         let registrationData;
-        let pakket = null;
         if (currentUserType === 'bedrijf') {
-            // Haal pakket info op
-            const pakketVal = document.getElementById('selectedPakketInput').value;
-            if (!pakketVal) throw new Error('Kies een pakket om verder te gaan.');
-            pakket = JSON.parse(pakketVal);
             registrationData = {
                 naam: document.getElementById('bedrijfNaam').value,
                 voornaam: document.getElementById('voornaam').value,
@@ -98,8 +93,7 @@ async function handleRegistration(event) {
                 sector: document.getElementById('websiteLinkedin')?.value || '',
                 bus: '',
                 land: 'België',
-                password: password,
-                pakket: pakket // voeg pakket toe
+                password: password
             };
         } else {
             registrationData = {
@@ -108,11 +102,24 @@ async function handleRegistration(event) {
                 opleiding: document.getElementById('opleiding').value,
                 email: document.getElementById('studentMail').value,
                 gsm_nummer: document.getElementById('gsmNummer').value,
+                huisnummer: '',
+                straatnaam: '',
+                gemeente: '',
+                postcode: '',
+                bus: '',
+                opleidingsrichting: '',
+                projectTitel: '',
+                projectBeschrijving: '',
+                overMezelf: '',
+                leerjaar: 3,
+                tafelNr: 1,
+                evenementId: 1,
                 password: password
             };
         }
         // Stuur registratie request
-        const response = await fetch(`http://localhost:8383/api/auth/register/${currentUserType}`, {
+        const endpoint = `http://localhost:8383/api/auth/register/${currentUserType === 'bedrijf' ? 'bedrijf' : 'student'}`;
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(registrationData)
@@ -123,91 +130,25 @@ async function handleRegistration(event) {
         if (result.token) {
             localStorage.setItem('authToken', result.token);
             localStorage.setItem('userType', result.user.userType);
-            // Zet cookie met juiste flags (voor localhost: gebruik geen Secure, voor productie wel)
             document.cookie = `authToken=${result.token}; path=/; SameSite=Lax`;
         }
         // Succesmelding
         alert('Account succesvol aangemaakt! Je wordt doorgestuurd...');
-        // Hard redirect naar juiste homepage (zorgt voor volledige reload)
-        let targetUrl;
+        // Redirect naar juiste homepage
+        let targetUrl = '/';
         if (result.user && result.user.userType === 'bedrijf') {
             targetUrl = '/bedrijf-homepage';
         } else if (result.user && result.user.userType === 'student') {
             targetUrl = '/student-homepage';
-        } else {
-            targetUrl = '/';
         }
         window.location.replace(targetUrl);
     } catch (error) {
         console.error('Registration error:', error);
         alert(`Fout bij registratie: ${error.message}`);
     } finally {
-        loadingOverlay.style.display = 'none';
-        registerButton.disabled = false;
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+        if (registerButton) registerButton.disabled = false;
     }
-}
-
-// Pakket selectie en validatie
-let selectedPakket = null;
-
-function showPakketOverlay() {
-    const overlay = document.getElementById('pakketOverlay');
-    const pakketList = document.getElementById('pakketList');
-    const bevestigenBtn = document.getElementById('pakketBevestigenBtn');
-    pakketList.innerHTML = '';
-    selectedPakket = null;
-    bevestigenBtn.disabled = true;
-    // Pakket data hardcoded (kan later via API)
-    const pakketten = [
-        {
-            naam: 'Bronze Partner', prijs: 160, beschrijving: [
-                'Stand: 1,5m x 1,5m',
-                'Duur: 1 dag',
-                'Team: Maximaal 2 informanten',
-                'Ideaal voor bedrijven met minder dan 20 werknemers'
-            ]
-        },
-        {
-            naam: 'Silver Partner', prijs: 460, beschrijving: [
-                'Stand: 3m x 2m',
-                'Duur: 1 dag',
-                'Team: Maximaal 2 informanten'
-            ]
-        },
-        {
-            naam: 'Gold Partner', prijs: 650, beschrijving: [
-                'Presentatie: 30 minuten',
-                'Discussie: Premium vakdiscussie',
-                'Stand: 3m x 2m',
-                'Duur: 1 dag',
-                'Tickets: 4 informanten'
-            ]
-        },
-        {
-            naam: 'Startup Pakket', prijs: 130, beschrijving: [
-                'Voorwaarde: Jonger dan 5 jaar',
-                'Stand: 2m x 2m',
-                'Speciaal tarief voor nieuwe bedrijven'
-            ]
-        }
-    ];
-    pakketten.forEach((pakket, idx) => {
-        const card = document.createElement('div');
-        card.className = 'pakket-card';
-        card.innerHTML = `<div class='pakket-title'>${pakket.naam}</div><div class='pakket-price'>€${pakket.prijs}</div><ul>${pakket.beschrijving.map(f => `<li>${f}</li>`).join('')}</ul>`;
-        card.onclick = () => {
-            document.querySelectorAll('.pakket-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedPakket = pakket;
-            bevestigenBtn.disabled = false;
-        };
-        pakketList.appendChild(card);
-    });
-    overlay.style.display = 'flex';
-}
-
-function hidePakketOverlay() {
-    document.getElementById('pakketOverlay').style.display = 'none';
 }
 
 // Initialize when DOM is loaded
@@ -231,39 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     registerForm = document.querySelector('#registerForm form');
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegistration);
-        // Intercept submit voor bedrijf
-        registerForm.addEventListener('submit', function(e) {
-            if (currentUserType === 'bedrijf') {
-                // Check of pakket gekozen is
-                const pakketVal = document.getElementById('selectedPakketInput').value;
-                if (!pakketVal) {
-                    e.preventDefault();
-                    showPakketOverlay();
-                    return false;
-                }
-            }
-        }, true);
     }
-    
-    // Pakket overlay annuleren
-    document.getElementById('pakketAnnulerenBtn').onclick = hidePakketOverlay;
-    // Pakket bevestigen
-    document.getElementById('pakketBevestigenBtn').onclick = function() {
-        hidePakketOverlay();
-        // Vul hidden input met pakket info
-        document.getElementById('selectedPakketInput').value = JSON.stringify(selectedPakket);
-        // NIET automatisch submitten! Gebruiker klikt daarna zelf op registreren.
-    };
-    
-    // Pakketten knop opent overlay
-    const openPakketBtn = document.getElementById('openPakketOverlayBtn');
-    if (openPakketBtn) {
-        openPakketBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            showPakketOverlay();
-        });
-    }
-    
     // Initialize as bedrijf
     switchUserType('bedrijf');
 });

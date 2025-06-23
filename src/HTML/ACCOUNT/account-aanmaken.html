@@ -135,9 +135,6 @@
                 </div>
 
                 <!-- Submit button -->
-                <button type="button" class="btn pakket-btn" id="openPakketOverlayBtn" style="margin-bottom: 10px;">
-                    Pakketten
-                </button>
                 <button type="submit" class="btn primary" id="registerButton">
                     Bedrijfsaccount Aanmaken
                 </button>
@@ -172,66 +169,6 @@
         <button onclick="hideErrorMessage()" class="btn secondary">Sluiten</button>
     </div>
 
-    <!-- Pakket Selectie Overlay -->
-    <div id="pakketOverlay" class="overlay" style="display:none;">
-        <div class="overlay-content">
-            <h2>Kies een pakket</h2>
-            <div id="pakketList" class="pakket-list">
-                <!-- Pakketten worden hier dynamisch geladen -->
-            </div>
-            <div class="overlay-actions">
-                <button id="pakketBevestigenBtn" class="btn primary" disabled>Bevestigen</button>
-                <button id="pakketAnnulerenBtn" class="btn secondary">Annuleren</button>
-            </div>
-        </div>
-    </div>
-    <style>
-    .overlay {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center;
-    }
-    .overlay-content {
-        background: #fff; padding: 2rem; border-radius: 10px; max-width: 600px; width: 90%;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-    }
-    .pakket-list { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
-    .pakket-card {
-        border: 2px solid #ccc; border-radius: 8px; padding: 1rem; flex: 1 1 200px; cursor: pointer;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .btn.pakket-btn {
-        background: #8b1538;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 12px 24px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        margin-bottom: 10px;
-        transition: background 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 8px rgba(139,21,56,0.08);
-    }
-    .btn.pakket-btn:hover, .btn.pakket-btn:focus {
-        background: #a01a44;
-        color: #fff;
-        box-shadow: 0 4px 16px rgba(139,21,56,0.15);
-    }
-    .pakket-card.selected { border-color: #8b1538; box-shadow: 0 0 8px #8b153888; }
-    .pakket-card .pakket-title { color: #8b1538; }
-    .overlay-content h2 {
-        color: #8b1538;
-        font-weight: 700;
-    }
-    .overlay-actions .btn.primary {
-        background: #8b1538;
-        color: #fff;
-    }
-    .overlay-actions .btn.primary:hover {
-        background: #a01a44;
-    }
-    </style>
-
     <!-- Scripts -->
     <script src="/src/JS/ACCOUNT/register.js"></script>
     <script type="module" src="/src/JS/UTILS/sendInvoice.js"></script>
@@ -254,14 +191,6 @@
                 errorMsg.style.display = 'none';
             }
         }, 5000);
-
-        // Voeg een hidden input toe voor het geselecteerde pakket (bedrijf)
-        const pakketInput = document.createElement('input');
-        pakketInput.type = 'hidden';
-        pakketInput.id = 'selectedPakketInput';
-        pakketInput.name = 'selectedPakket';
-        const regForm = document.getElementById('registrationForm');
-        if (regForm) regForm.appendChild(pakketInput);
     </script>
 </body>
 </html>
