@@ -443,11 +443,22 @@ class EnhancedNavigationManager {
       
       const href = link.getAttribute('href');
       const text = link.textContent.toLowerCase();
+      const className = link.className.toLowerCase();
       
+      // Skip if this is a student card, project card, or other content card
+      if (className.includes('preview-card') || 
+          className.includes('project-card') || 
+          className.includes('student-card') ||
+          className.includes('company-card') ||
+          href.includes('zoekbalk') ||
+          href.includes('resultaat')) {
+        return;
+      }
+      
+      // Only trigger for specific account-related links
       if (href === '/account' || 
-          text.includes('account') || 
-          text.includes('mijn account') ||
-          text.includes('profiel')) {
+          (text === 'account' || text === 'mijn account' || text === 'profiel') ||
+          (text.includes('account') && !text.includes('student') && !text.includes('bedrijf') && !text.includes('project'))) {
         
         e.preventDefault();
         this.handleAccountRedirect();
