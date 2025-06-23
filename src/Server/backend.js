@@ -572,6 +572,24 @@ try {
   console.log('❌ Reservatie routes failed:', error.message);
 }
 
+// Load tafel routes
+try {
+  const tafelRoutes = require('./ROUTES/tafel');
+  app.use('/api/tafels', tafelRoutes);
+  console.log('✅ Tafel routes loaded');
+} catch (error) {
+  console.log('❌ Tafel routes failed:', error.message);
+}
+
+// Load config routes
+try {
+  const configRoutes = require('./ROUTES/config');
+  app.use('/api/config', configRoutes);
+  console.log('✅ Config routes loaded');
+} catch (error) {
+  console.log('❌ Config routes failed:', error.message);
+}
+
 console.log('✅ All routes loaded successfully');
 
 // ===== ERROR HANDLING =====
@@ -706,3 +724,5 @@ process.on('SIGINT', () => {
 
 // Start the server
 startServer();
+
+module.exports = app;
