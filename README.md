@@ -70,7 +70,7 @@ Volg deze stappen om het project lokaal op te zetten en te draaien.
 ### Installatie
 1.  **Clone de repository:**
     ```bash
-    git clone https://github.com/jouw-gebruikersnaam/Programming-Project.git
+    git clone https://github.com/Ahmeedddddd/Programming-Project.git
     cd Programming-Project
     ```
 
