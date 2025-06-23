@@ -539,7 +539,7 @@ try {
 // Load student routes
 try {
   const studentRoutes = require('./ROUTES/student');
-  app.use('/api/student', studentRoutes);
+  app.use('/api/studenten', studentRoutes);
   console.log('✅ Student routes loaded');
 } catch (error) {
   console.log('❌ Student routes failed:', error.message);
@@ -633,8 +633,8 @@ app.use('/api/*', (req, res) => {
       ],
       'Students': [
         'GET /api/studenten', 
-        'GET /api/student/profile (requires auth)',
-        'PUT /api/student/profile (requires auth)',
+        'GET /api/studenten/profile (requires auth)',
+        'PUT /api/studenten/profile (requires auth)',
         'GET /api/studenten/:id',
         'GET /api/studenten/projecten'
       ],

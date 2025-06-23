@@ -154,21 +154,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function showMessage(message, type) {
-        if (!messageDiv) return;
-        
-        messageDiv.textContent = message;
-        messageDiv.className = `message ${type}`;
-        messageDiv.style.display = 'block';
-        
-        // Auto-hide success messages
-        if (type === 'success') {
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 8000);
+        // Use the global notification system if available
+        if (window.showNotification) {
+            window.showNotification(message, type);
+        } else {
+            // Fallback to local message div if notification system not available
+            if (!messageDiv) return;
+            
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 8000);
+            }
+            
+            // Scroll to message
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        
-        // Scroll to message
-        messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
     function setLoadingState(loading) {

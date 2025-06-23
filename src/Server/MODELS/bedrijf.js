@@ -128,11 +128,23 @@ class Bedrijf {
         console.log('🔄 Bedrijf.update called with:', { bedrijfsnummer, updates });
         
         try {
+            // Process the data to handle arrays and objects properly
+            const processedUpdates = {};
+            for (const [key, value] of Object.entries(updates)) {
+                if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                    // Convert arrays and objects to JSON strings
+                    processedUpdates[key] = JSON.stringify(value);
+                } else {
+                    // Keep primitive values as-is
+                    processedUpdates[key] = value;
+                }
+            }
+            
             // Bouw de SET clause dynamisch op
             const setFields = [];
             const values = [];
             
-            for (const [key, value] of Object.entries(updates)) {
+            for (const [key, value] of Object.entries(processedUpdates)) {
                 setFields.push(`${key} = ?`);
                 values.push(value);
             }

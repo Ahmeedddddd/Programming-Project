@@ -195,10 +195,24 @@ class Student {
     ]);
    
     return result.insertId;
-  }  static async update(studentnummer, studentData) {
+  }
+
+  static async update(studentnummer, studentData) {
     try {
-      const fields = Object.keys(studentData);
-      const values = Object.values(studentData);
+      // Process the data to handle arrays and objects properly
+      const processedData = {};
+      for (const [key, value] of Object.entries(studentData)) {
+        if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+          // Convert arrays and objects to JSON strings
+          processedData[key] = JSON.stringify(value);
+        } else {
+          // Keep primitive values as-is
+          processedData[key] = value;
+        }
+      }
+
+      const fields = Object.keys(processedData);
+      const values = Object.values(processedData);
       
       if (fields.length === 0) {
         return 0;
@@ -207,6 +221,9 @@ class Student {
       const setClause = fields.map(field => `${field} = ?`).join(', ');
       const query = `UPDATE STUDENT SET ${setClause} WHERE studentnummer = ?`;
       const params = [...values, studentnummer];
+      
+      console.log('🔧 [DEBUG] Update query:', query);
+      console.log('🔧 [DEBUG] Update params:', params);
       
       const [result] = await pool.query(query, params);
       

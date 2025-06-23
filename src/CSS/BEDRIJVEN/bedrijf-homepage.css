@@ -111,7 +111,7 @@
 
 .card-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     margin-bottom: 25px;
     transition: opacity 0.4s ease;
@@ -177,6 +177,62 @@
 .preview-card .card-description strong {
     color: #333;
     font-weight: 600;
+}
+
+/* Card details styling - matching student homepage */
+.card-details {
+    margin-top: 1rem;
+}
+
+.card-details p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-details p i {
+    color: #8B1538;
+    width: 16px;
+    text-align: center;
+}
+
+.card-details p strong {
+    color: #333;
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+/* Status badge styling for meeting cards */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge.status-aangevraagd {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.status-badge.status-bevestigd {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.status-badge.status-geweigerd {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.status-badge.status-geannuleerd {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
 }
 
 /* Scroll to top button */
@@ -510,3 +566,27 @@
 .student-project-badge.genre-robot { background: #f3f4f6; color: #64748b; }
 .student-project-badge.genre-default { background: #f3f4f6; color: #881538; }
 .student-project-badge.no-project { background: #fbe9ef; color: #881538; }
+
+/* Styling for Upcoming Meetings Cards */
+.meeting-details {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+  }
+  
+  .meeting-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #4a5568;
+  }
+  
+  .meeting-info-item i {
+    color: #881538;
+    width: 16px;
+    text-align: center;
+  }

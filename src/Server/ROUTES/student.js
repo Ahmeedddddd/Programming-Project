@@ -19,8 +19,11 @@ router.get('/search/:searchTerm', studentController.searchStudents);
 
 // FILTER routes
 router.get('/opleiding/:opleiding', studentController.getStudentsByOpleiding);
-router.get('/opleidingsrichting/:richting', studentController.getStudentsByOpleidingsrichting);
+router.get('/opleidingsrichting/:opleidingsrichting', studentController.getStudentsByOpleidingsrichting);
 router.get('/gemeente/:gemeente', studentController.getStudentsByGemeente);
+
+// SLOTS endpoint - voor studenten om beschikbare tijdslots te zien
+router.get('/:studentnummer/slots', authenticateToken, studentController.getAvailableTimeSlots);
 
 // PROTECTED ROUTES (authentication required)
 router.get('/profile',

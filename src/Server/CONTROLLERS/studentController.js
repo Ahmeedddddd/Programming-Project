@@ -1,5 +1,6 @@
 //src/Server/CONTROLLERS/studentController.js
 const Student = require('../MODELS/student');
+const Reservatie = require('../MODELS/reservatie');
 const { validationResult } = require('express-validator');
 
 const studentController = {
@@ -67,13 +68,12 @@ const studentController = {
       const student = await Student.getById(studentnummer);
       
       if (!student) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'Student not found',
-          message: 'Student met dit nummer bestaat niet'
+          message: 'Student niet gevonden'
         });
       }
-      
+
       res.json({
         success: true,
         data: student
@@ -236,7 +236,7 @@ const studentController = {
 
   // ===== AUTHENTICATED ENDPOINTS =====
 
-  // GET /api/student/profile - Eigen studentprofiel bekijken
+  // GET /api/studenten/profile - Eigen studentprofiel bekijken
   async getOwnProfile(req, res) {
     try {
       const studentnummer = req.user.userId;
@@ -277,7 +277,7 @@ const studentController = {
     }
   },
 
-  // PUT /api/student/profile - Eigen studentprofiel bijwerken
+  // PUT /api/studenten/profile - Eigen studentprofiel bijwerken
   async updateOwnProfile(req, res) {
     try {
       const errors = validationResult(req);
@@ -327,6 +327,61 @@ const studentController = {
         success: false,
         error: 'Failed to update student profile',
         message: 'Er ging iets mis bij het bijwerken van uw profiel'
+      });
+    }
+  },
+
+  // ===== SLOTS ENDPOINT =====
+
+  // GET /api/studenten/:studentnummer/slots - Beschikbare tijdslots voor een student
+  async getAvailableTimeSlots(req, res) {
+    try {
+      const { studentnummer } = req.params;
+      
+      if (!studentnummer) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Studentnummer is required',
+          message: 'Studentnummer is verplicht'
+        });
+      }
+
+      // Check if student exists
+      const student = await Student.getById(studentnummer);
+      if (!student) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Student not found',
+          message: 'Student niet gevonden'
+        });
+      }
+
+      // Get default time slots for students
+      const timeSlots = Reservatie.getDefaultSlots();
+
+      // Mark slots that are already taken
+      const reservations = await Reservatie.getByStudent(studentnummer);
+      const occupiedSlots = reservations
+        .filter(r => r.status === 'bevestigd')
+        .map(r => r.startTijd.slice(0, 5)); // Format 'HH:MM:SS' to 'HH:MM'
+
+      const enrichedSlots = timeSlots.map(slot => ({
+          ...slot,
+          available: !occupiedSlots.includes(slot.start)
+      }));
+
+      res.status(200).json({
+        success: true,
+        message: 'Beschikbare tijdslots opgehaald',
+        data: enrichedSlots
+      });
+
+    } catch (error) {
+      console.error('Error getting available time slots for student:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: 'Er is een fout opgetreden bij het ophalen van de tijdslots'
       });
     }
   },

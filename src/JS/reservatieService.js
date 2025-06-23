@@ -196,3 +196,6 @@ class ReservatieService {
 
 // Make it available globally
 window.ReservatieService = ReservatieService;
+
+// Export de klasse voor ES6 module import
+export { ReservatieService };
