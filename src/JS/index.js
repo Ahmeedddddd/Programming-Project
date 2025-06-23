@@ -1,27 +1,21 @@
+// src/JS/index.js - COMPLETE WORKING VERSION - HERSTELD & OPGESCHOOND
+
 /**
- * 🏠 index.js - Universele homepage initializer voor CareerLaunch EHB
+ *  UNIVERSAL HOMEPAGE INITIALIZER - COMPLETE WORKING VERSION
  * 
- * Dit bestand implementeert de hoofdlogica voor alle homepage types:
- * - Gast homepage met publieke informatie
- * - Student homepage met persoonlijke dashboard
- * - Bedrijf homepage met bedrijfsprofiel
- * - Organisator homepage met admin functionaliteit
+ * Herstelde versie gebaseerd op de feedback van de gebruiker.
+ * Deze versie focust op de universele logica voor alle homepages.
+ * Pagina-specifieke logica is verplaatst naar de respectievelijke bestanden.
  * 
- * Belangrijke functionaliteiten:
- * - Automatische gebruikerstype detectie
- * - Dynamische data loading en caching
- * - Carousel management voor verschillende secties
- * - Filtering en zoekfunctionaliteit
- * - Real-time notificatie polling
- * - Responsive card rendering
- * - Statistiek updates
- * 
- * @author CareerLaunch EHB Team
- * @version 1.0.0
- * @since 2024
+ * Fixed:
+ *  Data count showing total numbers (not carousel items)
+ *  Project grouping using backend grouped projects
+ *  TafelNr information display
+ *  Proper debugging and error handling
+ *  Uses backend grouped projects properly
  */
 
-// ===== GLOBALE VARIABELEN =====
+// ===== GLOBAL VARIABLES =====
 let universalInitializer;
 let carouselManager;
 let filterManager;
@@ -32,7 +26,7 @@ let allProjects = [];
 // ===== NOTIFICATIE POLLING =====
 let notificationPollingInterval = null;
 
-// ===== CONFIGURATIE =====
+// ===== CONFIGURATION =====
 const API_CONFIG = {
     baseURL: 'http://localhost:8383',
     endpoints: {
@@ -44,17 +38,8 @@ const API_CONFIG = {
     timeout: 10000
 };
 
-/**
- * 🎯 HomepageTypeDetector - Detecteert het huidige homepage type
- * 
- * Deze klasse bepaalt automatisch welk type homepage wordt geladen
- * en past de functionaliteit daarop aan
- */
+// ===== HOMEPAGE TYPE DETECTION =====
 class HomepageTypeDetector {
-    /**
-     * Bepaalt het huidige homepage type op basis van de URL
-     * @returns {string} Type homepage (guest/student/bedrijf/organisator/unknown)
-     */
     static getCurrentType() {
         const path = window.location.pathname;
         if (path === '/' || path === '/index.html') return 'guest';
@@ -64,18 +49,10 @@ class HomepageTypeDetector {
         return 'unknown';
     }
 
-    /**
-     * Controleert of authenticatie gecontroleerd moet worden
-     * @returns {boolean} True voor gast homepage
-     */
     static shouldCheckAuth() {
         return this.getCurrentType() === 'guest';
     }
 
-    /**
-     * Geeft de juiste API endpoints voor het huidige type
-     * @returns {Object} Object met endpoints
-     */
     static getDataEndpoints() {
         return {
             studenten: `${API_CONFIG.baseURL}${API_CONFIG.endpoints.studenten}`,
@@ -84,10 +61,6 @@ class HomepageTypeDetector {
         };
     }
 
-    /**
-     * Geeft de juiste UI selectors voor het huidige type
-     * @returns {Object} Object met container selectors
-     */
     static getUISelectors() {
         return {
             bedrijven: { container: '#bedrijvenGrid' },
@@ -97,22 +70,12 @@ class HomepageTypeDetector {
     }
 }
 
-/**
- * 🔐 AuthChecker - Handelt authenticatie en redirects af
- * 
- * Deze klasse controleert de authenticatiestatus en redirect
- * gebruikers naar de juiste homepage indien nodig
- */
+// ===== AUTH CHECKER =====
 class AuthChecker {
-    /**
-     * Controleert authenticatie en redirect indien nodig
-     * @returns {boolean} True als redirect is uitgevoerd
-     */
     static checkAuthAndRedirect() {
         const authToken = localStorage.getItem('authToken');
         const userType = localStorage.getItem('userType');
         const currentPath = window.location.pathname;
-        
         if (authToken && userType && (currentPath === '/' || currentPath === '/index.html')) {
             const targetPath = {
                 student: '/student-homepage',
@@ -129,12 +92,7 @@ class AuthChecker {
     }
 }
 
-/**
- * 🔍 HomepageFilterManager - Beheert filtering en zoeken
- * 
- * Deze klasse implementeert geavanceerde filtering voor studenten
- * en bedrijven op basis van zoekterm, jaar en specialisatie
- */
+// ===== HOMEPAGE FILTER MANAGER =====
 class HomepageFilterManager {
     constructor(renderer) {
         this.renderer = renderer;
@@ -143,29 +101,23 @@ class HomepageFilterManager {
             jaar: 'Alle jaren',
             specialization: 'Alle'
         };
-        
-        // Mapping voor bedrijfssectoren op basis van pills
+        // Mapping for company sectors based on pills
         this.specializationMapping = {
             'Toegepaste Informatica': ['IT', 'Software', 'Consulting', 'Technologie'],
             'Industriële Wetenschappen': ['Engineering', 'Industrie', 'Technologie'],
             'Cybersecurity': ['Cybersecurity', 'IT', 'Security', 'Technologie'],
             'AI & Robotica': ['AI', 'Robotics', 'Data', 'IT', 'Technologie']
         };
-        
-        // Mapping voor student specialisaties op basis van pills en DB waarden
+        // NEW: Mapping for student specializations based on pills and DB values
         this.studentSpecializationMap = {
             'Cybersecurity': ['Networks & Security'],
             'AI & Robotica': ['Intelligent Robotics', 'AI & Multimedia', 'IoT & Data'],
             'Toegepaste Informatica': ['Software Engineering', 'Web Development', 'Business IT', 'Networks & Security', 'AI & Multimedia', 'IoT & Data', 'Digital Design', 'Creative Media', 'Intelligent Robotics'],
             'Industriële Wetenschappen': ['Intelligent Robotics']
         };
-        
         this.init();
     }
 
-    /**
-     * Initialiseert de filter manager
-     */
     init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setupEventListeners());
@@ -174,34 +126,33 @@ class HomepageFilterManager {
         }
     }
 
-    /**
-     * Stelt de initiële data in voor filtering
-     * @param {Array} companies - Array van bedrijven
-     * @param {Array} students - Array van studenten
-     */
     setInitialData(companies, students) {
         this.allCompanies = companies;
         this.allStudents = students;
     }
 
-    /**
-     * Zet event listeners op voor filter elementen
-     */
     setupEventListeners() {
+        console.log('▬▬▬▬▬▬▬▬▬ 👂 ATTEMPTING TO SET UP LISTENERS 👂 ▬▬▬▬▬▬▬▬▬');
         const filterSection = document.querySelector('.student-filter-section');
         
         if (!filterSection) {
+            console.error('⛔️ FATAL: Filter section `.student-filter-section` was NOT found in the DOM.');
+            console.log('Debugging info: document.readyState is:', document.readyState);
             return;
         }
 
+        console.log('✅ SUCCESS: Filter section found. Attaching listeners...');
+
         const searchInput = filterSection.querySelector('.search-input');
         searchInput?.addEventListener('input', e => {
+            console.log('▬▬▬▬▬▬▬▬ 🔎 SEARCH INPUT CHANGED ▬▬▬▬▬▬▬▬');
             this.currentFilters.search = e.target.value.toLowerCase().trim();
             this.applyFilters();
         });
 
         const yearSelect = filterSection.querySelector('.filter-select');
         yearSelect?.addEventListener('change', e => {
+            console.log('▬▬▬▬▬▬▬▬ 📅 YEAR SELECT CHANGED ▬▬▬▬▬▬▬▬');
             this.currentFilters.jaar = e.target.value;
             this.applyFilters();
         });
@@ -209,6 +160,7 @@ class HomepageFilterManager {
         const pills = filterSection.querySelectorAll('.specialization-pill');
         pills.forEach(pill => {
             pill.addEventListener('click', e => {
+                console.log('▬▬▬▬▬▬▬▬ 💊 PILL CLICKED ▬▬▬▬▬▬▬▬');
                 pills.forEach(p => p.classList.remove('active'));
                 e.currentTarget.classList.add('active');
                 this.currentFilters.specialization = e.currentTarget.textContent.trim();
@@ -218,18 +170,19 @@ class HomepageFilterManager {
 
         const filterBtn = filterSection.querySelector('.filter-btn');
         filterBtn?.addEventListener('click', () => {
+             console.log('▬▬▬▬▬▬▬▬ 🔵 FILTER BUTTON CLICKED ▬▬▬▬▬▬▬▬');
             this.applyFilters();
         });
     }
 
-    /**
-     * Past alle actieve filters toe op de data
-     */
     applyFilters() {
-        // Filter studenten
+        console.log('✅✅✅ APPLYING FILTERS ✅✅✅');
+        console.log('Current filter state:', this.currentFilters);
+
+        // --- Filter Students ---
         let filteredStudents = [...this.allStudents];
         
-        // 1. Filter op zoekterm
+        // 1. Filter by search term
         if (this.currentFilters.search) {
             filteredStudents = filteredStudents.filter(student =>
                 (student.voornaam + ' ' + student.achternaam).toLowerCase().includes(this.currentFilters.search) ||
@@ -237,13 +190,13 @@ class HomepageFilterManager {
             );
         }
 
-        // 2. Filter op jaar
+        // 2. Filter by year
         if (this.currentFilters.jaar && this.currentFilters.jaar !== 'Alle jaren') {
             const year = parseInt(this.currentFilters.jaar.charAt(0), 10);
             filteredStudents = filteredStudents.filter(student => student.leerjaar === year);
         }
 
-        // 3. Filter op specialisatie met nieuwe mapping
+        // 3. Filter by specialization using the new map
         if (this.currentFilters.specialization !== 'Alle') {
             const relevantOpleidingen = this.studentSpecializationMap[this.currentFilters.specialization];
             if (relevantOpleidingen) {
@@ -254,8 +207,9 @@ class HomepageFilterManager {
                  filteredStudents = []; // No mapping found, so show no students
             }
         }
+        console.log(`🔎 Found ${filteredStudents.length} students after filtering.`);
 
-        // Filter bedrijven
+        // --- Filter Companies ---
         let filteredCompanies = [...this.allCompanies];
         if (this.currentFilters.specialization !== 'Alle') {
             const relevantSectors = this.specializationMapping[this.currentFilters.specialization] || [];
@@ -265,8 +219,11 @@ class HomepageFilterManager {
                 );
             }
         }
+        console.log(`🔎 Found ${filteredCompanies.length} companies after filtering.`);
         
-        // Apply filtered data to UI
+        // --- Apply Filtered Data to UI ---
+        console.log('▶️▶️▶️ APPLYING FILTERED DATA TO UI ◀️◀️◀️');
+        
         // Store original data
         const originalCompanies = [...allCompanies];
         const originalStudents = [...allStudents];
@@ -283,6 +240,8 @@ class HomepageFilterManager {
         // Restore original data
         allCompanies = originalCompanies;
         allStudents = originalStudents;
+        
+        console.log('✅✅✅ FILTERING COMPLETE ✅✅✅');
     }
 }
 
@@ -295,9 +254,12 @@ class UniversalDataFetcher {
 
     async fetchAPI(endpoint) {
         try {
+            console.log(`📡 [UniversalDataFetcher] Fetching: ${endpoint}`);
+            
             // Use the new endpoint for projects to get student IDs - ALWAYS use with-ids for consistency
             if (endpoint.includes('/api/projecten') && !endpoint.includes('/with-ids')) {
                 endpoint = endpoint.replace('/api/projecten', '/api/projecten/with-ids');
+                console.log(`🔄 [UniversalDataFetcher] Redirected to: ${endpoint}`);
             }
             
             const response = await fetch(endpoint);
@@ -322,16 +284,52 @@ class UniversalDataFetcher {
 
     async fetchAllData() {
         try {
+            console.log('🔄 [index.js] Fetching all data...');
+            
             const [bedrijvenRes, studentenRes, projectenRes] = await Promise.all([
                 this.fetchAPI(this.endpoints.bedrijven),
                 this.fetchAPI(this.endpoints.studenten),
                 this.fetchAPI(this.endpoints.projecten)
             ]);
             
+            console.log('📊 [index.js] Raw API responses:', {
+                bedrijven: bedrijvenRes,
+                studenten: studentenRes,
+                projecten: projectenRes
+            });
+            
             // Fix: Handle both response formats (direct data or nested under success)
             this.data.bedrijven = bedrijvenRes || [];
             this.data.studenten = studentenRes || [];
             this.data.projecten = projectenRes || [];
+            
+            console.log('�� [index.js] Processed data:', {
+                bedrijven: this.data.bedrijven.length,
+                studenten: this.data.studenten.length,
+                projecten: this.data.projecten.length
+            });
+            
+            // Project data loaded successfully
+            
+            // Enhanced debugging for projects
+            // console.log(`📊 [index.js] Projects data analysis:`, {
+            //     totalProjects: this.data.projecten?.length || 0,
+            //     projectsWithTechnologies: this.data.projecten?.filter(p => p.technologieen && p.technologieen.trim() !== '').length || 0,
+            //     projectsWithoutTechnologies: this.data.projecten?.filter(p => !p.technologieen || p.technologieen.trim() === '').length || 0,
+            //     sampleProject: this.data.projecten?.[0] ? {
+            //         titel: this.data.projecten[0].titel || this.data.projecten[0].projectTitel,
+            //         technologieen: this.data.projecten[0].technologieen,
+            //         hasTechnologies: !!this.data.projecten[0].technologieen
+            //     } : null
+            // });
+            
+            // Log each project's technology status
+            // if (this.data.projecten) {
+            //     this.data.projecten.forEach((project, index) => {
+            //         const hasTech = project.technologieen && project.technologieen.trim() !== '';
+            //         console.log(`📋 [index.js] Project ${index + 1}: "${project.titel || project.projectTitel}" - Technologies: ${hasTech ? '✅' : '❌'} (${project.technologieen || 'null'})`);
+            //     });
+            // }
             
         } catch (error) {
             console.error('❌ [index.js] Error fetching data:', error);
@@ -428,6 +426,7 @@ class CardRenderer {
     }
 
     renderStudentCard(student) {
+        console.log('[DEBUG] CardRenderer.renderStudentCard wordt aangeroepen:', student);
         // Bepaal genre/soort project op basis van projectTitel
         const genre = this.getProjectGenre(student.projectTitel);
         const hasProject = !!student.projectTitel;
@@ -450,11 +449,7 @@ class CardRenderer {
             </a>`;
     }
 
-    /**
-     * Bepaal genre badge en kleur op basis van projectTitel
-     * @param {string} projectTitel - Titel van het project
-     * @returns {Object} Object met className en label
-     */
+    // Bepaal genre badge en kleur op basis van projectTitel
     getProjectGenre(projectTitel) {
         if (!projectTitel) return { className: 'no-project', label: 'Geen project' };
         const lower = projectTitel.toLowerCase();
@@ -485,9 +480,11 @@ class CardRenderer {
         } else if (typeof project.studenten === 'string' && project.studenten) {
             // Legacy format: comma-separated string, we need to find the actual student IDs
             const studentNames = project.studenten.split(', ').map(name => name.trim());
+            console.log('🔍 [DEBUG] Looking up student names:', studentNames);
             
             // Get all student data to look up IDs
             const allStudents = this.dataFetcher ? this.dataFetcher.getData('studenten') : [];
+            console.log('📊 [DEBUG] Available students count:', allStudents.length);
             
             studentenList = studentNames.map(name => {
                 // Find the student by name with more flexible matching
@@ -499,12 +496,18 @@ class CardRenderer {
                 });
                 
                 if (foundStudent) {
+                    console.log('✅ [DEBUG] Exact match found:', {
+                        name: name,
+                        fullName: `${foundStudent.voornaam} ${foundStudent.achternaam}`,
+                        studentnummer: foundStudent.studentnummer
+                    });
                     return {
                         naam: `${foundStudent.voornaam} ${foundStudent.achternaam}`,
                         studentnummer: foundStudent.studentnummer,
                         ...foundStudent
                     };
                 } else {
+                    console.warn('⚠️ [DEBUG] No student found for name:', name);
                     return {
                         naam: name,
                         studentnummer: null
@@ -532,6 +535,23 @@ class CardRenderer {
             navigationSource = 'project studentnummer';
         }
 
+        // Debug logging for projects without valid IDs
+        if (!firstStudentId) {
+            console.warn('⚠️ Project without valid student ID:', {
+                titel: project.titel || project.projectTitel,
+                studenten: project.studenten,
+                studentenList: studentenList,
+                projectId: project.id,
+                projectProjectId: project.projectId
+            });
+        } else {
+            console.log('✅ [DEBUG] Project has valid ID for navigation:', {
+                titel: project.titel || project.projectTitel,
+                firstStudentId: firstStudentId,
+                source: navigationSource
+            });
+        }
+
         // Create navigation link - use project title as fallback for search
         let linkHref = '#';
         let linkMethod = 'none';
@@ -545,6 +565,10 @@ class CardRenderer {
             const projectTitle = encodeURIComponent(project.titel || project.projectTitel);
             linkHref = `/alle-projecten?search=${projectTitle}`;
             linkMethod = 'project_search';
+            console.log('🔍 [DEBUG] Using project search navigation:', {
+                titel: project.titel || project.projectTitel,
+                searchUrl: linkHref
+            });
         }
 
         // Always create clickable cards - no more non-clickable cards!
@@ -582,11 +606,6 @@ class CardRenderer {
         return cardHTML;
     }
 
-    /**
-     * Rendert de lijst van studenten voor een project
-     * @param {Array} studentenList - Array van studenten
-     * @returns {string} HTML voor studenten lijst
-     */
     renderProjectStudents(studentenList) {
         if (studentenList.length > 1) {
             return `
@@ -606,21 +625,42 @@ class CardRenderer {
         }
     }
 
-    /**
-     * Werkt data counts bij in de UI
-     * @param {Object} data - Object met data voor counts
-     */
     updateDataCounts(data) {
+        console.log('📊 [CardRenderer] updateDataCounts called with data:', data);
+        console.log('📊 [CardRenderer] Data structure analysis:', {
+            hasData: !!data,
+            dataKeys: data ? Object.keys(data) : 'no data',
+            bedrijvenType: data?.bedrijven ? typeof data.bedrijven : 'undefined',
+            bedrijvenIsArray: data?.bedrijven ? Array.isArray(data.bedrijven) : 'undefined',
+            bedrijvenLength: data?.bedrijven ? (Array.isArray(data.bedrijven) ? data.bedrijven.length : 'not array') : 'undefined',
+            studentenType: data?.studenten ? typeof data.studenten : 'undefined',
+            studentenIsArray: data?.studenten ? Array.isArray(data.studenten) : 'undefined',
+            studentenLength: data?.studenten ? (Array.isArray(data.studenten) ? data.studenten.length : 'not array') : 'undefined',
+            projectenType: data?.projecten ? typeof data.projecten : 'undefined',
+            projectenIsArray: data?.projecten ? Array.isArray(data.projecten) : 'undefined',
+            projectenLength: data?.projecten ? (Array.isArray(data.projecten) ? data.projecten.length : 'not array') : 'undefined'
+        });
+        
         // Update using the data-count attribute for universal compatibility
         const dataCountElements = document.querySelectorAll('[data-count]');
+        console.log(`📊 [CardRenderer] Found ${dataCountElements.length} data-count elements:`, 
+            Array.from(dataCountElements).map(el => ({
+                id: el.id,
+                className: el.className,
+                currentText: el.textContent,
+                dataCount: el.getAttribute('data-count')
+            }))
+        );
         
         dataCountElements.forEach(el => {
             const type = el.getAttribute('data-count');
             if (data && data[type]) {
                 // Check if data[type] is an array and get its length, otherwise use the value directly
                 const count = Array.isArray(data[type]) ? data[type].length : data[type];
+                console.log(`📊 [CardRenderer] Updating ${type} count: ${count} (data type: ${typeof data[type]}, isArray: ${Array.isArray(data[type])})`);
                 el.textContent = count;
             } else {
+                console.warn(`📊 [CardRenderer] No data found for type: ${type}`);
                 el.textContent = '0';
             }
         });
@@ -638,6 +678,7 @@ class UniversalHomepageInitializer {
 
     async init() {
         try {
+            console.log('🚀 Initializing universal homepage...');
             // Check auth and redirect if needed
             if (AuthChecker.checkAuthAndRedirect()) {
                 return;
@@ -661,19 +702,18 @@ class UniversalHomepageInitializer {
             this.updateDataCounts();
             // Start notification polling
             startNotificationPolling();
+            console.log('✅ Universal homepage initialized successfully');
         } catch (error) {
-            // Stille error handling
+            console.error('❌ Error initializing universal homepage:', error);
         }
     }
 
-    /**
-     * Initialiseert de FilterService voor geavanceerde filtering
-     */
     initializeFilterService() {
         try {
             // Access FilterService from window when needed
             const { FilterService } = window;
             if (!FilterService) {
+                console.warn('⚠️ FilterService not available, skipping filter initialization');
                 return;
             }
             
@@ -681,14 +721,12 @@ class UniversalHomepageInitializer {
             const data = this.dataFetcher.getData();
             this.filterService = new FilterService();
             this.filterService.setData(data.studenten, data.bedrijven, data.projecten);
+            console.log('🔍 FilterService initialized successfully');
         } catch (error) {
-            // Stille error handling
+            console.error('❌ Error initializing FilterService:', error);
         }
     }
 
-    /**
-     * Initialiseert carousels voor secties met meer dan 4 items
-     */
     initializeCarousels() {
         const dataTypes = ['bedrijven', 'studenten', 'projecten'];
         dataTypes.forEach(type => {
@@ -697,13 +735,13 @@ class UniversalHomepageInitializer {
             if (items && items.length > 4) {
                 this.carouselManagers[type] = new CarouselManager(type, items, this.cardRenderer);
                 this.carouselManagers[type].startAutoRotation();
+                console.log(`🎠 Carousel initialized for ${type} with ${items.length} items`);
+            } else {
+                console.log(`📊 No carousel needed for ${type} (${items?.length || 0} items)`);
             }
         });
     }
 
-    /**
-     * Rendert alle kaarten voor de verschillende secties
-     */
     renderAllCards() {
         // Render first 4 items for each section initially
         const dataTypes = ['bedrijven', 'studenten', 'projecten'];
@@ -713,17 +751,21 @@ class UniversalHomepageInitializer {
                 // Show first 4 items initially
                 const itemsToShow = items.slice(0, 4);
                 this.cardRenderer.render(type, itemsToShow);
+                console.log(`🎨 Rendered ${itemsToShow.length} ${type} cards`);
             } else {
                 this.cardRenderer.render(type, []);
             }
         });
     }
 
-    /**
-     * Werkt data counts bij in de UI
-     */
     updateDataCounts() {
         const data = this.dataFetcher.getData();
+        console.log('📊 [UniversalHomepageInitializer] Updating data counts with:', data);
+        console.log('📊 [UniversalHomepageInitializer] Data structure:', {
+            bedrijven: Array.isArray(data.bedrijven) ? data.bedrijven.length : 'not array',
+            studenten: Array.isArray(data.studenten) ? data.studenten.length : 'not array',
+            projecten: Array.isArray(data.projecten) ? data.projecten.length : 'not array'
+        });
         this.cardRenderer.updateDataCounts(data);
     }
 }

@@ -1,71 +1,78 @@
-/**
- * 📊 stat-utils.js - ESSENTIEEL UTILITY BESTAND voor statistieken en data counts
- * 
- * Dit bestand beheert alle statistieken en tellers in de applicatie:
- * - Dynamische data counts voor verschillende secties
- * - Statistiek updates voor dashboards
- * - Backward compatibility voor oude implementaties
- * 
- * Belangrijke functionaliteiten:
- * - Automatische detectie van data-count elementen
- * - Flexibele statistiek mapping
- * - Legacy support voor oude code
- * - Real-time updates van tellers
- * - Multi-selector ondersteuning
- * 
- * @author CareerLaunch EHB Team
- * @version 1.0.0
- * @since 2024
- */
+// src/JS/UTILS/stat-utils.js - ESSENTIEEL UTILITY BESTAND
 
 /**
- * 📈 Werkt alle data counts bij in de applicatie
+ * 📊 STAT-UTILS - WAAROM DIT NOG STEEDS NODIG IS
  * 
- * Deze functie zoekt automatisch naar elementen met data-count attributen
- * en specifieke ID's en werkt deze bij met de geleverde statistieken.
+ * Dit kleine bestand wordt gebruikt door MEERDERE pagina's:
+ * ✅ index.js (homepage carousel data-counts)
+ * ✅ alle-projecten.js (project count updates)  
+ * ✅ alle-studenten.js (student count updates)
+ * ✅ alle-bedrijven.js (company count updates)
+ * ✅ organisator-homepage.js (admin dashboard counts)
  * 
- * Ondersteunde data types:
- * - bedrijven: Aantal bedrijven
- * - studenten: Aantal studenten  
- * - projecten: Aantal projecten
- * - gesprekken: Aantal gesprekken
- * - upcoming-meetings: Aankomende meetings
- * - pending-requests: Wachtende verzoeken
+ * Het is een SHARED UTILITY - herbruikbaar overal!
+ */
+
+console.log("📊 [stat-utils] Loading stat-utils.js...");
+
+/**
+ * Updates data counts on the page by finding elements with data-count attributes
+ * and updating their content with the provided statistics.
  * 
- * @param {Object} stats - Object met statistieken per type
- * @param {number} stats.bedrijven - Aantal bedrijven
- * @param {number} stats.studenten - Aantal studenten
- * @param {number} stats.projecten - Aantal projecten
- * @param {number} stats.gesprekken - Aantal gesprekken
- * @param {number} stats['upcoming-meetings'] - Aankomende meetings
- * @param {number} stats['pending-requests'] - Wachtende verzoeken
- * @returns {void}
+ * @param {Object} stats - Object containing count data (e.g., {bedrijven: 10, studenten: 20})
  */
 export function updateDataCounts(stats = {}) {
-    // Zoek alle elementen met data-count attributen
-    const dataCountElements = document.querySelectorAll('[data-count]');
+    console.log("📊 [stat-utils] === UPDATING DATA COUNTS ===");
+    console.log("📊 [stat-utils] Received stats:", stats);
+    
+    if (!stats || Object.keys(stats).length === 0) {
+        console.warn("📊 [stat-utils] No stats provided, skipping update");
+        return;
+    }
 
-    // Zoek ook naar specifieke ID patronen die counts kunnen bevatten
-    const specificIdElements = [
+    // Find all elements with data-count attributes
+    const dataCountElements = document.querySelectorAll('[data-count]');
+    console.log(`📊 [stat-utils] Found ${dataCountElements.length} data-count elements:`, 
+        Array.from(dataCountElements).map(el => ({
+            id: el.id,
+            className: el.className,
+            currentText: el.textContent,
+            dataCount: el.getAttribute('data-count')
+        }))
+    );
+
+    // Also look for specific ID patterns that might contain counts
+    const specificElements = [
         'total-companies-count',
         'total-students-count', 
         'total-projects-count',
         'upcoming-meetings-count',
         'upcoming-appointments-count',
         'pending-requests-count'
-    ].map(id => document.getElementById(id)).filter(el => el);
+    ];
 
-    // Update data-count elementen
+    console.log("📊 [stat-utils] Looking for specific count elements...");
+    specificElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            console.log(`📊 [stat-utils] Found specific element #${id}:`, element);
+        }
+    });
+
+    // Update data-count elements
     dataCountElements.forEach(element => {
         const dataType = element.getAttribute('data-count');
         const count = stats[dataType];
         
         if (count !== undefined) {
+            console.log(`📊 [stat-utils] Updating ${dataType}: ${count} in element:`, element);
             element.textContent = count;
+        } else {
+            console.warn(`📊 [stat-utils] No count found for data-type: ${dataType}`);
         }
     });
 
-    // Update specifieke ID elementen
+    // Update specific ID elements
     const idMappings = {
         'total-companies-count': stats.bedrijven,
         'total-students-count': stats.studenten,
@@ -74,17 +81,23 @@ export function updateDataCounts(stats = {}) {
         'upcoming-appointments-count': stats.gesprekken,
         'pending-requests-count': stats['pending-requests']
     };
+
+    console.log("📊 [stat-utils] Updating specific ID elements with mappings:", idMappings);
     
     Object.entries(idMappings).forEach(([id, count]) => {
         if (count !== undefined) {
             const element = document.getElementById(id);
             if (element) {
+                console.log(`📊 [stat-utils] Updating #${id} with count: ${count}`);
                 element.textContent = count;
+            } else {
+                console.warn(`📊 [stat-utils] Element #${id} not found`);
             }
         }
     });
 
-    // Update ook elementen met overeenkomende tekstpatronen
+    // Also update any elements with matching text patterns
+    console.log("📊 [stat-utils] Looking for elements with count patterns...");
     const allElements = document.querySelectorAll('*');
     const countPatterns = [
         { pattern: /bedrijven/i, key: 'bedrijven' },
@@ -100,24 +113,23 @@ export function updateDataCounts(stats = {}) {
                 if (element.textContent && pattern.test(element.textContent) && 
                     element.textContent.match(/\d+/) && 
                     !element.hasAttribute('data-count')) {
-                    // Potentieel count element gevonden
+                    console.log(`📊 [stat-utils] Potential count element found for ${key}:`, element);
                 }
             });
         }
     });
+
+    console.log("📊 [stat-utils] === DATA COUNTS UPDATE COMPLETE ===");
 }
 
 /**
- * 🔄 Legacy functie voor backward compatibility
- * 
- * Deze functie biedt ondersteuning voor oude implementaties
- * en roept de nieuwe updateDataCounts functie aan
- * 
- * @param {Object} stats - Object met statistieken
- * @returns {void}
+ * Legacy function for backward compatibility
+ * Updates data counts using the old method
  */
 export function updateLegacyDataCounts(stats = {}) {
-    // Zoek elementen op basis van veelvoorkomende patronen
+    console.log("📊 [stat-utils] Updating legacy data counts:", stats);
+    
+    // Find elements by common patterns
     const selectors = [
         '[data-count]',
         '.count-badge',
@@ -127,7 +139,12 @@ export function updateLegacyDataCounts(stats = {}) {
         '#total-projects-count'
     ];
 
-    // Update met de nieuwe methode
+    selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        console.log(`📊 [stat-utils] Found ${elements.length} elements for selector: ${selector}`);
+    });
+
+    // Update using the new method
     updateDataCounts(stats);
 }
 
@@ -137,9 +154,10 @@ export default {
     updateLegacyDataCounts
 };
 
-// Maak functies globaal beschikbaar voor backward compatibility
 window.updateDataCounts = updateDataCounts;
 window.updateLegacyDataCounts = updateLegacyDataCounts;
+
+console.log("✅ [stat-utils] Utility functions loaded and ready for use!");
 
 /*
  * GEBRUIK VOORBEELDEN:

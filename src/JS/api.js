@@ -1,46 +1,13 @@
 // src/JS/api.js
 // Utility for authenticated fetch requests
 
-/**
- * 🌐 api.js - Authenticatie wrapper voor fetch requests
- * 
- * Dit bestand biedt een veilige wrapper rond de fetch API die:
- * - Automatisch JWT tokens toevoegt aan requests
- * - Handelt authenticatie fouten af
- * - Biedt consistente error handling
- * - Maakt automatische redirects bij verlopen sessies
- * 
- * Belangrijke functionaliteiten:
- * - Automatische token injectie in headers
- * - 401 error handling met sessie cleanup
- * - Globale beschikbaarheid via window object
- * - Consistent error handling voor alle API calls
- * 
- * @author CareerLaunch EHB Team
- * @version 1.0.0
- * @since 2024
- */
+console.log("✅ api.js geladen");
 
 /**
- * 🔐 Wrapper voor de fetch API met automatische JWT token authenticatie
- * 
- * Deze functie voegt automatisch de JWT token toe aan alle API requests
- * en handelt authenticatie fouten af door gebruikers naar de login
- * pagina te redirecten bij verlopen sessies.
- * 
- * Features:
- * - Automatische token extractie uit localStorage
- * - Flexibele header configuratie
- * - 401 error handling met sessie cleanup
- * - Automatische redirect bij authenticatie problemen
- * 
- * @param {string} url - De URL om naar te fetchen
- * @param {object} options - Fetch opties (method, headers, body, etc.)
- * @param {string} options.method - HTTP methode (GET, POST, PUT, DELETE)
- * @param {object} options.headers - Extra headers om toe te voegen
- * @param {any} options.body - Request body data
- * @returns {Promise<Response>} - De fetch response
- * @throws {Error} - Bij netwerk of andere fouten
+ * Wrapper for the fetch API that automatically includes the JWT token.
+ * @param {string} url - The URL to fetch.
+ * @param {object} options - Fetch options (method, headers, body, etc.).
+ * @returns {Promise<Response>} - The fetch response.
  */
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('authToken');
@@ -56,27 +23,24 @@ async function fetchWithAuth(url, options = {}) {
 
     try {
         const response = await fetch(url, { ...options, headers });
-        
         if (response.status === 401) {
-            // Ongeautoriseerd of token verlopen, redirect naar login
-            // Verwijder mogelijk slechte credentials
+            // Unauthorized or token expired, redirect to login
+            console.warn('Authentication error (401): Token might be expired or invalid. Redirecting to login.');
+            // Clear potentially bad credentials
             localStorage.removeItem('authToken');
             localStorage.removeItem('userType');
             localStorage.removeItem('user');
-            
-            // Redirect naar login met sessie verlopen parameter
+            // Redirect
             window.location.href = '/login?session_expired=true';
-            
-            // Return een promise die nooit resolve om verdere uitvoering te stoppen
+            // Return a promise that never resolves to stop further execution
             return new Promise(() => {});
         }
-        
         return response;
     } catch (error) {
-        // Herwerp de error voor consistente error handling
+        console.error('Fetch error:', error);
         throw error;
     }
 }
 
-// Maak functie globaal beschikbaar voor gebruik in andere bestanden
+// Make it available globally
 window.fetchWithAuth = fetchWithAuth;
