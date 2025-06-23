@@ -154,6 +154,9 @@ export default {
     updateLegacyDataCounts
 };
 
+window.updateDataCounts = updateDataCounts;
+window.updateLegacyDataCounts = updateLegacyDataCounts;
+
 console.log("✅ [stat-utils] Utility functions loaded and ready for use!");
 
 /*

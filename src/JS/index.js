@@ -1,8 +1,5 @@
 // src/JS/index.js - COMPLETE WORKING VERSION - HERSTELD & OPGESCHOOND
 
-// Import FilterService
-import { FilterService } from './SERVICES/FilterService.js';
-
 /**
  *  UNIVERSAL HOMEPAGE INITIALIZER - COMPLETE WORKING VERSION
  * 
@@ -696,6 +693,13 @@ class UniversalHomepageInitializer {
             }
             // Fetch all data
             await this.dataFetcher.fetchAllData();
+            
+            // Make data available globally for other scripts
+            const data = this.dataFetcher.getData();
+            window.allStudents = data.studenten || [];
+            window.allCompanies = data.bedrijven || [];
+            window.allProjects = data.projecten || [];
+            
             // Initialize filter service
             this.initializeFilterService();
             // Initialize carousels for each section
@@ -714,6 +718,13 @@ class UniversalHomepageInitializer {
 
     initializeFilterService() {
         try {
+            // Access FilterService from window when needed
+            const { FilterService } = window;
+            if (!FilterService) {
+                console.warn('⚠️ FilterService not available, skipping filter initialization');
+                return;
+            }
+            
             // Initialize FilterService with data
             const data = this.dataFetcher.getData();
             this.filterService = new FilterService();

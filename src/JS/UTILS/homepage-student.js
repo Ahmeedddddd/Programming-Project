@@ -1,8 +1,5 @@
 // src/JS/UTILS/homepage-student.js
 
-import { fetchWithAuth } from '../api.js';
-import { ReservatieService } from '../reservatieService.js';
-
 document.addEventListener('DOMContentLoaded', () => {
     // Wacht een kort moment tot de universele initializer (index.js) de basisdata heeft geladen.
     // Dit zorgt ervoor dat services zoals ReservatieService beschikbaar zijn.
@@ -25,6 +22,12 @@ async function initializeStudentHomepage() {
  */
 async function loadUserInfo() {
     try {
+        // Access fetchWithAuth from window when needed
+        const { fetchWithAuth } = window;
+        if (!fetchWithAuth) {
+            throw new Error('fetchWithAuth is not available');
+        }
+        
         const response = await fetchWithAuth('/api/user-info');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,6 +61,12 @@ async function loadUpcomingMeetings() {
     container.innerHTML = `<div class="loading-cards"><p>🔄 Gesprekken laden...</p></div>`;
 
     try {
+        // Access fetchWithAuth from window when needed
+        const { fetchWithAuth } = window;
+        if (!fetchWithAuth) {
+            throw new Error('fetchWithAuth is not available');
+        }
+        
         const response = await fetchWithAuth('/api/reservaties/my');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

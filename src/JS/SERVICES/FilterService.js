@@ -5,7 +5,7 @@
  */
 
 // ===== FILTER SERVICE =====
-export class FilterService {
+class FilterService {
     constructor() {
         this.students = [];
         this.companies = [];

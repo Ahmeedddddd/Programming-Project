@@ -9,7 +9,7 @@ console.log("✅ api.js geladen");
  * @param {object} options - Fetch options (method, headers, body, etc.).
  * @returns {Promise<Response>} - The fetch response.
  */
-export async function fetchWithAuth(url, options = {}) {
+async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('authToken');
 
     const headers = {

@@ -1,6 +1,6 @@
 // [ALLE DEBUG LOGS VERWIJDERD VOOR SCHONE TEST]
 
-import { ReservatieService } from '../reservatieService.js';
+const { ReservatieService } = window;
 
 // --- GLOBAAL & CONFIGURATIE ---
 const currentUser = { id: null, type: 'student' }; // Statisch voor dit script
@@ -653,7 +653,4 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => notif.remove(), 5000);
         };
     }
-});
-
-// Make it available globally
-window.studentConversationManager = studentConversationManager; 
+}); 

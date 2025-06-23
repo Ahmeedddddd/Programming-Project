@@ -3,8 +3,6 @@
 
 console.log("✅ reservatieService.js geladen");
 
-import { fetchWithAuth } from "./api.js";
-
 // Fallback voor showNotification als deze niet bestaat
 if (typeof window.showNotification !== 'function') {
     window.showNotification = function(msg, type) { 
@@ -13,7 +11,7 @@ if (typeof window.showNotification !== 'function') {
     };
 }
 
-export class ReservatieService {
+class ReservatieService {
     /**
      * Sends a reservation request to the backend.
      * @param {string} bedrijfsnummer - The ID of the company.
@@ -22,7 +20,7 @@ export class ReservatieService {
      */
     static async requestReservation(bedrijfsnummer, tijdslot) {
         try {
-            const response = await fetchWithAuth('/api/reservaties/request', {
+            const response = await window.fetchWithAuth('/api/reservaties/request', {
                 method: 'POST',
                 body: JSON.stringify({
                     bedrijfsnummer: bedrijfsnummer,
@@ -48,7 +46,7 @@ export class ReservatieService {
      */
     static async getMyReservations() {
         try {
-            const response = await fetchWithAuth('/api/reservaties/my');
+            const response = await window.fetchWithAuth('/api/reservaties/my');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -67,7 +65,7 @@ export class ReservatieService {
      */
     static async cancelReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/cancel`, {
+            const response = await window.fetchWithAuth(`/api/reservaties/${reservatieId}/cancel`, {
                 method: 'PUT'
             });
 
@@ -89,7 +87,7 @@ export class ReservatieService {
      */
     static async getCompanyReservations() {
         try {
-            const response = await fetchWithAuth('/api/reservaties/company');
+            const response = await window.fetchWithAuth('/api/reservaties/company');
             if (!response.ok) {
                 const errorBody = await response.text();
                 console.error("Error body from /api/reservaties/company:", errorBody);
@@ -114,7 +112,7 @@ export class ReservatieService {
      */
     static async acceptReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/accept`, {
+            const response = await window.fetchWithAuth(`/api/reservaties/${reservatieId}/accept`, {
                 method: 'PUT'
             });
 
@@ -138,7 +136,7 @@ export class ReservatieService {
      */
     static async rejectReservation(reservatieId, reden = '') {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/reject`, {
+            const response = await window.fetchWithAuth(`/api/reservaties/${reservatieId}/reject`, {
                 method: 'PUT',
                 body: JSON.stringify({ reden: reden })
             });
@@ -162,7 +160,7 @@ export class ReservatieService {
      */
     static async deleteReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}`, {
+            const response = await window.fetchWithAuth(`/api/reservaties/${reservatieId}`, {
                 method: 'DELETE'
             });
 
@@ -185,7 +183,7 @@ export class ReservatieService {
      */
     static async restoreReservation(reservatieId) {
         try {
-            const response = await fetchWithAuth(`/api/reservaties/${reservatieId}/restore`, {
+            const response = await window.fetchWithAuth(`/api/reservaties/${reservatieId}/restore`, {
                 method: 'PUT'
             });
             return await response.json();
