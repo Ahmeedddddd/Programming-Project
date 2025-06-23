@@ -128,11 +128,23 @@ class Bedrijf {
         console.log('🔄 Bedrijf.update called with:', { bedrijfsnummer, updates });
         
         try {
+            // Process the data to handle arrays and objects properly
+            const processedUpdates = {};
+            for (const [key, value] of Object.entries(updates)) {
+                if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                    // Convert arrays and objects to JSON strings
+                    processedUpdates[key] = JSON.stringify(value);
+                } else {
+                    // Keep primitive values as-is
+                    processedUpdates[key] = value;
+                }
+            }
+            
             // Bouw de SET clause dynamisch op
             const setFields = [];
             const values = [];
             
-            for (const [key, value] of Object.entries(updates)) {
+            for (const [key, value] of Object.entries(processedUpdates)) {
                 setFields.push(`${key} = ?`);
                 values.push(value);
             }
@@ -285,12 +297,14 @@ class Bedrijf {
             const [rows] = await pool.query(sql, [bedrijfsnummer]);
             
             if (rows.length === 0) {
-                return [];
+                console.log('❌ Bedrijf not found, returning default slots');
+                return this.getDefaultTimeSlots();
             }
             
             let timeSlots = rows[0].beschikbareTijdslots;
             if (!timeSlots) {
-                return [];
+                console.log('📝 No time slots set, returning default slots');
+                return this.getDefaultTimeSlots();
             }
             // Fix: parse alleen als het een string is
             if (typeof timeSlots === 'string') {
@@ -298,16 +312,37 @@ class Bedrijf {
                     timeSlots = JSON.parse(timeSlots);
                 } catch (parseError) {
                     console.error('❌ Error parsing time slots:', parseError);
-                    return [];
+                    return this.getDefaultTimeSlots();
                 }
             }
             
             console.log('✅ Retrieved time slots:', timeSlots);
-            return Array.isArray(timeSlots) ? timeSlots : [];
+            return Array.isArray(timeSlots) ? timeSlots : this.getDefaultTimeSlots();
         } catch (error) {
             console.error('❌ Error in Bedrijf.getAvailableTimeSlots:', error);
-            throw error;
+            return this.getDefaultTimeSlots();
         }
+    }
+
+    // Get default time slots for Career Launch event
+    static getDefaultTimeSlots() {
+        const defaultSlots = [
+            { id: 1, start: '13:00', end: '13:30' },
+            { id: 2, start: '13:30', end: '14:00' },
+            { id: 3, start: '14:00', end: '14:30' },
+            { id: 4, start: '14:30', end: '15:00' },
+            { id: 5, start: '15:00', end: '15:30' },
+            { id: 6, start: '15:30', end: '16:00' },
+            { id: 7, start: '16:00', end: '16:30' },
+            { id: 8, start: '16:30', end: '17:00' },
+            { id: 9, start: '17:00', end: '17:30' },
+            { id: 10, start: '17:30', end: '18:00' },
+            { id: 11, start: '18:00', end: '18:30' },
+            { id: 12, start: '18:30', end: '19:00' }
+        ];
+        
+        console.log('📝 Returning default time slots:', defaultSlots);
+        return defaultSlots;
     }
 }
 

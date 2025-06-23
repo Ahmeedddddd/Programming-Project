@@ -68,7 +68,7 @@ class StudentGegevens {
             this.showLoading(true);
 
             const response = await fetch(
-                "http://localhost:8383/api/student/profile",
+                "http://localhost:8383/api/studenten/profile",
                 {
                     method: "GET",
                     headers: {
@@ -127,7 +127,7 @@ class StudentGegevens {
 
         try {
             this.showLoading(true);            const response = await fetch(
-                "http://localhost:8383/api/student/profile",
+                "http://localhost:8383/api/studenten/profile",
                 {
                     method: "PUT",
                     headers: {
@@ -1040,22 +1040,28 @@ async function changePassword() {
 
 // === MESSAGE DISPLAY ===
 function showMessage(message, type = 'info') {
-    const messageContainer = document.getElementById('modalMessage');
-    const className = type === 'error' ? 'error-message' : 'success-message';
-    const icon = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+    // Use the global notification system if available
+    if (window.showNotification) {
+        window.showNotification(message, type);
+    } else {
+        // Fallback to modal message if notification system not available
+        const messageContainer = document.getElementById('modalMessage');
+        const className = type === 'error' ? 'error-message' : 'success-message';
+        const icon = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
 
-    messageContainer.innerHTML = `
-        <div class="${className}">
-            <i class="${icon}"></i>
-            ${message}
-        </div>
-    `;
+        messageContainer.innerHTML = `
+            <div class="${className}">
+                <i class="${icon}"></i>
+                ${message}
+            </div>
+        `;
 
-    // Auto-hide success messages
-    if (type === 'success') {
-        setTimeout(() => {
-            messageContainer.innerHTML = '';
-        }, 5000);
+        // Auto-hide success messages
+        if (type === 'success') {
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
     }
 }
 
@@ -1150,6 +1156,30 @@ function beforeUnloadHandler(e) {
         input.addEventListener('input', () => setPasswordFormDirty(true));
     }
 });
+
+// === PASSWORD BUTTON CONNECTION ===
+function connectPasswordChangeButtons() {
+    console.log('🔗 Connecting existing password buttons...');
+    
+    // Find all password change buttons
+    const passwordButtons = document.querySelectorAll('.ehbBtn.secundair');
+    let connectedCount = 0;
+    
+    passwordButtons.forEach((button, index) => {
+        // Check if this button is for password changes
+        const buttonText = button.textContent.toLowerCase();
+        if (buttonText.includes('wachtwoord') || buttonText.includes('password')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                openPasswordModal();
+            });
+            connectedCount++;
+            console.log(`✅ Connected password button ${index + 1}:`, button);
+        }
+    });
+    
+    console.log(`🎯 Total password buttons connected: ${connectedCount}`);
+}
 
 // Export for module usage
 export default StudentGegevens;

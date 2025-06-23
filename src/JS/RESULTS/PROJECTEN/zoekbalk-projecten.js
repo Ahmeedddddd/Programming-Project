@@ -1,5 +1,5 @@
 // src/JS/RESULTS/PROJECTEN/zoekbalk-projecten.js
-// Project Detail pagina functionaliteit
+// Project Detail pagina functionaliteit - Herstelde versie gebaseerd op de feedback van de gebruiker.
 
 console.log('🚀 Project Detail script loading...');
 
@@ -7,16 +7,13 @@ class ProjectDetailManager {
     constructor() {
         this.projectId = null;
         this.projectData = null;
-        this.studentData = null;
-        this.API_BASE = window.location.origin; // FIXED: Use same port as frontend
-        this.init();
+        this.API_BASE = window.location.origin;
     }
 
     async init() {
         try {
             console.log('🔍 Initializing ProjectDetailManager...');
             
-            // Get project ID from URL
             this.projectId = this.getProjectIdFromUrl();
             
             if (!this.projectId) {
@@ -27,13 +24,10 @@ class ProjectDetailManager {
 
             console.log(`🎯 Loading project with ID: ${this.projectId}`);
             
-            // Load project data (with mock fallback)
             await this.loadProjectData();
             
-            // Render project details
             this.renderProjectDetails();
             
-            // Setup event listeners
             this.setupEventListeners();
             
             console.log('✅ ProjectDetailManager initialized successfully');
@@ -53,235 +47,262 @@ class ProjectDetailManager {
 
     async loadProjectData() {
         try {
-            console.log('📡 Loading project data using project ID...');
+            console.log(`📡 Loading project data for ID ${this.projectId} from project endpoint...`);
+            
+            // GEWIJZIGD: Gebruik de project endpoint in plaats van student endpoint
             const response = await fetch(`${this.API_BASE}/api/projecten/${this.projectId}`);
+            
+            console.log(`📡 [DEBUG] Response status: ${response.status}`);
+            console.log(`📡 [DEBUG] Response ok: ${response.ok}`);
+            
             if (!response.ok) {
-                throw new Error(`Failed to fetch project data: ${response.statusText}`);
+                const errorText = await response.text();
+                console.error(`📡 [DEBUG] Response error text:`, errorText);
+                throw new Error(`Failed to fetch project data: ${response.statusText} (status: ${response.status})`);
             }
+            
             const result = await response.json();
+            console.log(`📡 [DEBUG] Raw API response:`, result);
+            
             if (!result.success || !result.data) {
-                throw new Error('Project not found or invalid response.');
+                console.error(`📡 [DEBUG] API response indicates failure:`, result);
+                throw new Error('Project not found or invalid API response.');
             }
+            
             this.projectData = result.data;
-            console.log('✅ Project data loaded:', this.projectData);
+            console.log('✅ Project data loaded successfully:', this.projectData);
+            console.log('📊 [DEBUG] Project data structure analysis:', {
+                hasData: !!this.projectData,
+                isProject: this.projectData?.isProject,
+                titel: this.projectData?.titel,
+                beschrijving: this.projectData?.beschrijving,
+                tafelNr: this.projectData?.tafelNr,
+                hasTeam: !!this.projectData?.team,
+                teamSize: this.projectData?.team?.length || 0,
+                hasTechnologies: !!this.projectData?.technologieen,
+                technologies: this.projectData?.technologieen
+            });
+
         } catch (error) {
             console.error('❌ Error in loadProjectData:', error);
+            console.error('❌ [DEBUG] Full error details:', {
+                message: error.message,
+                stack: error.stack,
+                projectId: this.projectId
+            });
             this.showErrorState();
-            throw error;
+            throw error; // Re-throw to be caught by init
         }
     }
 
     renderProjectDetails() {
-        try {
-            console.log('🎨 Rendering project details...');
-            
-            // Update page title
-            document.title = `Project - ${this.projectData.titel}`;
-            
-            // Update header
-            this.updateHeader();
-            
-            // Update description section
-            this.updateDescriptionSection();
-            
-            // Update info section with team members
-            this.updateInfoSection();
-            
-            // Add back button
-            this.addBackButton();
-
-            // Remove loading skeletons
-            this.removeLoadingStates();
-            
-            console.log('✅ Project details rendered successfully');
-        } catch (error) {
-            console.error('❌ Error rendering project details:', error);
+        if (!this.projectData) {
+            console.error('❌ [DEBUG] No project data available for rendering');
             this.showErrorState();
-        }
-    }
-
-    updateHeader() {
-        const titleEl = document.querySelector('.project-title-text');
-        const techEl = document.querySelector('.project-skills ul');
-
-        if (titleEl) {
-            titleEl.textContent = this.projectData.titel;
-        }
-
-        if (techEl && this.projectData.technologieen) {
-            const technologies = this.projectData.technologieen.split(',').map(t => t.trim());
-            techEl.innerHTML = technologies.map(tech => `<li>${tech}</li>`).join('');
-        }
-    }
-
-    updateDescriptionSection() {
-        const descriptionEl = document.querySelector('.description-section .project-description-text');
-        if (descriptionEl) {
-            descriptionEl.textContent = this.projectData.beschrijving || 'Geen beschrijving beschikbaar.';
-        }
-    }
-
-    updateInfoSection() {
-        const teamListEl = document.querySelector('.team-list ul');
-        if (!teamListEl) return;
-
-        const students = this.projectData.studenten || [];
-        
-        if (students.length === 0) {
-            teamListEl.innerHTML = '<li>Geen teamleden gevonden voor dit project.</li>';
             return;
         }
 
-        teamListEl.innerHTML = students.map(student => `
-            <li class="team-member-card" data-student-id="${student.studentnummer}">
-                <a href="/zoekbalk-studenten?id=${student.studentnummer}" style="text-decoration: none; color: inherit;">
-                    <div class="member-info">
-                        <strong class="member-name">
-                            <i class="fas fa-user"></i> ${student.naam}
-                        </strong>
-                        <div class="member-detail">
-                            <i class="fas fa-graduation-cap"></i> ${student.opleiding || 'Opleiding onbekend'}
-                        </div>
-                        <div class="member-detail">
-                            <i class="fas fa-envelope"></i> ${student.email || 'Email onbekend'}
-                        </div>
-                    </div>
-                    <div class="profile-link">
-                        <span>Bekijk profiel <i class="fas fa-arrow-right"></i></span>
-                    </div>
-                </a>
-            </li>
-        `).join('');
+        console.log('🎨 [DEBUG] Starting to render project details...');
+        console.log('📊 [DEBUG] Project data for rendering:', this.projectData);
+
+        document.title = this.projectData.titel || 'Project Details';
+
+        // Update Header
+        const titleElement = document.querySelector('.project-title-text');
+        if (titleElement) {
+            titleElement.textContent = this.projectData.titel || 'Geen titel';
+            console.log('✅ [DEBUG] Project title updated');
+        } else {
+            console.error('❌ [DEBUG] Project title element not found');
+        }
+
+        // Update Description
+        const descriptionElement = document.querySelector('.project-description-text');
+        if (descriptionElement) {
+            descriptionElement.textContent = this.projectData.beschrijving || 'Geen beschrijving beschikbaar.';
+            console.log('✅ [DEBUG] Project description updated');
+        } else {
+            console.error('❌ [DEBUG] Project description element not found');
+        }
+
+        // Update Technologies - ENHANCED DEBUGGING
+        const technologiesList = document.getElementById('project-technologies');
+        if (technologiesList) {
+            console.log('🔧 [DEBUG] Updating technologies list...');
+            console.log('🔧 [DEBUG] Technologies data:', this.projectData.technologieen);
+            
+            if (this.projectData.technologieen && this.projectData.technologieen.trim()) {
+                const technologies = this.projectData.technologieen.split(',').map(tech => tech.trim());
+                console.log('🔧 [DEBUG] Parsed technologies:', technologies);
+                
+                technologiesList.innerHTML = technologies.map(tech => 
+                    `<li><i class="fas fa-code"></i> ${tech}</li>`
+                ).join('');
+                console.log(`✅ [DEBUG] Technologies updated: ${technologies.length} technologies rendered`);
+            } else {
+                technologiesList.innerHTML = '<li><i class="fas fa-info-circle"></i> Geen technologieën opgegeven</li>';
+                console.log('⚠️ [DEBUG] No technologies found, showing placeholder');
+            }
+        } else {
+            console.error('❌ [DEBUG] Technologies list element not found');
+        }
+
+        // Update Team Members - ENHANCED DEBUGGING
+        const teamList = document.getElementById('project-team-members');
+        if (teamList) {
+            console.log('👥 [DEBUG] Updating team members list...');
+            console.log('👥 [DEBUG] Team data:', this.projectData.team);
+            
+            if (this.projectData.team && this.projectData.team.length > 0) {
+                console.log(`👥 [DEBUG] Found ${this.projectData.team.length} team members`);
+                
+                const teamMembersHTML = this.projectData.team.map(member => {
+                    console.log('👥 [DEBUG] Processing team member:', member);
+                    return `
+                        <li class="team-member-card">
+                            <a href="/zoekbalk-studenten?id=${member.studentnummer}" class="team-member-link">
+                                <div class="member-info">
+                                    <span class="member-name">${member.voornaam} ${member.achternaam}</span>
+                                    <div class="member-detail">
+                                        <i class="fas fa-graduation-cap"></i> ${member.opleiding || 'N/A'}
+                                    </div>
+                                    ${member.opleidingsrichting ? `
+                                        <div class="member-detail">
+                                            <i class="fas fa-book"></i> ${member.opleidingsrichting}
+                                        </div>
+                                    ` : ''}
+                                    ${member.gemeente ? `
+                                        <div class="member-detail">
+                                            <i class="fas fa-map-marker-alt"></i> ${member.gemeente}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="profile-link">
+                                    <i class="fas fa-external-link-alt"></i> Bekijk profiel
+                                </div>
+                            </a>
+                        </li>
+                    `;
+                }).join('');
+                
+                teamList.innerHTML = teamMembersHTML;
+                console.log(`✅ [DEBUG] Team members updated: ${this.projectData.team.length} members rendered`);
+            } else {
+                teamList.innerHTML = '<li class="team-member-card"><div class="member-info"><span class="member-name">Geen teamleden gevonden</span></div></li>';
+                console.log('⚠️ [DEBUG] No team members found, showing placeholder');
+            }
+        } else {
+            console.error('❌ [DEBUG] Team members list element not found');
+        }
+
+        // Update Table Number - ENHANCED DEBUGGING
+        const tableInfo = document.getElementById('project-tafel-info');
+        if (tableInfo) {
+            console.log('📍 [DEBUG] Updating table info...');
+            console.log('📍 [DEBUG] Table number data:', this.projectData.tafelNr);
+            
+            if (this.projectData.tafelNr) {
+                tableInfo.innerHTML = `
+                    <i class="fas fa-map-marker-alt"></i>
+                    <strong>Tafel ${this.projectData.tafelNr}</strong>
+                    <br>
+                    <small>Locatie op de beurs</small>
+                `;
+                console.log(`✅ [DEBUG] Table number updated: Tafel ${this.projectData.tafelNr}`);
+            } else {
+                tableInfo.innerHTML = `
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Locatie wordt nog bepaald</strong>
+                    <br>
+                    <small>Check later voor updates</small>
+                `;
+                console.log('⚠️ [DEBUG] No table number found, showing placeholder');
+            }
+        } else {
+            console.error('❌ [DEBUG] Table info element not found');
+        }
+
+        // Remove loading states
+        this.removeLoadingStates();
+        
+        console.log('✅ Project details rendered successfully');
+    }
+
+    removeLoadingStates() {
+        console.log('🔄 Removing skeleton loading states...');
+        
+        // Remove skeleton elements
+        const skeletonElements = document.querySelectorAll('.skeleton');
+        skeletonElements.forEach(el => el.remove());
+        
+        // Add content-loaded class to main container
+        const mainContainer = document.querySelector('.layout');
+        if (mainContainer) {
+            mainContainer.classList.add('content-loaded');
+        }
+        
+        // Add back button if it doesn't exist
+        this.addBackButton();
     }
 
     addBackButton() {
-        // Check if back button already exists
         if (document.querySelector('.back-button')) return;
 
         const backButton = document.createElement('a');
         backButton.href = '/alle-projecten';
         backButton.className = 'back-button';
         backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Terug naar projecten';
-        backButton.style.cssText = `
-            position: fixed;
-            top: 140px;
-            left: 2rem;
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #881538;
-            color: #881538;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(136, 21, 56, 0.2);
-        `;
-
-        backButton.addEventListener('mouseenter', () => {
-            backButton.style.background = '#881538';
-            backButton.style.color = 'white';
-            backButton.style.transform = 'translateY(-2px)';
-            backButton.style.boxShadow = '0 8px 25px rgba(136, 21, 56, 0.3)';
-        });
-
-        backButton.addEventListener('mouseleave', () => {
-            backButton.style.background = 'rgba(255, 255, 255, 0.95)';
-            backButton.style.color = '#881538';
-            backButton.style.transform = 'translateY(0)';
-            backButton.style.boxShadow = '0 4px 15px rgba(136, 21, 56, 0.2)';
-        });
-
-        document.body.appendChild(backButton);
-    }
-
-    removeLoadingStates() {
-        // Remove skeleton loading elements
-        const skeletons = document.querySelectorAll('.skeleton');
-        skeletons.forEach(skeleton => skeleton.remove());
-
-        // Remove loading content
-        const loadingContent = document.querySelectorAll('.loading-content');
-        loadingContent.forEach(content => content.remove());
-
-        // Mark content as loaded
-        document.body.classList.add('content-loaded');
+        
+        const header = document.querySelector('.site-header');
+        if (header) {
+            header.insertAdjacentElement('afterend', backButton);
+        } else {
+            document.body.prepend(backButton);
+        }
     }
 
     setupEventListeners() {
-        // Add any additional event listeners here
         console.log('🎯 Setting up event listeners...');
+        // Essentieel om navigatieproblemen te voorkomen
+        document.body.addEventListener('click', (event) => {
+            const memberLink = event.target.closest('.team-member-link');
+            if (memberLink) {
+                event.preventDefault(); 
+                const url = memberLink.href;
+                console.log(`Navigating to student profile: ${url}`);
+                window.location.href = url;
+            }
+        });
     }
 
     showErrorState() {
-        // Hide main content
-        const container = document.querySelector('.container');
-        const layoutContainer = document.querySelector('.layout-container');
-        
-        if (layoutContainer) {
-            layoutContainer.style.display = 'none';
+        this.removeLoadingStates();
+        const layout = document.querySelector('.layout');
+        if (layout) {
+            layout.style.display = 'none';
         }
 
-        // Show error state
-        const errorState = document.getElementById('errorState');
+        let errorState = document.querySelector('.error-state');
         if (errorState) {
-            errorState.style.display = 'block';
+            errorState.style.display = 'flex';
         } else {
-            // Create error state if not exists
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-state';
-            errorDiv.innerHTML = `
+            errorState = document.createElement('div');
+            errorState.className = 'error-state';
+            errorState.style.display = 'flex';
+            errorState.innerHTML = `
                 <h3><i class="fas fa-exclamation-triangle"></i> Project niet gevonden</h3>
-                <p>Het gevraagde project kon niet worden geladen. Dit kan komen door een verkeerde link of tijdelijke technische problemen.</p>
-                <button class="retry-btn" onclick="window.location.reload()">
-                    <i class="fas fa-redo"></i> Probeer opnieuw
-                </button>
-                <br><br>
-                <a href="/alle-projecten" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Terug naar alle projecten
-                </a>
+                <p>Het opgevraagde project kon niet worden geladen. Dit kan komen door een verkeerde link of een technisch probleem.</p>
+                <a href="/alle-projecten.html" class="retry-btn"><i class="fas fa-arrow-left"></i> Terug naar alle projecten</a>
             `;
-            
-            if (container) {
-                container.appendChild(errorDiv);
-            } else {
-                document.body.appendChild(errorDiv);
-            }
+            document.body.appendChild(errorState);
         }
-    }
-
-    // Public API
-    refresh() {
-        console.log('🔄 Refreshing project details...');
-        this.loadProjectData().then(() => {
-            this.renderProjectDetails();
-        }).catch(error => {
-            console.error('❌ Error refreshing project details:', error);
-            this.showErrorState();
-        });
     }
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM loaded, initializing ProjectDetailManager...');
-    window.projectDetailManager = new ProjectDetailManager();
-});
-
-// Utility function for external use
-window.refreshProjectDetails = () => {
-    if (window.projectDetailManager) {
-        window.projectDetailManager.refresh();
-    }
-};
-
-// Handle browser back/forward navigation
-window.addEventListener('popstate', () => {
-    console.log('🔄 Navigation detected, refreshing...');
-    if (window.projectDetailManager) {
-        window.projectDetailManager.refresh();
-    }
+    const projectDetailManager = new ProjectDetailManager();
+    projectDetailManager.init();
 });
 
 console.log('✅ Project Detail script loaded successfully');

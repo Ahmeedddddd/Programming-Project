@@ -1,16 +1,37 @@
-// notification-system.js - Globaal notification systeem voor CareerLaunch
-
-console.log('📢 Notification system geladen');
+/**
+ * 📢 notification-system.js - Globaal Notification Systeem voor CareerLaunch EHB
+ * 
+ * Dit bestand beheert het globale notification systeem voor de hele applicatie:
+ * - Toast-style notificaties met verschillende types
+ * - Automatische progress bars en timeouts
+ * - Animaties en visuele feedback
+ * - Responsive design ondersteuning
+ * 
+ * Belangrijke functionaliteiten:
+ * - Vier notification types: info, success, warning, error
+ * - Automatische container creatie en management
+ * - Klikbare notificaties met close buttons
+ * - Progress bars voor visuele feedback
+ * - Smooth animaties en transitions
+ * - Globale beschikbaarheid via window object
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ * @since 2024
+ */
 
 /**
- * 🔔 Toont een notificatie op het scherm.
- * @param {string} message - Het bericht om te tonen.
- * @param {'info' | 'success' | 'warning' | 'error'} [type='info'] - Het type notificatie.
- * @param {number} [duration=4000] - Hoelang de notificatie zichtbaar blijft in ms.
+ * 🔔 Toont een notificatie op het scherm
+ * 
+ * Deze functie creëert en toont een notificatie met de opgegeven parameters.
+ * De notificatie wordt automatisch verwijderd na de opgegeven tijd.
+ * 
+ * @param {string} message - Het bericht om te tonen
+ * @param {'info' | 'success' | 'warning' | 'error'} [type='info'] - Het type notificatie
+ * @param {number} [duration=4000] - Hoelang de notificatie zichtbaar blijft in ms
+ * @returns {void}
  */
 function showNotification(message, type = 'info', duration = 4000) {
-  console.log(`📢 Showing notification: ${type} - ${message}`);
-  
   // Ensure notification container exists
   let container = document.getElementById('notification-container');
   if (!container) {
@@ -153,13 +174,48 @@ function showNotification(message, type = 'info', duration = 4000) {
   }
 }
 
-// Convenience functions
+/**
+ * ✅ Toont een success notificatie
+ * 
+ * @param {string} message - Het bericht om te tonen
+ * @param {number} [duration] - Hoelang de notificatie zichtbaar blijft in ms
+ * @returns {void}
+ */
 const showSuccess = (message, duration) => showNotification(message, 'success', duration);
+
+/**
+ * ❌ Toont een error notificatie
+ * 
+ * @param {string} message - Het bericht om te tonen
+ * @param {number} [duration] - Hoelang de notificatie zichtbaar blijft in ms
+ * @returns {void}
+ */
 const showError = (message, duration) => showNotification(message, 'error', duration);
+
+/**
+ * ⚠️ Toont een warning notificatie
+ * 
+ * @param {string} message - Het bericht om te tonen
+ * @param {number} [duration] - Hoelang de notificatie zichtbaar blijft in ms
+ * @returns {void}
+ */
 const showWarning = (message, duration) => showNotification(message, 'warning', duration);
+
+/**
+ * ℹ️ Toont een info notificatie
+ * 
+ * @param {string} message - Het bericht om te tonen
+ * @param {number} [duration] - Hoelang de notificatie zichtbaar blijft in ms
+ * @returns {void}
+ */
 const showInfo = (message, duration) => showNotification(message, 'info', duration);
 
-// Toast-style quick notifications
+/**
+ * 🍞 Toast-style quick notifications object
+ * 
+ * Biedt snelle toegang tot verschillende notification types
+ * met vooraf ingestelde durations
+ */
 const toast = {
   success: (message) => showNotification(message, 'success', 3000),
   error: (message) => showNotification(message, 'error', 5000),
@@ -175,13 +231,9 @@ window.showWarning = showWarning;
 window.showInfo = showInfo;
 window.toast = toast;
 
-console.log('✅ Notification system ready');
-
 // Auto-initialize on DOM ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    console.log('🎯 Notification system initialized on DOM ready');
+    // Notification system is ready
   });
-} else {
-  console.log('🎯 Notification system initialized (DOM already ready)');
 }

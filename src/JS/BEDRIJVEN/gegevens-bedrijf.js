@@ -1,228 +1,179 @@
-// gegevens-bedrijf.js - Bedrijf gegevens ophalen en weergeven
+/**
+ * 🏢 gegevens-bedrijf.js - Bedrijf gegevens ophalen en weergeven
+ * 
+ * Dit bestand beheert de bedrijfsprofiel pagina:
+ * - Ophalen van bedrijfsgegevens uit de database
+ * - Dynamische weergave van bedrijfsinformatie
+ * - Bewerkingsmodus voor bedrijfsgegevens
+ * - Real-time updates en validatie
+ * 
+ * Features:
+ * - Automatische data loading
+ * - Inline editing van bedrijfsgegevens
+ * - Form validatie
+ * - Error handling
+ * - Success notifications
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ */
 
-console.log("🚀 Bedrijf gegevens script geladen");
-
-// 🔔 Notification System
-window.showNotification = function (message, type = "success") {
-    const container = document.getElementById("notification-container");
-    if (!container) {
-        console.warn("⚠️ Notification container not found");
-        return;
-    }
-
-    const notification = document.createElement("div");
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-
-    container.appendChild(notification);
-
-    // Trigger animation
-    setTimeout(() => notification.classList.add("show"), 100);
-
-    // Auto remove
-    setTimeout(() => {
-        notification.classList.remove("show");
-        setTimeout(() => {
-            if (container.contains(notification)) {
-                container.removeChild(notification);
-            }
-        }, 300);
-    }, 4000);
-};
-
-class BedrijfGegevens {
+/**
+ * 🎯 BedrijfGegevensManager - Hoofdklasse voor bedrijfsgegevens beheer
+ * Beheert alle interacties met bedrijfsdata en UI updates
+ */
+class BedrijfGegevensManager {
     constructor() {
-        console.log("📝 BedrijfGegevens constructor aangeroepen");
-        this.token = localStorage.getItem("authToken");
         this.bedrijfData = null;
-        this.initialBedrijfData = null;
-        this.editMode = false;
-        this.form = document.getElementById("bedrijfForm");
-
-        // Initialize
+        this.isEditMode = false;
+        this.originalValues = {};
+        this.changedFields = new Set();
+        
+        console.log('🏢 BedrijfGegevensManager initialiseren...');
         this.init();
     }
 
+    /**
+     * 🚀 Initialiseert de manager
+     * Zet event listeners op en laadt bedrijfsdata
+     */
     async init() {
-        console.log("🚀 Initializing BedrijfGegevens");
-        if (!this.token) {
-            console.warn("⚠️ No token found");
-            this.redirectToLogin();
-            return;
-        }
-
         try {
-            await this.loadBedrijfGegevens();
+            await this.loadBedrijfData();
             this.setupEventListeners();
+            this.setupAutoSave();
+            this.setupFormValidation();
+            console.log('✅ BedrijfGegevensManager geïnitialiseerd');
         } catch (error) {
-            console.error("❌ Initialisatie mislukt:", error);
-            this.showError("Er ging iets mis bij het laden van je gegevens");
+            console.error('❌ Fout bij initialiseren:', error);
+            this.showError('Fout bij het laden van bedrijfsgegevens');
         }
     }
 
-    // 📡 API Calls
-    async loadBedrijfGegevens() {        console.log("📡 Loading bedrijf gegevens...");
+    /**
+     * 📡 Laadt bedrijfsgegevens van de server
+     * Haalt alle relevante bedrijfsinformatie op
+     */
+    async loadBedrijfData() {
         try {
-            this.showLoading(true);
-
-            const response = await fetch(
-                "http://localhost:8383/api/bedrijven/profile",
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${this.token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            console.log("📡 API Response status:", response.status);
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    console.warn("🔒 Unauthorized, redirecting to login");
-                    this.redirectToLogin();
-                    return;
-                }
-                const errorResult = await response
-                    .json()
-                    .catch(() => ({ message: response.statusText || "Onbekende fout" }));
-                console.error(
-                    "❌ Fout bij laden bedrijfgegevens, respons:",
-                    errorResult
-                );
-                throw new Error(`HTTP ${response.status}: ${errorResult.message}`);
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                throw new Error('Geen authenticatietoken gevonden');
             }
 
-            const result = await response.json();
-            console.log("📦 API Result:", result);
-
-            if (result.success) {
-                this.bedrijfData = result.data;
-                this.initialBedrijfData = { ...result.data };
-                console.log("✅ Bedrijf data loaded:", this.bedrijfData);
-                this.displayBedrijfGegevens();
-            } else {
-                console.error("❌ Server gaf aan dat laden mislukt is:", result);
-                throw new Error(result.message || "Onbekende fout bij laden");
-            }
-        } catch (error) {
-            console.error("❌ Error loading bedrijf gegevens:", error);
-            this.showError("Kan gegevens niet laden: " + error.message);
-        } finally {
-            this.showLoading(false);
-        }
-    }
-
-    async updateBedrijfGegevens(updatedFields) {
-        console.log("📝 Preparing to update bedrijf gegevens...");
-        console.log("💡 Fields to update:", updatedFields);
-
-        this.bedrijfData = { ...this.bedrijfData, ...updatedFields };
-
-        try {
-            this.showLoading(true);            const response = await fetch(
-                "http://localhost:8383/api/bedrijven/profile",
-                {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${this.token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(this.bedrijfData),
+            const response = await fetch('/api/bedrijf/gegevens', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-            );
-
-            const result = await response.json().catch(() => {
-                return {
-                    success: false,
-                    message:
-                        response.statusText ||
-                        "Server respons was geen geldige JSON of leeg.",
-                };
             });
 
-            console.log("📝 Update API response result:", result);
-
-            if (response.ok && result.success) {
-                this.bedrijfData = result.data;
-                this.initialBedrijfData = { ...result.data };
-                this.displayBedrijfGegevens();
-                this.disableEditMode(); // Schakel de algemene bewerkingsmodus uit
-                this.showSuccess("Gegevens succesvol bijgewerkt!");
-            } else {
-                this.bedrijfData = { ...this.initialBedrijfData };
-                this.displayBedrijfGegevens();
-
-                console.error(
-                    "❌ Fout bij bijwerken, HTTP Status:",
-                    response.status,
-                    "Status Text:",
-                    response.statusText,
-                    "Result:",
-                    result
-                );
-                throw new Error(
-                    result.message || `Update mislukt (HTTP ${response.status})`
-                );
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
+
+            this.bedrijfData = await response.json();
+            console.log('📊 Bedrijfsdata geladen:', this.bedrijfData);
+            
+            this.updateUI();
+            this.showSuccess('Bedrijfsgegevens succesvol geladen');
+            
         } catch (error) {
-            console.error("❌ Error updating bedrijf:", error);
-            this.showError("Update mislukt: " + error.message);
-        } finally {
-            this.showLoading(false);
+            console.error('❌ Fout bij laden bedrijfsdata:', error);
+            throw error;
         }
     }
 
-    // 🎨 UI Updates
-    displayBedrijfGegevens() {
-        console.log("🎨 Displaying bedrijf gegevens");
+    /**
+     * 🎨 Werkt de UI bij met bedrijfsgegevens
+     * Vult alle velden in met de opgehaalde data
+     */
+    updateUI() {
         if (!this.bedrijfData) {
-            console.warn("⚠️ No bedrijf data to display");
+            console.warn('⚠️ Geen bedrijfsdata beschikbaar voor UI update');
             return;
         }
 
-        const data = this.bedrijfData;
+        // Update basis bedrijfsgegevens
+        this.updateField('naam', this.bedrijfData.naam || 'Niet ingevuld');
+        this.updateField('sector', this.bedrijfData.sector || 'Niet ingevuld');
+        this.updateField('gemeente', this.bedrijfData.gemeente || 'Niet ingevuld');
+        this.updateField('telefoon', this.bedrijfData.telefoon || 'Niet ingevuld');
+        this.updateField('email', this.bedrijfData.email || 'Niet ingevuld');
+        this.updateField('website', this.bedrijfData.website || 'Niet ingevuld');
+        this.updateField('beschrijving', this.bedrijfData.beschrijving || 'Niet ingevuld');
 
-        // Update bedrijf gegevens (allemaal niet-bewerkbaar in de HTML, maar worden hier bijgewerkt)
-        this.updateField("bedrijfsnummer", data.bedrijfsnummer);
-        this.updateField("bedrijfsnaam", data.naam);
-        this.updateField("tva-nummer", data.TVA_nummer);
-        this.updateField("sector", data.sector);
-        this.updateField("email", data.email);
-        this.updateField("telefoon", data.gsm_nummer);
-        this.updateField("straatnaam", data.straatnaam);
-        this.updateField("huisnummer", data.huisnummer);
-        this.updateField("bus", data.bus);
-        this.updateField("postcode", data.postcode);
-        this.updateField("gemeente", data.gemeente);
-        this.updateField("land", data.land);
+        // Update account informatie (niet bewerkbaar)
+        this.updateField('bedrijfsnummer', this.bedrijfData.id || 'N/A');
+        this.updateField('account-status', 'Actief');
+        this.updateField('last-login', 'Vandaag');
+        this.updateField('registratie-datum', this.formatDate(this.bedrijfData.createdAt) || 'Onbekend');
 
+        // Update verantwoordelijkheden
+        this.updateField('verantwoordelijkheden', 'Bedrijfsbeheer, Projectbeheer, Communicatie');
 
-        // Account info (niet bewerkbaar)
-        this.updateField("account-status", "Actief en Geverifieerd");
-        this.updateField(
-            "last-login",
-            "Vandaag om " +
-            new Date().toLocaleTimeString("nl-BE", {
-                hour: "2-digit",
-                minute: "2-digit",
-            })
-        );
+        // Update pagina titel
+        const pageTitle = document.querySelector('title');
+        if (pageTitle && this.bedrijfData.naam) {
+            pageTitle.textContent = `Bedrijfsprofiel - ${this.bedrijfData.naam}`;
+        }
 
-        const accountCreated = document.getElementById("account-created");
-        const lastUpdated = document.getElementById("last-updated");
-        if (accountCreated)
-            accountCreated.textContent = `Account aangemaakt: ${new Date().getFullYear()}`;
-        if (lastUpdated)
-            lastUpdated.textContent = `Laatste update: ${new Date().toLocaleDateString(
-                "nl-BE"
-            )}`;
-
-        console.log("✅ UI updated successfully");
+        console.log('🎨 UI bijgewerkt met bedrijfsgegevens');
     }
 
-    isValidUrl(string) { // Deze functie behouden voor algemene URL validatie indien nodig in de toekomst.
+    /**
+     * 📝 Werkt een specifiek veld bij in de UI
+     * @param {string} fieldName - Naam van het veld
+     * @param {string} value - Nieuwe waarde
+     */
+    updateField(fieldName, value) {
+        const displaySpan = document.querySelector(`[data-field="${fieldName}"] .display-value`);
+        const editInput = document.querySelector(`[data-field="${fieldName}"] .edit-input`);
+        
+        if (displaySpan) {
+            displaySpan.textContent = value;
+        }
+        
+        if (editInput) {
+            // Handle verschillende veldtypes
+            if (editInput.tagName === 'TEXTAREA') {
+                editInput.value = value;
+            } else if (editInput.type === 'email') {
+                editInput.value = value;
+            } else {
+                editInput.value = value;
+            }
+        }
+    }
+
+    /**
+     * 📅 Formatteert een datum naar leesbaar formaat
+     * @param {string} dateString - Datum string om te formatteren
+     * @returns {string} Geformatteerde datum
+     */
+    formatDate(dateString) {
+        if (!dateString) return 'Onbekend';
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('nl-BE', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        } catch (error) {
+            console.warn('⚠️ Fout bij formatteren datum:', dateString);
+            return 'Onbekend';
+        }
+    }
+
+    /**
+     * 🔗 Valideert of een string een geldige URL is
+     * @param {string} string - String om te valideren
+     * @returns {boolean} Of de string een geldige URL is
+     */
+    isValidUrl(string) {
+        // Deze functie behouden voor algemene URL validatie indien nodig in de toekomst
         try {
             new URL(string);
             return true;
@@ -231,213 +182,396 @@ class BedrijfGegevens {
         }
     }
 
-    updateField(fieldId, value) {
-        const field = document.querySelector(`[data-field="${fieldId}"]`);
-        if (field) {
-            const valueSpan = field.querySelector(".field-value");
-            if (valueSpan) {
-                const displayValue = value || "Niet ingevuld";
-                valueSpan.textContent = displayValue;
-            } else {
-                console.warn(`⚠️ .field-value span not found for ${fieldId}.`);
-            }
-        } else {
-            console.warn(`⚠️ Field container not found: ${fieldId}`);
-        }
+    /**
+     * 🎧 Zet event listeners op voor interactieve elementen
+     */
+    setupEventListeners() {
+        // Edit knoppen
+        const editButtons = document.querySelectorAll('.edit-btn');
+        editButtons.forEach(button => {
+            button.addEventListener('click', () => this.enableEditMode());
+        });
+
+        // Cancel knoppen
+        const cancelButtons = document.querySelectorAll('.cancel-btn');
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', () => this.disableEditMode());
+        });
+
+        // Save knoppen
+        const saveButtons = document.querySelectorAll('.save-btn');
+        saveButtons.forEach(button => {
+            button.addEventListener('click', () => this.saveChanges());
+        });
+
+        // Input change tracking
+        const editableInputs = document.querySelectorAll('.editable-field .edit-input');
+        editableInputs.forEach(input => {
+            input.addEventListener('input', () => this.trackChanges(input));
+        });
+
+        console.log('🎧 Event listeners ingesteld');
     }
 
-    // ✏️ Edit Mode Management
+    /**
+     * ✏️ Schakelt bewerkingsmodus in
+     * Maakt alle bewerkbare velden editbaar
+     */
     enableEditMode() {
-        console.log("✏️ Enabling edit mode for Bedrijf");
-        this.editMode = true;
-
-        document.getElementById("viewControls").style.display = "none";
-        document.getElementById("editControls").style.display = "flex";
+        console.log('✏️ Bewerkingsmodus inschakelen...');
+        
+        this.isEditMode = true;
+        this.originalValues = {};
         
         // Definieer hier expliciet welke velden voor een bedrijf bewerkbaar zijn
-        const companyEditableFieldIds = [
-            'bedrijfsnaam', 'tva-nummer', 'sector', 'email', 'telefoon',
-            'straatnaam', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land'
+        const editableFields = [
+            'naam', 'sector', 'gemeente', 'telefoon', 'email', 'website', 'beschrijving'
         ];
-
-        document.querySelectorAll('.editable-field').forEach(fieldDiv => {
-            const fieldId = fieldDiv.getAttribute('data-field');
-            const displaySpan = fieldDiv.querySelector('.display-mode');
-            const editInput = fieldDiv.querySelector('.edit-mode');
-
-            if (companyEditableFieldIds.includes(fieldId)) {
+        
+        editableFields.forEach(fieldName => {
+            const fieldContainer = document.querySelector(`[data-field="${fieldName}"]`);
+            if (!fieldContainer) return;
+            
+            const displaySpan = fieldContainer.querySelector('.display-value');
+            const editInput = fieldContainer.querySelector('.edit-input');
+            
+            if (displaySpan && editInput) {
+                // Sla originele waarde op
+                this.originalValues[fieldName] = displaySpan.textContent;
+                
                 // Toon de input, verberg de span
-                if (displaySpan) displaySpan.style.display = 'none';
-                if (editInput) {
-                    editInput.value = this.getFieldValue(fieldId);
-                    editInput.style.display = (editInput.tagName === 'TEXTAREA' ? 'block' : 'inline-block'); // Voor textarea, gebruik 'block'
-                    // Styling consistentie
-                    editInput.style.width = '250px';
-                    editInput.style.marginLeft = '0.5rem';
-                    editInput.style.padding = '0.5rem';
-                    editInput.style.border = '2px solid #881538';
-                    editInput.style.borderRadius = '8px';
-                }
-            } else {
-                // Niet bewerkbaar in deze modus, zorg dat het in display mode blijft
-                if (displaySpan) displaySpan.style.display = 'inline-block'; // of 'block' voor tekstarea's
-                if (editInput) editInput.style.display = 'none';
+                displaySpan.style.display = 'none';
+                editInput.style.display = (editInput.tagName === 'TEXTAREA' ? 'block' : 'inline-block'); // Voor textarea, gebruik 'block'
+                editInput.focus(); // Styling consistentie
+                
+                // Zet huidige waarde in input
+                editInput.value = displaySpan.textContent;
             }
         });
-        // Specifieke niet-bewerkbare velden die sowieso altijd in display mode zijn:
-        // bedrijfsnummer, account-status, last-login etc. worden niet geraakt door de .editable-field selector
+        
+        // Toon save/cancel knoppen
+        this.showEditButtons();
+        
+        console.log('✅ Bewerkingsmodus ingeschakeld');
     }
 
+    /**
+     * ❌ Schakelt bewerkingsmodus uit
+     * Herstelt alle velden naar originele waarden
+     */
     disableEditMode() {
-        console.log("❌ Disabling edit mode for Bedrijf");
-        this.editMode = false;
-        this.bedrijfData = { ...this.initialBedrijfData };
-
-        document.getElementById("viewControls").style.display = "flex";
-        document.getElementById("editControls").style.display = "none";
-
-        document.querySelectorAll('.editable-field .edit-mode').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.editable-field .display-mode').forEach(el => el.style.display = 'inline-block');
-
-        this.displayBedrijfGegevens();    
+        console.log('❌ Bewerkingsmodus uitschakelen...');
+        
+        this.isEditMode = false;
+        
+        // Herstel alle velden naar originele waarden
+        Object.keys(this.originalValues).forEach(fieldName => {
+            const fieldContainer = document.querySelector(`[data-field="${fieldName}"]`);
+            if (!fieldContainer) return;
+            
+            const displaySpan = fieldContainer.querySelector('.display-value');
+            const editInput = fieldContainer.querySelector('.edit-input');
+            
+            if (displaySpan && editInput) {
+                // Herstel originele waarde
+                displaySpan.textContent = this.originalValues[fieldName];
+                
+                // Verberg input, toon span
+                displaySpan.style.display = 'inline-block';
+                editInput.style.display = 'none';
+            }
+        });
+        
+        // Verberg save/cancel knoppen
+        this.hideEditButtons();
+        
+        // Reset change tracking
+        this.changedFields.clear();
+        
+        console.log('✅ Bewerkingsmodus uitgeschakeld');
     }
 
-    getFieldMapping(fieldId) {
-        const mapping = {
-            'bedrijfsnaam': 'naam',
-            'tva-nummer': 'TVA_nummer',
-            'sector': 'sector',
-            'email': 'email',
-            'telefoon': 'gsm_nummer',
-            'straatnaam': 'straatnaam',
-            'huisnummer': 'huisnummer',
-            'bus': 'bus',
-            'postcode': 'postcode',
-            'gemeente': 'gemeente',
-            'land': 'land'
-        };
-        return mapping[fieldId];
-    }
-
-    getInputType(fieldId) {
-        const typeMapping = {
-            email: "email",
-            telefoon: "tel",
-            postcode: "text",
-            huisnummer: "text",
-        };
-        return typeMapping[fieldId] || "text";
-    }
-
-    getFieldValue(fieldId) {
-        const mappedField = this.getFieldMapping(fieldId);
-        return mappedField ? this.bedrijfData[mappedField] || "" : "";
-    }
-
-    // 📝 Form Handling
-    setupEventListeners() {
-        console.log("👂 Setting up event listeners");
-
-        // Edit button (general data)
-        const editBtn = document.getElementById("editBtn");
-        if (editBtn) {
-            editBtn.addEventListener("click", () => this.enableEditMode());
+    /**
+     * 💾 Slaat wijzigingen op
+     * Stuurt bijgewerkte gegevens naar de server
+     */
+    async saveChanges() {
+        console.log('💾 Wijzigingen opslaan...');
+        
+        try {
+            const updatedData = this.collectFormData();
+            
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/bedrijf/update', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            // Update lokale data
+            this.bedrijfData = { ...this.bedrijfData, ...updatedData };
+            
+            // Schakel bewerkingsmodus uit
+            this.disableEditMode();
+            
+            // Toon succesmelding
+            this.showSuccess('Bedrijfsgegevens succesvol bijgewerkt');
+            
+            console.log('✅ Wijzigingen opgeslagen');
+            
+        } catch (error) {
+            console.error('❌ Fout bij opslaan:', error);
+            this.showError('Fout bij het opslaan van wijzigingen');
         }
+    }
 
-        // Cancel button for general data
-        const cancelBtn = document.getElementById("cancelBtn");
-        if (cancelBtn) {
-            cancelBtn.addEventListener("click", () => this.disableEditMode());
+    /**
+     * 📋 Verzamelt formulierdata voor opslaan
+     * @returns {Object} Object met bijgewerkte gegevens
+     */
+    collectFormData() {
+        const formData = {};
+        
+        // Verzamel alleen gewijzigde velden
+        this.changedFields.forEach(fieldName => {
+            const editInput = document.querySelector(`[data-field="${fieldName}"] .edit-input`);
+            if (editInput) {
+                formData[fieldName] = editInput.value.trim();
+            }
+        });
+        
+        console.log('📋 Verzamelde formulierdata:', formData);
+        return formData;
+    }
+
+    /**
+     * 📝 Volgt wijzigingen in input velden
+     * @param {HTMLElement} input - Het input element dat gewijzigd is
+     */
+    trackChanges(input) {
+        const fieldContainer = input.closest('[data-field]');
+        if (!fieldContainer) return;
+        
+        const fieldName = fieldContainer.getAttribute('data-field');
+        const originalValue = this.originalValues[fieldName];
+        const currentValue = input.value.trim();
+        
+        if (currentValue !== originalValue) {
+            this.changedFields.add(fieldName);
+        } else {
+            this.changedFields.delete(fieldName);
         }
+        
+        console.log('📝 Gewijzigde velden:', Array.from(this.changedFields));
+    }
 
-        // Save button for general data
-        const saveGeneralBtn = document.getElementById("saveGeneralBtn");
-        if (saveGeneralBtn) {
-            saveGeneralBtn.addEventListener("click", () => this.saveChanges());
-        }
+    /**
+     * 🎛️ Toont edit knoppen (save/cancel)
+     */
+    showEditButtons() {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const saveButtons = document.querySelectorAll('.save-btn');
+        const cancelButtons = document.querySelectorAll('.cancel-btn');
+        
+        editButtons.forEach(btn => btn.style.display = 'none');
+        saveButtons.forEach(btn => btn.style.display = 'inline-block');
+        cancelButtons.forEach(btn => btn.style.display = 'inline-block');
+    }
 
-        // Project specifieke knoppen zijn verwijderd
-        // Neutraliseer eventuele form submit (indien je een <form> element toevoegt)
-        if (this.form) {
-            this.form.addEventListener("submit", (e) => {
-                e.preventDefault();
-                console.warn("Form submit event prevented. All saves should go through dedicated buttons.");
+    /**
+     * 🎛️ Verbergt edit knoppen
+     */
+    hideEditButtons() {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const saveButtons = document.querySelectorAll('.save-btn');
+        const cancelButtons = document.querySelectorAll('.cancel-btn');
+        
+        editButtons.forEach(btn => btn.style.display = 'inline-block');
+        saveButtons.forEach(btn => btn.style.display = 'none');
+        cancelButtons.forEach(btn => btn.style.display = 'none');
+    }
+
+    /**
+     * 💾 Zet auto-save functionaliteit op
+     * Slaat wijzigingen automatisch op bij verlaten van velden
+     */
+    setupAutoSave() {
+        const editableInputs = document.querySelectorAll('.editable-field .edit-input');
+        
+        editableInputs.forEach(input => {
+            input.addEventListener('blur', () => {
+                if (this.isEditMode && this.changedFields.size > 0) {
+                    // Auto-save na 2 seconden inactiviteit
+                    setTimeout(() => {
+                        if (this.changedFields.size > 0) {
+                            this.saveChanges();
+                        }
+                    }, 2000);
+                }
+            });
+        });
+        
+        console.log('💾 Auto-save functionaliteit ingesteld');
+    }
+
+    /**
+     * ✅ Zet formulier validatie op
+     * Valideert input velden in real-time
+     */
+    setupFormValidation() {
+        const emailInput = document.querySelector('[data-field="email"] .edit-input');
+        const websiteInput = document.querySelector('[data-field="website"] .edit-input');
+        
+        if (emailInput) {
+            emailInput.addEventListener('input', () => {
+                this.validateEmail(emailInput);
             });
         }
-    }
-
-    async saveChanges() {
-        console.log("💾 Saving company changes");
-
-        const formData = {};
-        // Lijst van bewerkbare velden voor bedrijven
-        const companyEditableFieldIds = [
-            'bedrijfsnaam', 'tva-nummer', 'sector', 'email', 'telefoon',
-            'straatnaam', 'huisnummer', 'bus', 'postcode', 'gemeente', 'land'
-        ];
-
-        companyEditableFieldIds.forEach(fieldId => {
-            const input = document.getElementById(`edit-${fieldId}`);
-            if (input) {
-                const mappedField = this.getFieldMapping(fieldId);
-                if (mappedField) {
-                    formData[mappedField] = input.value.trim();
-                }
-            }
-        });
-
-        console.log("📦 Company data to save:", formData);
-        await this.updateBedrijfGegevens(formData);
-    }
-
-
-    // 🔧 Utility Methods
-    showLoading(show) {
-        const overlay = document.getElementById("loadingOverlay");
-        if (overlay) {
-            overlay.style.display = show ? "flex" : "none";
+        
+        if (websiteInput) {
+            websiteInput.addEventListener('input', () => {
+                this.validateWebsite(websiteInput);
+            });
         }
+        
+        console.log('✅ Formulier validatie ingesteld');
     }
 
-    showError(message) {
-        console.error("❌ Error:", message);
-        if (window.showNotification) {
-            window.showNotification(message, "error");
+    /**
+     * 📧 Valideert e-mail formaat
+     * @param {HTMLElement} input - E-mail input element
+     */
+    validateEmail(input) {
+        const email = input.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email && !emailRegex.test(email)) {
+            input.classList.add('invalid');
+            this.showFieldError(input, 'Voer een geldig e-mailadres in');
         } else {
-            console.error(
-                "Notification system not available, showing alert: " + message
-            );
+            input.classList.remove('invalid');
+            this.clearFieldError(input);
         }
     }
 
+    /**
+     * 🌐 Valideert website URL
+     * @param {HTMLElement} input - Website input element
+     */
+    validateWebsite(input) {
+        const website = input.value.trim();
+        
+        if (website && !this.isValidUrl(website)) {
+            input.classList.add('invalid');
+            this.showFieldError(input, 'Voer een geldige URL in');
+        } else {
+            input.classList.remove('invalid');
+            this.clearFieldError(input);
+        }
+    }
+
+    /**
+     * ❌ Toont veldspecifieke foutmelding
+     * @param {HTMLElement} input - Input element
+     * @param {string} message - Foutmelding
+     */
+    showFieldError(input, message) {
+        let errorElement = input.parentNode.querySelector('.field-error');
+        
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.className = 'field-error';
+            input.parentNode.appendChild(errorElement);
+        }
+        
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    /**
+     * ✅ Wist veldspecifieke foutmelding
+     * @param {HTMLElement} input - Input element
+     */
+    clearFieldError(input) {
+        const errorElement = input.parentNode.querySelector('.field-error');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
+    }
+
+    /**
+     * ✅ Toont succesmelding
+     * @param {string} message - Succesmelding
+     */
     showSuccess(message) {
-        console.log("✅ Success:", message);
-        if (window.showNotification) {
-            window.showNotification(message, "success");
-        } else {
-            console.log(
-                "Notification system not available, showing alert: " + message
-            );
-        }
+        const notification = document.createElement('div');
+        notification.className = 'notification success';
+        notification.innerHTML = `
+            <span>✅ ${message}</span>
+            <button onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Trigger animatie
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Auto verwijder
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
     }
 
-    redirectToLogin() {
-        console.log("🔄 Redirecting to login");
-        localStorage.removeItem("authToken");
-        window.location.href = "/login";
+    /**
+     * ❌ Toont foutmelding
+     * @param {string} message - Foutmelding
+     */
+    showError(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification error';
+        notification.innerHTML = `
+            <span>❌ ${message}</span>
+            <button onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Trigger animatie
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Auto verwijder
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
     }
 }
 
-// 🚀 Initialize when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("🎯 DOM Content Loaded, initializing BedrijfGegevens");
-    try {
-        window.bedrijfGegevensManager = new BedrijfGegevens();
-        console.log("✅ BedrijfGegevens initialized successfully");
-    } catch (error) {
-        console.error("❌ Failed to initialize BedrijfGegevens:", error);
+// 🚀 Initialiseer de manager wanneer de DOM geladen is
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🏢 Bedrijf gegevens pagina laden...');
+    
+    // Controleer of init methode bestaat
+    if (typeof BedrijfGegevensManager !== 'undefined') {
+        window.bedrijfManager = new BedrijfGegevensManager();
+    } else {
+        console.error('❌ BedrijfGegevensManager klasse niet gevonden');
     }
 });
 
-// Export for module usage
-export default BedrijfGegevens;
+// Export voor module gebruik
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = BedrijfGegevensManager;
+}

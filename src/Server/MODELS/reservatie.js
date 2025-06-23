@@ -11,6 +11,7 @@ class Reservatie {  static async getAll() {
       const [rows] = await pool.query(`
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -41,6 +42,7 @@ class Reservatie {  static async getAll() {
         `
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -72,6 +74,7 @@ class Reservatie {  static async getAll() {
       const query = `
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -107,6 +110,7 @@ class Reservatie {  static async getAll() {
         `
                 SELECT
                     a.afspraakId as id,
+                    a.afspraakId,
                     a.studentnummer,
                     a.bedrijfsnummer,
                     a.aangevraagdDoor,
@@ -332,8 +336,7 @@ class Reservatie {  static async getAll() {
   static async getRecent(limit = 10) {
     try {
       const [rows] = await pool.query(
-        `
-                SELECT
+        `                SELECT
                     a.afspraakId as id,
                     a.studentnummer,
                     a.bedrijfsnummer,
@@ -356,6 +359,28 @@ class Reservatie {  static async getAll() {
       return [];
     }
   }
+
+  // Get default time slots for Career Launch event
+  static getDefaultSlots() {
+      const defaultSlots = [
+          { id: 1, start: '13:00', end: '13:30', available: true },
+          { id: 2, start: '13:30', end: '14:00', available: true },
+          { id: 3, start: '14:00', end: '14:30', available: true },
+          { id: 4, start: '14:30', end: '15:00', available: true },
+          { id: 5, start: '15:00', end: '15:30', available: true },
+          { id: 6, start: '15:30', end: '16:00', available: true },
+          { id: 7, start: '16:00', end: '16:30', available: true },
+          { id: 8, start: '16:30', end: '17:00', available: true },
+          { id: 9, start: '17:00', end: '17:30', available: true },
+          { id: 10, start: '17:30', end: '18:00', available: true },
+          { id: 11, start: '18:00', end: '18:30', available: true },
+          { id: 12, start: '18:30', end: '19:00', available: true }
+      ];
+      
+      console.log('📝 Returning default time slots from Reservatie model:', defaultSlots);
+      return defaultSlots;
+  }
 }
 
 module.exports = Reservatie;
+

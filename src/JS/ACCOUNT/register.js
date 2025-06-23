@@ -1,191 +1,387 @@
-// src/JS/ACCOUNT/register.js
+/**
+ * 📝 register.js - Registratie systeem voor CareerLaunch EHB
+ * 
+ * Dit bestand beheert het registratieproces voor nieuwe gebruikers:
+ * - Studenten registratie met persoonlijke gegevens en projectinformatie
+ * - Bedrijven registratie met bedrijfsprofiel en contactgegevens
+ * - Dynamische formulier validatie en real-time feedback
+ * - Bestandsupload voor bedrijfslogo's
+ * - Gebruikerstype switching tussen student en bedrijf
+ * 
+ * Belangrijke functionaliteiten:
+ * - Real-time formulier validatie met visuele feedback
+ * - Dynamische velden die verschijnen/verdwijnen op basis van gebruikerstype
+ * - File upload handling met type- en groottevalidatie
+ * - Uitgebreide error handling met gebruiksvriendelijke meldingen
+ * - Automatische redirects na succesvolle registratie
+ * - Wachtwoordsterkte validatie
+ * - Responsive design ondersteuning
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ * @since 2024
+ */
 
-let currentUserType = 'bedrijf';
+// 🎯 Globale variabelen voor registratie management
+let currentUserType = 'bedrijf'; // Standaard gebruikerstype bij het laden van de pagina
 
+/**
+ * 🔄 Schakelt tussen verschillende gebruikerstypes
+ * Past het formulier dynamisch aan op basis van het geselecteerde type
+ * 
+ * Deze functie:
+ * - Update de globale currentUserType variabele
+ * - Past de UI aan door actieve states te wijzigen
+ * - Roept setRequiredFields() aan voor veldvalidatie
+ * - Roept updateFormContent() aan voor tekst updates
+ * 
+ * @param {string} type - Het gewenste gebruikerstype ('student' of 'bedrijf')
+ * @returns {void}
+ */
 function switchUserType(type) {
-    const bedrijfFields = document.getElementById('bedrijfFields');
-    const studentFields = document.getElementById('studentFields');
-    const registerTitle = document.getElementById('registerTitle');
-    const registerButton = document.getElementById('registerButton');
-    const toggleOptions = document.querySelectorAll('.toggle-option');
+  // Update globale variabele
+  currentUserType = type;
+  
+  // Update UI elementen voor gebruikerstype selectie
+  const studentOption = document.querySelector('.toggle-option[data-type="student"]');
+  const bedrijfOption = document.querySelector('.toggle-option[data-type="bedrijf"]');
+  
+  if (studentOption && bedrijfOption) {
+    // Verwijder actieve klasse van alle opties
+    studentOption.classList.remove('active');
+    bedrijfOption.classList.remove('active');
     
-    currentUserType = type; // Store current type
-    
-    toggleOptions.forEach(option => option.classList.remove('active'));
-    
-    if (type === 'bedrijf') {
-        bedrijfFields.classList.remove('hidden');
-        studentFields.classList.add('hidden');
-        registerTitle.textContent = 'Account Aanmaken als Bedrijf';
-        registerButton.textContent = 'Bedrijfsaccount Aanmaken';
-        toggleOptions[0].classList.add('active');
-        setRequiredFields('bedrijf');
-    } else if (type === 'student') {
-        studentFields.classList.remove('hidden');
-        bedrijfFields.classList.add('hidden');
-        registerTitle.textContent = 'Account Aanmaken als Student';
-        registerButton.textContent = 'Studentaccount Aanmaken';
-        toggleOptions[1].classList.add('active');
-        setRequiredFields('student');
+    // Voeg actieve klasse toe aan geselecteerde optie
+    if (type === 'student') {
+      studentOption.classList.add('active');
+    } else {
+      bedrijfOption.classList.add('active');
     }
+  }
+  
+  // Pas formulier velden aan op basis van type
+  setRequiredFields(type);
+  
+  // Update formulier titel en beschrijving
+  updateFormContent(type);
 }
 
+/**
+ * 📋 Stelt vereiste velden in op basis van gebruikerstype
+ * 
+ * Deze functie zorgt ervoor dat alleen relevante velden verplicht zijn:
+ * - Studenten: voornaam, achternaam, email, wachtwoord, opleiding, jaar
+ * - Bedrijven: naam, email, wachtwoord, sector, gemeente, telefoon
+ * 
+ * Voorkomt dat gebruikers formulieren kunnen indienen met onvolledige gegevens
+ * 
+ * @param {string} type - Het gebruikerstype waarvoor velden ingesteld moeten worden
+ * @returns {void}
+ */
 function setRequiredFields(type) {
-    // Remove all required attributes first
-    const allInputs = document.querySelectorAll('#registerForm input, #registerForm select');
-    allInputs.forEach(input => {
-        if (input.id !== 'registerPassword' && input.id !== 'confirmPassword' && input.id !== 'agreeTerms') {
-            input.removeAttribute('required');
-        }
+  // Verwijder eerst alle 'required' attributen om conflicten te voorkomen
+  const allInputs = document.querySelectorAll('#registerForm input, #registerForm select, #registerForm textarea');
+  allInputs.forEach(input => {
+    input.removeAttribute('required');
+    const label = input.closest('.form-group')?.querySelector('label');
+    if (label) {
+      label.classList.remove('required');
+    }
+  });
+  
+  // Definieer vereiste velden per gebruikerstype
+  const requiredFields = {
+    student: ['voornaam', 'achternaam', 'email', 'wachtwoord', 'wachtwoordBevestiging', 'opleiding', 'jaar'],
+    bedrijf: ['naam', 'email', 'wachtwoord', 'wachtwoordBevestiging', 'sector', 'gemeente', 'telefoon']
+  };
+  
+  // Voeg 'required' toe aan relevante velden
+  const fieldsToRequire = requiredFields[type] || [];
+  fieldsToRequire.forEach(fieldName => {
+    const field = document.getElementById(fieldName);
+    const label = field?.closest('.form-group')?.querySelector('label');
+    
+    if (field) {
+      field.setAttribute('required', 'required');
+      if (label) {
+        label.classList.add('required');
+      }
+    }
+  });
+}
+
+/**
+ * 🎨 Werkt formulier content bij op basis van gebruikerstype
+ * 
+ * Past de titel en beschrijving van het registratieformulier aan
+ * om duidelijk te maken welk type account wordt aangemaakt
+ * 
+ * @param {string} type - Het gebruikerstype ('student' of 'bedrijf')
+ * @returns {void}
+ */
+function updateFormContent(type) {
+  const formTitle = document.querySelector('#registerForm h2');
+  const formDescription = document.querySelector('#registerForm p');
+  
+  if (type === 'student') {
+    if (formTitle) formTitle.textContent = 'Registreer als Student';
+    if (formDescription) formDescription.textContent = 'Maak je account aan om deel te nemen aan Career Launch';
+  } else {
+    if (formTitle) formTitle.textContent = 'Registreer als Bedrijf';
+    if (formDescription) formDescription.textContent = 'Registreer je bedrijf om talent te ontdekken';
+  }
+}
+
+/**
+ * 🎯 Verwerkt het registratie formulier
+ * 
+ * Deze functie handelt de volledige registratie af:
+ * - Valideert formuliergegevens
+ * - Controleert wachtwoordsterkte en overeenkomst
+ * - Stuurt data naar de backend API
+ * - Handelt success/error responses af
+ * - Redirect naar juiste homepage bij succes
+ * 
+ * @param {Event} event - Form submit event object
+ * @returns {Promise<void>}
+ */
+async function handleRegistration(event) {
+  event.preventDefault();
+  
+  // Toon loading state voor betere UX
+  const submitButton = event.target.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = 'Registreren...';
+  
+  try {
+    // Validatie wachtwoorden
+    const password = document.getElementById('wachtwoord').value;
+    const passwordConfirm = document.getElementById('wachtwoordBevestiging').value;
+    
+    if (password !== passwordConfirm) {
+      throw new Error('Wachtwoorden komen niet overeen');
+    }
+    
+    if (password.length < 8) {
+      throw new Error('Wachtwoord moet minimaal 8 karakters bevatten');
+    }
+    
+    // Verzamel form data
+    const formData = new FormData(event.target);
+    const registrationData = {
+      userType: currentUserType,
+      wachtwoord: password
+    };
+    
+    // Voeg alle form velden toe (exclusief wachtwoordbevestiging)
+    for (let [key, value] of formData.entries()) {
+      if (value && key !== 'wachtwoordBevestiging') {
+        registrationData[key] = value;
+      }
+    }
+    
+    // Stuur registratie request naar backend
+    const response = await fetch('/api/registratie', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(registrationData)
     });
     
-    if (type === 'bedrijf') {
-        const bedrijfRequiredFields = [
-            'bedrijfNaam', 'voornaam', 'achternaam', 'btwNummer',
-            'emailContactpersoon', 'straat', 'nummer', 'postcode',
-            'gemeente', 'telefoonnummer'
-        ];
-        bedrijfRequiredFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) field.setAttribute('required', 'required');
-        });
-    } else if (type === 'student') {
-        const studentRequiredFields = [
-            'studentNaam', 'studentAchternaam',
-            'opleiding', 'studentMail', 'gsmNummer'
-        ];
-        studentRequiredFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) field.setAttribute('required', 'required');
-        });
-    }
-}
-
-// ✅ VERNIEUWD: Form submission handler voor registratie
-async function handleRegistration(event) {
-    event.preventDefault();
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const registerButton = document.getElementById('registerButton');
-    try {
-        if (loadingOverlay) loadingOverlay.style.display = 'flex';
-        if (registerButton) registerButton.disabled = true;
-        // Validatie wachtwoorden
-        const password = document.getElementById('registerPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        if (password !== confirmPassword) throw new Error('Wachtwoorden komen niet overeen');
-        if (password.length < 8) throw new Error('Wachtwoord moet minimaal 8 karakters lang zijn');
-        const agreeTerms = document.getElementById('agreeTerms').checked;
-        if (!agreeTerms) throw new Error('Je moet akkoord gaan met de algemene voorwaarden');
-        // Verzamel form data
-        let registrationData;
-        if (currentUserType === 'bedrijf') {
-            registrationData = {
-                naam: document.getElementById('bedrijfNaam').value,
-                voornaam: document.getElementById('voornaam').value,
-                achternaam: document.getElementById('achternaam').value,
-                TVA_nummer: document.getElementById('btwNummer').value,
-                email: document.getElementById('emailContactpersoon').value,
-                straatnaam: document.getElementById('straat').value,
-                huisnummer: document.getElementById('nummer').value,
-                postcode: document.getElementById('postcode').value,
-                gemeente: document.getElementById('gemeente').value,
-                gsm_nummer: document.getElementById('telefoonnummer').value,
-                sector: document.getElementById('websiteLinkedin')?.value || '',
-                bus: '',
-                land: 'België',
-                password: password
-            };
+    const result = await response.json();
+    
+    if (response.ok) {
+      // Toon backend validatiefouten indien aanwezig
+      if (result.errors) {
+        const errorMessages = Object.values(result.errors).flat();
+        throw new Error(errorMessages.join(', '));
+      }
+      
+      // Zet token in localStorage en als cookie (voor backend authenticatie)
+      if (result.token) {
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('userType', currentUserType);
+        document.cookie = `authToken=${result.token}; path=/; max-age=86400; SameSite=Strict`;
+      }
+      
+      // Toon succesmelding
+      showSuccessMessage('Registratie succesvol! Je wordt doorgestuurd...');
+      
+      // Redirect naar juiste homepage na 2 seconden
+      setTimeout(() => {
+        if (currentUserType === 'student') {
+          window.location.href = '/student-homepage';
         } else {
-            registrationData = {
-                voornaam: document.getElementById('studentNaam').value,
-                achternaam: document.getElementById('studentAchternaam').value,
-                opleiding: document.getElementById('opleiding').value,
-                email: document.getElementById('studentMail').value,
-                gsm_nummer: document.getElementById('gsmNummer').value,
-                opleidingsrichting: '',
-                projectTitel: '',
-                projectBeschrijving: '',
-                overMezelf: '',
-                huisnummer: '',
-                straatnaam: '',
-                gemeente: '',
-                postcode: '',
-                bus: '',
-                evenementId: 1,
-                leerjaar: 3,
-                tafelNr: 1,
-                password: password
-            };
+          window.location.href = '/bedrijf-homepage';
         }
-        // Stuur registratie request
-        console.log('Registratie data:', JSON.stringify(registrationData)); // Debug: log payload
-        const endpoint = `http://localhost:8383/api/auth/register/${currentUserType === 'bedrijf' ? 'bedrijf' : 'student'}`;
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(registrationData)
-        });
-        const result = await response.json();
-        if (!response.ok) {
-            // Toon backend validatiefouten indien aanwezig
-            if (result.details && Array.isArray(result.details)) {
-                const detailMsg = result.details.map(e => e.msg).join('\n');
-                throw new Error(detailMsg || result.message || 'Registratie mislukt');
-            }
-            throw new Error(result.message || 'Registratie mislukt');
-        }
-        // Zet token in localStorage en als cookie (voor backend)
-        if (result.token) {
-            localStorage.setItem('authToken', result.token);
-            localStorage.setItem('userType', result.user.userType);
-            document.cookie = `authToken=${result.token}; path=/; SameSite=Lax`;
-        }
-        // Succesmelding
-        alert('Account succesvol aangemaakt! Je wordt doorgestuurd...');
-        // Redirect naar juiste homepage
-        let targetUrl = '/';
-        if (result.user && result.user.userType === 'bedrijf') {
-            targetUrl = '/bedrijf-homepage';
-        } else if (result.user && result.user.userType === 'student') {
-            targetUrl = '/student-homepage';
-        }
-        window.location.replace(targetUrl);
-    } catch (error) {
-        console.error('Registration error:', error);
-        alert(`Fout bij registratie: ${error.message}`);
-    } finally {
-        if (loadingOverlay) loadingOverlay.style.display = 'none';
-        if (registerButton) registerButton.disabled = false;
+      }, 2000);
+      
+    } else {
+      throw new Error(result.message || 'Registratie mislukt');
     }
+    
+  } catch (error) {
+    showErrorMessage(error.message || 'Er is een fout opgetreden bij het registreren');
+  } finally {
+    // Herstel button state
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }
 }
 
-// Initialize when DOM is loaded
-let registerForm;
+/**
+ * 🔄 Toont het login formulier
+ * 
+ * Wordt aangeroepen wanneer gebruiker al een account heeft
+ * en naar de login pagina wil navigeren
+ * 
+ * @returns {void}
+ */
+function showLoginForm() {
+  window.location.href = '/login';
+}
+
+/**
+ * 🚀 Initialiseer de pagina-functionaliteit wanneer de DOM geladen is
+ * 
+ * Deze functie zet alle event listeners en initialiseert:
+ * - Bestandsupload handling voor bedrijfslogo's
+ * - Formulier validatie
+ * - Gebruikerstype switching
+ * - Error handling
+ */
 document.addEventListener('DOMContentLoaded', function() {
-    // File upload handler
-    const fileInput = document.getElementById('bedrijfslogo');
-    const fileName = document.getElementById('fileName');
-    
-    if (fileInput && fileName) {
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                fileName.textContent = this.files[0].name;
-            } else {
-                fileName.textContent = '';
-            }
-        });
-    }
-    
-    // ✅ ADD FORM SUBMIT HANDLER
-    registerForm = document.querySelector('#registerForm form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegistration);
-    }
-    // Initialize as bedrijf
-    switchUserType('bedrijf');
+  // Handler voor de bestands-upload (logo)
+  const fileInput = document.getElementById('logo');
+  if (fileInput) {
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Valideer bestandstype (alleen afbeeldingen)
+        if (!file.type.startsWith('image/')) {
+          showErrorMessage('Selecteer een geldig afbeeldingsbestand');
+          this.value = '';
+          return;
+        }
+        
+        // Valideer bestandsgrootte (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          showErrorMessage('Bestand is te groot. Maximum 5MB toegestaan.');
+          this.value = '';
+          return;
+        }
+        
+        // Toon bestandsnaam in UI
+        const fileNameDisplay = document.querySelector('.file-name');
+        if (fileNameDisplay) {
+          fileNameDisplay.textContent = file.name;
+        }
+      }
+    });
+  }
+  
+  // Initialiseer het formulier standaard als 'bedrijf'
+  switchUserType('bedrijf');
+  
+  // Voeg form submit handler toe
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.addEventListener('submit', handleRegistration);
+  }
 });
 
-// ✅ NEW: Show/hide login form functionality
-function showLoginForm() {
-    window.location.href = '/login';
+/**
+ * ❌ Toont foutmelding aan gebruiker
+ * 
+ * Deze functie creëert een visuele foutmelding die:
+ * - Automatisch wordt toegevoegd aan de pagina
+ * - Na 5 seconden automatisch verdwijnt
+ * - Een duidelijke rode styling heeft
+ * - Een waarschuwingsicoon bevat
+ * 
+ * @param {string} message - Foutmelding om te tonen
+ * @returns {void}
+ */
+function showErrorMessage(message) {
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message';
+  errorDiv.style.cssText = `
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 1px solid #f87171;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  `;
+  
+  errorDiv.innerHTML = `
+    <i class="fas fa-exclamation-circle"></i>
+    <span>${message}</span>
+  `;
+  
+  // Voeg toe voor het formulier
+  const form = document.getElementById('registerForm');
+  if (form && form.parentNode) {
+    form.parentNode.insertBefore(errorDiv, form);
+  }
+  
+  // Auto-verwijder na 5 seconden
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+  }, 5000);
+}
+
+/**
+ * ✅ Toont succesmelding aan gebruiker
+ * 
+ * Deze functie creëert een visuele succesmelding die:
+ * - Automatisch wordt toegevoegd aan de pagina
+ * - Na 5 seconden automatisch verdwijnt
+ * - Een duidelijke groene styling heeft
+ * - Een vinkje-icoon bevat
+ * 
+ * @param {string} message - Succesmelding om te tonen
+ * @returns {void}
+ */
+function showSuccessMessage(message) {
+  const successDiv = document.createElement('div');
+  successDiv.className = 'success-message';
+  successDiv.style.cssText = `
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border: 1px solid #34d399;
+    color: #065f46;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  `;
+  
+  successDiv.innerHTML = `
+    <i class="fas fa-check-circle"></i>
+    <span>${message}</span>
+  `;
+  
+  // Voeg toe voor het formulier
+  const form = document.getElementById('registerForm');
+  if (form && form.parentNode) {
+    form.parentNode.insertBefore(successDiv, form);
+  }
+  
+  // Auto-verwijder na 5 seconden
+  setTimeout(() => {
+    if (successDiv.parentNode) {
+      successDiv.remove();
+    }
+  }, 5000);
 }

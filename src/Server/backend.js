@@ -539,7 +539,7 @@ try {
 // Load student routes
 try {
   const studentRoutes = require('./ROUTES/student');
-  app.use('/api/student', studentRoutes);
+  app.use('/api/studenten', studentRoutes);
   console.log('✅ Student routes loaded');
 } catch (error) {
   console.log('❌ Student routes failed:', error.message);
@@ -570,6 +570,24 @@ try {
   console.log('✅ Reservatie routes loaded');
 } catch (error) {
   console.log('❌ Reservatie routes failed:', error.message);
+}
+
+// Load tafel routes
+try {
+  const tafelRoutes = require('./ROUTES/tafel');
+  app.use('/api/tafels', tafelRoutes);
+  console.log('✅ Tafel routes loaded');
+} catch (error) {
+  console.log('❌ Tafel routes failed:', error.message);
+}
+
+// Load config routes
+try {
+  const configRoutes = require('./ROUTES/config');
+  app.use('/api/config', configRoutes);
+  console.log('✅ Config routes loaded');
+} catch (error) {
+  console.log('❌ Config routes failed:', error.message);
 }
 
 console.log('✅ All routes loaded successfully');
@@ -615,8 +633,8 @@ app.use('/api/*', (req, res) => {
       ],
       'Students': [
         'GET /api/studenten', 
-        'GET /api/student/profile (requires auth)',
-        'PUT /api/student/profile (requires auth)',
+        'GET /api/studenten/profile (requires auth)',
+        'PUT /api/studenten/profile (requires auth)',
         'GET /api/studenten/:id',
         'GET /api/studenten/projecten'
       ],
@@ -706,3 +724,5 @@ process.on('SIGINT', () => {
 
 // Start the server
 startServer();
+
+module.exports = app;

@@ -112,13 +112,27 @@ router.get("/stats", async (req, res) => {
 // GET /api/projecten/:id - Specifiek project ophalen (FIXED)
 router.get('/:id', async (req, res) => {
     try {
-        const projectId = req.params.id;
-        console.log(`📡 Fetching project with ID: ${projectId}`);
+        const projectId = req.params.id; // This is actually a studentnummer
+        console.log(`📡 [DEBUG] GET /api/projecten/:id called with projectId: ${projectId}`);
+        console.log(`📡 [DEBUG] Request params:`, req.params);
+        console.log(`📡 [DEBUG] Request query:`, req.query);
         
-        // FIXED: Direct model call
-        const student = await Student.getById(projectId);
+        console.log(`📡 Fetching project details using student ID: ${projectId}`);
         
-        if (!student) {
+        console.log(`📡 [DEBUG] About to call Student.getProjectDetailsByStudentId(${projectId})`);
+        const project = await Student.getProjectDetailsByStudentId(projectId);
+        console.log(`📡 [DEBUG] Student.getProjectDetailsByStudentId completed`);
+        
+        console.log(`📡 [DEBUG] Project result:`, project ? {
+            id: project.id,
+            isProject: project.isProject,
+            titel: project.titel,
+            hasTeam: !!project.team,
+            teamSize: project.team ? project.team.length : 0
+        } : 'null');
+        
+        if (!project) {
+            console.log(`📡 [DEBUG] No project found, returning 404`);
             return res.status(404).json({
                 success: false,
                 error: 'Student not found',
@@ -126,46 +140,16 @@ router.get('/:id', async (req, res) => {
             });
         }
         
-        // Check if student has a project
-        if (!student.projectTitel || 
-            student.projectTitel.trim() === '' || 
-            student.projectTitel.toLowerCase() === 'geen' ||
-            student.projectTitel.toLowerCase() === 'nvt') {
-            
+        if (!project.isProject) {
+            console.log(`📡 [DEBUG] Student has no project, returning 404`);
             return res.status(404).json({
                 success: false,
                 error: 'Project not found', 
-                message: 'Deze student heeft geen project'
+                message: 'Deze student heeft geen project toegewezen'
             });
         }
         
-        // Transform to project format
-        const project = {
-            id: student.studentnummer,
-            projectId: student.studentnummer,
-            titel: student.projectTitel,
-            beschrijving: student.projectBeschrijving || 'Geen beschrijving beschikbaar',
-            studentnummer: student.studentnummer,
-            studentnaam: `${student.voornaam} ${student.achternaam}`,
-            studenten: [{
-                voornaam: student.voornaam,
-                achternaam: student.achternaam,
-                email: student.email,
-                studentnummer: student.studentnummer
-            }],
-            voornaam: student.voornaam,
-            achternaam: student.achternaam,
-            email: student.email,
-            opleiding: student.opleiding,
-            opleidingsrichting: student.opleidingsrichting,
-            tafelNr: student.tafelNr,
-            leerjaar: student.leerjaar || 3,
-            // Include all student data for the detail page
-            projectTitel: student.projectTitel,
-            projectBeschrijving: student.projectBeschrijving,
-            ...student
-        };
-        
+        console.log(`📡 [DEBUG] Project found, returning success response`);
         res.json({
             success: true,
             data: project,
@@ -173,15 +157,19 @@ router.get('/:id', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching project:', error);
+        console.error('❌ [DEBUG] Error in GET /api/projecten/:id route:', error);
+        console.error('❌ [DEBUG] Error message:', error.message);
+        console.error('❌ [DEBUG] Error stack:', error.stack);
         
         if (error.message && error.message.includes('not found')) {
+            console.log(`📡 [DEBUG] Returning 404 for not found error`);
             res.status(404).json({
                 success: false,
                 error: 'Project not found',
                 message: 'Project niet gevonden'
             });
         } else {
+            console.log(`📡 [DEBUG] Returning 500 for server error`);
             res.status(500).json({
                 success: false,
                 error: 'Failed to fetch project',
@@ -257,6 +245,30 @@ router.get('/search/:searchTerm', async (req, res) => {
             message: 'Er ging iets mis bij het zoeken naar projecten',
             details: error.message
         });
+    }
+});
+
+// Route om projectdetails op te halen op basis van student-ID
+router.get('/details/:id', async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        if (!studentId) {
+            return res.status(400).json({ success: false, message: 'Student ID is vereist' });
+        }
+        
+        console.log(`[API] Opvragen van projectdetails voor student ID: ${studentId}`);
+        const projectDetails = await Student.getProjectDetailsByStudentId(studentId);
+        
+        if (projectDetails) {
+            console.log(`[API] Projectdetails gevonden voor student ID: ${studentId}`);
+            res.json({ success: true, data: projectDetails });
+        } else {
+            console.warn(`[API] Geen projectdetails gevonden voor student ID: ${studentId}`);
+            res.status(404).json({ success: false, message: 'Project niet gevonden' });
+        }
+    } catch (error) {
+        console.error(`[API] Fout bij het ophalen van projectdetails voor student ID ${req.params.id}:`, error);
+        res.status(500).json({ success: false, message: 'Interne serverfout' });
     }
 });
 

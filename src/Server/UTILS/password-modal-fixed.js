@@ -1,7 +1,26 @@
 // src/JS/UTILS/password-modal-fixed.js
 // 🔐 GEFIXTE PASSWORD MODAL VOOR EHB SYSTEEM
 
-console.log('🔐 Loading Fixed Password Modal...');
+/**
+ * 🔐 Wachtwoord Modal Management Systeem
+ * 
+ * Dit bestand bevat alle functionaliteit voor het beheren van wachtwoord wijzigingen:
+ * - Openen en sluiten van de wachtwoord modal
+ * - Wachtwoord sterkte validatie met real-time feedback
+ * - Wachtwoord zichtbaarheid toggle
+ * - Form validatie en error handling
+ * - Event listeners en UI updates
+ * - Integratie met de backend API
+ * 
+ * Het systeem biedt uitgebreide beveiliging met:
+ * - Minimale lengte vereisten
+ * - Complexiteit vereisten (hoofdletters, kleine letters, cijfers, speciale karakters)
+ * - Patroon detectie voor veelvoorkomende wachtwoorden
+ * - Real-time feedback over wachtwoord sterkte
+ * 
+ * @author CareerLaunch Development Team
+ * @version 2.0
+ */
 
 // === GLOBAL VARIABLES ===
 window.currentPasswordUser = null;
@@ -15,9 +34,15 @@ window.passwordRequirements = {
 };
 
 // === MODAL FUNCTIONS (GLOBAL SCOPE) ===
+/**
+ * 🔓 Opent de wachtwoord wijziging modal
+ * 
+ * Toont de modal voor wachtwoord wijziging en initialiseert
+ * alle benodigde UI elementen en event listeners
+ * 
+ * @returns {void}
+ */
 window.openPasswordModal = function() {
-    console.log('🔐 Opening password modal...');
-    
     const modal = document.getElementById('passwordModal');
     if (!modal) {
         console.error('❌ Password modal not found! Make sure the HTML is added.');
@@ -37,13 +62,17 @@ window.openPasswordModal = function() {
             firstInput.focus();
         }
     }, 100);
-    
-    console.log('✅ Password modal opened successfully');
 };
 
+/**
+ * 🔒 Sluit de wachtwoord wijziging modal
+ * 
+ * Verbergt de modal en reset alle form velden en UI elementen
+ * naar hun initiële staat
+ * 
+ * @returns {void}
+ */
 window.closePasswordModal = function() {
-    console.log('🔐 Closing password modal...');
-    
     const modal = document.getElementById('passwordModal');
     if (modal) {
         modal.style.display = 'none';
@@ -73,8 +102,6 @@ window.closePasswordModal = function() {
     
     // Reset requirements
     resetPasswordRequirements();
-    
-    console.log('✅ Password modal closed successfully');
 };
 
 // === PASSWORD VISIBILITY TOGGLE ===
@@ -217,6 +244,14 @@ function validatePasswordForm() {
 }
 
 // === USER MANAGEMENT ===
+/**
+ * 👤 Haalt huidige gebruiker informatie op
+ * 
+ * Probeert gebruiker informatie op te halen uit verschillende bronnen:
+ * sessionStorage, localStorage, window object, of fallback naar demo data
+ * 
+ * @returns {void}
+ */
 function getCurrentPasswordUser() {
     try {
         // Try multiple sources for user data
@@ -234,8 +269,6 @@ function getCurrentPasswordUser() {
                   window.email ||
                   'demo@ehb.be'
         };
-        
-        console.log('👤 Current password user:', window.currentPasswordUser);
     } catch (error) {
         console.error('Error getting current user:', error);
         window.currentPasswordUser = {
@@ -247,9 +280,15 @@ function getCurrentPasswordUser() {
 }
 
 // === PASSWORD CHANGE API ===
+/**
+ * 🔄 Wijzigt het wachtwoord van de gebruiker
+ * 
+ * Stuurt een verzoek naar de backend om het wachtwoord te wijzigen.
+ * Valideert eerst de input en toont feedback aan de gebruiker.
+ * 
+ * @returns {Promise<void>}
+ */
 async function changePassword() {
-    console.log('🔄 Starting password change process...');
-    
     const currentPassword = document.getElementById('currentPassword')?.value;
     const newPassword = document.getElementById('newPassword')?.value;
     const confirmPassword = document.getElementById('confirmPassword')?.value;
@@ -341,10 +380,17 @@ function showPasswordMessage(message, type = 'info') {
     }
 }
 
-// === EVENT LISTENERS SETUP ===
+/**
+ * 🔧 Zet event listeners op voor de wachtwoord modal
+ * 
+ * Initialiseert alle benodigde event listeners voor:
+ * - Wachtwoord input validatie
+ * - Form submit handling
+ * - Modal sluiten via klik buiten modal of escape toets
+ * 
+ * @returns {void}
+ */
 function setupPasswordModalEventListeners() {
-    console.log('🔧 Setting up password modal event listeners...');
-    
     // Password input event listeners
     const newPasswordInput = document.getElementById('newPassword');
     const confirmPasswordInput = document.getElementById('confirmPassword');
@@ -355,24 +401,20 @@ function setupPasswordModalEventListeners() {
             updatePasswordStrength(this.value);
             validatePasswordForm();
         });
-        console.log('✅ New password input listener attached');
     }
 
     if (confirmPasswordInput) {
         confirmPasswordInput.addEventListener('input', validatePasswordForm);
-        console.log('✅ Confirm password input listener attached');
     }
 
     if (currentPasswordInput) {
         currentPasswordInput.addEventListener('input', validatePasswordForm);
-        console.log('✅ Current password input listener attached');
     }
 
     // Save button click
     const saveBtn = document.getElementById('savePasswordBtn');
     if (saveBtn) {
         saveBtn.addEventListener('click', changePassword);
-        console.log('✅ Save button listener attached');
     }
 
     // Form submit prevention
@@ -384,7 +426,6 @@ function setupPasswordModalEventListeners() {
                 changePassword();
             }
         });
-        console.log('✅ Form submit listener attached');
     }
 
     // Close modal on outside click
@@ -395,7 +436,6 @@ function setupPasswordModalEventListeners() {
                 window.closePasswordModal();
             }
         });
-        console.log('✅ Modal outside click listener attached');
     }
 
     // Escape key to close modal
@@ -407,13 +447,18 @@ function setupPasswordModalEventListeners() {
             }
         }
     });
-    console.log('✅ Escape key listener attached');
 }
 
-// === AUTO-CONNECT EXISTING BUTTONS ===
+/**
+ * 🔗 Verbindt bestaande wachtwoord knoppen met de modal
+ * 
+ * Zoekt naar bestaande knoppen in de DOM die wachtwoord wijziging
+ * functionaliteit zouden kunnen hebben en verbindt deze met de modal.
+ * Ondersteunt ook dynamisch toegevoegde knoppen.
+ * 
+ * @returns {void}
+ */
 function connectExistingPasswordButtons() {
-    console.log('🔗 Connecting existing password buttons...');
-    
     // Find all buttons that might be password change buttons
     const buttons = document.querySelectorAll('button, .ehbBtn');
     let connectedCount = 0;
@@ -435,7 +480,6 @@ function connectExistingPasswordButtons() {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🔐 Password button clicked:', button);
                 window.openPasswordModal();
             });
             
@@ -447,11 +491,8 @@ function connectExistingPasswordButtons() {
             };
             
             connectedCount++;
-            console.log(`✅ Connected password button ${connectedCount}:`, button);
         }
     });
-    
-    console.log(`🎯 Total password buttons connected: ${connectedCount}`);
     
     // Also listen for dynamically added buttons
     document.addEventListener('click', function(e) {
@@ -463,17 +504,23 @@ function connectExistingPasswordButtons() {
                 buttonHTML.includes('fa-key')) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🔐 Dynamic password button clicked:', e.target);
                 window.openPasswordModal();
             }
         }
     });
 }
 
-// === INITIALIZATION ===
+/**
+ * 🚀 Initialiseert het wachtwoord modal systeem
+ * 
+ * Start het volledige wachtwoord modal systeem door:
+ * - Event listeners op te zetten
+ * - Bestaande knoppen te verbinden
+ * - Dynamische content te ondersteunen
+ * 
+ * @returns {void}
+ */
 function initializePasswordModal() {
-    console.log('🚀 Initializing Password Modal System...');
-    
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
@@ -489,8 +536,6 @@ function initializePasswordModal() {
     setTimeout(() => {
         connectExistingPasswordButtons();
     }, 1000);
-    
-    console.log('✅ Password Modal System initialized successfully');
 }
 
 // === EXPORT FOR TESTING ===
@@ -506,4 +551,16 @@ window.passwordModalSystem = {
 // Auto-initialize when script loads
 initializePasswordModal();
 
-console.log('🔐 Fixed Password Modal System loaded successfully!');
+/**
+ * 🔐 Wachtwoord Modal Systeem - Succesvol Geladen
+ * 
+ * Het wachtwoord modal systeem is volledig geïnitialiseerd en klaar voor gebruik.
+ * Alle functionaliteiten zijn beschikbaar:
+ * - Modal openen/sluiten
+ * - Wachtwoord validatie
+ * - Event listeners
+ * - API integratie
+ * 
+ * Het systeem is automatisch gestart en zal alle wachtwoord wijziging
+ * knoppen in de applicatie detecteren en verbinden.
+ */

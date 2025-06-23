@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project - Details worden geladen...</title>
     <link rel="stylesheet" href="/src/CSS/style.css">
-    <link rel="stylesheet" href="/src/CSS//RESULTS/PROJECTEN/zoekbalk-projecten.css">
+    <link rel="stylesheet" href="/src/CSS/RESULTS/PROJECTEN/zoekbalk-projecten.css">
     <script src="/js/navigation-manager.js"></script>
     <script src="/js/role-manager.js"></script>
 
@@ -54,6 +54,78 @@
             margin-top: 1.5rem;
             width: 100%;
             box-shadow: 0 4px 15px rgba(136, 21, 56, 0.3);
+        }
+
+        /* Project skills styling */
+        .project-skills ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .project-skills li {
+            background: #881538;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Team list styling */
+        .team-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .team-list li {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .team-list li:hover {
+            background: #881538;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(136, 21, 56, 0.3);
+        }
+
+        .team-member-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .member-info {
+            margin-bottom: 1rem;
+        }
+
+        .member-name {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .member-detail {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            opacity: 0.8;
+        }
+
+        .profile-link {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
         /* Loading skeleton */
@@ -145,13 +217,17 @@
                 margin: 1rem;
                 display: inline-block;
             }
+            
+            .team-list ul {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Navigatie -->
-<div class="container">
-   <!-- Dynamic Navigation -->
+    <div class="container">
+        <!-- Dynamic Navigation -->
         <div class="nav">
             <div class="logo">
                 <img src="/images/image.png" alt="Erasmus Logo" class="logo" />
@@ -187,42 +263,72 @@
                 <!-- Dynamic navigation items will be inserted here -->
             </div>
         </div>
-  
-  
 
-    <div class="layout-container">
-        <!-- Header met projecttitel en skills - Nu dynamisch geladen -->
-        <header class="project-header">
-            <h1 class="project-title">
-                <div class="skeleton skeleton-title" style="width: 300px; margin: 0;"></div>
-            </h1>
-            <p class="project-skills">
-                <div class="skeleton skeleton-text" style="width: 80%;"></div>
-            </p>
+        <!-- Site Header -->
+        <header class="site-header">
+            <h1 class="site-title">Project Details</h1>
         </header>
 
-        <!-- Hoofdcontent: omschrijving en sidebar met afbeeldingen -->
-        <main class="content-area">
-            <!-- Beschrijvende sectie -->
-            <section class="description-section">
-                <h2>Beschrijving</h2>
-                <div class="loading-content">
-                    <div class="skeleton skeleton-text"></div>                    <div class="skeleton skeleton-text"></div>
-                    <div class="skeleton skeleton-text" style="width: 90%;"></div>
-                    <div class="skeleton skeleton-text" style="width: 70%;"></div>
-                </div>
-            </section>
-        </main>
+        <!-- Main Layout -->
+        <div class="layout">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Project Section -->
+                <section class="section-project">
+                    <h2>Project Beschrijving</h2>
+                    <h1 class="project-title">
+                        <span class="project-title-text">
+                            <div class="skeleton skeleton-title" style="width: 300px; margin: 0;"></div>
+                        </span>
+                    </h1>
+                    <div class="project-description">
+                        <div class="project-description-text">
+                            <!-- Skeleton state -->
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text" style="width: 90%;"></div>
+                            <div class="skeleton skeleton-text" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Technologies Section -->
+                    <div class="technologies-section">
+                        <h4>Technologieën</h4>
+                        <ul class="technologies-list" id="project-technologies">
+                            <!-- Skeleton state -->
+                            <li><div class="skeleton skeleton-text" style="width: 80px;"></div></li>
+                            <li><div class="skeleton skeleton-text" style="width: 60px;"></div></li>
+                            <li><div class="skeleton skeleton-text" style="width: 70px;"></div></li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
 
-        <!-- Info-sectie met tafel en teamleden - Nu dynamisch geladen -->
-        <section class="info-section">
-            <h2>Info - Tafel wordt geladen...</h2>
-            <ul class="team-list">
-                <li><div class="skeleton skeleton-text" style="width: 150px;"></div></li>
-                <li><div class="skeleton skeleton-text" style="width: 120px;"></div></li>
-            </ul>
-        </section>
-    </div>
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Team Section -->
+                <div class="info-card team-section">
+                    <h3 class="card-title">Teamleden</h3>
+                    <ul class="team-list" id="project-team-members">
+                        <!-- Skeleton state -->
+                        <li class="team-member-card">
+                            <div class="skeleton skeleton-text" style="width: 150px;"></div>
+                        </li>
+                        <li class="team-member-card">
+                            <div class="skeleton skeleton-text" style="width: 120px;"></div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Location Section -->
+                <div class="info-card location-section">
+                    <h3 class="card-title">Locatie</h3>
+                    <div class="location-info" id="project-tafel-info">
+                        <div class="skeleton skeleton-text" style="width: 100px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Error State Template (hidden by default) -->

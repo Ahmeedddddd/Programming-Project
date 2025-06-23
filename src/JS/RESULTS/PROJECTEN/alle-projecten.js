@@ -1,4 +1,25 @@
-// alle-projecten.js - MINIMAL VERSION: Focus alleen op project groepering
+/**
+ * 🚀 alle-projecten.js - Projecten Overzicht Pagina voor CareerLaunch EHB
+ * 
+ * Dit bestand beheert de overzichtspagina voor alle studentenprojecten:
+ * - Dynamisch laden van projectgegevens uit de API
+ * - Rendering van projectkaarten met studentinformatie
+ * - Groepering van projecten per titel
+ * - Navigatie naar project detailpagina's
+ * - Zoek- en filterfunctionaliteit
+ * 
+ * Belangrijke functionaliteiten:
+ * - API integratie voor projectgegevens
+ * - Project groepering en duplicaat detectie
+ * - Student-project koppeling
+ * - Statistieken en tellingen
+ * - Error handling met fallback data
+ * - Responsive design ondersteuning
+ * 
+ * @author CareerLaunch EHB Team
+ * @version 1.0.0
+ * @since 2024
+ */
 
 /**
  * 🚀 ALLE PROJECTEN - MINIMAL FIX
@@ -11,12 +32,15 @@
  * ✅ Simpel en effectief
  */
 
-console.log('🚀 [alle-projecten.js] Minimal version loading...');
-
+/**
+ * 📡 Laadt alle projecten via API
+ * 
+ * Haalt projectgegevens op van de backend met fallback naar student-gebaseerde extractie
+ * 
+ * @returns {Promise<void>}
+ */
 async function loadAllProjects() {
     try {
-        console.log('🚀 [alle-projecten.js] Loading all projects...');
-        
         // Use the new endpoint that returns projects with student IDs
         const response = await fetch('/api/projecten/with-ids');
         
@@ -27,25 +51,28 @@ async function loadAllProjects() {
         const result = await response.json();
         
         if (result.success) {
-            console.log(`✅ [alle-projecten.js] Loaded ${result.data.length} projects with student IDs`);
             renderProjects(result.data);
             updateProjectCount(result.data.length);
         } else {
-            console.error('❌ [alle-projecten.js] Failed to load projects:', result.message);
             // Fallback to old method if new endpoint fails
             await loadProjectsFromStudents();
         }
         
     } catch (error) {
-        console.error('❌ [alle-projecten.js] Error loading projects:', error);
         // Fallback to old method
         await loadProjectsFromStudents();
     }
 }
 
+/**
+ * 🔄 Laadt projecten uit studentgegevens
+ * 
+ * Fallback methode die projecten extraheert uit studentgegevens
+ * wanneer de projecten API niet beschikbaar is
+ * 
+ * @returns {Promise<void>}
+ */
 async function loadProjectsFromStudents() {
-    console.log('🔄 [alle-projecten.js] Loading from students API...');
-    
     try {
         const response = await fetch('/api/studenten');
         const data = await response.json();
@@ -72,24 +99,27 @@ async function loadProjectsFromStudents() {
                 }));
             
             if (projectsFromStudents.length > 0) {
-                console.log(`✅ [alle-projecten.js] Extracted ${projectsFromStudents.length} projects from students`);
                 renderProjects(projectsFromStudents);
             } else {
                 document.querySelector('.projectTegels').innerHTML = `<div class="no-data">Geen projecten gevonden.</div>`;
             }
         }
     } catch (error) {
-        console.error('❌ [alle-projecten.js] Error loading students:', error);
         document.querySelector('.projectTegels').innerHTML = `<div class="no-data" style="color: #dc3545;">Fout bij laden van gegevens.</div>`;
     }
 }
 
+/**
+ * 🎨 Rendert projecten in de UI
+ * 
+ * Toont alle projecten als klikbare kaarten met projectinformatie
+ * 
+ * @param {Array} projects - Array van project objecten om te renderen
+ * @returns {void}
+ */
 function renderProjects(projects) {
-    console.log('🚀 [alle-projecten.js] Rendering', projects.length, 'projects');
-    
     const container = document.querySelector('.projectTegels');
     if (!container) {
-        console.error('❌ [alle-projecten.js] .projectTegels container not found');
         return;
     }
     
@@ -106,10 +136,18 @@ function renderProjects(projects) {
         const card = createProjectCard(project, index);
         container.appendChild(card);
     });
-    
-    console.log(`✅ [alle-projecten.js] Rendered ${projects.length} project cards`);
 }
 
+/**
+ * 🎴 Creëert een individuele projectkaart
+ * 
+ * Genereert een klikbare kaart met projectinformatie
+ * die navigeert naar de detailpagina
+ * 
+ * @param {Object} project - Project object met gegevens
+ * @param {number} index - Index voor animatie delay
+ * @returns {HTMLElement} Project kaart element
+ */
 function createProjectCard(project, index) {
     const card = document.createElement('a');
     card.className = 'projectTegel';
@@ -122,12 +160,10 @@ function createProjectCard(project, index) {
     if (navigationId) {
         // If we have a valid student ID, navigate to the project detail page
         card.href = `/zoekbalk-projecten?id=${navigationId}`;
-        console.log(`🔗 [alle-projecten.js] Project "${projectTitle}" -> Student ID: ${navigationId}`);
     } else {
         // If no student ID available, navigate to search page with project title
         const searchQuery = encodeURIComponent(projectTitle);
         card.href = `/alle-projecten?search=${searchQuery}`;
-        console.log(`🔍 [alle-projecten.js] Project "${projectTitle}" -> Search fallback`);
     }
     
     // Create student display
@@ -164,106 +200,100 @@ function createProjectCard(project, index) {
     return card;
 }
 
+/**
+ * 📊 Werkt project telling bij
+ * 
+ * Update de statistieken met het aantal projecten
+ * 
+ * @param {number} count - Het aantal projecten
+ * @returns {void}
+ */
 function updateProjectCount(count) {
-    console.log(`📊 [alle-projecten.js] Updating count: ${count}`);
-    
     if (window.updateDataCounts) {
         window.updateDataCounts({ projecten: count });
-        console.log('✅ [alle-projecten.js] Updated via stat-utils');
     }
 }
 
+/**
+ * 🔗 Opent project detailpagina
+ * 
+ * Navigeert naar de detailpagina van een specifiek project
+ * 
+ * @param {string} projectId - Het project ID om te openen
+ * @returns {void}
+ */
 function openProjectDetail(projectId) {
     if (!projectId) {
-        console.warn('⚠️ [alle-projecten.js] Kan niet navigeren: geen projectId');
         return;
     }
-    console.log(`🔗 [alle-projecten.js] Opening project with student ID: ${projectId}`);
     window.location.href = `/zoekbalk-projecten?id=${projectId}`;
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * 🚀 Initialiseert de projecten pagina
+ * 
+ * Deze functie is het hoofdpunt voor het opzetten van de projecten functionaliteit:
+ * - Laadt alle projecten
+ * - Handelt zoekparameters af
+ * - Zet event listeners op
+ * 
+ * @returns {Promise<void>}
+ */
+async function initializeProjectsPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const searchTerm = urlParams.get('search');
     
-    loadAllProjects().then(() => {
-        if (searchTerm) {
-            console.log(`🔍 [alle-projecten.js] Search parameter found: ${searchTerm}`);
-            filterProjectsBySearch(searchTerm);
-        }
-    });
-});
+    await loadAllProjects();
+    
+    if (searchTerm) {
+        filterProjectsBySearch(searchTerm);
+    }
+}
 
-// Search functionality
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeProjectsPage);
+
+/**
+ * 🔍 Filtert projecten op zoekterm
+ * 
+ * Filtert de weergegeven projecten op basis van een zoekterm
+ * 
+ * @param {string} searchTerm - De zoekterm om op te filteren
+ * @returns {void}
+ */
 function filterProjectsBySearch(searchTerm) {
-    console.log(`🔍 [alle-projecten.js] Filtering projects by: ${searchTerm}`);
+    const projectCards = document.querySelectorAll('.projectTegel');
+    const searchLower = searchTerm.toLowerCase();
     
-    const cards = document.querySelectorAll('.projectTegel');
-    let foundCount = 0;
-    
-    cards.forEach(card => {
-        const title = card.querySelector('.project-titel')?.textContent || '';
-        const description = card.querySelector('.project-beschrijving')?.textContent || '';
+    projectCards.forEach(card => {
+        const title = card.querySelector('.projectTitel')?.textContent || '';
+        const description = card.querySelector('.projectBeschrijving')?.textContent || '';
         const studentInfo = card.querySelector('.project-student-single, .project-students-multiple')?.textContent || '';
         
-        const searchText = `${title} ${description} ${studentInfo}`.toLowerCase();
-        const searchLower = searchTerm.toLowerCase().trim();
+        const searchableText = `${title} ${description} ${studentInfo}`.toLowerCase();
         
-        if (searchText.includes(searchLower)) {
+        if (searchableText.includes(searchLower)) {
             card.style.display = 'block';
-            card.style.animation = 'fadeInUp 0.6s ease forwards';
-            foundCount++;
         } else {
             card.style.display = 'none';
         }
     });
     
-    console.log(`✅ [alle-projecten.js] Found ${foundCount} matching projects`);
-    
-    const container = document.querySelector('.projectTegels');
-    
-    // Verwijder eventuele vorige zoekresultaat-headers/berichten
-    const existingHeader = container.querySelector('.search-results-header');
-    if (existingHeader) {
-        existingHeader.remove();
-    }
-    const existingNoResults = container.querySelector('.no-data');
-    if (existingNoResults) {
-        existingNoResults.remove();
-    }
-    
-    if (foundCount === 0) {
-        const noResults = document.createElement('div');
-        noResults.className = 'no-data';
-        noResults.innerHTML = `
-            <h3>🔍 Geen projecten gevonden</h3>
-            <p>Geen projecten gevonden voor "${searchTerm}"</p>
-            <button onclick="window.location.href='/alle-projecten'" class="btn">
-                <i class="fas fa-arrow-left"></i> Terug naar alle projecten
-            </button>
-        `;
-        // Toon alle kaarten weer als er geen resultaten zijn na het filteren
-        cards.forEach(card => card.style.display = 'none');
-        container.appendChild(noResults);
-    } else {
-        const searchHeader = document.createElement('div');
-        searchHeader.className = 'search-results-header';
-        searchHeader.innerHTML = `
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-                <h3 style="margin: 0 0 10px 0; color: #1976d2;">
-                    <i class="fas fa-search"></i> Zoekresultaten
-                </h3>
-                <p style="margin: 0; color: #424242;">
-                    ${foundCount} project${foundCount === 1 ? '' : 'en'} gevonden voor "${searchTerm}"
-                </p>
-                <button onclick="window.location.href='/alle-projecten'" style="margin-top: 10px; background: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                    <i class="fas fa-times"></i> Zoekopdracht wissen
-                </button>
-            </div>
-        `;
-        container.insertBefore(searchHeader, container.firstChild);
-    }
+    // Update count for visible projects
+    const visibleProjects = document.querySelectorAll('.projectTegel[style*="display: block"], .projectTegel:not([style*="display: none"])');
+    updateProjectCount(visibleProjects.length);
 }
 
-console.log('✅ [alle-projecten.js] Fixed version loaded!');
+/**
+ * 📋 Projecten Management Systeem
+ * 
+ * Dit bestand bevat alle functionaliteit voor het beheren en weergeven van projecten:
+ * - Laden van projecten via API met fallback naar student-gebaseerde extractie
+ * - Renderen van projecten als klikbare kaarten
+ * - Zoeken en filteren van projecten
+ * - Navigatie naar project detailpagina's
+ * - Statistieken bijwerken
+ * 
+ * Het systeem is robuust met uitgebreide error handling en fallback mechanismen
+ * voor wanneer de API niet beschikbaar is.
+ */
