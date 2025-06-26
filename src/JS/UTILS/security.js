@@ -1,49 +1,8 @@
-/**
- * 🔒 security.js - Frontend Security Validatie voor CareerLaunch EHB
- * 
- * Dit bestand beheert alle frontend security validatie en beveiligingsmaatregelen:
- * - Wachtwoord sterkte validatie
- * - Email en telefoonnummer validatie
- * - TVA nummer validatie (Belgisch)
- * - Input sanitization en XSS preventie
- * - Rate limiting en beveiligingscontroles
- * 
- * Belangrijke functionaliteiten:
- * - Uitgebreide wachtwoord sterkte controle
- * - Belgische telefoonnummer en TVA validatie
- * - Input sanitization voor XSS preventie
- * - Rate limiting voor API calls
- * - Visuele feedback voor validatie
- * - Secure connection verificatie
- * 
- * @author CareerLaunch EHB Team
- * @version 1.0.0
- * @since 2024
- */
+// src/JS/UTILS/security.js - Frontend security validation
 
-/**
- * 🔒 SecurityValidator - Hoofdklasse voor security validatie
- * 
- * Deze klasse bevat alle validatie methoden voor beveiliging
- * en data integriteit in de frontend applicatie
- * 
- * @class SecurityValidator
- */
 class SecurityValidator {
   
-  /**
-   * 🔐 Valideert wachtwoord sterkte
-   * 
-   * Controleert wachtwoord op verschillende criteria:
-   * - Minimale lengte van 8 karakters
-   * - Hoofdletters en kleine letters
-   * - Cijfers en speciale karakters
-   * - Geen veelvoorkomende patronen
-   * - Geen herhalende karakters
-   * 
-   * @param {string} password - Het wachtwoord om te valideren
-   * @returns {Object} Validatie resultaat met score en bericht
-   */
+  // Password strength validation
   static validatePasswordStrength(password) {
     const requirements = {
       minLength: password.length >= 8,
@@ -67,13 +26,6 @@ class SecurityValidator {
     };
   }
   
-  /**
-   * 📝 Genereert wachtwoord sterkte bericht
-   * 
-   * @param {Object} requirements - De validatie vereisten
-   * @param {number} score - De behaalde score
-   * @returns {string} Het bericht over de wachtwoord sterkte
-   */
   static getPasswordMessage(requirements, score) {
     if (score >= 6) return 'Zeer sterk wachtwoord';
     if (score >= 5) return 'Sterk wachtwoord';
@@ -82,14 +34,7 @@ class SecurityValidator {
     return 'Zeer zwak wachtwoord - niet acceptabel';
   }
   
-  /**
-   * 📧 Valideert email adres
-   * 
-   * Controleert email op formaat, lengte en verdachte patronen
-   * 
-   * @param {string} email - Het email adres om te valideren
-   * @returns {Object} Validatie resultaat met bericht
-   */
+  // Email validation
   static validateEmail(email) {
     // Basic format check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -124,14 +69,7 @@ class SecurityValidator {
     return { isValid: true, message: 'Geldig email adres' };
   }
   
-  /**
-   * 📞 Valideert Belgisch telefoonnummer
-   * 
-   * Controleert telefoonnummer op Belgische formaten
-   * 
-   * @param {string} phone - Het telefoonnummer om te valideren
-   * @returns {Object} Validatie resultaat met geformatteerd nummer
-   */
+  // Phone number validation (Belgian)
   static validatePhoneNumber(phone) {
     // Remove spaces and formatting
     const cleanPhone = phone.replace(/[\s\-()]/g, '');
@@ -159,25 +97,13 @@ class SecurityValidator {
     };
   }
   
-  /**
-   * 📞 Formatteert Belgisch telefoonnummer
-   * 
-   * @param {string} phone - Het telefoonnummer om te formatteren
-   * @returns {string} Geformatteerd telefoonnummer
-   */
+  // Format Belgian phone number
   static formatBelgianPhone(phone) {
     const clean = phone.replace(/^\+?32/, '').replace(/^0/, '');
     return `+32 ${clean.substr(0, 1)} ${clean.substr(1, 3)} ${clean.substr(4, 2)} ${clean.substr(6, 2)}`;
   }
   
-  /**
-   * 🏢 Valideert Belgisch TVA nummer
-   * 
-   * Controleert TVA nummer op formaat en checksum
-   * 
-   * @param {string} tva - Het TVA nummer om te valideren
-   * @returns {Object} Validatie resultaat met geformatteerd nummer
-   */
+  // TVA number validation (Belgian)
   static validateTVANumber(tva) {
     const cleanTVA = tva.replace(/[\s\-\.]/g, '').toUpperCase();
     
@@ -211,14 +137,7 @@ class SecurityValidator {
     };
   }
   
-  /**
-   * 🎓 Valideert studentnummer
-   * 
-   * Controleert studentnummer op formaat en lengte
-   * 
-   * @param {string} studentNumber - Het studentnummer om te valideren
-   * @returns {Object} Validatie resultaat
-   */
+  // Student number validation
   static validateStudentNumber(studentNumber) {
     const num = parseInt(studentNumber);
     
@@ -237,15 +156,7 @@ class SecurityValidator {
     return { isValid: true, message: 'Geldig studentnummer' };
   }
   
-  /**
-   * 👤 Valideert naam
-   * 
-   * Controleert naam op lengte en toegestane karakters
-   * 
-   * @param {string} name - De naam om te valideren
-   * @param {string} fieldName - De veldnaam voor het bericht
-   * @returns {Object} Validatie resultaat
-   */
+  // Name validation
   static validateName(name, fieldName = 'Naam') {
     if (!name || name.trim().length === 0) {
       return { isValid: false, message: `${fieldName} is verplicht` };
@@ -267,17 +178,7 @@ class SecurityValidator {
     return { isValid: true, message: `Geldige ${fieldName.toLowerCase()}` };
   }
   
-  /**
-   * 🏠 Valideert adres gegevens
-   * 
-   * Controleert alle adres velden op geldigheid
-   * 
-   * @param {string} street - Straatnaam
-   * @param {string} number - Huisnummer
-   * @param {string} postcode - Postcode
-   * @param {string} city - Gemeente
-   * @returns {Object} Validatie resultaat met eventuele fouten
-   */
+  // Address validation
   static validateAddress(street, number, postcode, city) {
     const errors = [];
     
@@ -299,214 +200,169 @@ class SecurityValidator {
     
     return {
       isValid: errors.length === 0,
-      errors: errors,
       message: errors.length === 0 ? 'Geldig adres' : errors.join(', ')
     };
   }
   
-  /**
-   * 🧹 Sanitizeert input voor XSS preventie
-   * 
-   * Verwijdert gevaarlijke HTML en script tags
-   * 
-   * @param {string} input - De input om te sanitizeren
-   * @returns {string} Gezuiverde input
-   */
+  // Input sanitization
   static sanitizeInput(input) {
     if (typeof input !== 'string') return input;
     
     return input
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      .replace(/javascript:/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-      .trim();
+      .trim()
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/javascript:/gi, '') // Remove javascript: URLs
+      .replace(/on\w+=/gi, '') // Remove event handlers
+      .substring(0, 1000); // Limit length
   }
   
-  /**
-   * ⏱️ Controleert rate limiting
-   * 
-   * Voorkomt te veel pogingen voor een bepaalde actie
-   * 
-   * @param {string} action - De actie om te limiteren
-   * @param {number} maxAttempts - Maximum aantal pogingen
-   * @param {number} windowMs - Tijdsvenster in milliseconden
-   * @returns {boolean} Of de actie toegestaan is
-   */
+  // Rate limiting helper (client-side)
   static checkRateLimit(action, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
     const key = `rateLimit_${action}`;
     const now = Date.now();
-    const attempts = JSON.parse(localStorage.getItem(key) || '[]');
     
-    // Remove old attempts outside the window
-    const validAttempts = attempts.filter(timestamp => now - timestamp < windowMs);
+    let attempts = JSON.parse(localStorage.getItem(key) || '[]');
     
-    if (validAttempts.length >= maxAttempts) {
-      return false;
+    // Remove old attempts outside window
+    attempts = attempts.filter(timestamp => now - timestamp < windowMs);
+    
+    if (attempts.length >= maxAttempts) {
+      const oldestAttempt = Math.min(...attempts);
+      const timeLeft = Math.ceil((oldestAttempt + windowMs - now) / 1000 / 60);
+      
+      return {
+        allowed: false,
+        timeLeft: timeLeft,
+        message: `Te veel pogingen. Probeer het over ${timeLeft} minuten opnieuw.`
+      };
     }
     
     // Add current attempt
-    validAttempts.push(now);
-    localStorage.setItem(key, JSON.stringify(validAttempts));
+    attempts.push(now);
+    localStorage.setItem(key, JSON.stringify(attempts));
     
-    return true;
+    return { allowed: true, remaining: maxAttempts - attempts.length };
   }
   
-  /**
-   * 🗑️ Wist rate limiting voor een actie
-   * 
-   * @param {string} action - De actie om rate limiting voor te wissen
-   * @returns {void}
-   */
+  // Clear rate limit data
   static clearRateLimit(action) {
-    const key = `rateLimit_${action}`;
-    localStorage.removeItem(key);
+    localStorage.removeItem(`rateLimit_${action}`);
   }
   
-  /**
-   * 👁️ Wisselt wachtwoord zichtbaarheid
-   * 
-   * @param {string} passwordFieldId - ID van het wachtwoord veld
-   * @param {string} toggleButtonId - ID van de toggle knop
-   * @returns {void}
-   */
+  // Password visibility toggle (secure)
   static togglePasswordVisibility(passwordFieldId, toggleButtonId) {
     const passwordField = document.getElementById(passwordFieldId);
     const toggleButton = document.getElementById(toggleButtonId);
     
     if (!passwordField || !toggleButton) return;
     
-    if (passwordField.type === 'password') {
-      passwordField.type = 'text';
-      toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
-      toggleButton.title = 'Wachtwoord verbergen';
-    } else {
-      passwordField.type = 'password';
-      toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
-      toggleButton.title = 'Wachtwoord tonen';
+    const isPassword = passwordField.type === 'password';
+    passwordField.type = isPassword ? 'text' : 'password';
+    toggleButton.textContent = isPassword ? '👁️' : '🙈';
+    
+    // Auto-hide after 3 seconds for security
+    if (isPassword) {
+      setTimeout(() => {
+        if (passwordField.type === 'text') {
+          passwordField.type = 'password';
+          toggleButton.textContent = '👁️';
+        }
+      }, 3000);
     }
   }
   
-  /**
-   * 🔒 Controleert beveiligde verbinding
-   * 
-   * @returns {boolean} Of de verbinding beveiligd is
-   */
+  // Check if running over HTTPS (production requirement)
   static checkSecureConnection() {
-    return window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    const isSecure = location.protocol === 'https:' || location.hostname === 'localhost';
+    
+    if (!isSecure) {
+      console.warn('⚠️ Unsecure connection detected. HTTPS recommended for production.');
+      return false;
+    }
+    
+    return true;
   }
   
-  /**
-   * 🗑️ Wist gevoelige data uit velden
-   * 
-   * @param {...string} elements - IDs van elementen om te wissen
-   * @returns {void}
-   */
+  // Clear sensitive data from memory
   static clearSensitiveData(...elements) {
-    elements.forEach(id => {
-      const element = document.getElementById(id);
-      if (element) {
+    elements.forEach(element => {
+      if (typeof element === 'string') {
+        const field = document.getElementById(element);
+        if (field) field.value = '';
+      } else if (element && element.value !== undefined) {
         element.value = '';
-        element.type = 'password'; // Reset to password type
       }
     });
   }
 }
 
-/**
- * 🎨 ValidationUI - UI helper klasse voor validatie feedback
- * 
- * Deze klasse beheert de visuele feedback voor validatie
- * 
- * @class ValidationUI
- */
+// Real-time validation UI helpers
 class ValidationUI {
   
-  /**
-   * ✅ Toont veld validatie feedback
-   * 
-   * @param {string} fieldId - ID van het veld
-   * @param {Object} validation - Validatie resultaat
-   * @returns {void}
-   */
   static showFieldValidation(fieldId, validation) {
     const field = document.getElementById(fieldId);
     if (!field) return;
     
-    // Remove existing validation classes
+    // Remove existing validation
+    this.clearFieldValidation(fieldId);
+    
+    // Add validation styling
     field.classList.remove('valid', 'invalid');
+    field.classList.add(validation.isValid ? 'valid' : 'invalid');
     
-    // Add appropriate class
-    if (validation.isValid) {
-      field.classList.add('valid');
-    } else {
-      field.classList.add('invalid');
-    }
-    
-    // Show/hide error message
-    let errorElement = field.parentNode.querySelector('.error-message');
-    if (!errorElement) {
-      errorElement = document.createElement('div');
-      errorElement.className = 'error-message';
-      field.parentNode.appendChild(errorElement);
-    }
-    
+    // Add validation message
     if (!validation.isValid) {
-      errorElement.textContent = validation.message;
-      errorElement.style.display = 'block';
-    } else {
-      errorElement.style.display = 'none';
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'validation-error';
+      errorDiv.textContent = validation.message;
+      field.parentNode.appendChild(errorDiv);
     }
   }
   
-  /**
-   * 🗑️ Wist veld validatie feedback
-   * 
-   * @param {string} fieldId - ID van het veld
-   * @returns {void}
-   */
   static clearFieldValidation(fieldId) {
     const field = document.getElementById(fieldId);
     if (!field) return;
     
     field.classList.remove('valid', 'invalid');
     
-    const errorElement = field.parentNode.querySelector('.error-message');
-    if (errorElement) {
-      errorElement.style.display = 'none';
-    }
+    const errorElements = field.parentNode.querySelectorAll('.validation-error');
+    errorElements.forEach(el => el.remove());
   }
   
-  /**
-   * 💪 Toont wachtwoord sterkte indicator
-   * 
-   * @param {string} fieldId - ID van het wachtwoord veld
-   * @param {string} password - Het wachtwoord
-   * @returns {void}
-   */
   static showPasswordStrength(fieldId, password) {
+    const validation = SecurityValidator.validatePasswordStrength(password);
     const field = document.getElementById(fieldId);
     if (!field) return;
     
-    const validation = SecurityValidator.validatePasswordStrength(password);
-    
     // Remove existing strength indicator
-    let strengthIndicator = field.parentNode.querySelector('.password-strength');
-    if (!strengthIndicator) {
-      strengthIndicator = document.createElement('div');
-      strengthIndicator.className = 'password-strength';
-      field.parentNode.appendChild(strengthIndicator);
-    }
+    const existing = field.parentNode.querySelector('.password-strength');
+    if (existing) existing.remove();
     
-    // Update strength indicator
-    const strengthClass = validation.score >= 5 ? 'strong' : validation.score >= 3 ? 'medium' : 'weak';
-    strengthIndicator.className = `password-strength ${strengthClass}`;
-    strengthIndicator.textContent = validation.message;
-    strengthIndicator.style.display = 'block';
+    // Create strength indicator
+    const strengthDiv = document.createElement('div');
+    strengthDiv.className = 'password-strength';
+    
+    const strengthBar = document.createElement('div');
+    strengthBar.className = 'strength-bar';
+    strengthBar.style.width = `${(validation.score / validation.maxScore) * 100}%`;
+    
+    if (validation.score >= 6) strengthBar.className += ' very-strong';
+    else if (validation.score >= 5) strengthBar.className += ' strong';
+    else if (validation.score >= 4) strengthBar.className += ' medium';
+    else if (validation.score >= 3) strengthBar.className += ' weak';
+    else strengthBar.className += ' very-weak';
+    
+    const strengthText = document.createElement('div');
+    strengthText.className = 'strength-text';
+    strengthText.textContent = validation.message;
+    
+    strengthDiv.appendChild(strengthBar);
+    strengthDiv.appendChild(strengthText);
+    field.parentNode.appendChild(strengthDiv);
   }
 }
 
-// Make classes globally available
+// Export for use in other files
 window.SecurityValidator = SecurityValidator;
 window.ValidationUI = ValidationUI;
 

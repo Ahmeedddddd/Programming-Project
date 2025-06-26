@@ -1,25 +1,5 @@
-/**
- * 🎓 alle-studenten.js - Studenten Overzicht Pagina voor CareerLaunch EHB
- * 
- * Dit bestand beheert de overzichtspagina voor alle studenten:
- * - Dynamisch laden van alle studentgegevens uit de API
- * - Rendering van studentkaarten met basisinformatie
- * - Zoek- en filterfunctionaliteit
- * - Navigatie naar individuele student detailpagina's
- * - Responsive design ondersteuning
- * 
- * Belangrijke functionaliteiten:
- * - API integratie voor studentgegevens
- * - Real-time zoeken en filteren
- * - Specialisatie pillen voor snelle filtering
- * - Statistieken en tellingen
- * - Animaties en loading states
- * - Error handling met fallback data
- * 
- * @author CareerLaunch EHB Team
- * @version 1.0.0
- * @since 2024
- */
+// src/JS/RESULTS/STUDENTEN/alle-studenten.js
+// JavaScript voor alle studenten pagina - toont alle studenten en navigeert naar detail
 
 // Wacht tot DOM geladen is
 document.addEventListener('DOMContentLoaded', async () => {
@@ -31,9 +11,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderStudents(filteredStudents);
     updateStats();
     hideLoadingState();
+    console.log('✅ Student pagina geïnitialiseerd met', allStudents.length, 'studenten');
 });
 
-// 🎯 Globale variabelen voor student management
+// Globale variabelen
 let allStudents = [];
 let filteredStudents = [];
 let currentFilters = {
@@ -42,18 +23,7 @@ let currentFilters = {
     specialization: 'Alle'
 };
 
-/**
- * 🚀 Initialiseert de studenten pagina
- * 
- * Deze functie is het hoofdpunt voor het laden van alle studentgegevens:
- * - Laadt alle studenten via API
- * - Zet filter en zoekfunctionaliteit op
- * - Rendert studentkaarten
- * - Update statistieken
- * 
- * @returns {Promise<void>}
- * @throws {Error} Bij fouten tijdens initialisatie
- */
+// ===== MAIN INITIALIZATION =====
 async function initializeStudentPage() {
     try {
         showLoadingState();
@@ -78,28 +48,26 @@ async function initializeStudentPage() {
         
         hideLoadingState();
         
+        console.log('✅ Student pagina geïnitialiseerd met', allStudents.length, 'studenten');
+        
     } catch (error) {
+        console.error('❌ Fout bij laden van studenten pagina:', error);
         showErrorState();
     }
 }
 
-/**
- * 📡 Laadt alle studenten via API
- * 
- * Deze functie haalt alle studentgegevens op van de backend
- * en handelt errors af met fallback data
- * 
- * @returns {Promise<void>}
- */
+// ===== API CALLS =====
 async function loadAllStudents() {
     const container = document.querySelector('.studentTegels');
     if (!container) {
+        console.error('❌ [DEBUG] .studentTegels container niet gevonden');
         return;
     }
     container.innerHTML = `<div class="no-data" id="studentenLoading"><i class="fas fa-spinner fa-spin"></i> Studenten laden...</div>`;
     try {
         const response = await fetch('/api/studenten');
         const data = await response.json();
+        console.log('📦 [DEBUG] Studenten API data:', data);
         if (data.success && data.data && data.data.length > 0) {
             allStudents = data.data;
             filteredStudents = [...allStudents];
@@ -111,24 +79,19 @@ async function loadAllStudents() {
         }
     } catch (error) {
         container.innerHTML = `<div class="no-data" style="color: #dc3545;">Fout bij laden van studenten.</div>`;
+        console.error('❌ [DEBUG] Fout bij laden van studenten:', error);
         updateStats(0);
     }
 }
 
-/**
- * 🎨 Rendert studentkaarten in de UI
- * 
- * Deze functie toont alle studenten als klikbare kaarten
- * met basisinformatie en navigatie naar detailpagina's
- * 
- * @param {Array} students - Array van student objecten om te renderen
- * @returns {void}
- */
+// ===== RENDERING =====
 function renderStudents(students) {
     const container = document.querySelector('.studentTegels');
     if (!container) {
+        console.error('❌ [DEBUG] .studentTegels container niet gevonden');
         return;
     }
+    console.log('🎨 [DEBUG] renderStudents met', students ? students.length : 0, 'studenten');
     if (!students || students.length === 0) {
         container.innerHTML = `<div class="no-results"><h3>Geen studenten gevonden</h3><p>Probeer je zoekopdracht aan te passen of de filters te wijzigen.</p></div>`;
         updateStats(0);
@@ -143,16 +106,6 @@ function renderStudents(students) {
     animateCards();
 }
 
-/**
- * 🎴 Creëert een individuele studentkaart
- * 
- * Genereert een klikbare kaart met studentinformatie
- * die navigeert naar de detailpagina
- * 
- * @param {Object} student - Student object met gegevens
- * @param {number} index - Index voor animatie delay
- * @returns {HTMLElement} Student kaart element
- */
 function createStudentCard(student, index) {
     const card = document.createElement('a');
     card.className = 'studentTegel';
@@ -181,27 +134,15 @@ function createStudentCard(student, index) {
     return card;
 }
 
-/**
- * 🔗 Navigeert naar student detailpagina
- * 
- * Opent de detailpagina voor een specifieke student
- * 
- * @param {string} studentnummer - Het studentnummer van de student
- * @returns {void}
- */
+// ===== NAVIGATION =====
 function navigateToStudent(studentnummer) {
+    console.log('🔗 Navigeren naar student:', studentnummer);
+    
     // Navigeer naar detail pagina met student ID als parameter
     window.location.href = `/zoekbalkStudenten?id=${studentnummer}`;
 }
 
-/**
- * 🔍 Zet filter functionaliteit op
- * 
- * Initialiseert event listeners voor zoeken en filteren
- * van studenten op basis van verschillende criteria
- * 
- * @returns {void}
- */
+// ===== FILTER FUNCTIONALITY =====
 function setupFilters() {
     const searchInput = document.querySelector('.search-input');
     const filterSelect = document.querySelector('.filter-select');
@@ -229,14 +170,6 @@ function setupFilters() {
     }
 }
 
-/**
- * 🏷️ Zet specialisatie pillen op
- * 
- * Initialiseert klikbare pillen voor snelle filtering
- * op basis van opleidingsrichting
- * 
- * @returns {void}
- */
 function setupSpecializationPills() {
     const pills = document.querySelectorAll('.specialization-pill');
     
@@ -255,14 +188,6 @@ function setupSpecializationPills() {
     });
 }
 
-/**
- * 🔍 Past filters toe op studentenlijst
- * 
- * Filtert studenten op basis van zoekterm, jaar en specialisatie
- * en update de weergegeven lijst
- * 
- * @returns {void}
- */
 function applyFilters() {
     filteredStudents = allStudents.filter(student => {
         // Search filter
@@ -277,15 +202,17 @@ function applyFilters() {
         // Year filter
         if (currentFilters.jaar && currentFilters.jaar !== 'Alle jaren') {
             const studentYear = getStudentYear(student.studentnummer);
-            const filterYear = parseInt(currentFilters.jaar);
+            const filterYear = parseInt(currentFilters.jaar.replace('e jaar', ''));
             if (studentYear !== filterYear) {
                 return false;
             }
         }
         
         // Specialization filter
-        if (currentFilters.specialization && currentFilters.specialization !== 'Alle') {
-            if (student.opleidingsrichting !== currentFilters.specialization) {
+        if (currentFilters.specialization !== 'Alle') {
+            const studentSpec = student.opleidingsrichting || student.opleiding || '';
+            if (currentFilters.specialization !== 'Toegepaste Informatica' && 
+                !studentSpec.toLowerCase().includes(currentFilters.specialization.toLowerCase())) {
                 return false;
             }
         }
@@ -294,150 +221,108 @@ function applyFilters() {
     });
     
     renderStudents(filteredStudents);
+    updateStats(filteredStudents.length);
 }
 
-/**
- * 🔢 Bepaalt studiejaar uit studentnummer
- * 
- * @param {string} studentnummer - Het studentnummer
- * @returns {number} Het studiejaar (1-4)
- */
+// ===== UTILITY FUNCTIONS =====
 function getStudentYear(studentnummer) {
-    if (!studentnummer) return 1;
-    const year = parseInt(studentnummer.toString().substring(0, 1));
-    return year >= 1 && year <= 4 ? year : 1;
+    // Simpele logica: laatste digit van studentnummer
+    const lastDigit = parseInt(studentnummer.toString().slice(-1));
+    if (lastDigit >= 0 && lastDigit <= 3) return 1;
+    if (lastDigit >= 4 && lastDigit <= 6) return 2;
+    return 3;
 }
 
-/**
- * 📊 Werkt statistieken bij
- * 
- * Toont het aantal studenten en andere relevante statistieken
- * 
- * @param {number} count - Het aantal studenten om te tonen
- * @returns {void}
- */
 function updateStats(count) {
-    const statsText = document.querySelector('.stats-text');
-    if (statsText) {
-        const displayCount = count !== undefined ? count : filteredStudents.length;
-        statsText.textContent = `${displayCount} studenten gevonden`;
+    // Update .data-count utility
+    if (window.updateDataCounts) {
+        window.updateDataCounts({ 
+            studenten: typeof count === 'number' ? count : filteredStudents.length 
+        });
     }
 }
 
-/**
- * 🔍 Zet zoekfunctionaliteit op
- * 
- * Initialiseert real-time zoeken in de studentenlijst
- * 
- * @returns {void}
- */
 function setupSearch() {
     const searchInput = document.querySelector('.search-input');
     if (searchInput) {
-        searchInput.addEventListener('input', debounce((e) => {
-            currentFilters.search = e.target.value.toLowerCase();
-            applyFilters();
-        }, 300));
+        searchInput.placeholder = "Zoek studenten op naam, project of vaardigheden...";
     }
 }
 
-/**
- * ⏳ Toont loading state
- * 
- * Verbergt content en toont loading indicator
- * 
- * @returns {void}
- */
+// ===== LOADING STATES =====
 function showLoadingState() {
     const container = document.querySelector('.studentTegels');
     if (container) {
-        container.innerHTML = `<div class="no-data"><i class="fas fa-spinner fa-spin"></i> Studenten laden...</div>`;
+        container.innerHTML = `
+            <div class="loading-state">
+                <div class="loader"></div>
+                <p>Studenten laden...</p>
+            </div>
+        `;
     }
 }
 
-/**
- * ✅ Verbergt loading state
- * 
- * Toont content en verbergt loading indicator
- * 
- * @returns {void}
- */
 function hideLoadingState() {
-    // Loading state wordt automatisch verborgen wanneer content wordt geladen
+    // Loading wordt vervangen door renderStudents()
 }
 
-/**
- * ❌ Toont error state
- * 
- * Toont een foutmelding aan de gebruiker
- * 
- * @returns {void}
- */
 function showErrorState() {
     const container = document.querySelector('.studentTegels');
     if (container) {
-        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Er is een fout opgetreden bij het laden van de studenten.</div>`;
+        container.innerHTML = `
+            <div class="error-state">
+                <h3>⚠️ Fout bij laden</h3>
+                <p>Er ging iets mis bij het ophalen van de studenten.</p>
+                <button onclick="location.reload()" class="retry-btn">🔄 Probeer opnieuw</button>
+            </div>
+        `;
     }
 }
 
-/**
- * ✨ Animeert studentkaarten
- * 
- * Voegt fade-in animaties toe aan studentkaarten
- * 
- * @returns {void}
- */
+// ===== ANIMATIONS =====
 function animateCards() {
     const cards = document.querySelectorAll('.studentTegel');
     cards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-        card.classList.add('fade-in');
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
     });
 }
 
-/**
- * 🎭 Genereert mock student data voor ontwikkeling
- * 
- * Deze functie biedt test data voor wanneer de API niet beschikbaar is
- * 
- * @returns {Array} Array van mock student objecten
- */
+// ===== MOCK DATA (fallback) =====
 function getMockStudents() {
     return [
         {
-            studentnummer: '1',
-            voornaam: 'Jan',
-            achternaam: 'Janssens',
-            email: 'jan.janssens@student.ehb.be',
-            gsm_nummer: '+32 470 123 456',
-            opleiding: 'Dagtraject Toegepaste informatica',
-            opleidingsrichting: 'Dagtraject Toegepaste informatica',
-            projectTitel: 'Smart City Dashboard',
-            overMezelf: 'Passionele ontwikkelaar met interesse in smart city technologieën.'
+            studentnummer: 232,
+            voornaam: 'John',
+            achternaam: 'Doe',
+            email: 'john.doe@student.ehb.be',
+            opleiding: 'Toegepaste informatica',
+            opleidingsrichting: 'Intelligent Robotics',
+            projectTitel: 'Kokende AI Robot',
+            gemeente: 'Gent',
+            overMezelf: 'Ik ben John Doe, derdejaarsstudent Toegepaste Informatica aan de Erasmushogeschool Brussel, altijd op zoek naar de volgende technische uitdaging.'
         },
         {
-            studentnummer: '2',
-            voornaam: 'Marie',
-            achternaam: 'Maertens',
-            email: 'marie.maertens@student.ehb.be',
-            gsm_nummer: '+32 470 234 567',
-            opleiding: 'Graduaat Programmeren',
-            opleidingsrichting: 'Graduaat Programmeren',
-            projectTitel: 'E-commerce Platform',
-            overMezelf: 'Software developer gespecialiseerd in web development en user experience.'
+            studentnummer: 233,
+            voornaam: 'Jeretom',
+            achternaam: 'Carnomina',
+            email: 'jeretom@student.ehb.be',
+            opleiding: 'Toegepaste informatica',
+            opleidingsrichting: 'Software Engineering',
+            projectTitel: 'NeuroTrack',
+            gemeente: 'Antwerpen',
+            overMezelf: 'Derdejaarsstudent met voorliefde voor multidisciplinaire hardware-software integratie.'
         }
     ];
 }
 
-/**
- * ⏱️ Debounce functie voor performance optimalisatie
- * 
- * Voorkomt te veel API calls bij snelle input
- * 
- * @param {Function} func - De functie om te debouncen
- * @param {number} wait - Wachtijd in milliseconden
- * @returns {Function} Gedebounced functie
- */
+// ===== UTILITIES =====
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -450,53 +335,48 @@ function debounce(func, wait) {
     };
 }
 
-/**
- * 📢 Toont notificatie aan gebruiker
- * 
- * Deze functie toont een notificatie met verschillende types
- * 
- * @param {string} message - De melding om te tonen
- * @param {string} type - Het type notificatie ('info', 'success', 'warning', 'error')
- * @returns {void}
- */
 function showNotification(message, type = 'info') {
-    // Fallback naar alert als geen notificatie systeem beschikbaar is
-    if (typeof window.showNotification === 'function') {
+    // Gebruik het bestaande notification system
+    if (window.showNotification) {
         window.showNotification(message, type);
+    } else if (window.toast) {
+        window.toast[type] && window.toast[type](message);
     } else {
-        alert(`${type.toUpperCase()}: ${message}`);
+        console.log(`📢 ${type.toUpperCase()}: ${message}`);
     }
 }
 
-/**
- * 🔧 Initialiseert DOM elementen
- * 
- * Zoekt en valideert belangrijke DOM elementen
- * 
- * @returns {Object} Object met gevonden elementen
- */
+// ===== GLOBAL FUNCTION (voor HTML onclick) =====
+window.navigateToStudent = navigateToStudent;
+
 function initializeElements() {
-    const elements = {
-        container: document.querySelector('.studentTegels'),
-        searchInput: document.querySelector('.search-input'),
-        filterSelect: document.querySelector('.filter-select'),
-        filterBtn: document.querySelector('.filter-btn'),
-        statsText: document.querySelector('.stats-text'),
-        specializationPills: document.querySelectorAll('.specialization-pill')
-    };
-    
-    return elements;
+    console.log('🔍 Finding DOM elements...');
+    // Gebruik altijd .studentTegels als hoofdcontainer
+    studentsGrid = document.querySelector('.studentTegels');
+    searchInput = document.querySelector('.search-input, #searchInput, input[type="text"]');
+    filterDropdown = document.querySelector('.filter-dropdown, #filterDropdown');
+    loadingOverlay = document.querySelector('.loading-overlay, #loadingOverlay');
+    noResultsMessage = document.querySelector('.no-results, #noResults');
+    paginationControls = document.querySelector('.pagination, #pagination');
+    console.log('📋 Elements found:', {
+        studentsGrid: !!studentsGrid,
+        searchInput: !!searchInput,
+        filterDropdown: !!filterDropdown,
+        loadingOverlay: !!loadingOverlay
+    });
+    // Fallback: als main container niet gevonden, gebruik body
+    if (!studentsGrid) {
+        studentsGrid = document.body;
+        console.log('⚠️ Using fallback container for students grid');
+    }
 }
 
-/**
- * 📊 Werkt student telling bij
- * 
- * Update de weergegeven telling van studenten
- * 
- * @returns {void}
- */
 function updateStudentCount() {
-    updateStats(filteredStudents.length);
-}
-
-// DEBUG: Force reload for cache issues
+    // Update .stats-text altijd
+    const statsText = document.querySelector('.stats-text');
+    if (statsText) {
+        statsText.textContent = `🎓 ${filteredStudents.length} studenten beschikbaar voor netwerkgesprekken`;
+    }
+    // Update page title
+    document.title = `Alle Studenten (${filteredStudents.length}) - CareerLaunch EHB`;
+}// DEBUG: Force reload for cache issues

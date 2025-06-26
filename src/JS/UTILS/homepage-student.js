@@ -1,23 +1,4 @@
-/**
- * 🎓 homepage-student.js - Student Homepage Functionaliteit voor CareerLaunch EHB
- * 
- * Dit bestand beheert de student-specifieke functionaliteiten op de homepage:
- * - Laden en tonen van studentinformatie
- * - Weergave van aankomende gesprekken
- * - Statistieken en tellingen
- * - Integratie met universele homepage initializer
- * 
- * Belangrijke functionaliteiten:
- * - Student-specifieke dashboard elementen
- * - Gesprek management interface
- * - Real-time data updates
- * - Error handling en loading states
- * - Responsive design ondersteuning
- * 
- * @author CareerLaunch EHB Team
- * @version 1.0.0
- * @since 2024
- */
+// src/JS/UTILS/homepage-student.js
 
 document.addEventListener('DOMContentLoaded', () => {
     // Wacht een kort moment tot de universele initializer (index.js) de basisdata heeft geladen.
@@ -27,28 +8,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * 🚀 Initialiseert de student-specifieke functionaliteiten op de homepage
- * 
- * Deze functie is het hoofdpunt voor het opzetten van student-specifieke features:
- * - Laadt studentinformatie
- * - Toont aankomende gesprekken
- * - Update statistieken
- * 
- * @returns {Promise<void>}
+ * Initialiseert de student-specifieke functionaliteiten op de homepage.
  */
 async function initializeStudentHomepage() {
+    console.log(" Initializing student-specific homepage functions...");
     await loadUserInfo();
     await loadUpcomingMeetings();
     // De algemene kaarten (bedrijven, projecten) worden al door index.js geladen.
 }
 
 /**
- * 👤 Haalt de gebruikersinformatie op en toont een welkomstbericht
- * 
- * Laadt de specifieke informatie van de ingelogde student
- * en toont deze in de UI
- * 
- * @returns {Promise<void>}
+ * Haalt de gebruikersinformatie op en toont een welkomstbericht.
  */
 async function loadUserInfo() {
     try {
@@ -68,25 +38,23 @@ async function loadUserInfo() {
             if (namePlaceholder && result.data.voornaam) {
                 namePlaceholder.textContent = result.data.voornaam;
             }
+        } else {
+            console.warn('User info not found in response:', result.message);
         }
     } catch (error) {
-        // Silent error handling - user info is niet kritiek
+        console.error('Error loading user info:', error);
     }
 }
 
 /**
- * 📅 Haalt de aankomende gesprekken voor de student op en toont ze
- * 
- * Laadt alle reservaties van de student en toont de aankomende
- * gesprekken in een overzichtelijke grid
- * 
- * @returns {Promise<void>}
+ * Haalt de aankomende gesprekken voor de student op en toont ze.
  */
 async function loadUpcomingMeetings() {
     const container = document.getElementById('meetingsCardsContainer');
     const countElement = document.querySelector('[data-count="gesprekken"]');
 
     if (!container) {
+        console.error('Meeting container (#meetingsCardsContainer) not found!');
         return;
     }
 
@@ -115,17 +83,14 @@ async function loadUpcomingMeetings() {
                 (m) => m.status === 'aangevraagd'
             );
 
+            console.log('Valid meetings:', validMeetings);
+
             if (countElement) {
                 countElement.textContent = validMeetings.length;
             }
 
             if (validMeetings.length === 0) {
-                container.innerHTML = `
-                    <div class="no-meetings">
-                        <p>Je hebt nog geen aankomende gesprekken</p>
-                        <a href="/alle-bedrijven" class="btn-primary">Bedrijven bekijken</a>
-                    </div>
-                `;
+                container.innerHTML = `<div class="no-data"><p>Je hebt nog geen aankomende gesprekken.</p></div>`;
                 return;
             }
 
@@ -140,11 +105,8 @@ async function loadUpcomingMeetings() {
             throw new Error(result.message || 'Kon gesprekken niet ophalen.');
         }
     } catch (error) {
-        container.innerHTML = `
-            <div class="error-state">
-                <p>Kon je gesprekken niet laden. Probeer het later opnieuw.</p>
-            </div>
-        `;
+        console.error('Failed to load upcoming meetings for student:', error);
+        container.innerHTML = `<div class="no-data" style="color: #dc3545;">Kon je gesprekken niet laden. Probeer het later opnieuw.</div>`;
         if (countElement) {
             countElement.textContent = '0';
         }
@@ -152,12 +114,9 @@ async function loadUpcomingMeetings() {
 }
 
 /**
- * 🎴 Rendert een individuele meeting kaart
- * 
- * Genereert een kaart met informatie over een specifiek gesprek
- * 
- * @param {Object} meeting - Meeting object met gegevens
- * @returns {string} HTML string voor de meeting kaart
+ * Renders a single, well-formatted meeting card.
+ * @param {object} meeting - The meeting data object.
+ * @returns {string} HTML string for the meeting card.
  */
 function renderMeetingCard(meeting) {
     const { bedrijfNaam, startTijd, eindTijd, status, bedrijfTafelNr } = meeting;
@@ -174,6 +133,7 @@ function renderMeetingCard(meeting) {
             // Use toLocaleTimeString for robust time formatting, respecting locale (24h format for nl-BE)
             return date.toLocaleTimeString('nl-BE', { hour: '2-digit', minute: '2-digit' });
         } catch (error) {
+            console.error(`Failed to format time: ${timeString}`, error);
             return 'Error'; // Return an error indicator if parsing fails
         }
     };

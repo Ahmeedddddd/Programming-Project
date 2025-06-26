@@ -1907,4 +1907,3 @@ if (typeof window !== 'undefined') {
 }
 
 console.log('✅ Plattegrond Voormiddag script loaded successfully');
-

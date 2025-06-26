@@ -1,12 +1,4 @@
-/**
- * @fileoverview Dit script beheert de "Mijn Gesprekken" pagina voor een ingelogde student.
- * Het is functioneel vergelijkbaar met `gesprekkenBedrijf.js`, maar is toegespitst op de studentrol.
- * Het haalt reserveringen op, toont ze gesplitst als 'aangevraagd' en 'ontvangen',
- * en handelt alle gebruikersinteracties af.
- *
- * @version 1.0
- * @author [Jouw Naam/Team]
- */
+// [ALLE DEBUG LOGS VERWIJDERD VOOR SCHONE TEST]
 
 const { ReservatieService } = window;
 
@@ -15,10 +7,6 @@ const currentUser = { id: null, type: 'student' }; // Statisch voor dit script
 let lastCancelledMeeting = null; // Voor de 'undo' functionaliteit
 
 // --- DOM ELEMENTEN ---
-/**
- * @namespace DOMElements
- * @description Bevat verwijzingen naar de belangrijkste DOM-elementen die door het script worden gebruikt.
- */
 const DOMElements = {
     aangevraagdTable: null,
     ontvangenTable: null,
@@ -31,13 +19,7 @@ const DOMElements = {
 };
 
 // --- DIALOOG & NOTIFICATIE HELPERS ---
-/**
- * @namespace UI
- * @description Een verzameling van UI-hulpfuncties voor het tonen van laadindicatoren,
- * notificaties en het afhandelen van bevestigingsdialogen.
- */
 const UI = {
-    /** Toont of verbergt de laadindicator. */
     showLoading: (show) => {
         if (DOMElements.loadingIndicator) DOMElements.loadingIndicator.style.display = show ? 'block' : 'none';
     },
@@ -68,19 +50,8 @@ const UI = {
     }
 };
 
-/**
- * @class ModalOverlay
- * @classdesc Een herbruikbare klasse voor het creëren en beheren van modale vensters (dialogen).
- * Biedt methoden voor het tonen van bevestigings-, input-, succes- en foutdialogen.
- */
+// Modal overlay system
 class ModalOverlay {
-    /**
-     * Creëert de basis HTML-structuur voor een modal.
-     * @param {string} title - De titel van de modal.
-     * @param {string} content - De HTML-inhoud voor de body van de modal.
-     * @param {Array<object>} actions - Een array van actie-objecten voor de knoppen.
-     * @returns {HTMLElement} Het gecreëerde modal-element.
-     */
     static createModal(title, content, actions = []) {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
@@ -111,12 +82,6 @@ class ModalOverlay {
         return modal;
     }
 
-    /**
-     * Voegt event listeners toe aan de knoppen van een modal.
-     * @param {HTMLElement} modal - Het modal-element.
-     * @param {Array<object>} actions - De array met actie-objecten.
-     * @private
-     */
     static addModalEventListeners(modal, actions) {
         // Close button
         const closeBtn = modal.querySelector('.modal-close');
@@ -138,13 +103,6 @@ class ModalOverlay {
         });
     }
 
-    /**
-     * Toont een bevestigingsdialoog met "Bevestigen" en "Annuleren" knoppen.
-     * @param {string} title - De titel van de modal.
-     * @param {string} message - De boodschap om weer te geven.
-     * @param {function} onConfirm - Callback-functie die wordt uitgevoerd bij bevestiging.
-     * @param {?function} onCancel - Optionele callback-functie bij annulering.
-     */
     static showConfirmModal(title, message, onConfirm, onCancel = null) {
         const modal = this.createModal(title, `
             <p>${message}</p>
@@ -169,15 +127,6 @@ class ModalOverlay {
         document.body.appendChild(modal);
     }
 
-    /**
-     * Toont een dialoog met een inputveld (textarea).
-     * @param {string} title - De titel van de modal.
-     * @param {string} message - De boodschap om weer te geven.
-     * @param {string} placeholder - De placeholder-tekst voor het inputveld.
-     * @param {function(string)} onConfirm - Callback die de ingevoerde waarde ontvangt.
-     * @param {?function} onCancel - Optionele callback-functie bij annulering.
-     * @returns {string} Het ID van het gecreëerde inputveld.
-     */
     static showInputModal(title, message, placeholder, onConfirm, onCancel = null) {
         const inputId = 'modal-input-' + Date.now();
         const modal = this.createModal(title, `
@@ -214,10 +163,6 @@ class ModalOverlay {
         return inputId;
     }
 
-    /**
-     * Toont een succesdialoog.
-     * @param {string} message - De succesboodschap.
-     */
     static showSuccessModal(message) {
         const modal = this.createModal('Succes!', `
             <div style="text-align: center; padding: 2rem;">
@@ -236,10 +181,6 @@ class ModalOverlay {
         document.body.appendChild(modal);
     }
 
-    /**
-     * Toont een foutdialoog.
-     * @param {string} message - De foutboodschap.
-     */
     static showErrorModal(message) {
         const modal = this.createModal('Fout!', `
             <div style="text-align: center; padding: 2rem;">
@@ -259,16 +200,8 @@ class ModalOverlay {
     }
 }
 
-/**
- * @class NotificationSystem
- * @classdesc Een eenvoudige klasse voor het tonen van niet-blokkerende notificaties.
- */
+// Notification system
 class NotificationSystem {
-    /**
-     * Toont een notificatie.
-     * @param {string} message - De boodschap om te tonen.
-     * @param {string} [type='info'] - Het type notificatie ('info', 'success', 'error').
-     */
     static show(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -307,20 +240,13 @@ class NotificationSystem {
     }
 }
 
-/**
- * @class StudentConversationManager
- * @classdesc Hoofdklasse voor het beheer van de gesprekkenpagina voor studenten.
- */
+// Main conversation manager
 class StudentConversationManager {
     constructor() {
         this.reservations = [];
         this.init();
     }
 
-    /**
-     * Initialiseert de manager: laadt data en stelt event listeners in.
-     * @async
-     */
     async init() {
         try {
             // Initialize DOM elements first
@@ -333,10 +259,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Laadt de reserveringen via de ReservatieService en rendert deze.
-     * @async
-     */
     async loadReservations() {
         try {
             this.reservations = await ReservatieService.getMyReservations();
@@ -347,9 +269,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Rendert de geladen reserveringen in de juiste tabellen ('aangevraagd' en 'ontvangen').
-     */
     renderReservations() {
         // Containers
         const aangevraagdContainer = DOMElements.aangevraagdTable;
@@ -420,11 +339,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Genereert de HTML voor een enkele reserveringsrij.
-     * @param {object} reservation - Het reserveringsobject.
-     * @returns {string} De HTML-string voor de tabelrij.
-     */
     renderReservationRow(reservation) {
         const startTime = new Date(reservation.startTijd).toLocaleTimeString('nl-NL', { 
             hour: '2-digit', 
@@ -458,11 +372,6 @@ class StudentConversationManager {
         return rowHtml;
     }
 
-    /**
-     * Vertaalt een status-string naar een leesbare tekst.
-     * @param {string} status - De status van de reservering.
-     * @returns {string} De leesbare status.
-     */
     getStatusText(status) {
         const statusMap = {
             'aangevraagd': 'Aangevraagd',
@@ -473,11 +382,6 @@ class StudentConversationManager {
         return statusMap[status] || status;
     }
 
-    /**
-     * Genereert de juiste actieknoppen op basis van de status en aanvrager van de reservering.
-     * @param {object} reservation - Het reserveringsobject.
-     * @returns {string} Een HTML-string met de actieknoppen.
-     */
     getActionsForReservation(reservation) {
         const actions = [];
         const reservationId = reservation.afspraakId || reservation.id;
@@ -526,9 +430,6 @@ class StudentConversationManager {
         return actions.join('');
     }
 
-    /**
-     * Stelt een overkoepelende event listener in (event delegation) voor alle actieknoppen.
-     */
     setupEventListeners() {
         // Event delegation for action buttons
         document.addEventListener('click', (event) => {
@@ -580,13 +481,7 @@ class StudentConversationManager {
         });
     }
 
-    // --- ACTIE METHODES ---
-
-    /**
-     * Start het proces voor het accepteren van een reservering.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     */
+    // Action methods
     async acceptReservation(reservationId) {
         try {
             ModalOverlay.showConfirmModal(
@@ -599,12 +494,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Voert de API-call uit om een reservering te accepteren.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     * @private
-     */
     async performAcceptReservation(reservationId) {
         try {
             const result = await ReservatieService.acceptReservation(reservationId);
@@ -620,11 +509,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Start het proces voor het weigeren van een reservering.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     */
     async rejectReservation(reservationId) {
         try {
             ModalOverlay.showInputModal(
@@ -638,13 +522,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Voert de API-call uit om een reservering te weigeren.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @param {string} reason - De reden voor de weigering.
-     * @async
-     * @private
-     */
     async performRejectReservation(reservationId, reason) {
         try {
             const result = await ReservatieService.rejectReservation(reservationId, reason);
@@ -660,11 +537,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Start het proces voor het annuleren van een reservering.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     */
     async cancelReservation(reservationId) {
         try {
             ModalOverlay.showConfirmModal(
@@ -677,12 +549,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Voert de API-call uit om een reservering te annuleren.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     * @private
-     */
     async performCancelReservation(reservationId) {
         try {
             const result = await ReservatieService.cancelReservation(reservationId);
@@ -698,11 +564,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Start het proces voor het definitief verwijderen van een reservering.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     */
     async deleteReservation(reservationId) {
         try {
             ModalOverlay.showConfirmModal(
@@ -715,12 +576,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Voert de API-call uit om een reservering te verwijderen.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     * @private
-     */
     async performDeleteReservation(reservationId) {
         try {
             const result = await ReservatieService.deleteReservation(reservationId);
@@ -736,11 +591,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Herstelt een recent geannuleerde of geweigerde reservering.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     */
     async restoreReservation(reservationId) {
         try {
             ModalOverlay.showConfirmModal(
@@ -753,12 +603,6 @@ class StudentConversationManager {
         }
     }
 
-    /**
-     * Voert de API-call uit om een reservering te herstellen.
-     * @param {string|number} reservationId - Het ID van de reservering.
-     * @async
-     * @private
-     */
     async performRestoreReservation(reservationId) {
         try {
             const result = await ReservatieService.restoreReservation(reservationId);
@@ -775,10 +619,10 @@ class StudentConversationManager {
     }
 }
 
-// Initialiseer de manager wanneer de DOM geladen is.
+// Initialize when DOM is loaded
 let studentConversationManager;
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
     DOMElements.init();
     studentConversationManager = new StudentConversationManager();
     // Probeer de huidige gebruiker op te halen
